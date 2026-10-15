@@ -1,0 +1,60 @@
+{
+ "baseline_check": {
+  "outcome_t_mean": 20.5067,
+  "catastrophe_rate": 0.3633
+ },
+ "r03": {
+  "rate": 0.3,
+  "spillover_events_mean": 21.15,
+  "exported_safety_mean": 3.5167,
+  "exported_total_mean": 22.8274,
+  "safety_emit_share_mean": 0.1549,
+  "safety_C0_share_mean": 0.2093,
+  "influence_ratio_mean": 0.743,
+  "safety_rank_C0_counts": {
+   "1": 21,
+   "2": 203,
+   "3": 71,
+   "4": 5
+  },
+  "catastrophe_rate": 0.3033,
+  "catastrophe_delta": {
+   "mean": -0.06,
+   "se": 0.0332
+  },
+  "catastrophe_sig": false,
+  "takeoff_outcome_t_paired": {
+   "n": 263,
+   "mean": -0.3954,
+   "se": 0.121,
+   "sig": true
+  }
+ },
+ "r06": {
+  "rate": 0.6,
+  "spillover_events_mean": 20.6133,
+  "exported_safety_mean": 7.0617,
+  "exported_total_mean": 44.7886,
+  "safety_emit_share_mean": 0.1585,
+  "safety_C0_share_mean": 0.2093,
+  "influence_ratio_mean": 0.76,
+  "safety_rank_C0_counts": {
+   "1": 21,
+   "2": 203,
+   "3": 71,
+   "4": 5
+  },
+  "catastrophe_rate": 0.2333,
+  "catastrophe_delta": {
+   "mean": -0.13,
+   "se": 0.033
+  },
+  "catastrophe_sig": true,
+  "takeoff_outcome_t_paired": {
+   "n": 267,
+   "mean": -1.1161,
+   "se": 0.1433,
+   "sig": true
+  }
+ }
+}

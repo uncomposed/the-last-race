@@ -1,0 +1,26 @@
+seed 5 unknowns: hazard=0.08, scaling=0.47, automation=0.37, demand=0.92, leak=0.07, sensitivity=1.52, detect=0.79
+  Q 0 subsidy_on         {'gov': 'B', 'level': 1.0}
+  Q 1 open_weights       {'lab': 'challenger', 'rank': 3}
+  Q 2 export_controls    {'gov': 'A'}
+  Q 2 incident           {'lab': 'frontier', 'sev': 1.84, 'public': True}
+  Q 3 regulate_on        {'gov': 'A', 'level': 0.5871881548763481}
+  Q 3 merged             {'lab': 'challenger', 'into': 'state', 'bloc': 'B'}
+  Q 3 consolidate        {'bloc': 'B', 'into': 'state', 'gap': -1.85, 'hazard': 0.391}
+  Q 4 subsidy_on         {'gov': 'A', 'level': 0.1820396035109072}
+  Q 6 incident           {'lab': 'frontier', 'sev': 0.36, 'public': False}
+  Q 9 subsidy_on         {'gov': 'A', 'level': 0.06470020748658878}
+  Q 9 bankrupt           {'lab': 'frontier'}
+  Q 9 acquired           {'lab': 'frontier', 'by': 'state'}
+  Q11 incident           {'lab': 'state', 'sev': 0.73, 'public': True}
+  Q12 regulate_on        {'gov': 'A', 'level': 0.12583196664363827}
+  Q12 regulate_on        {'gov': 'B', 'level': 0.16654252036170325}
+  Q13 subsidy_on         {'gov': 'A', 'level': 0.31241946149148636}
+  Q17 incident           {'lab': 'state', 'sev': 0.62, 'public': True}
+  Q18 regulate_on        {'gov': 'A', 'level': 0.1447262976711895}
+  Q18 regulate_on        {'gov': 'B', 'level': 0.3788757308108186}
+  Q19 incident           {'lab': 'incumbent', 'sev': 0.38, 'public': True}
+  Q20 takeoff            {'result': 'unipolar', 'winner': 'state'}
+final C: {'frontier': 21.093, 'safety': 34.271, 'incumbent': 35.213, 'challenger': 10.467, 'state': 40.769}
+final S: {'frontier': 12.093, 'safety': 22.184, 'incumbent': 21.204, 'challenger': 4.376, 'state': 18.987}
+final cash: {'frontier': -2.863, 'safety': -1.436, 'incumbent': 9.42, 'challenger': 0.0, 'state': 5.282}
+outcome: {'kind': 'unipolar', 't': 20, 'winner': 'state', 'bloc': 'B'}

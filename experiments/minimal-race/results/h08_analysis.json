@@ -1,0 +1,60 @@
+{
+ "fields": {
+  "regulate_events": {
+   "mean": 0.19,
+   "se": 0.0754,
+   "n": 300
+  },
+  "subsidy_events": {
+   "mean": 0.0767,
+   "se": 0.0595,
+   "n": 300
+  },
+  "incidents": {
+   "mean": -0.18,
+   "se": 0.202,
+   "n": 300
+  },
+  "incidents_public": {
+   "mean": 3.7533,
+   "se": 0.2371,
+   "n": 300
+  },
+  "pacts_formed": {
+   "mean": 0.0733,
+   "se": 0.0165,
+   "n": 300
+  },
+  "disruptions": {
+   "mean": 2.1333,
+   "se": 0.232,
+   "n": 300
+  }
+ },
+ "catastrophe_incident": {
+  "mean": -0.0033,
+  "se": 0.0173,
+  "n": 300
+ },
+ "catastrophe_takeoff": {
+  "mean": 0.0867,
+  "se": 0.0343,
+  "n": 300
+ },
+ "catastrophe_any": {
+  "mean": 0.0833,
+  "se": 0.0352,
+  "n": 300
+ },
+ "real_at_2se": {
+  "regulate_events": true,
+  "subsidy_events": false,
+  "incidents": false,
+  "incidents_public": true,
+  "pacts_formed": true,
+  "disruptions": true,
+  "catastrophe_incident": false,
+  "catastrophe_takeoff": true,
+  "catastrophe_any": true
+ }
+}

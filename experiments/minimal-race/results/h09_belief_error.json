@@ -1,0 +1,44 @@
+{
+ "variant_path": "variants/h09_strategic_benchmarks.py",
+ "seeds": "0..299",
+ "levels": {
+  "baseline": {
+   "rival_belief_err": {
+    "n": 300,
+    "mean": 3.1637,
+    "se": 0.1247
+   },
+   "takeoff_t": {
+    "n": 300,
+    "mean": 20.5233,
+    "se": 0.2873
+   }
+  },
+  "variant": {
+   "rival_belief_err": {
+    "n": 300,
+    "mean": 4.8738,
+    "se": 0.2253
+   },
+   "takeoff_t": {
+    "n": 300,
+    "mean": 21.3333,
+    "se": 0.3439
+   }
+  }
+ },
+ "paired": {
+  "rival_belief_err": {
+   "n": 300,
+   "mean": 1.7101,
+   "se": 0.2057,
+   "real": true
+  },
+  "takeoff_t": {
+   "n": 300,
+   "mean": 0.81,
+   "se": 0.2821,
+   "real": true
+  }
+ }
+}

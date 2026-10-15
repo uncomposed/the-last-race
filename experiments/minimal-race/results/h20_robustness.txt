@@ -1,0 +1,154 @@
+Baseline (same across all runs, 300 seeds)
+  patterns passed: 6 of 8
+  interest passed: 3 of 4
+
+== h20a: softmax_temp 0.1 (base 0.35)
+  outcomes: {'catastrophe_incident': 0.113, 'catastrophe_takeoff': 0.347, 'multipolar': 0.057, 'no_takeoff': 0.007, 'unipolar': 0.47}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+    * outcome_t                  mean=     -1.37 se=0.2165
+    * lead_changes               mean=   -0.5033 se=0.0889
+    * frontier_gap_mean          mean=    0.0217 se=0.0027
+    * pacts_formed               mean=   -0.0467 se=0.0181
+      pact_breaks                mean=   -0.0267 se=0.0176
+    * defect_quarters            mean=   -0.1533 se=0.0638
+      open_weights               mean=   -0.0233 se=0.0426
+      incidents                  mean=   -0.3233 se=0.2304
+      disruptions                mean=     -0.02 se=0.1175
+      bankruptcies               mean=      0.05 se=0.0425
+    * sentiment_crashes          mean=   -0.2367 se=0.0463
+    * strategy_switches          mean=  -27.0267 se=0.6388
+      public_max                 mean=   -0.0338 se=0.0384
+    * hazard_belief_err          mean=    -0.006 se=0.0023
+    * capex_gt_rev_q_first12     mean=     -0.67 se=0.0953
+    * catastrophe_rate           mean=    0.0967 se=0.0398
+      same_outcome_share         0.36
+
+== h20b: softmax_temp 1.0 (base 0.35)
+  outcomes: {'catastrophe_incident': 0.097, 'catastrophe_takeoff': 0.257, 'multipolar': 0.2, 'no_takeoff': 0, 'unipolar': 0.443}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+    * outcome_t                  mean=      1.09 se=0.2126
+    * lead_changes               mean=      0.68 se=0.1146
+    * frontier_gap_mean          mean=   -0.0222 se=0.0026
+      pacts_formed               mean=    0.0067 se=0.0164
+      pact_breaks                mean=      0.02 se=0.017
+      defect_quarters            mean=    0.0367 se=0.0756
+      open_weights               mean=      0.08 se=0.0414
+      incidents                  mean=      0.28 se=0.2074
+      disruptions                mean=   -0.0067 se=0.1201
+      bankruptcies               mean=    0.0733 se=0.0516
+      sentiment_crashes          mean=      0.01 se=0.0494
+    * strategy_switches          mean=     11.26 se=0.7635
+      public_max                 mean=    0.0111 se=0.0351
+    * hazard_belief_err          mean=     0.005 se=0.0021
+    * capex_gt_rev_q_first12     mean=      0.24 se=0.0743
+      catastrophe_rate           mean=     -0.01 se=0.0382
+      same_outcome_share         0.367
+
+== h20c: inertia 0.5 (base 0.15)
+  outcomes: {'catastrophe_incident': 0.12, 'catastrophe_takeoff': 0.297, 'multipolar': 0.12, 'no_takeoff': 0.003, 'unipolar': 0.46}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+      outcome_t                  mean=     -0.08 se=0.2151
+    * lead_changes               mean=   -0.1967 se=0.0887
+      frontier_gap_mean          mean=    0.0006 se=0.0028
+      pacts_formed               mean=   -0.0233 se=0.0173
+      pact_breaks                mean=   -0.0267 se=0.017
+      defect_quarters            mean=   -0.0933 se=0.0684
+      open_weights               mean=    0.0567 se=0.042
+      incidents                  mean=   -0.1467 se=0.2392
+      disruptions                mean=    0.0267 se=0.1312
+      bankruptcies               mean=         0 se=0.045
+    * sentiment_crashes          mean=   -0.0967 se=0.0482
+    * strategy_switches          mean=  -19.1933 se=0.6877
+      public_max                 mean=    0.0298 se=0.041
+      hazard_belief_err          mean=    0.0015 se=0.0024
+    * capex_gt_rev_q_first12     mean=   -0.3167 se=0.0848
+      catastrophe_rate           mean=    0.0533 se=0.0352
+      same_outcome_share         0.407
+
+== h20d: horizon 8 (base 4)
+  outcomes: {'catastrophe_incident': 0.083, 'catastrophe_takeoff': 0.367, 'multipolar': 0.07, 'no_takeoff': 0.01, 'unipolar': 0.467}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+    * outcome_t                  mean=   -1.3133 se=0.2361
+      lead_changes               mean=   -0.0767 se=0.0902
+    * frontier_gap_mean          mean=    0.0076 se=0.0032
+      pacts_formed               mean=   -0.0167 se=0.0197
+      pact_breaks                mean=   -0.0133 se=0.0183
+      defect_quarters            mean=   -0.0633 se=0.077
+    * open_weights               mean=    0.3433 se=0.0508
+      incidents                  mean=   -0.0833 se=0.2245
+      disruptions                mean=     -0.04 se=0.1245
+      bankruptcies               mean=    0.0667 se=0.0537
+      sentiment_crashes          mean=    0.0033 se=0.0492
+    * strategy_switches          mean=     -6.97 se=0.7056
+      public_max                 mean=    0.0223 se=0.0398
+    * hazard_belief_err          mean=   -0.0072 se=0.0022
+    * capex_gt_rev_q_first12     mean=      0.56 se=0.0902
+    * catastrophe_rate           mean=    0.0867 se=0.0365
+      same_outcome_share         0.413
+
+== h20e: hazard range (0.02, 0.26) (base (0.02, 0.50))
+  outcomes: {'catastrophe_incident': 0.037, 'catastrophe_takeoff': 0.197, 'multipolar': 0.173, 'no_takeoff': 0, 'unipolar': 0.59}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+      outcome_t                  mean=   -0.3767 se=0.2076
+      lead_changes               mean=   -0.1067 se=0.0782
+      frontier_gap_mean          mean=    0.0002 se=0.002
+    * pacts_formed               mean=    0.0467 se=0.0204
+    * pact_breaks                mean=      0.05 se=0.0212
+    * defect_quarters            mean=    0.2033 se=0.0894
+      open_weights               mean=    0.0033 se=0.0376
+    * incidents                  mean=     -4.08 se=0.2332
+    * disruptions                mean=   -0.8533 se=0.1308
+    * bankruptcies               mean=   -0.1033 se=0.04
+      sentiment_crashes          mean=   -0.0733 se=0.0438
+      strategy_switches          mean=   -0.4233 se=0.6798
+    * public_max                 mean=   -0.4512 se=0.0391
+    * hazard_belief_err          mean=   -0.0345 se=0.0029
+      capex_gt_rev_q_first12     mean=     -0.06 se=0.0704
+    * catastrophe_rate           mean=     -0.13 se=0.0353
+      same_outcome_share         0.427
+
+== h20f: demand range (0.2, 1.0) (base (0.4, 2.0))
+  outcomes: {'catastrophe_incident': 0.107, 'catastrophe_takeoff': 0.273, 'multipolar': 0.093, 'no_takeoff': 0, 'unipolar': 0.527}
+  baseline outcomes: {'catastrophe_incident': 0.087, 'catastrophe_takeoff': 0.277, 'multipolar': 0.143, 'no_takeoff': 0.003, 'unipolar': 0.49}
+  patterns passed: 6 of 8 (baseline 6)
+  interest passed: 3 of 4 (baseline 3)
+  flips: none
+  paired deltas (variant minus baseline), * = |mean| > 2*se:
+      outcome_t                  mean=     -0.38 se=0.2256
+    * lead_changes               mean=    0.2167 se=0.1002
+    * frontier_gap_mean          mean=    0.0053 se=0.0024
+      pacts_formed               mean=   -0.0133 se=0.0133
+      pact_breaks                mean=         0 se=0.0142
+      defect_quarters            mean=   -0.0267 se=0.0617
+      open_weights               mean=         0 se=0.0372
+    * incidents                  mean=      -0.8 se=0.2064
+    * disruptions                mean=     -0.26 se=0.1163
+    * bankruptcies               mean=      0.34 se=0.051
+    * sentiment_crashes          mean=   -0.1633 se=0.0469
+    * strategy_switches          mean=   -2.7633 se=0.6501
+    * public_max                 mean=   -0.0955 se=0.04
+      hazard_belief_err          mean=   -0.0018 se=0.0022
+    * capex_gt_rev_q_first12     mean=    1.1933 se=0.0836
+      catastrophe_rate           mean=    0.0167 se=0.0339
+      same_outcome_share         0.44
+

@@ -1,0 +1,143 @@
+{
+ "baseline": {
+  "n": 200,
+  "outcomes": {
+   "catastrophe_incident": 0.085,
+   "catastrophe_takeoff": 0.44,
+   "multipolar": 0.09,
+   "no_takeoff": 0.005,
+   "unipolar": 0.38
+  },
+  "winners": {
+   "challenger": 0.02,
+   "frontier": 0.755,
+   "incumbent": 0.075,
+   "safety": 0.015,
+   "state": 0.13
+  },
+  "patterns": {
+   "P1_capex_ahead_of_revenue": {
+    "desc": "Median seed has capex above revenue in >=8 of the first 12 quarters",
+    "value": 10.0,
+    "passed": true
+   },
+   "P2_frontier_bunched": {
+    "desc": "Median leader-to-3rd gap under 25% of leader capability",
+    "value": 0.20635517079483187,
+    "passed": true
+   },
+   "P3_leads_change": {
+    "desc": "Median seed has at least 2 changes of capability leader",
+    "value": 0.0,
+    "passed": false
+   },
+   "P4_pacts_form_and_fail": {
+    "desc": "Pacts form in >=25% of seeds, and >=40% of formed pacts break or see defection",
+    "value": [
+     0.0,
+     0.0
+    ],
+    "passed": false
+   },
+   "P5_laggards_open_weights": {
+    "desc": "Open-weight releases happen in >=30% of seeds and >=70% come from rank>=3",
+    "value": [
+     1.0,
+     1.0
+    ],
+    "passed": true
+   },
+   "P6_states_accelerate_first": {
+    "desc": "In >=60% of seeds the first government action is subsidy or export control, not regulation",
+    "value": 1.0,
+    "passed": true
+   },
+   "P7_backlash_sometimes": {
+    "desc": "Physical disruption from public backlash in 10-60% of seeds (possible, not universal)",
+    "value": 0.4,
+    "passed": true
+   },
+   "P8_boom_bust_possible": {
+    "desc": "Investor sentiment crash (>25% drop in a quarter) in 15-70% of seeds",
+    "value": 0.415,
+    "passed": true
+   }
+  },
+  "interest": {
+   "I1_outcome_variety": {
+    "desc": "Outcome entropy >= 1.2 bits across seeds",
+    "value": 1.705,
+    "passed": true
+   },
+   "I2_unknowns_matter": {
+    "desc": "Some hidden unknown has |r| >= 0.25 with catastrophe or takeoff time",
+    "value": 0.581,
+    "passed": true
+   },
+   "I3_actors_adapt": {
+    "desc": "Median seed has >= 6 strategy switches across labs",
+    "value": 68.0,
+    "passed": true
+   },
+   "I4_beliefs_diverge": {
+    "desc": "Median end-of-run hazard belief spread across actors >= 0.15 of range",
+    "value": 0.10110000000000002,
+    "passed": false
+   }
+  },
+  "patterns_passed": 6,
+  "interest_passed": 3,
+  "means": {
+   "outcome_t": 20.59,
+   "capex_gt_rev_q_first12": 9.47,
+   "lead_changes": 0.765,
+   "frontier_gap_mean": 0.2075,
+   "pacts_formed": 0,
+   "pact_breaks": 0,
+   "defect_quarters": 0,
+   "open_weights": 1.645,
+   "incidents": 9.83,
+   "incidents_public": 6.23,
+   "disruptions": 1.665,
+   "bankruptcies": 0.96,
+   "sentiment_crashes": 0.585,
+   "strategy_switches": 69.17,
+   "public_max": 1.7377,
+   "hazard_belief_err": 0.3119,
+   "hazard_belief_spread": 0.1029,
+   "regulate_events": 2.155,
+   "subsidy_events": 1.72,
+   "export_controls": 1
+  },
+  "unknown_importance": {
+   "hazard": {
+    "r_catastrophe": 0.395,
+    "r_takeoff_time": 0.164
+   },
+   "scaling": {
+    "r_catastrophe": 0.157,
+    "r_takeoff_time": -0.581
+   },
+   "automation": {
+    "r_catastrophe": 0.153,
+    "r_takeoff_time": -0.185
+   },
+   "demand": {
+    "r_catastrophe": -0.075,
+    "r_takeoff_time": -0.07
+   },
+   "leak": {
+    "r_catastrophe": -0.11,
+    "r_takeoff_time": 0.062
+   },
+   "sensitivity": {
+    "r_catastrophe": -0.153,
+    "r_takeoff_time": 0.178
+   },
+   "detect": {
+    "r_catastrophe": 0.117,
+    "r_takeoff_time": 0.161
+   }
+  }
+ }
+}

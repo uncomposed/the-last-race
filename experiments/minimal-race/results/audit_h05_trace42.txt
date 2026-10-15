@@ -1,0 +1,185 @@
+seed 42 unknowns: hazard=0.18, scaling=0.41, automation=0.10, demand=1.48, leak=0.03, sensitivity=1.81, detect=0.88
+  Q 0 subsidy_on         {'gov': 'B', 'level': 1.0}
+  Q 0 open_weights       {'lab': 'challenger', 'rank': 4}
+  Q 0 open_weights       {'lab': 'state', 'rank': 4}
+  Q 1 incident           {'lab': 'challenger', 'sev': 1.56, 'public': False}
+  Q 2 export_controls    {'gov': 'A'}
+  Q 2 incident           {'lab': 'challenger', 'sev': 0.27, 'public': True}
+  Q 3 regulate_on        {'gov': 'B', 'level': 0.2431083666057965}
+  Q 3 incident           {'lab': 'frontier', 'sev': 0.45, 'public': True}
+  Q 4 regulate_on        {'gov': 'A', 'level': 0.9705872722574537}
+  Q 4 borrow             {'lab': 'frontier', 'amt': 0.861, 'debt': 0.861}
+  Q 4 interest           {'lab': 'frontier', 'amt': 0.052}
+  Q 5 borrow             {'lab': 'frontier', 'amt': 1.102, 'debt': 1.963}
+  Q 5 interest           {'lab': 'frontier', 'amt': 0.118}
+  Q 6 interest           {'lab': 'frontier', 'amt': 0.118}
+  Q 7 borrow             {'lab': 'frontier', 'amt': 2.341, 'debt': 4.304}
+  Q 7 incident           {'lab': 'state', 'sev': 0.56, 'public': True}
+  Q 7 interest           {'lab': 'frontier', 'amt': 0.258}
+  Q 8 regulate_on        {'gov': 'B', 'level': 0.6045450279824128}
+  Q 8 borrow             {'lab': 'safety', 'amt': 0.595, 'debt': 0.595}
+  Q 8 borrow             {'lab': 'state', 'amt': 0.014, 'debt': 0.014}
+  Q 8 incident           {'lab': 'challenger', 'sev': 2.67, 'public': True}
+  Q 8 interest           {'lab': 'frontier', 'amt': 0.258}
+  Q 8 interest           {'lab': 'safety', 'amt': 0.036}
+  Q 8 interest           {'lab': 'state', 'amt': 0.001}
+  Q 9 borrow             {'lab': 'safety', 'amt': 1.081, 'debt': 1.675}
+  Q 9 incident           {'lab': 'state', 'sev': 0.9, 'public': True}
+  Q 9 interest           {'lab': 'frontier', 'amt': 0.258}
+  Q 9 interest           {'lab': 'safety', 'amt': 0.101}
+  Q 9 interest           {'lab': 'state', 'amt': 0.001}
+  Q10 incident           {'lab': 'state', 'sev': 0.2, 'public': True}
+  Q10 disruption         {'bloc': 'B', 'lab': 'state', 'lost': 2.14}
+  Q10 interest           {'lab': 'frontier', 'amt': 0.258}
+  Q10 interest           {'lab': 'safety', 'amt': 0.101}
+  Q10 interest           {'lab': 'state', 'amt': 0.001}
+  Q11 borrow             {'lab': 'frontier', 'amt': 0.072, 'debt': 4.375}
+  Q11 incident           {'lab': 'incumbent', 'sev': 0.15, 'public': True}
+  Q11 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.9}
+  Q11 interest           {'lab': 'frontier', 'amt': 0.263}
+  Q11 interest           {'lab': 'safety', 'amt': 0.101}
+  Q11 interest           {'lab': 'state', 'amt': 0.001}
+  Q12 borrow             {'lab': 'challenger', 'amt': 0.046, 'debt': 0.046}
+  Q12 incident           {'lab': 'frontier', 'sev': 1.18, 'public': True}
+  Q12 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.64}
+  Q12 disruption         {'bloc': 'B', 'lab': 'state', 'lost': 2.0}
+  Q12 interest           {'lab': 'frontier', 'amt': 0.263}
+  Q12 interest           {'lab': 'safety', 'amt': 0.101}
+  Q12 interest           {'lab': 'challenger', 'amt': 0.003}
+  Q12 interest           {'lab': 'state', 'amt': 0.001}
+  Q13 borrow             {'lab': 'challenger', 'amt': 0.073, 'debt': 0.119}
+  Q13 disruption         {'bloc': 'A', 'lab': 'incumbent', 'lost': 2.8}
+  Q13 interest           {'lab': 'frontier', 'amt': 0.263}
+  Q13 interest           {'lab': 'safety', 'amt': 0.101}
+  Q13 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q13 interest           {'lab': 'state', 'amt': 0.001}
+  Q14 incident           {'lab': 'frontier', 'sev': 0.54, 'public': True}
+  Q14 disruption         {'bloc': 'A', 'lab': 'incumbent', 'lost': 2.58}
+  Q14 interest           {'lab': 'frontier', 'amt': 0.263}
+  Q14 interest           {'lab': 'safety', 'amt': 0.101}
+  Q14 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q14 interest           {'lab': 'state', 'amt': 0.001}
+  Q15 borrow             {'lab': 'frontier', 'amt': 0.034, 'debt': 4.409}
+  Q15 disruption         {'bloc': 'A', 'lab': 'incumbent', 'lost': 2.27}
+  Q15 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q15 interest           {'lab': 'safety', 'amt': 0.101}
+  Q15 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q15 interest           {'lab': 'state', 'amt': 0.001}
+  Q16 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q16 interest           {'lab': 'safety', 'amt': 0.101}
+  Q16 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q16 interest           {'lab': 'state', 'amt': 0.001}
+  Q17 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q17 interest           {'lab': 'safety', 'amt': 0.101}
+  Q17 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q17 interest           {'lab': 'state', 'amt': 0.001}
+  Q18 borrow             {'lab': 'incumbent', 'amt': 1.508, 'debt': 1.508}
+  Q18 borrow             {'lab': 'state', 'amt': 0.093, 'debt': 0.106}
+  Q18 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q18 interest           {'lab': 'safety', 'amt': 0.101}
+  Q18 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q18 interest           {'lab': 'challenger', 'amt': 0.007}
+  Q18 interest           {'lab': 'state', 'amt': 0.006}
+  Q19 borrow             {'lab': 'challenger', 'amt': 3.976, 'debt': 4.094}
+  Q19 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.74}
+  Q19 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q19 interest           {'lab': 'safety', 'amt': 0.101}
+  Q19 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q19 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q19 interest           {'lab': 'state', 'amt': 0.006}
+  Q20 incident           {'lab': 'frontier', 'sev': 2.94, 'public': True}
+  Q20 incident           {'lab': 'state', 'sev': 0.2, 'public': True}
+  Q20 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q20 interest           {'lab': 'safety', 'amt': 0.101}
+  Q20 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q20 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q20 interest           {'lab': 'state', 'amt': 0.006}
+  Q21 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q21 interest           {'lab': 'safety', 'amt': 0.101}
+  Q21 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q21 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q21 interest           {'lab': 'state', 'amt': 0.006}
+  Q22 incident           {'lab': 'state', 'sev': 0.7, 'public': True}
+  Q22 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.62}
+  Q22 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q22 interest           {'lab': 'safety', 'amt': 0.101}
+  Q22 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q22 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q22 interest           {'lab': 'state', 'amt': 0.006}
+  Q23 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q23 interest           {'lab': 'safety', 'amt': 0.101}
+  Q23 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q23 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q23 interest           {'lab': 'state', 'amt': 0.006}
+  Q24 disruption         {'bloc': 'B', 'lab': 'challenger', 'lost': 1.93}
+  Q24 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q24 interest           {'lab': 'safety', 'amt': 0.101}
+  Q24 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q24 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q24 interest           {'lab': 'state', 'amt': 0.006}
+  Q25 incident           {'lab': 'frontier', 'sev': 0.14, 'public': True}
+  Q25 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q25 interest           {'lab': 'safety', 'amt': 0.101}
+  Q25 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q25 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q25 interest           {'lab': 'state', 'amt': 0.006}
+  Q26 open_weights       {'lab': 'incumbent', 'rank': 5}
+  Q26 incident           {'lab': 'safety', 'sev': 2.0, 'public': True}
+  Q26 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.47}
+  Q26 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q26 interest           {'lab': 'safety', 'amt': 0.101}
+  Q26 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q26 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q26 interest           {'lab': 'state', 'amt': 0.006}
+  Q27 disruption         {'bloc': 'A', 'lab': 'safety', 'lost': 1.27}
+  Q27 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q27 interest           {'lab': 'safety', 'amt': 0.101}
+  Q27 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q27 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q27 interest           {'lab': 'state', 'amt': 0.006}
+  Q28 interest           {'lab': 'frontier', 'amt': 0.265}
+  Q28 debt_call          {'lab': 'frontier', 'amt': 2.205, 'sentiment': 0.794}
+  Q28 interest           {'lab': 'safety', 'amt': 0.101}
+  Q28 debt_call          {'lab': 'safety', 'amt': 0.838, 'sentiment': 0.794}
+  Q28 forced_sale        {'lab': 'safety', 'units': 3.613}
+  Q28 interest           {'lab': 'incumbent', 'amt': 0.09}
+  Q28 debt_call          {'lab': 'incumbent', 'amt': 0.754, 'sentiment': 0.794}
+  Q28 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q28 interest           {'lab': 'state', 'amt': 0.006}
+  Q29 incident           {'lab': 'challenger', 'sev': 0.07, 'public': True}
+  Q29 disruption         {'bloc': 'B', 'lab': 'challenger', 'lost': 2.16}
+  Q29 interest           {'lab': 'frontier', 'amt': 0.132}
+  Q29 interest           {'lab': 'safety', 'amt': 0.05}
+  Q29 debt_call          {'lab': 'safety', 'amt': 0.419, 'sentiment': 0.601}
+  Q29 forced_sale        {'lab': 'safety', 'units': 1.807}
+  Q29 interest           {'lab': 'incumbent', 'amt': 0.045}
+  Q29 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q29 interest           {'lab': 'state', 'amt': 0.006}
+  Q30 disruption         {'bloc': 'A', 'lab': 'frontier', 'lost': 7.92}
+  Q30 interest           {'lab': 'frontier', 'amt': 0.132}
+  Q30 debt_call          {'lab': 'frontier', 'amt': 1.102, 'sentiment': 0.524}
+  Q30 interest           {'lab': 'safety', 'amt': 0.025}
+  Q30 debt_call          {'lab': 'safety', 'amt': 0.209, 'sentiment': 0.524}
+  Q30 forced_sale        {'lab': 'safety', 'units': 0.903}
+  Q30 interest           {'lab': 'incumbent', 'amt': 0.045}
+  Q30 interest           {'lab': 'challenger', 'amt': 0.246}
+  Q30 debt_call          {'lab': 'challenger', 'amt': 2.047, 'sentiment': 0.524}
+  Q30 forced_sale        {'lab': 'challenger', 'units': 3.082}
+  Q30 interest           {'lab': 'state', 'amt': 0.006}
+  Q30 debt_call          {'lab': 'state', 'amt': 0.053, 'sentiment': 0.524}
+  Q31 interest           {'lab': 'frontier', 'amt': 0.066}
+  Q31 interest           {'lab': 'safety', 'amt': 0.013}
+  Q31 debt_call          {'lab': 'safety', 'amt': 0.105, 'sentiment': 0.422}
+  Q31 forced_sale        {'lab': 'safety', 'units': 0.452}
+  Q31 interest           {'lab': 'incumbent', 'amt': 0.045}
+  Q31 debt_call          {'lab': 'incumbent', 'amt': 0.377, 'sentiment': 0.422}
+  Q31 forced_sale        {'lab': 'incumbent', 'units': 2.666}
+  Q31 interest           {'lab': 'challenger', 'amt': 0.123}
+  Q31 debt_call          {'lab': 'challenger', 'amt': 1.024, 'sentiment': 0.422}
+  Q31 forced_sale        {'lab': 'challenger', 'units': 4.576}
+  Q31 interest           {'lab': 'state', 'amt': 0.003}
+  Q31 takeoff            {'result': 'catastrophe_takeoff', 'winner': 'frontier'}
+final C: {'frontier': 40.919, 'safety': 30.644, 'incumbent': 33.209, 'challenger': 34.287, 'state': 33.604}
+final S: {'frontier': 35.173, 'safety': 27.98, 'incumbent': 33.16, 'challenger': 23.311, 'state': 30.823}
+final cash: {'frontier': 11.052, 'safety': -0.285, 'incumbent': -1.99, 'challenger': -0.404, 'state': 3.379}
+outcome: {'kind': 'catastrophe_takeoff', 't': 31, 'winner': 'frontier', 'bloc': 'A'}

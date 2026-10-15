@@ -1,0 +1,494 @@
+{
+ "baseline": {
+  "catastrophe_rate": 0.364,
+  "pacts_formed": 0.1067,
+  "pact_breaks": 0.08,
+  "defect_quarters": 0.3133
+ },
+ "cells": {
+  "v0.1_d0.05": {
+   "pacts_formed": 0.1,
+   "pact_breaks": 0.0633,
+   "defect_quarters": 0.72,
+   "breaks_per_formed": 0.6329999999999999,
+   "catastrophe_rate": 0.46,
+   "catastrophe_delta": {
+    "mean": 0.0967,
+    "se": 0.0331
+   },
+   "pacts_delta": {
+    "mean": -0.0067,
+    "se": 0.0082
+   },
+   "breaks_delta": {
+    "mean": -0.0167,
+    "se": 0.011
+   },
+   "defect_delta": {
+    "mean": 0.4067,
+    "se": 0.1184
+   },
+   "same_outcome_share": 0.457
+  },
+  "v0.1_d0.15": {
+   "pacts_formed": 0.11,
+   "pact_breaks": 0.0833,
+   "defect_quarters": 0.58,
+   "breaks_per_formed": 0.7572727272727272,
+   "catastrophe_rate": 0.367,
+   "catastrophe_delta": {
+    "mean": 0.0033,
+    "se": 0.012
+   },
+   "pacts_delta": {
+    "mean": 0.0033,
+    "se": 0.0033
+   },
+   "breaks_delta": {
+    "mean": 0.0033,
+    "se": 0.01
+   },
+   "defect_delta": {
+    "mean": 0.2667,
+    "se": 0.0701
+   },
+   "same_outcome_share": 0.94
+  },
+  "v0.1_d0.3": {
+   "pacts_formed": 0.0967,
+   "pact_breaks": 0.0833,
+   "defect_quarters": 0.3667,
+   "breaks_per_formed": 0.8614270941054809,
+   "catastrophe_rate": 0.39999999999999997,
+   "catastrophe_delta": {
+    "mean": 0.0367,
+    "se": 0.0357
+   },
+   "pacts_delta": {
+    "mean": -0.01,
+    "se": 0.01
+   },
+   "breaks_delta": {
+    "mean": 0.0033,
+    "se": 0.0111
+   },
+   "defect_delta": {
+    "mean": 0.0533,
+    "se": 0.0546
+   },
+   "same_outcome_share": 0.457
+  },
+  "v0.1_d0.5": {
+   "pacts_formed": 0.1133,
+   "pact_breaks": 0.1,
+   "defect_quarters": 0.2567,
+   "breaks_per_formed": 0.88261253309797,
+   "catastrophe_rate": 0.42000000000000004,
+   "catastrophe_delta": {
+    "mean": 0.0567,
+    "se": 0.0372
+   },
+   "pacts_delta": {
+    "mean": 0.0067,
+    "se": 0.0094
+   },
+   "breaks_delta": {
+    "mean": 0.02,
+    "se": 0.0133
+   },
+   "defect_delta": {
+    "mean": -0.0567,
+    "se": 0.0381
+   },
+   "same_outcome_share": 0.423
+  },
+  "v0.5_d0.05": {
+   "pacts_formed": 0.1,
+   "pact_breaks": 0.0833,
+   "defect_quarters": 0.12,
+   "breaks_per_formed": 0.833,
+   "catastrophe_rate": 0.45,
+   "catastrophe_delta": {
+    "mean": 0.0867,
+    "se": 0.033
+   },
+   "pacts_delta": {
+    "mean": -0.0067,
+    "se": 0.0082
+   },
+   "breaks_delta": {
+    "mean": 0.0033,
+    "se": 0.012
+   },
+   "defect_delta": {
+    "mean": -0.1933,
+    "se": 0.0505
+   },
+   "same_outcome_share": 0.463
+  },
+  "v0.5_d0.15": {
+   "pacts_formed": 0.11,
+   "pact_breaks": 0.0867,
+   "defect_quarters": 0.1433,
+   "breaks_per_formed": 0.7881818181818182,
+   "catastrophe_rate": 0.363,
+   "catastrophe_delta": {
+    "mean": 0,
+    "se": 0.0125
+   },
+   "pacts_delta": {
+    "mean": 0.0033,
+    "se": 0.0033
+   },
+   "breaks_delta": {
+    "mean": 0.0067,
+    "se": 0.0082
+   },
+   "defect_delta": {
+    "mean": -0.17,
+    "se": 0.0453
+   },
+   "same_outcome_share": 0.943
+  },
+  "v0.5_d0.3": {
+   "pacts_formed": 0.0967,
+   "pact_breaks": 0.07,
+   "defect_quarters": 0.1133,
+   "breaks_per_formed": 0.7238883143743537,
+   "catastrophe_rate": 0.40599999999999997,
+   "catastrophe_delta": {
+    "mean": 0.0433,
+    "se": 0.0357
+   },
+   "pacts_delta": {
+    "mean": -0.01,
+    "se": 0.01
+   },
+   "breaks_delta": {
+    "mean": -0.01,
+    "se": 0.01
+   },
+   "defect_delta": {
+    "mean": -0.2,
+    "se": 0.0502
+   },
+   "same_outcome_share": 0.457
+  },
+  "v0.5_d0.5": {
+   "pacts_formed": 0.1133,
+   "pact_breaks": 0.0833,
+   "defect_quarters": 0.14,
+   "breaks_per_formed": 0.735216240070609,
+   "catastrophe_rate": 0.42000000000000004,
+   "catastrophe_delta": {
+    "mean": 0.0567,
+    "se": 0.0366
+   },
+   "pacts_delta": {
+    "mean": 0.0067,
+    "se": 0.0094
+   },
+   "breaks_delta": {
+    "mean": 0.0033,
+    "se": 0.0129
+   },
+   "defect_delta": {
+    "mean": -0.1733,
+    "se": 0.0496
+   },
+   "same_outcome_share": 0.44
+  },
+  "v0.8_d0.05": {
+   "pacts_formed": 0.1,
+   "pact_breaks": 0.0767,
+   "defect_quarters": 0.0933,
+   "breaks_per_formed": 0.767,
+   "catastrophe_rate": 0.444,
+   "catastrophe_delta": {
+    "mean": 0.08,
+    "se": 0.0331
+   },
+   "pacts_delta": {
+    "mean": -0.0067,
+    "se": 0.0082
+   },
+   "breaks_delta": {
+    "mean": -0.0033,
+    "se": 0.012
+   },
+   "defect_delta": {
+    "mean": -0.22,
+    "se": 0.0538
+   },
+   "same_outcome_share": 0.467
+  },
+  "v0.8_d0.15": {
+   "pacts_formed": 0.11,
+   "pact_breaks": 0.07,
+   "defect_quarters": 0.0933,
+   "breaks_per_formed": 0.6363636363636365,
+   "catastrophe_rate": 0.353,
+   "catastrophe_delta": {
+    "mean": -0.01,
+    "se": 0.012
+   },
+   "pacts_delta": {
+    "mean": 0.0033,
+    "se": 0.0033
+   },
+   "breaks_delta": {
+    "mean": -0.01,
+    "se": 0.0111
+   },
+   "defect_delta": {
+    "mean": -0.22,
+    "se": 0.0538
+   },
+   "same_outcome_share": 0.927
+  },
+  "v0.8_d0.3": {
+   "pacts_formed": 0.0967,
+   "pact_breaks": 0.07,
+   "defect_quarters": 0.0833,
+   "breaks_per_formed": 0.7238883143743537,
+   "catastrophe_rate": 0.414,
+   "catastrophe_delta": {
+    "mean": 0.05,
+    "se": 0.036
+   },
+   "pacts_delta": {
+    "mean": -0.01,
+    "se": 0.01
+   },
+   "breaks_delta": {
+    "mean": -0.01,
+    "se": 0.0111
+   },
+   "defect_delta": {
+    "mean": -0.23,
+    "se": 0.0542
+   },
+   "same_outcome_share": 0.457
+  },
+  "v0.8_d0.5": {
+   "pacts_formed": 0.1167,
+   "pact_breaks": 0.08,
+   "defect_quarters": 0.0967,
+   "breaks_per_formed": 0.6855184233076265,
+   "catastrophe_rate": 0.40700000000000003,
+   "catastrophe_delta": {
+    "mean": 0.0433,
+    "se": 0.0366
+   },
+   "pacts_delta": {
+    "mean": 0.01,
+    "se": 0.01
+   },
+   "breaks_delta": {
+    "mean": 0,
+    "se": 0.0134
+   },
+   "defect_delta": {
+    "mean": -0.2167,
+    "se": 0.0552
+   },
+   "same_outcome_share": 0.44
+  },
+  "v0.95_d0.05": {
+   "pacts_formed": 0.1,
+   "pact_breaks": 0.0833,
+   "defect_quarters": 0.09,
+   "breaks_per_formed": 0.833,
+   "catastrophe_rate": 0.44,
+   "catastrophe_delta": {
+    "mean": 0.0767,
+    "se": 0.0333
+   },
+   "pacts_delta": {
+    "mean": -0.0067,
+    "se": 0.0082
+   },
+   "breaks_delta": {
+    "mean": 0.0033,
+    "se": 0.0111
+   },
+   "defect_delta": {
+    "mean": -0.2233,
+    "se": 0.0538
+   },
+   "same_outcome_share": 0.457
+  },
+  "v0.95_d0.15": {
+   "pacts_formed": 0.11,
+   "pact_breaks": 0.08,
+   "defect_quarters": 0.0867,
+   "breaks_per_formed": 0.7272727272727273,
+   "catastrophe_rate": 0.35000000000000003,
+   "catastrophe_delta": {
+    "mean": -0.0133,
+    "se": 0.0125
+   },
+   "pacts_delta": {
+    "mean": 0.0033,
+    "se": 0.0033
+   },
+   "breaks_delta": {
+    "mean": 0,
+    "se": 0.0116
+   },
+   "defect_delta": {
+    "mean": -0.2267,
+    "se": 0.0543
+   },
+   "same_outcome_share": 0.94
+  },
+  "v0.95_d0.3": {
+   "pacts_formed": 0.0967,
+   "pact_breaks": 0.0733,
+   "defect_quarters": 0.0833,
+   "breaks_per_formed": 0.7580144777662876,
+   "catastrophe_rate": 0.413,
+   "catastrophe_delta": {
+    "mean": 0.05,
+    "se": 0.0354
+   },
+   "pacts_delta": {
+    "mean": -0.01,
+    "se": 0.01
+   },
+   "breaks_delta": {
+    "mean": -0.0067,
+    "se": 0.0116
+   },
+   "defect_delta": {
+    "mean": -0.23,
+    "se": 0.0556
+   },
+   "same_outcome_share": 0.463
+  },
+  "v0.95_d0.5": {
+   "pacts_formed": 0.1133,
+   "pact_breaks": 0.08,
+   "defect_quarters": 0.0867,
+   "breaks_per_formed": 0.706090026478376,
+   "catastrophe_rate": 0.41300000000000003,
+   "catastrophe_delta": {
+    "mean": 0.05,
+    "se": 0.0366
+   },
+   "pacts_delta": {
+    "mean": 0.0067,
+    "se": 0.0094
+   },
+   "breaks_delta": {
+    "mean": 0,
+    "se": 0.0142
+   },
+   "defect_delta": {
+    "mean": -0.2267,
+    "se": 0.0563
+   },
+   "same_outcome_share": 0.43
+  }
+ },
+ "marginal_by_verify": {
+  "0.1": {
+   "catastrophe_rate": 0.41175,
+   "pacts_formed": 0.105,
+   "pact_breaks": 0.08247499999999999,
+   "defect_quarters": 0.48085
+  },
+  "0.5": {
+   "catastrophe_rate": 0.40975,
+   "pacts_formed": 0.105,
+   "pact_breaks": 0.08082500000000001,
+   "defect_quarters": 0.12915000000000001
+  },
+  "0.8": {
+   "catastrophe_rate": 0.40449999999999997,
+   "pacts_formed": 0.10585,
+   "pact_breaks": 0.074175,
+   "defect_quarters": 0.09165
+  },
+  "0.95": {
+   "catastrophe_rate": 0.404,
+   "pacts_formed": 0.105,
+   "pact_breaks": 0.07915,
+   "defect_quarters": 0.086675
+  }
+ },
+ "threshold_by_detect": {
+  "0.05": {
+   "series": [
+    0.46,
+    0.45,
+    0.444,
+    0.44
+   ],
+   "steps": [
+    -0.010000000000000009,
+    -0.006000000000000005,
+    -0.0040000000000000036
+   ],
+   "biggest_step_share": 0.5,
+   "biggest_step_between": [
+    0.1,
+    0.5
+   ]
+  },
+  "0.15": {
+   "series": [
+    0.367,
+    0.363,
+    0.353,
+    0.35000000000000003
+   ],
+   "steps": [
+    -0.0040000000000000036,
+    -0.010000000000000009,
+    -0.002999999999999947
+   ],
+   "biggest_step_share": 0.588235294117649,
+   "biggest_step_between": [
+    0.5,
+    0.8
+   ]
+  },
+  "0.3": {
+   "series": [
+    0.39999999999999997,
+    0.40599999999999997,
+    0.414,
+    0.413
+   ],
+   "steps": [
+    0.006000000000000005,
+    0.008000000000000007,
+    -0.0010000000000000009
+   ],
+   "biggest_step_share": 0.6153846153846154,
+   "biggest_step_between": [
+    0.5,
+    0.8
+   ]
+  },
+  "0.5": {
+   "series": [
+    0.42000000000000004,
+    0.42000000000000004,
+    0.40700000000000003,
+    0.41300000000000003
+   ],
+   "steps": [
+    0.0,
+    -0.013000000000000012,
+    0.006000000000000005
+   ],
+   "biggest_step_share": 1.8571428571428572,
+   "biggest_step_between": [
+    0.5,
+    0.8
+   ]
+  }
+ }
+}
