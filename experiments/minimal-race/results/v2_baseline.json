@@ -1,0 +1,210 @@
+{
+ "baseline": {
+  "n": 300,
+  "outcomes": {
+   "catastrophe_incident": 0.113,
+   "catastrophe_takeoff": 0.38,
+   "multipolar": 0.203,
+   "unipolar": 0.303
+  },
+  "winners": {
+   "challenger": 0.03,
+   "frontier": 0.403,
+   "incumbent": 0.353,
+   "safety": 0.013,
+   "state": 0.2
+  },
+  "patterns": {
+   "R1_leader_persists_with_churn": {
+    "desc": "Q0 leader still leads at Q16 (or end) in 40-85% of seeds, and a durable (>=2q) lead change happens in 35-90%",
+    "value": [
+     0.46,
+     0.627
+    ],
+    "passed": true,
+    "why": "The real race has had a sticky leader with real challengers; never or always changing is a toy."
+   },
+   "R2_revenue_catches_up": {
+    "desc": "Capex/revenue falls from Q0-7 to Q12-20 in 50-95% of seeds; median Q0-7 ratio 1.3-6",
+    "value": [
+     1.0,
+     7.236
+    ],
+    "passed": false,
+    "why": "Build-out runs ahead of revenue early, then revenue grows into it; a ratio that never falls is a bubble with no story, one that always falls is too tidy."
+   },
+   "R3_warning_shots_precede_regulation": {
+    "desc": "60-95% of regulate_on follow a same-bloc public incident within 4q, and that share beats the base rate of such windows by >=0.15",
+    "value": [
+     0.842,
+     0.514,
+     596
+    ],
+    "passed": true,
+    "why": "Governments mostly regulate after visible harm, not on a schedule; 100% would mean no anticipatory rules at all, which also isn't true."
+   },
+   "R4_pacts_rare_and_short": {
+    "desc": "Pacts form in 15-60% of seeds; median pact lifetime 2-6 quarters",
+    "value": [
+     0.37,
+     2
+    ],
+    "passed": true,
+    "why": "Voluntary lab restraint commitments are uncommon and erode within a year or two; permanent pacts or none at all are both unrealistic."
+   },
+   "R5_laggards_open_weights": {
+    "desc": "Open-weight releases in 30-95% of seeds; 70-95% of releases from true rank>=3 at release",
+    "value": [
+     0.913,
+     0.855
+    ],
+    "passed": true,
+    "why": "Open weights are mostly a challenger's move, but near-frontier labs have released too; 100% laggard share is too clean."
+   },
+   "R6_accelerate_before_restraint": {
+    "desc": "First government action is subsidy/export control in 60-95% of seeds with any action",
+    "value": 1.0,
+    "passed": false,
+    "why": "Major states subsidized and restricted exports before they regulated, but some (EU-style) regulated first, so 100% is too clean."
+   },
+   "R7_backlash_sometimes": {
+    "desc": "Physical disruption from public backlash in 10-60% of seeds",
+    "value": 0.57,
+    "passed": true,
+    "why": "Physical backlash against AI is possible but not routine."
+   },
+   "R8_boom_then_bust": {
+    "desc": "Sentiment rises >=30% then falls >=30% from its peak in 15-70% of seeds",
+    "value": 0.707,
+    "passed": false,
+    "why": "Investment manias usually overshoot and correct, but a correction is not guaranteed within ten years."
+   },
+   "R9_bloc_competition": {
+    "desc": "Bloc B wins 10-45% of takeoffs that have a winner",
+    "value": 0.222,
+    "passed": true,
+    "why": "The second bloc is a real contender but behind on chips and capital; near-zero or parity wins both look wrong."
+   }
+  },
+  "interest": {
+   "I1_outcome_variety": {
+    "desc": "Outcome entropy 1.2-2.3 bits",
+    "value": 1.876,
+    "passed": true,
+    "why": "Replays should feel different, but not like a die roll with no structure."
+   },
+   "I2_no_inevitable_winner": {
+    "desc": "Top winning role takes 30-65% of takeoff wins",
+    "value": 0.417,
+    "passed": true,
+    "why": "The favourite should be favoured, not inevitable; under 30% means roles stopped mattering."
+   },
+   "I3_unknowns_matter": {
+    "desc": "Max |r| of a hidden unknown with catastrophe or takeoff time is 0.25-0.85",
+    "value": 0.615,
+    "passed": true,
+    "why": "Hidden world parameters should shape the story, but not decide it alone; above 0.85 choices barely matter."
+   },
+   "I4_actors_react": {
+    "desc": "Lab switch rate in the 2q after a public incident or sentiment crash is 1.2-5x the background rate",
+    "value": 0.986,
+    "passed": false,
+    "why": "Actors should visibly respond to shocks; over 5x means they only ever move on shocks."
+   },
+   "I5_beliefs_diverge": {
+    "desc": "Median end-of-run hazard-belief spread across actors is 0.15-0.60 of the prior range",
+    "value": 0.136,
+    "passed": false,
+    "why": "Different roles should read the same evidence differently, but not live in unrelated worlds."
+   }
+  },
+  "patterns_passed": 6,
+  "interest_passed": 3,
+  "means": {
+   "outcome_t": 17.7267,
+   "capex_gt_rev_q_first12": 8.95,
+   "capex_rev_ratio_q0_7": 8.4697,
+   "capex_rev_ratio_q12_20": 0.7288,
+   "lead_changes": 1.33,
+   "durable_lead_changes": 0.94,
+   "frontier_gap_mean": 0.1591,
+   "pacts_formed": 0.5433,
+   "pact_breaks": 0.44,
+   "pact_expires": 0.0567,
+   "defect_quarters": 1.7067,
+   "open_weights": 1.4967,
+   "incidents": 10.1133,
+   "incidents_public": 7.9667,
+   "disruptions": 3.1533,
+   "bankruptcies": 0.9367,
+   "acquisitions": 0.7,
+   "open_weights_first_t": 8.5547,
+   "sentiment_crashes": 1.07,
+   "strategy_switches": 45.96,
+   "public_max": 2.3207,
+   "hazard_belief_err": 0.1929,
+   "hazard_belief_spread": 0.1431,
+   "regulate_on": 1.9867,
+   "subsidy_events": 2.1767,
+   "export_controls": 0.94,
+   "thefts": 0.41,
+   "sabotages": 0.81,
+   "consolidations": 0.81
+  },
+  "unknown_importance": {
+   "hazard": {
+    "r_catastrophe": 0.318,
+    "r_takeoff_time": 0.353
+   },
+   "scaling": {
+    "r_catastrophe": 0.08,
+    "r_takeoff_time": -0.615
+   },
+   "automation": {
+    "r_catastrophe": 0.042,
+    "r_takeoff_time": -0.237
+   },
+   "demand": {
+    "r_catastrophe": 0.068,
+    "r_takeoff_time": -0.123
+   },
+   "leak": {
+    "r_catastrophe": 0.08,
+    "r_takeoff_time": -0.046
+   },
+   "sensitivity": {
+    "r_catastrophe": 0.021,
+    "r_takeoff_time": 0.327
+   },
+   "detect": {
+    "r_catastrophe": -0.068,
+    "r_takeoff_time": 0.16
+   },
+   "b_efficiency": {
+    "r_catastrophe": 0.094,
+    "r_takeoff_time": -0.097
+   },
+   "adoption_mid": {
+    "r_catastrophe": 0.07,
+    "r_takeoff_time": 0.008
+   }
+  },
+  "mechanism_fire_rates": {
+   "theft_attempt": 0.757,
+   "theft_success": 0.317,
+   "theft_detected": 0.473,
+   "sabotage": 0.577,
+   "consolidation": 0.783,
+   "disclosure": 0.753,
+   "export_controls": 0.94,
+   "regulate_off": 0.393,
+   "regulation": 0.883,
+   "subsidy": 1.0,
+   "pact": 0.37,
+   "open_weights": 0.913,
+   "disruption": 0.57,
+   "bankruptcy": 0.693,
+   "incident_public": 0.947
+  }
+ }
+}

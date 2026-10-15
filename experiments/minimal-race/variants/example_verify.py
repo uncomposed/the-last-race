@@ -1,5 +1,4 @@
-"""Example only: stronger pact verification. Not one of the 20 hypotheses."""
-import core
+"""Example only: stronger pact verification. Not one of the hypotheses."""
 
 
 def make_config(base):

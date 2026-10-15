@@ -57,3 +57,62 @@ Outcomes over 300 seeds: unipolar takeoff 49%, catastrophic takeoff 28%, multipo
 ## Lessons about the cheap-agent method
 
 The egg-drop pattern held: many cheap attempts, a capable judge. Haiku agents often built the claim into the rule (h11, h12, h13, h14, h15), attributed side effects to the wrong cause, or wrote dead code. Auditors corrected verdicts in roughly half the experiments. Without the audit stage, about a quarter of the conclusions would have been wrong.
+
+---
+
+# Core v2 — 15 October 2026
+
+Status: `implemented` and `verified` (300-seed runs, knockouts, an adversarial code review whose confirmed issues were fixed). Not `human_validated`. Round 1 variants run only against core v1 at commit `2950ff2`.
+
+## What changed
+
+1. **Keyed randomness.** Every draw is a hash of (seed, purpose, quarter, actor). After switching one mechanism off, 75–97% of seeds keep the same ending, up from 36–44% in round 1.
+2. **Labs price their funding outlook.** Investor sentiment and recent raises now enter strategy scores.
+3. **Each role has its own world model** (what it assumes about rivals' safety) **and a motivated-reasoning discount** on its own incidents.
+4. **New mechanisms, each switchable:** safety spillover, mandatory disclosure, weight theft, sabotage, consolidation. Government triggers depend on beliefs (falling behind, rival near takeoff, fear rising above its prior), not on fixed quarters.
+5. **Two new hidden unknowns:** bloc B's compute efficiency ("more with less") and when demand arrives.
+6. **Fixes:** pact cheating counted once, and trust can now rise with observed compliance. Investors read per-lab benchmark history. Demand learning uses public benchmarks from the right quarter. Incident learning accounts for private incidents and exposure. Bankrupt labs are bought only within their bloc, at a price. Distressed labs sell compute before defaulting. Dead labs leave pacts. Planning prices the upkeep of new compute.
+7. **Sharper checks** (`metrics.py`): two-sided bands where too much is also unrealistic, and several time-ordered tests.
+
+## Results over 300 seeds
+
+Outcomes: catastrophic takeoff 38%, unipolar 30%, multipolar 20%, catastrophic incident 11%. Winners: frontier 40%, incumbent 35%, state 20%, challenger 3%, safety 1%.
+
+| Check | v1 | v2 | Note |
+|---|---|---|---|
+| R1 leader persists with churn | pass | pass | |
+| R2 revenue catches up | fail | fail | Check design issue: revenue starts near zero, so the ratio always falls. |
+| R3 warning shots precede regulation | pass | pass | 84% of new regulation follows a public incident within 4 quarters (base rate 51%). |
+| R4 pacts rare and short | fail | pass | Pacts form in 37% of seeds; median life 2 quarters. |
+| R5 laggards release open weights | fail | pass | |
+| R6 states accelerate before restraint | fail | fail | Bloc B subsidizes from quarter 0. Arguably realistic; left alone. |
+| R7 backlash sometimes | pass | pass | |
+| R8 boom then bust | pass | fail (borderline) | 71% of seeds, band 15–70%. |
+| R9 bloc competition | pass | pass | |
+| I1 outcome variety | pass | pass | |
+| I2 no inevitable winner | fail | pass | Top role wins 42% of takeoffs (was 76%). |
+| I3 hidden unknowns matter | pass | pass | |
+| I4 actors react to shocks | fail | fail | **Main open problem.** See below. |
+| I5 beliefs diverge | fail | fail (borderline) | 0.14 against a 0.15 floor; role world models are what lift it. |
+
+## Knockouts: which mechanisms earn a place in the minimal set
+
+| Mechanism removed | Effect (paired, > 2 standard errors) | Verdict |
+|---|---|---|
+| Funding in decisions | Frontier wins 40% → 51%, incumbent 35% → 13%, catastrophe −7 points, takeoff 2.3 quarters later | **Essential.** Capital markets punishing a slowdown is the strongest dynamic in the model. |
+| Disclosure | Pacts −0.11 per run, protest damage −1.2, takeoff earlier | Keep. Transparency trades protest damage for coordination. |
+| Consolidation | Incidents +1.3, takeoff later, open-weight check flips | Keep. |
+| Spillover | Incidents +0.7, disruptions +0.4 | Keep. |
+| Role world models | Pacts −0.06; belief divergence check flips | Keep; this is the belief layer you wanted. |
+| Motivated reasoning | Pacts +0.05 when removed | Small; optional. |
+| Sabotage | Small effects on incidents and timing | Optional. |
+| Theft | Takeoff +0.14 quarters, nothing else | **Does not earn its place** at current settings, despite firing in 32% of seeds. |
+
+## Main open problem: actors do not react to shocks
+
+Lab strategy switches are no more frequent after a public incident or an investor crash than at other times (ratio about 1.0). Two causes were measured:
+
+1. Template scores are nearly tied: best and second-best differ by about 0.08, while the softmax temperature is 0.35, so choice is mostly noise. Lowering the noise to 0.05 did not create reactions.
+2. The risk term is small next to the lead and profit terms, so a hazard-belief change of a few percent cannot flip a choice.
+
+This matters for the game: if beliefs move but choices do not, a player's three interventions will not propagate either. It is the first thing to address before a decision-leverage study.

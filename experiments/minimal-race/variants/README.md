@@ -1,5 +1,9 @@
 # Writing a variant
 
+These instructions are for core v2. Round 1 variants (`h01`–`h20`) were written
+against core v1 and use its `rng_*` streams; reproduce them at commit `2950ff2`
+(`git switch --detach 2950ff2`), not on the current core.
+
 A variant tests one hypothesis against the shared core. Never edit `core.py`,
 `metrics.py` or `run.py`; every experiment must be scored by the same code.
 
@@ -22,7 +26,7 @@ class VariantWorld(core.World):
 `import core` works because `run.py` puts this folder on the path.
 
 Hook methods, called in this order each quarter by `World.step()`:
-`arrive_compute`, `observe`, `internalize`, `government_decide`, `diplomacy`,
+`arrive_compute`, `observe`, `internalize`, `government_decide`, `covert_ops`, `diplomacy`,
 `labs_decide`, `compute_market`, `capital_market`, `resolve_rnd`,
 `product_market`, `incidents`, `public_opinion`, `accounting`, `check_end`,
 `snapshot`. Helpers: `score_template`, `softmax_pick`, `join_value`,
@@ -32,10 +36,12 @@ Rules:
 - Keep truth, observation and belief separate. An actor may only decide using
   `self.beliefs[name]`, its own lab state, and public signals. Never let a
   decision read `self.unk` or a rival's true `C`/`S`.
-- Use `self.rng_evt` for world randomness and `self.rng_dec` for decision
-  randomness. If you add a new random process, create your own stream in
-  `__init__` (e.g. `self.rng_x = random.Random(f"{seed}:x")`) so the paired
-  baseline's draws are not shifted.
+- Randomness is keyed: `self.u("purpose", self.t, actor)` returns a uniform
+  draw fixed by (seed, key); `self.gauss(sd, ...)` and `self.expo(...)` work the
+  same way. Give every new draw a purpose name nobody else uses, so a variant
+  never shifts the paired baseline's luck. Never import `random`.
+- Optional mechanisms can be switched off with `base["cfg"]["mech"][name] = False`
+  (see `BASE_CONFIG["mech"]`); `knockouts.py` does this for each one.
 - Record new notable events with `self.log("kind", ...)` so traces show them.
 - New hidden unknowns go in `base["cfg"]["unknowns"]` as `(low, high)` and are
   read from `self.unk`.
