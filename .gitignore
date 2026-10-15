@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.last-race*/
+artifacts/*.html
+artifacts/*.json
+!artifacts/.gitkeep
+compat/stage-2b/artifacts/
+__pycache__/
+*.pyc

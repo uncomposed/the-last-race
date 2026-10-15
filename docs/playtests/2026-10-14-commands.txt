@@ -1,0 +1,76 @@
+The Last Race public command transcript
+Playtest date: 2026-10-14
+Scenario: full-28
+Seed: codex-table-2026-10-14
+Accepted mutations: 30, including 8 quarter resolutions
+Final state: Q4 2026, coordinated-slowdown, revision 30
+
+Start an independent session with:
+npm run play -- --seed codex-table-2026-10-14 --session-dir .last-race-playtest-reproduction
+
+The following are the accepted mutation commands in order. Inspection and
+preview commands are omitted. Do not paste the explanatory quarter labels
+as commands. No wildcard was proposed, approved, or applied.
+
+Q1 2025
+secure 1
+train small pretraining reasoning coding
+ship third-party
+end
+
+Q2 2025
+build sichuan large grid concentrated
+fund parent 40
+ship own
+end
+
+Q3 2025
+build sichuan large grid concentrated
+train small pretraining coding science
+fund parent 40
+end
+
+Q4 2025
+secure 1
+ship own
+plan-set routine:deepcent:3 product
+end
+
+Q1 2026
+respond evidence:10a9bd5f1ca3e1f5 secure 2
+investigate control
+plan-set routine:deepcent:4 product
+end
+
+Q2 2026
+plan-set routine:deepcent:5 product
+ship third-party
+investigate capability openbrain
+end
+
+Q3 2026
+plan-set routine:deepcent:6 product
+investigate control
+end
+
+Q4 2026
+plan-set routine:deepcent:7 product
+build sichuan small grid concentrated
+end
+
+Final public company state
+Cash: 36M, at quarter close before another opening's obligations
+Revenue: 32M per quarter
+Capability: 9
+Product: 14
+Safety: 10
+Influence: 7
+Installed persistent compute: 16
+Normal quarterly compute capacity: 20, including the base allowance of 4
+Compute remaining at terminal quarter close: 19
+Pending capacity: 4 in Sichuan, originally due Q4 2027, upkeep 1M per quarter
+Next opening obligations if play continued: 13M
+Treaty member: no
+Terminal report: coordinated-slowdown; 3 containment failures, 1 undetected at occurrence
+
+This is player-visible evidence and commands, not a hidden-state save.
