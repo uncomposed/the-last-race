@@ -1064,7 +1064,9 @@ class World:
         if lead.C >= c["C_STAR"]:
             gap = max(0.0, lead.C - lead.S)
             p_cat = 1 - math.exp(-self.unk["hazard"] * gap / c["catastrophe_scale"])
-            if self.u("takeoff_cat", self.t) < p_cat:
+            # One latent draw per seed, so a smaller unsafety gap at takeoff
+            # can only make catastrophe less likely, whenever takeoff happens.
+            if self.u("takeoff_cat") < p_cat:
                 self.outcome = dict(kind="catastrophe_takeoff", t=self.t, winner=lead.name, bloc=lead.bloc)
             else:
                 second = max((l.C for l in labs if l.name != lead.name), default=0.0)

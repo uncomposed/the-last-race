@@ -116,3 +116,42 @@ Lab strategy switches are no more frequent after a public incident or an investo
 2. The risk term is small next to the lead and profit terms, so a hazard-belief change of a few percent cannot flip a choice.
 
 This matters for the game: if beliefs move but choices do not, a player's three interventions will not propagate either. It is the first thing to address before a decision-leverage study.
+
+---
+
+# Decision leverage map and interpretability breakthrough — 15 October 2026
+
+Status: `verified` (deterministic runs; the null intervention reproduces the untouched core exactly). Not `human_validated`.
+
+## Method fix found along the way
+
+The takeoff catastrophe draw was keyed to the quarter, so any intervention that shifted takeoff by one quarter re-rolled the dice regardless of safety. It now uses one latent draw per seed, so a smaller unsafety gap can only lower catastrophe risk. With the fix, the placebo (+0.01 cash) changes the ending in under 1% of cases.
+
+## Leverage map (`leverage.py`)
+
+200 seeds × 3 player seats (frontier, state, safety) × 15 single interventions × 5 timings (quarters 0, 4, 8, 12, 16).
+
+1. **Single moves are consequential but not steering.** Interventions change the ending in 5–52% of cases (placebo under 1%), yet the best average effect on catastrophe is 3 points. Even choosing the best move with hindsight saves the world in only 5–10% of seed-quarter cells.
+2. **For the company, the game is solved: race.** Forcing a race plan is the best company move in most cells for every seat, and raises the seat's score while costing the world 1–2 points. Fundraising is second.
+3. **The real dilemma exists only for the leader.** A frontier-lab pause is the one move that helps the world at every timing (+3 points, more when late), at a large company cost (−0.18).
+4. **Belief and coordination levers do nothing.** Fear or calm convictions, proposing a pact, and public warnings have near-zero effect. A single actor cannot start a pact.
+5. **The best move does not depend on the hidden world** (|r| < 0.12 with true hazard). Learning about the world would not help the player choose.
+
+Implication for the three-intervention game: as the model stands, interventions reshuffle the company's fortunes but barely steer the world, and learning does not pay. Both trace to the open problem: actors do not react to what others do or to new evidence.
+
+## Interpretability breakthrough (`variants/s01_interp_breakthrough.py`)
+
+At a seed-determined quarter between 8 and 24, interpretability starts working. 400 paired seeds.
+
+| Version | Catastrophe change | Other |
+|---|---|---|
+| Shared: safety research ×2, everyone sees true hazard, pacts verifiable | −8.7 points (se 1.5) | pacts +0.22, takeoff 0.5 quarters later |
+| Dual-use: as above, plus capabilities train 25% faster | −6.5 points (se 1.3) | takeoff 0.4 quarters earlier |
+| One lab: only the safety lab gets it; others via its publications | 0.0 | no effect; the safety lab rarely leads |
+
+Decomposition of the shared version: productivity −5.2 points; legibility (knowing the true hazard) 0.0 but pacts +0.12; verification −1.3; legibility plus verification −1.8 with pacts +0.21.
+
+Readings (model results, not claims about the world):
+1. A breakthrough's value depends on whether it reaches the labs at the frontier.
+2. Most of the value is mechanical (safety work gets cheaper), not informational.
+3. Knowing the truth about hazard changes beliefs and pact formation but not behaviour that matters for catastrophe, which is the same reaction problem seen in the leverage map.
