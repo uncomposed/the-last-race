@@ -1,4 +1,4 @@
-"""Minimal AI-race simulation core, version 2.
+"""Minimal AI-race simulation core, version 3.
 
 No language model makes decisions. Every actor holds beliefs, receives noisy
 observations of what actually happened, internalizes some of that evidence
@@ -21,6 +21,12 @@ Version 2 changes (see FINDINGS.md for why):
   role_world_models, motivated, spillover, disclosure, theft, sabotage,
   consolidation. Government triggers depend on beliefs, not schedules.
 - Fixes: pact cheating counted once; investors read per-lab benchmark history.
+
+Version 3 change:
+- Installed compute depreciates (cfg["depreciation"], 5% per quarter, about a
+  five-year chip life), switchable as cfg["mech"]["depreciation"]. Labs plan
+  with it: compute they hold or order is worth less the longer they wait to
+  use it. With the switch off, version 3 reproduces version 2 exactly.
 
 Hidden "unknown prevalence" constants are drawn per seed. Nobody, including
 the actors, knows them.
@@ -69,12 +75,14 @@ BASE_CONFIG = {
         "theft": True,                 # behind bloc can steal weights
         "sabotage": True,              # governments can sabotage rival compute
         "consolidation": True,         # governments can merge domestic labs
+        "depreciation": True,          # installed compute wears out (core v3)
     },
     "C_AUTO": 20.0,               # capability where AI R&D feedback starts
     "train_k": 0.55,              # training productivity
     "safety_k": 0.45,             # safety research productivity
     "compute_lag": 2,             # quarters from order to installed compute
     "upkeep": 0.08,               # cash per installed compute unit per quarter
+    "depreciation": 0.05,         # share of installed compute retired per quarter (~5-year life)
     "chip_supply0": 10.0,         # compute units the chip market can deliver per quarter
     "chip_supply_growth": 0.05,   # per quarter
     "chip_price0": 0.5,           # cash per compute unit at balanced market
@@ -776,7 +784,15 @@ class World:
         build_spend = 0.5 * build * max(0.0, lab.cash)          # as in compute_market
         new_units = build_spend / max(1e-6, self.chip_price)
         live_q = max(0, H - lag)                                # quarters new compute is usable
-        tK_new = new_units * train / tot * (1 - 0.5 * reg)
+        # Depreciation: average share of today's compute still installed over
+        # the horizon, and of new compute over the quarters it is usable.
+        keep = 1.0 - self.depreciation_rate()
+        held = sum(keep ** h for h in range(H)) / H
+        fresh = sum(keep ** h for h in range(live_q)) / live_q if live_q else 1.0
+        tK = tK * held
+        sK = sK * held
+        vK = vK * held
+        tK_new = new_units * fresh * train / tot * (1 - 0.5 * reg)
         gain = self.train_gain(lab, tK, believed=True) * H
         gain += (self.train_gain(lab, tK + tK_new, believed=True)
                  - self.train_gain(lab, tK, believed=True)) * live_q
@@ -792,7 +808,7 @@ class World:
         mkt = c["market0"] * dem * (max(C_h, top) / 10.0) ** 1.3 * self.adoption()
         share = vK / (vK + sum(max(0.5, r / 3) for r in rivals))
         rev = min(mkt * share, vK * c["serve_cap"]) * H
-        spend = build_spend + c["upkeep"] * (lab.K * H + new_units * live_q)
+        spend = build_spend + c["upkeep"] * (lab.K * H * held + new_units * live_q * fresh)
         # Funding outlook: investors reward visible growth, scaled by the
         # current (public) sentiment already embedded in recent raises.
         raise_h = 0.0
@@ -809,8 +825,11 @@ class World:
              + w["nation"] * p_lead * 0.5
              - w["safety"] * risk * 2.0
              - broke
-             + 0.15 * math.sqrt(new_units))      # compute outlasts the horizon
+             + 0.15 * math.sqrt(new_units * keep ** live_q))   # compute outlasts the horizon
         return u
+
+    def depreciation_rate(self):
+        return self.cfg["depreciation"] if self.mech["depreciation"] else 0.0
 
     def softmax_pick(self, scores, current, who):
         T = self.cfg["softmax_temp"]
@@ -1014,6 +1033,9 @@ class World:
     def accounting(self):
         c = self.cfg
         for l in self.live_labs():
+            # Worn-out compute is retired before upkeep is paid; distressed
+            # sales and acquisitions below see only what is still installed.
+            l.K *= 1.0 - self.depreciation_rate()
             l.cash -= c["upkeep"] * l.K
             if l.cash < 0 and l.K > 2.0:
                 # Distressed selling: shed compute at a discount before default.

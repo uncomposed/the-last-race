@@ -1,0 +1,49 @@
+{
+ "seeds": [
+  1000,
+  1999
+ ],
+ "forced": {
+  "frontier_win": {
+   "mean": -0.117,
+   "se": 0.016
+  },
+  "bloc_b_win": {
+   "mean": 0.16,
+   "se": 0.015
+  },
+  "catastrophe": {
+   "mean": -0.025,
+   "se": 0.01
+  },
+  "outcome_t": {
+   "mean": 2.77,
+   "se": 0.117
+  },
+  "same_outcome": 0.466
+ },
+ "organic": {
+  "frontier_win": {
+   "mean": -0.014,
+   "se": 0.006
+  },
+  "bloc_b_win": {
+   "mean": 0.016,
+   "se": 0.006
+  },
+  "catastrophe": {
+   "mean": -0.005,
+   "se": 0.004
+  },
+  "outcome_t": {
+   "mean": 0.326,
+   "se": 0.043
+  },
+  "same_outcome": 0.915
+ },
+ "organic_shock_share": 0.333,
+ "levels": {
+  "calm_frontier": 0.456,
+  "calm_bloc_b": 0.267
+ }
+}

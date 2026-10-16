@@ -1,0 +1,334 @@
+{
+ "seeds": [
+  1000,
+  1999
+ ],
+ "overrides": {
+  "train_k": 0.64
+ },
+ "v2": {
+  "outcomes": {
+   "catastrophe_incident": 0.123,
+   "catastrophe_takeoff": 0.38,
+   "multipolar": 0.224,
+   "unipolar": 0.273
+  },
+  "winners": {
+   "challenger": 0.04,
+   "frontier": 0.43,
+   "incumbent": 0.311,
+   "safety": 0.01,
+   "state": 0.209
+  },
+  "patterns_passed": 6,
+  "interest_passed": 3,
+  "checks": {
+   "R1_leader_persists_with_churn": {
+    "value": [
+     0.473,
+     0.601
+    ],
+    "passed": true
+   },
+   "R2_revenue_catches_up": {
+    "value": [
+     1.0,
+     6.412
+    ],
+    "passed": false
+   },
+   "R3_warning_shots_precede_regulation": {
+    "value": [
+     0.879,
+     0.482,
+     1905
+    ],
+    "passed": true
+   },
+   "R4_pacts_rare_and_short": {
+    "value": [
+     0.294,
+     2
+    ],
+    "passed": true
+   },
+   "R5_laggards_open_weights": {
+    "value": [
+     0.898,
+     0.867
+    ],
+    "passed": true
+   },
+   "R6_accelerate_before_restraint": {
+    "value": 1.0,
+    "passed": false
+   },
+   "R7_backlash_sometimes": {
+    "value": 0.493,
+    "passed": true
+   },
+   "R8_boom_then_bust": {
+    "value": 0.726,
+    "passed": false
+   },
+   "R9_bloc_competition": {
+    "value": 0.229,
+    "passed": true
+   },
+   "I1_outcome_variety": {
+    "value": 1.897,
+    "passed": true
+   },
+   "I2_no_inevitable_winner": {
+    "value": 0.449,
+    "passed": true
+   },
+   "I3_unknowns_matter": {
+    "value": 0.561,
+    "passed": true
+   },
+   "I4_actors_react": {
+    "value": 0.987,
+    "passed": false
+   },
+   "I5_beliefs_diverge": {
+    "value": 0.142,
+    "passed": false
+   }
+  },
+  "means": {
+   "outcome_t": 16.882,
+   "capex_gt_rev_q_first12": 8.777,
+   "capex_rev_ratio_q0_7": 8.2429,
+   "capex_rev_ratio_q12_20": 0.6989,
+   "lead_changes": 1.298,
+   "durable_lead_changes": 0.92,
+   "frontier_gap_mean": 0.1599,
+   "pacts_formed": 0.409,
+   "pact_breaks": 0.327,
+   "pact_expires": 0.041,
+   "defect_quarters": 1.254,
+   "open_weights": 1.484,
+   "incidents": 9.512,
+   "incidents_public": 7.154,
+   "disruptions": 2.553,
+   "bankruptcies": 0.919,
+   "acquisitions": 0.718,
+   "open_weights_first_t": 8.0156,
+   "sentiment_crashes": 1.074,
+   "strategy_switches": 44.225,
+   "public_max": 2.1205,
+   "hazard_belief_err": 0.1947,
+   "hazard_belief_spread": 0.1468,
+   "regulate_on": 1.905,
+   "subsidy_events": 2.136,
+   "export_controls": 0.935,
+   "thefts": 0.408,
+   "sabotages": 0.76,
+   "consolidations": 0.826
+  }
+ },
+ "v3": {
+  "outcomes": {
+   "catastrophe_incident": 0.145,
+   "catastrophe_takeoff": 0.385,
+   "multipolar": 0.213,
+   "no_takeoff": 0.002,
+   "unipolar": 0.255
+  },
+  "winners": {
+   "challenger": 0.044,
+   "frontier": 0.491,
+   "incumbent": 0.215,
+   "safety": 0.013,
+   "state": 0.235
+  },
+  "patterns_passed": 6,
+  "interest_passed": 3,
+  "checks": {
+   "R1_leader_persists_with_churn": {
+    "value": [
+     0.534,
+     0.569
+    ],
+    "passed": true
+   },
+   "R2_revenue_catches_up": {
+    "value": [
+     1.0,
+     6.747
+    ],
+    "passed": false
+   },
+   "R3_warning_shots_precede_regulation": {
+    "value": [
+     0.882,
+     0.526,
+     1905
+    ],
+    "passed": true
+   },
+   "R4_pacts_rare_and_short": {
+    "value": [
+     0.311,
+     3
+    ],
+    "passed": true
+   },
+   "R5_laggards_open_weights": {
+    "value": [
+     0.919,
+     0.887
+    ],
+    "passed": true
+   },
+   "R6_accelerate_before_restraint": {
+    "value": 1.0,
+    "passed": false
+   },
+   "R7_backlash_sometimes": {
+    "value": 0.537,
+    "passed": true
+   },
+   "R8_boom_then_bust": {
+    "value": 0.824,
+    "passed": false
+   },
+   "R9_bloc_competition": {
+    "value": 0.261,
+    "passed": true
+   },
+   "I1_outcome_variety": {
+    "value": 1.93,
+    "passed": true
+   },
+   "I2_no_inevitable_winner": {
+    "value": 0.517,
+    "passed": true
+   },
+   "I3_unknowns_matter": {
+    "value": 0.47,
+    "passed": true
+   },
+   "I4_actors_react": {
+    "value": 0.956,
+    "passed": false
+   },
+   "I5_beliefs_diverge": {
+    "value": 0.139,
+    "passed": false
+   }
+  },
+  "means": {
+   "outcome_t": 16.825,
+   "capex_gt_rev_q_first12": 10.239,
+   "capex_rev_ratio_q0_7": 8.6484,
+   "capex_rev_ratio_q12_20": 1.0904,
+   "lead_changes": 1.187,
+   "durable_lead_changes": 0.865,
+   "frontier_gap_mean": 0.1568,
+   "pacts_formed": 0.507,
+   "pact_breaks": 0.351,
+   "pact_expires": 0.083,
+   "defect_quarters": 1.406,
+   "open_weights": 1.694,
+   "incidents": 10.977,
+   "incidents_public": 8.474,
+   "disruptions": 3.401,
+   "bankruptcies": 0.234,
+   "acquisitions": 0.209,
+   "open_weights_first_t": 7.8194,
+   "sentiment_crashes": 1.43,
+   "strategy_switches": 45.132,
+   "public_max": 2.357,
+   "hazard_belief_err": 0.1869,
+   "hazard_belief_spread": 0.1438,
+   "regulate_on": 1.905,
+   "subsidy_events": 2.227,
+   "export_controls": 0.943,
+   "thefts": 0.434,
+   "sabotages": 0.902,
+   "consolidations": 0.832
+  }
+ },
+ "paired_v3_minus_v2": {
+  "outcome_t": {
+   "mean": -0.057,
+   "se": 0.1139
+  },
+  "lead_changes": {
+   "mean": -0.111,
+   "se": 0.0439
+  },
+  "frontier_gap_mean": {
+   "mean": -0.0032,
+   "se": 0.0013
+  },
+  "pacts_formed": {
+   "mean": 0.098,
+   "se": 0.0277
+  },
+  "pact_breaks": {
+   "mean": 0.024,
+   "se": 0.0241
+  },
+  "defect_quarters": {
+   "mean": 0.152,
+   "se": 0.0875
+  },
+  "open_weights": {
+   "mean": 0.21,
+   "se": 0.0311
+  },
+  "incidents": {
+   "mean": 1.465,
+   "se": 0.124
+  },
+  "disruptions": {
+   "mean": 0.848,
+   "se": 0.0938
+  },
+  "bankruptcies": {
+   "mean": -0.685,
+   "se": 0.0238
+  },
+  "sentiment_crashes": {
+   "mean": 0.356,
+   "se": 0.035
+  },
+  "strategy_switches": {
+   "mean": 0.907,
+   "se": 0.3119
+  },
+  "public_max": {
+   "mean": 0.2364,
+   "se": 0.0271
+  },
+  "hazard_belief_err": {
+   "mean": -0.0078,
+   "se": 0.0014
+  },
+  "capex_gt_rev_q_first12": {
+   "mean": 1.462,
+   "se": 0.0475
+  },
+  "catastrophe_rate": {
+   "mean": 0.027,
+   "se": 0.0094
+  },
+  "same_outcome_share": 0.7,
+  "frontier_win": {
+   "mean": 0.061,
+   "se": 0.0174
+  },
+  "bloc_b_win": {
+   "mean": 0.03,
+   "se": 0.0146
+  },
+  "catastrophe": {
+   "mean": 0.027,
+   "se": 0.0094
+  },
+  "same_outcome_and_winner": 0.461
+ }
+}

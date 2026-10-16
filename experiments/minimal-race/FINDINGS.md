@@ -230,3 +230,98 @@ The independent audit (Opus) reproduced every number exactly and found no rule v
 ## Lessons about the method
 
 Calibrate on one block of seeds, report on another, and treat any delta below about 3 standard errors as provisional. A single seed block plus a 2-standard-error screen across many metrics overstated effects by about half.
+
+---
+
+# Core v3: installed compute depreciates — 16 October 2026
+
+Status: `verified` (null check on 1,300 seeds, 300-seed knockouts, held-out reruns). Not `human_validated`. This change has not had an independent audit. All quantities are synthetic.
+
+## What changed
+
+1. **Installed compute wears out:** 5% per quarter (`cfg["depreciation"]`), about a five-year chip life. The switch is `cfg["mech"]["depreciation"]`, on by default, so `knockouts.py` now tests it.
+2. **Worn-out compute is retired at the start of accounting, before upkeep.** A lab stops paying upkeep on retired chips. Distressed sales, bankruptcy prices and acquisitions all see only what is still installed. Compute on order does not wear out until it arrives.
+3. **Labs plan with it** (`score_template`):
+   - Today's compute counts at its average remaining share over the 4-quarter horizon.
+   - New orders count at their average share over the quarters they are usable.
+   - Upkeep is priced on the shrinking stock.
+   - The bonus for compute that outlasts the horizon is scaled by what is left at the end.
+4. **Null check** (`results/v3_null_check.py`): with the switch off, all 1,300 seeds (0–299 and 1000–1999) match core v2 at commit `3f1add9` exactly, including every quarterly snapshot, every event and the outcome.
+5. **The defaults were not retuned.** There are two reasons:
+   - Chip supply binds in only about 4% of quarters, because labs are short of cash, not chips. So the natural knob (more supply to replace worn-out chips) does nothing.
+   - Retuning any shared parameter would break the null check.
+
+   Instead, a diagnostic **timing-matched** arm raises training productivity (`train_k` 0.55 → 0.64) in the depreciation arm only. It was calibrated on seeds 0–299 so that mean takeoff matches v2 (17.5 against 17.7 quarters). It separates "the world got slower" from "compute wears out".
+6. **`results/u_supply_diag.py` now switches core depreciation off**, because it applies its own. It still reproduces round 3's held-out output exactly.
+
+The v2 numbers below come from rerunning v2 now (switch off). They do not come from the core v2 table above, which predates the takeoff-draw fix. Winners are identical either way; outcome kinds differ slightly.
+
+## Results (held-out seeds 1000–1999, paired, v3 minus v2, standard error in brackets)
+
+| | v3 as shipped | Timing-matched |
+|---|---|---|
+| Takeoff | **+3.0 quarters later** (0.12) | −0.1 (0.11) |
+| Frontier wins (v2: 43.0%) | 45.6%, +2.6 (1.8) | **49.1%, +6.1 (1.7)** |
+| Incumbent wins (v2: 31.1%) | 25.4% | 21.5% |
+| Bloc-B wins (v2: 24.9%) | 26.7%, +1.8 (1.5) | 27.9%, +3.0 (1.5) |
+| Catastrophe (v2: 50.3%) | 48.2%, −2.1 (1.0) | 53.0%, +2.7 (0.9) |
+| Bankruptcies per run (v2: about 0.9) | **−0.69** (0.02) | **−0.69** (0.02) |
+| Lead changes per run | 0.0 (0.04) | −0.11 (0.04) |
+| Same ending and winner as v2 | 43% | 46% |
+
+The calibration seeds agree: timing-matched frontier wins rose +6.4 on seeds 0–299 and +6.1 held-out, so the effect did not shrink on fresh seeds.
+
+**Checks.** On held-out seeds, v2 passes 6 of 9 realism checks and 3 of 5 interest checks.
+
+1. v3 as shipped passes 5 and 3. R5 (laggards release open weights) fails because open weights now appear in 95.2% of seeds, just over the 95% ceiling: runs are 3 quarters longer, so more labs fall far enough behind to release.
+2. On seeds 0–299, R7 (backlash sometimes) also failed by a hair (60.3% against a 60% ceiling). It passes held-out (55%).
+3. Timing-matched: no check flips.
+4. The checks that already failed still fail. R8 (boom then bust) moves further out of band, from 73% to 86% of seeds. I4 (actors react to shocks) stays at about 1.0, so depreciation does not touch the main open problem.
+
+## Why: v2 had an upkeep trap
+
+In v2, compute never wears out. A lab pays upkeep on everything it ever bought and can shed it only through a distressed sale. With depreciation, upkeep shrinks along with the stock. Counts on seeds 0–299 (calibration seeds, so descriptive):
+
+| | v2 | v3 |
+|---|---|---|
+| Frontier lab bankrupt | 55 of 300 runs | 11 |
+| Incumbent buys the bankrupt frontier | 52 | 11 |
+| Incumbent buys any lab, then wins | 67 | 20 |
+| Lab-quarters in distressed selling | 2,784 | 1,111 |
+
+So a sizeable part of the incumbent's v2 wins came from outlasting the frontier and buying its compute. That is where v3's frontier gain and incumbent loss come from. Inference: v2's cash crunch was mostly this trap, not racing being unaffordable.
+
+## Knockouts (seeds 0–299, `results/v3_knockouts.json`)
+
+Every v2 verdict holds.
+
+1. **Funding in decisions** is still essential, and stronger. Removing it moves state wins from 21% to 39% (v2: 20 → 28) and incumbent wins from 30% to 8%.
+2. **Theft** is still small. Removing it now makes takeoff 0.3 quarters later and adds a few pacts. It still does not earn its place on outcomes.
+3. **Check flips are not informative this time.** R7 sits right at its band edge in the v3 baseline on these seeds, so any knockout that lowers disruption (funding, disclosure, sabotage) flips it back. Motivated reasoning flips R5 the same way. In v2, consolidation flipped R5 and disclosure and sabotage flipped R8; none of them do now.
+4. **Depreciation's own knockout is v2:** takeoff 3.0 quarters earlier, bankruptcies +0.78 per run, frontier wins 43% → 40%, incumbent 30% → 35%. R5 and R7 flip back to pass. 71% of seeds keep the same ending.
+
+## Supply shocks revisited (`results/v3_supply.py`, held-out)
+
+1. **A forced deep shock at quarter 4** (as in round 3): frontier −11.7 (1.6), bloc B +16.0 (1.5), takeoff 2.8 quarters later. Round 3 with depreciation bolted on (labs not planning for it) gave −11.2 and +15.5. Planning for depreciation barely changes this.
+2. **The organic supply shock** (natural chokepoint failures plus blockades; it fires in 33% of runs): frontier −1.4 (0.6), bloc B +1.6 (0.6). On v2 it was −0.5 (0.5) and +0.5 (0.5). That is about three times larger, but still small and under 3 standard errors, so it is provisional. It stays small because organic shocks come late: a blockade fires only when bloc A is believed near takeoff.
+
+**Correction to round 3's lesson 3.** Depreciation does make an early supply shock matter. On its own, though, it strengthens the frontier instead of eroding a moat. The frontier's v2 weakness was not a permanent compute moat for others; it was an upkeep trap that killed the frontier in about one run in five.
+
+## What this does not show
+
+1. **Nothing is calibrated to the real world.** 5% per quarter is a round number for a roughly five-year accounting life. Real chips can stay useful longer, or become uneconomic sooner when a new generation arrives. The model has wear, not obsolescence.
+2. **Labs cannot retire compute by choice,** buy used compute, or sell it except under distress. Depreciation therefore works partly as free downsizing, which is one reason bankruptcies fall. A model with voluntary retirement might show a smaller effect.
+3. **The bankruptcy explanation is descriptive** (counts on calibration seeds), not a separate controlled test.
+4. **Several effects are under 3 standard errors and are provisional:** untuned frontier +2.6, every bloc-B change except the forced shock, the organic supply shock, and timing-matched catastrophe +2.7.
+5. **The timing-matched arm uses one knob** (`train_k`). Another knob could match timing with different side effects.
+6. **Earlier variant results were run against core v2** (round 1 against v1). Rerunning them on v3 gives different numbers; to reproduce them, switch depreciation off.
+7. **No independent audit** of this change.
+
+## Files
+
+- `core.py`: v3, with the switch and the rate in the config.
+- `results/v3_null_check.py`: compares against core v2 loaded from git.
+- `results/v3_depreciation.py`: outputs `v3_depreciation_calib.json` (seeds 0–299), `v3_depreciation_heldout.json` and `v3_depreciation_timing_matched_heldout.json`.
+- `results/v3_knockouts.json`: from `python3 knockouts.py --seeds 300`.
+- `results/v3_supply.py`: outputs `v3_supply_heldout.json`.
+- `results/u_supply_diag.py`: one added line, which pins core depreciation off.

@@ -50,6 +50,7 @@ def run(seeds, force, dep):
     out = []
     for s in seeds:
         conf = A.U.make_config(core.make_base_config(), only={"supply_shock"})
+        conf["cfg"]["mech"]["depreciation"] = False   # round 3 ran on core v2; dep is applied below
         conf["cfg"]["unknowns"]["chokepoint_hazard"] = (0.0, 0.0)
         w = make(force, dep)(s, conf).run()
         m = metrics.run_metrics(w)
