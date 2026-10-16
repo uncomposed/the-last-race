@@ -1,0 +1,44 @@
+{
+ "no_depreciation": {
+  "frontier_win": {
+   "mean": -0.008,
+   "se": 0.02
+  },
+  "bloc_b_win": {
+   "mean": 0.102,
+   "se": 0.02
+  },
+  "catastrophe": {
+   "mean": -0.002,
+   "se": 0.01
+  },
+  "outcome_t": {
+   "mean": 1.45,
+   "se": 0.13
+  },
+  "same_outcome": 0.542
+ },
+ "with_depreciation": {
+  "frontier_win": {
+   "mean": -0.08,
+   "se": 0.023
+  },
+  "bloc_b_win": {
+   "mean": 0.148,
+   "se": 0.022
+  },
+  "catastrophe": {
+   "mean": -0.016,
+   "se": 0.013
+  },
+  "outcome_t": {
+   "mean": 2.71,
+   "se": 0.162
+  },
+  "same_outcome": 0.47
+ },
+ "bloc_b_win_levels": {
+  "calm": 0.246,
+  "calm_dep": 0.276
+ }
+}

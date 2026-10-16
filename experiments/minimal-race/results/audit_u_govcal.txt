@@ -1,0 +1,186 @@
+{
+ "no_multiplier_threshold_1.0": {
+  "frontier_win": [
+   -0.018,
+   0.0096,
+   ""
+  ],
+  "bloc_b_win": [
+   0.012,
+   0.0098,
+   ""
+  ],
+  "catastrophe": [
+   -0.006,
+   0.0066,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.02,
+   0.0093,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.188,
+   0.047,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.04,
+   0.0191,
+   "SIG"
+  ],
+  "runs_with_crisis": 0.684,
+  "crises_by_lab": {
+   "challenger:exodus": 11,
+   "challenger:ouster": 18,
+   "frontier:exodus": 116,
+   "frontier:ouster": 80,
+   "incumbent:exodus": 84,
+   "incumbent:ouster": 83,
+   "safety:exodus": 14,
+   "safety:ouster": 8,
+   "state:exodus": 74,
+   "state:ouster": 56
+  },
+  "safety_win": 0.01
+ },
+ "no_multiplier_threshold_0.7": {
+  "frontier_win": [
+   -0.024,
+   0.0113,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.004,
+   0.011,
+   ""
+  ],
+  "catastrophe": [
+   0,
+   0.0075,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.024,
+   0.0109,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.228,
+   0.06,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.05,
+   0.0223,
+   "SIG"
+  ],
+  "runs_with_crisis": 0.848,
+  "crises_by_lab": {
+   "challenger:exodus": 34,
+   "challenger:ouster": 26,
+   "frontier:exodus": 151,
+   "frontier:ouster": 127,
+   "incumbent:exodus": 130,
+   "incumbent:ouster": 126,
+   "safety:exodus": 26,
+   "safety:ouster": 30,
+   "state:exodus": 98,
+   "state:ouster": 86
+  },
+  "safety_win": 0.008
+ },
+ "no_multiplier_threshold_0.5": {
+  "frontier_win": [
+   -0.004,
+   0.0133,
+   ""
+  ],
+  "bloc_b_win": [
+   0.012,
+   0.0136,
+   ""
+  ],
+  "catastrophe": [
+   -0.002,
+   0.0078,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.004,
+   0.013,
+   ""
+  ],
+  "outcome_t": [
+   0.32,
+   0.079,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.05,
+   0.0315,
+   ""
+  ],
+  "runs_with_crisis": 0.912,
+  "crises_by_lab": {
+   "challenger:exodus": 47,
+   "challenger:ouster": 50,
+   "frontier:exodus": 181,
+   "frontier:ouster": 161,
+   "incumbent:exodus": 166,
+   "incumbent:ouster": 149,
+   "safety:exodus": 48,
+   "safety:ouster": 53,
+   "state:exodus": 136,
+   "state:ouster": 100
+  },
+  "safety_win": 0.008
+ },
+ "no_multiplier_threshold_0.35": {
+  "frontier_win": [
+   -0.01,
+   0.0156,
+   ""
+  ],
+  "bloc_b_win": [
+   0.006,
+   0.0156,
+   ""
+  ],
+  "catastrophe": [
+   -0.002,
+   0.0087,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.008,
+   0.0152,
+   ""
+  ],
+  "outcome_t": [
+   0.434,
+   0.084,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.05,
+   0.0361,
+   ""
+  ],
+  "runs_with_crisis": 0.962,
+  "crises_by_lab": {
+   "challenger:exodus": 71,
+   "challenger:ouster": 64,
+   "frontier:exodus": 224,
+   "frontier:ouster": 188,
+   "incumbent:exodus": 194,
+   "incumbent:ouster": 193,
+   "safety:exodus": 75,
+   "safety:ouster": 83,
+   "state:exodus": 164,
+   "state:ouster": 130
+  },
+  "safety_win": 0.012
+ }
+}

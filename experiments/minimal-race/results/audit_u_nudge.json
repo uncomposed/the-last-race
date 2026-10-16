@@ -1,0 +1,490 @@
+{
+ "only_supply_shock_x0.7": {
+  "frontier_win": [
+   -0.004,
+   0.0057,
+   ""
+  ],
+  "bloc_b_win": [
+   0.006,
+   0.0066,
+   ""
+  ],
+  "catastrophe": [
+   0,
+   0.004,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.004,
+   0.0063,
+   ""
+  ],
+  "outcome_t": [
+   0.144,
+   0.052,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.006,
+   0.0191,
+   ""
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.248,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0
+  }
+ },
+ "only_supply_shock_x1.3": {
+  "frontier_win": [
+   -0.004,
+   0.0063,
+   ""
+  ],
+  "bloc_b_win": [
+   0.018,
+   0.0077,
+   "SIG"
+  ],
+  "catastrophe": [
+   0,
+   0.004,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.002,
+   0.0066,
+   ""
+  ],
+  "outcome_t": [
+   0.242,
+   0.069,
+   "SIG"
+  ],
+  "lead_changes": [
+   -0.012,
+   0.0196,
+   ""
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.248,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0
+  }
+ },
+ "only_targeted_scrutiny_x0.7": {
+  "frontier_win": [
+   -0.05,
+   0.017,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.076,
+   0.0178,
+   "SIG"
+  ],
+  "catastrophe": [
+   -0.014,
+   0.0111,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.046,
+   0.0167,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.86,
+   0.109,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.146,
+   0.0383,
+   "SIG"
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.63,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0
+  }
+ },
+ "only_targeted_scrutiny_x1.3": {
+  "frontier_win": [
+   -0.02,
+   0.0152,
+   ""
+  ],
+  "bloc_b_win": [
+   0.028,
+   0.0147,
+   ""
+  ],
+  "catastrophe": [
+   -0.01,
+   0.0108,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.02,
+   0.015,
+   ""
+  ],
+  "outcome_t": [
+   0.452,
+   0.092,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.066,
+   0.0337,
+   ""
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.35,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0
+  }
+ },
+ "only_seizure_x0.7": {
+  "frontier_win": [
+   -0.02,
+   0.0084,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.008,
+   0.0063,
+   ""
+  ],
+  "catastrophe": [
+   -0.002,
+   0.0035,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.024,
+   0.0084,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.018,
+   0.031,
+   ""
+  ],
+  "lead_changes": [
+   0.036,
+   0.0129,
+   "SIG"
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0,
+   "seizures": {
+    "dissolve:frontier": 18,
+    "dissolve:incumbent": 9,
+    "dissolve:safety": 7,
+    "dissolve:state": 3,
+    "nationalize:challenger": 5,
+    "nationalize:frontier": 6,
+    "nationalize:incumbent": 13,
+    "nationalize:safety": 4,
+    "nationalize:state": 9
+   }
+  }
+ },
+ "only_seizure_x1.3": {
+  "frontier_win": [
+   -0.004,
+   0.0049,
+   ""
+  ],
+  "bloc_b_win": [
+   0.004,
+   0.0028,
+   ""
+  ],
+  "catastrophe": [
+   -0.002,
+   0.002,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.006,
+   0.0045,
+   ""
+  ],
+  "outcome_t": [
+   -0.004,
+   0.02,
+   ""
+  ],
+  "lead_changes": [
+   0.014,
+   0.0077,
+   ""
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 0,
+   "seizures": {
+    "dissolve:frontier": 6,
+    "dissolve:incumbent": 5,
+    "dissolve:safety": 3,
+    "dissolve:state": 2,
+    "nationalize:challenger": 2,
+    "nationalize:frontier": 2,
+    "nationalize:incumbent": 5,
+    "nationalize:safety": 1
+   }
+  }
+ },
+ "only_governance_x0.7": {
+  "frontier_win": [
+   -0.05,
+   0.0132,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.018,
+   0.0111,
+   ""
+  ],
+  "catastrophe": [
+   -0.004,
+   0.0085,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.048,
+   0.0128,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.36,
+   0.065,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.076,
+   0.0239,
+   "SIG"
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.904,
+   "mean_attacks": 0
+  }
+ },
+ "only_governance_x1.3": {
+  "frontier_win": [
+   -0.024,
+   0.0097,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.006,
+   0.0077,
+   ""
+  ],
+  "catastrophe": [
+   -0.002,
+   0.006,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.028,
+   0.0089,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.192,
+   0.035,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.044,
+   0.014,
+   "SIG"
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.576,
+   "mean_attacks": 0
+  }
+ },
+ "only_king_x0.7": {
+  "frontier_win": [
+   -0.012,
+   0.0089,
+   ""
+  ],
+  "bloc_b_win": [
+   0.02,
+   0.0093,
+   "SIG"
+  ],
+  "catastrophe": [
+   0.002,
+   0.0045,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.014,
+   0.0087,
+   ""
+  ],
+  "outcome_t": [
+   0.104,
+   0.042,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.032,
+   0.0181,
+   ""
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 1.92
+  }
+ },
+ "only_king_x1.3": {
+  "frontier_win": [
+   -0.022,
+   0.0107,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.038,
+   0.0117,
+   "SIG"
+  ],
+  "catastrophe": [
+   0.004,
+   0.0057,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.024,
+   0.0102,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.192,
+   0.052,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.042,
+   0.0194,
+   "SIG"
+  ],
+  "detail": {
+   "runs_with_supply_shock": 0.0,
+   "runs_with_decree": 0.0,
+   "runs_with_crisis": 0.0,
+   "mean_attacks": 3.58
+  }
+ },
+ "all_x0.7": {
+  "frontier_win": [
+   -0.11,
+   0.0205,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.076,
+   0.0197,
+   "SIG"
+  ],
+  "catastrophe": [
+   -0.034,
+   0.0136,
+   "SIG"
+  ],
+  "frontier_leads_end": [
+   -0.096,
+   0.0207,
+   "SIG"
+  ],
+  "outcome_t": [
+   1.452,
+   0.136,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.302,
+   0.0422,
+   "SIG"
+  ]
+ },
+ "all_x1.3": {
+  "frontier_win": [
+   -0.082,
+   0.0185,
+   "SIG"
+  ],
+  "bloc_b_win": [
+   0.06,
+   0.0182,
+   "SIG"
+  ],
+  "catastrophe": [
+   -0.016,
+   0.013,
+   ""
+  ],
+  "frontier_leads_end": [
+   -0.078,
+   0.0183,
+   "SIG"
+  ],
+  "outcome_t": [
+   0.992,
+   0.113,
+   "SIG"
+  ],
+  "lead_changes": [
+   0.166,
+   0.0386,
+   "SIG"
+  ]
+ },
+ "seize_keep_gap_x0.7": {
+  "dissolve:frontier": 12,
+  "dissolve:incumbent": 7,
+  "dissolve:safety": 4,
+  "dissolve:state": 3,
+  "nationalize:challenger": 3,
+  "nationalize:frontier": 3,
+  "nationalize:incumbent": 9,
+  "nationalize:safety": 2,
+  "nationalize:state": 3
+ },
+ "seize_keep_gap_x1.3": {
+  "dissolve:challenger": 1,
+  "dissolve:frontier": 10,
+  "dissolve:incumbent": 5,
+  "dissolve:safety": 4,
+  "dissolve:state": 2,
+  "nationalize:challenger": 2,
+  "nationalize:frontier": 5,
+  "nationalize:incumbent": 11,
+  "nationalize:safety": 2,
+  "nationalize:state": 4
+ }
+}

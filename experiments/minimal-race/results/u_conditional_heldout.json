@@ -1,0 +1,499 @@
+{
+ "supply_shock": {
+  "alone_fired": {
+   "n": 263,
+   "frontier_win": {
+    "mean": -0.019,
+    "se": 0.02
+   },
+   "bloc_b_win": {
+    "mean": 0.019,
+    "se": 0.019
+   },
+   "catastrophe": {
+    "mean": -0.011,
+    "se": 0.013
+   },
+   "frontier_leads_end": {
+    "mean": -0.011,
+    "se": 0.02
+   },
+   "outcome_t": {
+    "mean": 0.84,
+    "se": 0.124
+   }
+  },
+  "alone_not_fired": {
+   "n": 737,
+   "frontier_win": {
+    "mean": 0,
+    "se": 0.0
+   },
+   "bloc_b_win": {
+    "mean": 0,
+    "se": 0.0
+   },
+   "catastrophe": {
+    "mean": 0,
+    "se": 0.0
+   },
+   "frontier_leads_end": {
+    "mean": 0,
+    "se": 0.0
+   },
+   "outcome_t": {
+    "mean": 0,
+    "se": 0.0
+   }
+  },
+  "all_fired": {
+   "n": 282,
+   "frontier_win": {
+    "mean": -0.11,
+    "se": 0.031
+   },
+   "bloc_b_win": {
+    "mean": 0.021,
+    "se": 0.026
+   },
+   "catastrophe": {
+    "mean": -0.074,
+    "se": 0.019
+   },
+   "frontier_leads_end": {
+    "mean": -0.121,
+    "se": 0.031
+   },
+   "outcome_t": {
+    "mean": 2.408,
+    "se": 0.212
+   }
+  }
+ },
+ "blockade": {
+  "alone_fired": {
+   "n": 101,
+   "frontier_win": {
+    "mean": 0.01,
+    "se": 0.017
+   },
+   "bloc_b_win": {
+    "mean": -0.01,
+    "se": 0.017
+   },
+   "catastrophe": {
+    "mean": 0,
+    "se": 0.014
+   },
+   "frontier_leads_end": {
+    "mean": 0.01,
+    "se": 0.017
+   },
+   "outcome_t": {
+    "mean": 0.416,
+    "se": 0.118
+   }
+  },
+  "alone_not_fired": {
+   "n": 899,
+   "frontier_win": {
+    "mean": -0.007,
+    "se": 0.006
+   },
+   "bloc_b_win": {
+    "mean": 0.007,
+    "se": 0.005
+   },
+   "catastrophe": {
+    "mean": -0.003,
+    "se": 0.003
+   },
+   "frontier_leads_end": {
+    "mean": -0.004,
+    "se": 0.005
+   },
+   "outcome_t": {
+    "mean": 0.199,
+    "se": 0.036
+   }
+  },
+  "all_fired": {
+   "n": 112,
+   "frontier_win": {
+    "mean": -0.116,
+    "se": 0.042
+   },
+   "bloc_b_win": {
+    "mean": 0.018,
+    "se": 0.031
+   },
+   "catastrophe": {
+    "mean": -0.062,
+    "se": 0.029
+   },
+   "frontier_leads_end": {
+    "mean": -0.143,
+    "se": 0.044
+   },
+   "outcome_t": {
+    "mean": 2.786,
+    "se": 0.365
+   }
+  }
+ },
+ "accident": {
+  "alone_fired": {
+   "n": 162,
+   "frontier_win": {
+    "mean": -0.037,
+    "se": 0.031
+   },
+   "bloc_b_win": {
+    "mean": 0.037,
+    "se": 0.029
+   },
+   "catastrophe": {
+    "mean": -0.019,
+    "se": 0.019
+   },
+   "frontier_leads_end": {
+    "mean": -0.025,
+    "se": 0.03
+   },
+   "outcome_t": {
+    "mean": 1.105,
+    "se": 0.184
+   }
+  },
+  "alone_not_fired": {
+   "n": 838,
+   "frontier_win": {
+    "mean": 0.001,
+    "se": 0.002
+   },
+   "bloc_b_win": {
+    "mean": -0.001,
+    "se": 0.002
+   },
+   "catastrophe": {
+    "mean": 0,
+    "se": 0.002
+   },
+   "frontier_leads_end": {
+    "mean": 0.001,
+    "se": 0.002
+   },
+   "outcome_t": {
+    "mean": 0.05,
+    "se": 0.015
+   }
+  },
+  "all_fired": {
+   "n": 170,
+   "frontier_win": {
+    "mean": -0.106,
+    "se": 0.043
+   },
+   "bloc_b_win": {
+    "mean": 0.024,
+    "se": 0.037
+   },
+   "catastrophe": {
+    "mean": -0.082,
+    "se": 0.024
+   },
+   "frontier_leads_end": {
+    "mean": -0.106,
+    "se": 0.042
+   },
+   "outcome_t": {
+    "mean": 2.159,
+    "se": 0.255
+   }
+  }
+ },
+ "targeted_scrutiny": {
+  "alone_fired": {
+   "n": 253,
+   "frontier_win": {
+    "mean": -0.162,
+    "se": 0.033
+   },
+   "bloc_b_win": {
+    "mean": 0.095,
+    "se": 0.031
+   },
+   "catastrophe": {
+    "mean": -0.075,
+    "se": 0.023
+   },
+   "frontier_leads_end": {
+    "mean": -0.182,
+    "se": 0.034
+   },
+   "outcome_t": {
+    "mean": 1.593,
+    "se": 0.245
+   }
+  },
+  "alone_not_fired": {
+   "n": 747,
+   "frontier_win": {
+    "mean": -0.007,
+    "se": 0.01
+   },
+   "bloc_b_win": {
+    "mean": 0.011,
+    "se": 0.01
+   },
+   "catastrophe": {
+    "mean": -0.003,
+    "se": 0.006
+   },
+   "frontier_leads_end": {
+    "mean": -0.008,
+    "se": 0.011
+   },
+   "outcome_t": {
+    "mean": 0.054,
+    "se": 0.052
+   }
+  },
+  "all_fired": {
+   "n": 302,
+   "frontier_win": {
+    "mean": -0.175,
+    "se": 0.032
+   },
+   "bloc_b_win": {
+    "mean": 0.073,
+    "se": 0.032
+   },
+   "catastrophe": {
+    "mean": -0.126,
+    "se": 0.023
+   },
+   "frontier_leads_end": {
+    "mean": -0.205,
+    "se": 0.033
+   },
+   "outcome_t": {
+    "mean": 3.185,
+    "se": 0.251
+   }
+  }
+ },
+ "seizure": {
+  "alone_fired": {
+   "n": 28,
+   "frontier_win": {
+    "mean": -0.321,
+    "se": 0.09
+   },
+   "bloc_b_win": {
+    "mean": 0.036,
+    "se": 0.063
+   },
+   "catastrophe": {
+    "mean": 0,
+    "se": 0.051
+   },
+   "frontier_leads_end": {
+    "mean": -0.357,
+    "se": 0.092
+   },
+   "outcome_t": {
+    "mean": 0.714,
+    "se": 0.522
+   }
+  },
+  "alone_not_fired": {
+   "n": 972,
+   "frontier_win": {
+    "mean": 0.005,
+    "se": 0.002
+   },
+   "bloc_b_win": {
+    "mean": 0.001,
+    "se": 0.002
+   },
+   "catastrophe": {
+    "mean": 0.002,
+    "se": 0.003
+   },
+   "frontier_leads_end": {
+    "mean": 0.005,
+    "se": 0.002
+   },
+   "outcome_t": {
+    "mean": -0.032,
+    "se": 0.022
+   }
+  },
+  "all_fired": {
+   "n": 39,
+   "frontier_win": {
+    "mean": -0.333,
+    "se": 0.076
+   },
+   "bloc_b_win": {
+    "mean": 0.051,
+    "se": 0.082
+   },
+   "catastrophe": {
+    "mean": -0.179,
+    "se": 0.081
+   },
+   "frontier_leads_end": {
+    "mean": -0.333,
+    "se": 0.076
+   },
+   "outcome_t": {
+    "mean": 3.487,
+    "se": 0.681
+   }
+  }
+ },
+ "governance": {
+  "alone_fired": {
+   "n": 457,
+   "frontier_win": {
+    "mean": -0.024,
+    "se": 0.018
+   },
+   "bloc_b_win": {
+    "mean": -0.007,
+    "se": 0.013
+   },
+   "catastrophe": {
+    "mean": -0.013,
+    "se": 0.01
+   },
+   "frontier_leads_end": {
+    "mean": -0.031,
+    "se": 0.018
+   },
+   "outcome_t": {
+    "mean": 0.492,
+    "se": 0.09
+   }
+  },
+  "alone_not_fired": {
+   "n": 543,
+   "frontier_win": {
+    "mean": 0.026,
+    "se": 0.008
+   },
+   "bloc_b_win": {
+    "mean": -0.026,
+    "se": 0.01
+   },
+   "catastrophe": {
+    "mean": -0.004,
+    "se": 0.005
+   },
+   "frontier_leads_end": {
+    "mean": 0.022,
+    "se": 0.008
+   },
+   "outcome_t": {
+    "mean": 0.284,
+    "se": 0.05
+   }
+  },
+  "all_fired": {
+   "n": 419,
+   "frontier_win": {
+    "mean": -0.107,
+    "se": 0.026
+   },
+   "bloc_b_win": {
+    "mean": 0.041,
+    "se": 0.018
+   },
+   "catastrophe": {
+    "mean": -0.079,
+    "se": 0.016
+   },
+   "frontier_leads_end": {
+    "mean": -0.131,
+    "se": 0.026
+   },
+   "outcome_t": {
+    "mean": 1.816,
+    "se": 0.171
+   }
+  }
+ },
+ "king": {
+  "alone_fired": {
+   "n": 284,
+   "frontier_win": {
+    "mean": -0.053,
+    "se": 0.021
+   },
+   "bloc_b_win": {
+    "mean": 0.011,
+    "se": 0.018
+   },
+   "catastrophe": {
+    "mean": 0.004,
+    "se": 0.013
+   },
+   "frontier_leads_end": {
+    "mean": -0.07,
+    "se": 0.022
+   },
+   "outcome_t": {
+    "mean": 0.68,
+    "se": 0.096
+   }
+  },
+  "alone_not_fired": {
+   "n": 716,
+   "frontier_win": {
+    "mean": -0.003,
+    "se": 0.007
+   },
+   "bloc_b_win": {
+    "mean": -0.006,
+    "se": 0.007
+   },
+   "catastrophe": {
+    "mean": -0.003,
+    "se": 0.005
+   },
+   "frontier_leads_end": {
+    "mean": -0.001,
+    "se": 0.007
+   },
+   "outcome_t": {
+    "mean": 0.066,
+    "se": 0.035
+   }
+  },
+  "all_fired": {
+   "n": 257,
+   "frontier_win": {
+    "mean": -0.144,
+    "se": 0.033
+   },
+   "bloc_b_win": {
+    "mean": 0.062,
+    "se": 0.026
+   },
+   "catastrophe": {
+    "mean": -0.097,
+    "se": 0.022
+   },
+   "frontier_leads_end": {
+    "mean": -0.163,
+    "se": 0.033
+   },
+   "outcome_t": {
+    "mean": 2.502,
+    "se": 0.228
+   }
+  }
+ }
+}

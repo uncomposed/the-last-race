@@ -155,3 +155,78 @@ Readings (model results, not claims about the world):
 1. A breakthrough's value depends on whether it reaches the labs at the frontier.
 2. Most of the value is mechanical (safety work gets cheaper), not informational.
 3. Knowing the truth about hazard changes beliefs and pact formation but not behaviour that matters for catastrophe, which is the same reaction problem seen in the leverage map.
+
+---
+
+# Round 3: five ways to unseat the frontier lab — 16 October 2026
+
+Status: `verified` (null equivalence, an independent audit of the first version, and held-out reruns after the fixes). Not `human_validated`. The fixed code was not re-audited independently. All quantities are synthetic.
+
+## Question
+
+The frontier lab is hard to dislodge in core v2. Partly that's because almost every shock is bloc-wide (regulation, subsidies, export controls, sentiment), which keeps the order inside a bloc unchanged. Partly it's because a lab can die only through bankruptcy or a merger. Round 3 adds lab-specific shocks and lets actors try to cause them (`variants/u_unseating.py`):
+
+1. **Supply shock.** A leading-edge chip or memory chokepoint fails, either by accident or through a bloc-B blockade. Bloc A loses most new supply for 4–12 quarters. Bloc B runs mostly on domestic older-node chips, so under export controls it is barely exposed. A blockade is always attributed: it brings sanctions on bloc B's capital and raises bloc A's hostility.
+2. **Targeted scrutiny.** Public incidents raise scrutiny of the lab that caused them. Investors discount that lab, protesters target it, and a government can impose a lab-specific consent decree unless it is shielding a national champion in a close race.
+3. **Seizure.** A public near miss at a capable lab can lead its government to nationalize it or dissolve it.
+4. **Governance crisis.** Staff hold their own hazard belief, built from the same evidence as leadership's but without the motivated discount. Racing on a large unsafety gap builds tension until there is an exodus (plus possible whistleblowing) or a board ouster.
+5. **Going for the king.** Labs that believe the leader is about to win leak its private incidents, lobby for a decree against it, or poach its staff. If a leak or lobbying campaign is detected, it backfires on the attacker, more so if the attack also failed, and the victim gains a licence to retaliate.
+
+Method: predictions were written in the variant before any run. Fire rates were calibrated on seeds 0–299, looking only at how often each mechanism fires, against judgment-call anchors listed in the variant docstring. Headline results use held-out seeds 1000–1999. With all five switched off, the variant reproduces the core exactly. Scripts: `results/u_analysis.py`, `u_conditional.py`, `u_supply_diag.py`; outputs `results/u_*_heldout.json`. The `results/u_*_v1.json` files are the first version on seeds 0–499, which the audit (`results/audit_u_*`) checked; they predate the fixes below.
+
+## Results (held-out seeds 1000–1999, paired, standard error in brackets)
+
+All five together: frontier-lab wins fall from 43.0% to 36.1% (−6.9 points, se 1.4). The frontier still leads at the end in 38% of runs, down from 47%. Bloc-B wins rise 3.0 points (1.3). Catastrophe falls 4.4 points (0.9). Takeoff comes 1.3 quarters later, and lead changes rise 0.24 per run. No realism or interest check flips. The frontier's share of bloc-A wins falls from 57% to 50%, so most of what it loses goes to other bloc-A labs.
+
+| Mechanism | Alone: frontier wins | Alone: bloc-B wins | Alone: catastrophe | Knockout from all five: frontier wins | How often it hits the frontier |
+|---|---|---|---|---|---|
+| Supply shock | −0.5 (0.5) | +0.5 (0.5) | −0.3 (0.3) | −0.4 (0.5) | a shock in 26% of runs |
+| Targeted scrutiny | **−4.6 (1.2)** | **+3.2 (1.1)** | **−2.1 (0.7)** | **+5.0 (1.2)** | a decree in 25% of runs |
+| Seizure | −0.4 (0.4) | +0.2 (0.3) | +0.2 (0.3) | −0.2 (0.4) | seized in 2.8% of runs |
+| Governance | +0.3 (0.9) | −1.7 (0.8) | −0.8 (0.5) | +0.5 (0.8) | a crisis in 46% of runs |
+| Going for the king | −1.7 (0.8) | −0.1 (0.7) | −0.1 (0.5) | +1.8 (0.9) | a successful attack in 28% of runs |
+
+Knockout signs are reversed (removing scrutiny gives frontier wins back). Removing scrutiny also raises catastrophe 2.7 points (0.8). Removing governance raises it 1.4 (0.6), and removing the supply shock raises it 1.0 (0.4); both slow takeoff.
+
+In runs where a mechanism actually hit the frontier, frontier wins changed by these amounts (alone; these groups are chosen after the fact, so they describe rather than prove a cause):
+
+- Seizure: −32 points (n = 28).
+- A decree: −16 points, with bloc B +9.5 and catastrophe −7.5.
+- A successful attack: −5.3 points.
+- A governance crisis: −2.4 points (not significant).
+
+Supply diagnostic (`u_supply_diag.py`): a forced deep shock at quarter 4 raises bloc-B wins 5.4 points (1.3) and leaves frontier wins unchanged (+0.5). Add 5%-per-quarter depreciation of installed compute, about a five-year chip life, and it becomes −11.2 frontier / +15.5 bloc B.
+
+## Predictions
+
+| Prediction | Verdict |
+|---|---|
+| P1 supply: bloc B gains; order inside bloc A holds | **Supported for forced early shocks** (+5.4 bloc B, frontier unchanged). Organic shocks barely matter: a blockade fires only when bloc A is already believed near takeoff (that is how the rule is written), and installed compute never wears out. |
+| P2 scrutiny: frontier wins fall; national-champion protection blunts it | **Supported, small.** −4.6 held-out; the sign is the same on all three seed blocks (−2.8, −1.6, −4.6). The blunting half is refuted: protection applied to only 33 of 246 frontier decrees in the audit, and removing it barely changes the effect. |
+| P3 seizure: rare; nationalization more common than dissolution | Fire rate was calibrated, so that half is no test. **The split is refuted:** the frontier is dissolved more often than nationalized (16 vs 12 held-out; 11 vs 4 on calibration seeds). Inference: near misses come late, when bloc A believes it is comfortably ahead. |
+| P4 governance: crises concentrate at the frontier; safety lab gains | **Refuted.** Crises do concentrate there (532 vs 414 at the incumbent), but neither frontier wins nor safety-lab wins move. A first-version effect (−4 points) came from a staff-fear multiplier the audit flagged. |
+| P5 king: incumbent attacks most; most attacks undetected; lead changes rise; frontier falls a few points | **Partly.** The incumbent attacks most (31%), partly by construction. 54% go undetected, a share set by parameters. Lead changes +0.06 (3.6 se). Frontier −1.7 (2.2 se). |
+| All five: frontier 25–30%; catastrophe flat | **Refuted.** Frontier 36% (the stated falsifier was "above 35%"), and catastrophe fell 4.4 points. |
+
+## What the audit changed
+
+The independent audit (Opus) reproduced every number exactly and found no rule violations. The first version's results did not hold up as well:
+
+1. **Effects shrank about 40–50% on fresh seeds.** All five together went from −9.2 to −5.4. That looks like selection: calibration and reporting used overlapping seeds, and about a hundred deltas were screened (inference). Every headline here now comes from seeds that neither calibration nor the audit touched.
+2. **The governance effect came from a construction choice.** Staff fear was leadership's fear times (1 + 2 × motivated discount), which tripled the frontier's tension. It is now a separate, undiscounted belief.
+3. **Dissolution copied know-how to every rival** instead of splitting it. Fixed.
+4. **Smaller fixes:** a nationalized state lab lost its subsidy rate, a lobbying decree blocked real ones, scrutiny accrued with its mechanism off, and fate bookkeeping was wrong.
+5. **"Bloc B is capital-constrained, not chip-constrained" was wrong.** Both bind: +30% capital gives bloc B +6.0 points of wins, and +30% chip access gives +3.4.
+
+## Lessons for the model
+
+1. **Lab-specific accountability is what unseats the leader.** It hits the frontier where it is exposed (its own incidents), and it is the only mechanism whose knockout clearly matters. Bloc-wide shocks keep the order inside a bloc.
+2. **Punishing the frontier lowers catastrophe mainly by delaying takeoff,** not by making the winner safer. The frontier's losses go mostly to other bloc-A labs, with bloc B gaining about 3 points.
+3. **Installed compute is a moat because it never depreciates.** A chokepoint failure only slows growth. Adding depreciation to the core is the most realistic fix this round points to; it would make supply shocks matter (−11 frontier, +15 bloc B when early).
+4. **Seizure is decisive but rare.** It is a tail event, so averages hide it. The game should show it as a possible ending path rather than expect it to show up in averages.
+5. **Rival attacks and feuds are small.** Turnabout keeps escalation in check: attacks succeed 26% of the time and about half are detected.
+6. **Known simplifications:** at most one supply shock per run; during a shock, labs keep the cash for chips they can't buy; the leader-targeting and fire rates are set by rule, not derived.
+
+## Lessons about the method
+
+Calibrate on one block of seeds, report on another, and treat any delta below about 3 standard errors as provisional. A single seed block plus a 2-standard-error screen across many metrics overstated effects by about half.
