@@ -7,3 +7,6 @@ artifacts/*.json
 compat/stage-2b/artifacts/
 __pycache__/
 *.pyc
+
+# Regenerate with: python3 experiments/minimal-race/leverage.py --seeds 200 --out results/leverage.json
+experiments/minimal-race/results/leverage.json
