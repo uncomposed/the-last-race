@@ -150,7 +150,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
+        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved, which rolls for extinction like a fall. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
       </div>
     </div>
@@ -248,7 +248,7 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1,dissolveRoll:1};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -492,29 +492,39 @@ function fall(l,k){
   var g=G.gaps[k],cov=Math.round(l.v*airT(l)),wd=Math.round(gapWidth(l,g));
   g.pub=true; l.st.fl++;
   l.out=true; l.v=0; l.fellAt=k;
-  var n=G.fallN[k]||0; G.fallN[k]=n+1;
-  var p=gapOdds(k),r=(G.rolls[k][n]===undefined?0.999:G.rolls[k][n])*100,roll=Math.max(1,Math.ceil(r));
   if(g.sing){ l.st.sg++; } else if(g.inner){ l.st.sf++; }
   log(l.name+' fell into gap '+(k+1)+(g.sing?' (the singularity)':'')+' (width '+wd+', its jump covered '+cov+').');
+  extinctionRoll(l,k,gapOdds(k),false);
+}
+/* the roll that follows a fall or a dissolution: the nth roll drawn for gap k, at or under the odds p ends the run for every lab */
+function extinctionRoll(l,k,p,dissolved){
+  var g=G.gaps[k],n=G.fallN[k]||0; G.fallN[k]=n+1;
+  var r=(G.rolls[k][n]===undefined?0.999:G.rolls[k][n])*100,roll=Math.max(1,Math.ceil(r));
   if(r<p){
     log('Rolled '+roll+', at or under '+Math.round(p)+'. Everyone is out.');
     for(var i=0;i<G.labs.length;i++){ G.labs[i].out=true; }
-    G.over=true; G.result={type:'all',by:l.name,gap:k+1,roll:roll,sing:!!g.sing,inner:!!g.inner};
+    G.over=true; G.result={type:'all',by:l.name,gap:k+1,roll:roll,sing:!!g.sing,inner:!!g.inner,dissolved:dissolved};
   } else {
     log('Rolled '+roll+', over '+Math.round(p)+'. Only '+l.name+' is out.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
   }
 }
+/* a dissolution rolls the odds of the gap the lab was heading for, without the singularity surcharge (the lab did not fall into anything) */
+function dissolveOdds(l){
+  var k=clamp(l.gi,0,G.gaps.length-1),g=G.gaps[k];
+  return {k:k,p:g.inner?oddsAt(G.sing):oddsAt(k)};
+}
 
 /* three strikes: the first crash into each blockade (barrier, or tower when strikeTower is on) the lab has not crashed into before is a strike.
-   Hitting the same one again is a retry and is free. At K.strikes the government dissolves the lab: it is out, with no extinction roll. */
+   Hitting the same one again is a retry and is free. At K.strikes the government dissolves the lab: it is out, and with dissolveRoll on the run rolls for extinction like a fall. */
 function strike(l,what){
   if(!K.strikes){return false;}
   l.strikes++;
   if(l.strikes>=K.strikes){
     l.out=true; l.dissolved=true; l.v=0; l.st.ds=1;
     log(l.name+' hit '+what+' (strike '+l.strikes+' of '+K.strikes+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
-    if(allOut()){ G.over=true; G.result={type:'allout'}; }
+    if(K.dissolveRoll){ var d=dissolveOdds(l); extinctionRoll(l,d.k,d.p,true); }
+    else if(allOut()){ G.over=true; G.result={type:'allout'}; }
     return true;
   }
   l.flash={txt:'Strike '+l.strikes+' of '+K.strikes,t:1.8,bad:true};
@@ -1077,7 +1087,7 @@ function endScreen(){
     if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play again'); }
     else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
   } else if(r.type==='all'){
-    showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play again');
+    showOverlay('Everyone is out',(r.dissolved?'The government dissolved '+(r.by==='You'?'your lab':r.by)+' on the way to gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.':r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.'),'Play again');
   } else if(r.type==='allout'){
     showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
@@ -1169,7 +1179,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool']
+  ['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool'],['dissolveRoll','A dissolution rolls for extinction like a fall',0,1,1,'bool']
 ];
 (function(){
   var box=$('knobs');
