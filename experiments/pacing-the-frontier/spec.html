@@ -153,7 +153,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 <main class="wrap">
 
 <header>
-  <p class="eyebrow">Game concept · working title · revision 9</p>
+  <p class="eyebrow">Game concept · working title · revision 10</p>
   <h1>Pacing the Frontier</h1>
   <p class="lede">Updated with your clarifications: a crash slows you and teaches other labs, labs in view of each other share sight, and the frontier lab’s tower stands in front of the gap for the labs behind. A playable first version is published separately.</p>
 </header>
@@ -173,7 +173,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
     <dt>Learning<span class="new">new</span></dt><dd>When a lab clears a barrier it earlier crashed into, every lab whose height is below the barrier gains up to a third of the barrier’s height, never past the barrier’s height. When a lab clears a barrier in view of another lab, that lab gets the same bump.</dd>
     <dt>Shared sight<span class="new">new</span></dt><dd>Labs in view of each other get their sight topped up to at least 75% of the best sight among them.</dd>
     <dt>Gaps</dt><dd>Hidden until they fall inside your sight. Each has a width, and some are wide. To cross, your jump has to cover it. A jump covers your speed at the edge times your air time, and height adds air time. So a wide gap needs run-up speed as well as height.</dd>
-    <dt>Run-up<span class="new">new</span></dt><dd>Speeding up from a standstill is slow, and so is braking. A lab that stops too close to a wide gap cannot get up enough speed to cross it. Stop early, or keep moving.</dd>
+    <dt>Run-up<span class="new">new</span></dt><dd>Speeding up from a standstill is slow, and so is braking. A lab that stops too close to a wide gap cannot get up enough speed to cross it. It can back up to make room, slowly, but not past the last thing it cleared. Better to stop early, or keep moving.</dd>
     <dt>The fall<span class="new">new</span></dt><dd>A lab that falls in is out of the race. Then a roll from 1 to 100 decides whether the run also ends for everyone. The odds start low and get worse at each gap.</dd>
     <dt>Braking</dt><dd>Stopping takes distance that grows with the square of your actual speed. You only get a safe stop if your sight is at least that far. More max speed makes the cliff harder to stop at.</dd>
     <dt>Tower<span class="new">new</span></dt><dd>The first lab to cross a gap leaves the height it built behind as a tower in front of the gap, and the tower keeps that height. A lab behind has to clear the tower, which is a barrier, and then cross the gap itself. Falling short of the tower costs time. Falling short of the gap is still a fall.</dd>
@@ -342,7 +342,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
         <tr><td>Gap narrowing</td><td>full width / (1 + distance past the gap / 25)</td><td>How much safer it is when the frontier is far ahead. A follower can still fall.</td></tr>
         <tr><td>Gap widths</td><td>60, 90, 130, 180, 240, each varied up to 20% per run</td><td>How much speed and height the frontier needs, and how much it has to guess.</td></tr>
         <tr><td>Air time</td><td>0.6 s plus 0.015 s per unit of height</td><td>How much height helps a jump. Distance covered is speed times air time.</td></tr>
-        <tr><td>Acceleration and braking</td><td>speed up 40 per s&sup2;, brake 15.6 per s&sup2;</td><td>How much run-up a lab needs, and how early it must stop.</td></tr>
+        <tr><td>Acceleration, braking and reverse</td><td>speed up 40 per s&sup2;, brake 15.6 per s&sup2;, reverse at 40</td><td>How much run-up a lab needs, and how early it must stop.</td></tr>
         <tr><td>Barrier heights</td><td>start at 28, +3.2 each</td><td>How much height you need just to keep running.</td></tr>
         <tr><td>Barrier spillover</td><td>a third of the barrier height</td><td>How much a clear teaches the labs that see it.</td></tr>
         <tr><td>Crash penalty</td><td>max speed &minus;40% for 5 s</td><td>What hitting a barrier costs.</td></tr>
@@ -383,7 +383,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
       <ul>
         <li><b>The leader carries the most risk.</b> Everyone else clears the same tower but faces a narrower gap, and can still fall. Followers want someone else to go first, and the leader wants to stay ahead.</li>
         <li><b>Crashing has a use.</b> A lab that crashes and then clears a barrier lifts everyone. That makes a public failure valuable to the others, which is the learning-from-mistakes idea.</li>
-        <li><b>Stopping has a catch.</b> From a standstill you speed up slowly, so a lab that stops too close to a wide gap cannot cross it. Stopping early takes sight, and sight takes investment, so the three meters pull on each other.</li>
+        <li><b>Stopping has a catch.</b> From a standstill you speed up slowly, so a lab that stops too close to a wide gap cannot cross it without backing up first. Backing up costs time while rivals catch up. Stopping early takes sight, and sight takes investment, so the three meters pull on each other.</li>
         <li><b>Sight is social.</b> Sharing sight rewards staying close to others, and pulls against running off alone with a lead.</li>
       </ul>
     </div>
@@ -398,7 +398,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 <section>
   <h2>Questions for you</h2>
   <ol class="q">
-    <li><b>Can a stopped lab back up to get more run-up?</b> Right now it cannot, so stopping too close to a wide gap is a trap. Backing up would soften that.</li>
+    <li><b>Is reverse right as it is?</b> Slow (40 per second), and not past the last thing a lab cleared. Faster reverse would make the run-up trap much weaker.</li>
     <li><b>Do you want holding back to be less dominant?</b> I would lower the investment rate, but finding the best pace may be part of the fun.</li>
   </ol>
 </section>

@@ -96,7 +96,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">Drag Pace down to hold effort back and put it into sight, height or max speed. Barriers get taller, so you need height. Hit one and you slow down. Clearing a barrier you crashed into lifts everyone's height, and labs in view of any clear learn from it. Labs in view of each other share sight. Gaps are hidden until you can see them. To cross one you cover speed times air time, and height adds air time, so a wide gap needs run-up speed as well as height. The first lab across leaves a tower in front of the gap. Labs behind must clear it, then cross a gap that gets narrower the further past it the leader is. Reach the finish first.</p>
+        <p id="ov-msg">Drag Pace down to hold effort back and put it into sight, height or max speed. Barriers get taller, so you need height. Hit one and you slow down. Hold Back up (or the left arrow) to reverse for more run-up. Clearing a barrier you crashed into lifts everyone's height, and labs in view of any clear learn from it. Labs in view of each other share sight. Gaps are hidden until you can see them. To cross one you cover speed times air time, and height adds air time, so a wide gap needs run-up speed as well as height. The first lab across leaves a tower in front of the gap. Labs behind must clear it, then cross a gap that gets narrower the further past it the leader is. Reach the finish first.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
       </div>
     </div>
@@ -119,6 +119,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="btns">
       <button id="btn-jump" type="button">Jump (space)</button>
       <label for="auto"><input type="checkbox" id="auto" checked>Auto-jump</label>
+      <button id="btn-back" type="button">Back up (hold)</button>
       <button id="btn-pause" type="button">Pause</button>
       <button id="btn-restart" type="button">New run</button>
     </div>
@@ -159,7 +160,7 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,GW:70,FINISH:3100,GAPX:[450,950,1500,2050,2600],GAPW:[60,90,130,180,240],AIR0:0.6,
-  STEPD:150,CAPS:[70,90,115,145,180,220],ACC:40,DEC:15.6,TOP0:90,SIGHT0:80,CRASHT:0.5,MAXCAP:220,TLIMIT:300};
+  STEPD:150,REV:40,CAPS:[70,90,115,145,180,220],ACC:40,DEC:15.6,TOP0:90,SIGHT0:80,CRASHT:0.5,MAXCAP:220,TLIMIT:300};
 var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barStart:28,barInc:3.2,gapJitter:20,gapScale:100,airH:15,spill:33,penalty:40,penaltyT:5,sightShare:75};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
@@ -204,13 +205,20 @@ function gapWidth(l,g){
   return g.W/(1+pastOf(g)/K.stepL0);
 }
 function needSpeed(l,g){return gapWidth(l,g)/airT(l);}
+function backLimit(l){
+  var lim=-60,pb=G.barriers[l.bi-1],pg=G.gaps[l.gi-1],cg=G.gaps[l.gi];
+  if(pb){lim=Math.max(lim,pb.x+C.BW+2);}
+  if(pg){lim=Math.max(lim,pg.x+pg.W+10);}
+  if(cg&&l.stepDone[l.gi]){lim=Math.max(lim,cg.x-C.STEPD+C.BW+2);}
+  return lim;
+}
 function oddsAt(k){return clamp(K.p1+K.pstep*k,0,95);}
 function log(msg){ G.log.unshift({t:G.t,msg:msg}); if(G.log.length>40){G.log.pop();} }
 
 function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,crashKind:'',
-    out:false,done:false,bi:0,gi:0,basePace:0.7,gamble:{},bgamble:{},penalty:0,crashedOn:{},stepDone:{},flash:null};
+    out:false,done:false,bi:0,gi:0,basePace:0.7,gamble:{},bgamble:{},seen:{},penalty:0,crashedOn:{},stepDone:{},flash:null};
 }
 function newGame(seed,humanKind){
   var rng=rngMaker(seed);
@@ -233,7 +241,7 @@ function newGame(seed,humanKind){
   }
   if(hk!=='human'){ labs[0].name='You('+hk+')'; }
   G={seed:seed,rng:rng,t:0,labs:labs,barriers:bars,gaps:gaps,log:[],over:false,result:null,level:0,
-     input:{pace:0.9,w:[25,50,25],jump:false,auto:true}};
+     input:{pace:0.9,w:[25,50,25],jump:false,auto:true,rev:false}};
   log('Run started. Seed '+seed+'.');
   return G;
 }
@@ -327,7 +335,7 @@ function botInput(l){
   var g=G.gaps[l.gi],b=G.barriers[l.bi];
   var pol=POL[l.kind],reach=heightOf(l)+C.JUMP,top=topSpeed(l);
   var brake=l.v*l.v/(2*C.DEC)+40;
-  var stop=false,gapGo=0;
+  var stop=false,gapGo=0,rev=false;
   if(b&&b.x-l.x<brake&&reach<b.h+2){
     if(l.crashedOn[l.bi]){stop=true;}
     else{
@@ -347,9 +355,14 @@ function botInput(l){
         }
       }
     }
-    if(gd<=sightRange(l)){
+    if(gd<=sightRange(l)){l.seen[l.gi]=true;}
+    if(l.seen[l.gi]&&!(g.crossedBy>=0&&!l.stepDone[l.gi])){
       var vreq=needSpeed(l,g)*1.06,runUp=2*C.ACC*Math.max(gd-8,0)*0.9;
+      var dNeed=vreq*vreq/(2*C.ACC*0.9)+10,room=l.x-backLimit(l);
       if(vreq<=top&&vreq*vreq-l.v*l.v<=runUp){ gapGo=Math.max(l.basePace,vreq/top); }
+      else if(vreq<=top&&gd<dNeed&&room>6&&(l.gapStopT===undefined||G.t-l.gapStopT<10)){
+        rev=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
+      }
       else{
         if(l.gamble[l.gi]===undefined){l.gamble[l.gi]=G.rng()<pol.pit;}
         var canStop=l.v*l.v/(2*C.DEC)<gd-6;
@@ -365,10 +378,10 @@ function botInput(l){
     pace=Math.min(pace,vs/top);
   }
   if(gapGo>0){pace=Math.max(pace,gapGo);}
-  if(stop){pace=0;}
+  if(stop||rev){pace=0;}
   var w=KINDS[l.kind].w;
-  if(pol.w){return {pace:pace,w:pol.w,jump:false,auto:true};}
-  return {pace:pace,w:[w[0]*100,w[1]*100,w[2]*100],jump:false,auto:true};
+  if(pol.w){return {pace:pace,w:pol.w,jump:false,auto:true,rev:rev};}
+  return {pace:pace,w:[w[0]*100,w[1]*100,w[2]*100],jump:false,auto:true,rev:rev};
 }
 
 function stepLab(l,dt,inp){
@@ -382,21 +395,22 @@ function stepLab(l,dt,inp){
       l.crash=0;
     }
   } else {
-    var target=l.pace*top;
+    var target=inp.rev?-C.REV:l.pace*top;
     if(l.v<target){l.v=Math.min(target,l.v+C.ACC*dt);} else {l.v=Math.max(target,l.v-C.DEC*dt);}
   }
-  var w=inp.w,tot=w[0]+w[1]+w[2],r=clamp(1-l.v/top,0,1);
+  var w=inp.w,tot=w[0]+w[1]+w[2],r=clamp(1-Math.abs(l.v)/top,0,1);
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
   }
   if(inp.jump&&l.crash<=0){startJump(l);}
   if(l.crash<=0){
-    var nx=l.x+l.v*dt,h=heightOf(l);
+    var nx=Math.max(l.x+l.v*dt,l.v<0?backLimit(l):-1e9),h=heightOf(l);
+    if(l.v<0&&nx<=backLimit(l)){l.v=0;}
     var b=G.barriers[l.bi];
     if(b){
       var bd=b.x-l.x;
-      if(assist&&l.jt<0&&h<b.h&&bd>0&&bd<=Math.max(l.v*0.3,6)){startJump(l);}
+      if(assist&&l.jt<0&&l.v>1&&h<b.h&&bd>0&&bd<=Math.max(l.v*0.3,6)){startJump(l);}
       if(nx>=b.x){
         var bf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
         if(bf>=b.h){ spill(l,b,l.bi); l.bi++; }
@@ -411,7 +425,7 @@ function stepLab(l,dt,inp){
       var hasStep=g.crossedBy>=0&&!l.stepDone[l.gi];
       if(hasStep){
         var S=g.stepH,sx=g.x-C.STEPD,sd=sx-l.x;
-        if(assist&&l.jt<0&&h<S&&sd>0&&sd<=Math.max(l.v*0.3,6)){startJump(l);}
+        if(assist&&l.jt<0&&l.v>1&&h<S&&sd>0&&sd<=Math.max(l.v*0.3,6)){startJump(l);}
         if(nx>=sx){
           var sf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
           if(sf>=S){ spill(l,{h:S},'s'+l.gi); l.stepDone[l.gi]=true; }
@@ -423,7 +437,7 @@ function stepLab(l,dt,inp){
       }
       if(l.crash<=0&&!(g.crossedBy>=0&&!l.stepDone[l.gi])){
         var gd=g.x-l.x,gw=gapWidth(l,g);
-        if(assist&&l.jt<0&&gd>0&&gd<=Math.max(l.v*0.3,6)){startJump(l);}
+        if(assist&&l.jt<0&&l.v>1&&gd>0&&gd<=Math.max(l.v*0.3,6)){startJump(l);}
         if(nx>=g.x){
           var jumped=assist||l.jt>=0;
           if(jumped&&l.v*airT(l)>=gw){ crossGap(l,g,l.gi); l.gi++; }
@@ -486,7 +500,7 @@ function readColors(){
 }
 
 var running=false,paused=false,acc=0,last=performance.now(),lastHud=0;
-var ui={pace:90,w:[25,50,25],auto:true};
+var ui={pace:90,w:[25,50,25],auto:true,rev:false};
 function leaderLab(){
   var best=null;
   for(var i=0;i<G.labs.length;i++){ var l=G.labs[i]; if(!l.out&&(!best||l.x>best.x)){best=l;} }
@@ -619,7 +633,7 @@ function hud(){
       }
       if(gd<=sightRange(l)){
         var gw=Math.round(gapWidth(l,ng)),ns=Math.round(needSpeed(l,ng)),rv=Math.round(Math.sqrt(l.v*l.v+2*C.ACC*Math.max(gd-8,0)));
-        parts.push('Gap '+(l.gi+1)+' in '+gd+', '+gw+' wide. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(top),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'.');
+        parts.push('Gap '+(l.gi+1)+' in '+gd+', '+gw+' wide. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(top),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.');
       }
       else if(gd<900){ parts.push('Gap '+(l.gi+1)+' is about '+gd+' ahead but hidden. Your sight is '+Math.round(sightRange(l))+'.'); }
     }
@@ -654,7 +668,7 @@ function start(){
   $('ov').hidden=true; $('btn-pause').textContent='Pause';
   syncInput();
 }
-function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; }
+function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; }
 
 function frame(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
@@ -681,17 +695,22 @@ bindRange('w-max',function(v){ui.w[2]=v;});
 $('auto').addEventListener('change',function(){ui.auto=this.checked;});
 function doJump(){ if(running&&!paused){G.input.jump=true;} }
 $('btn-jump').addEventListener('pointerdown',function(e){e.preventDefault();doJump();});
+function setRev(v){ ui.rev=v; $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
+$('btn-back').addEventListener('pointerdown',function(e){e.preventDefault();setRev(true);});
+['pointerup','pointerleave','pointercancel'].forEach(function(ev){ $('btn-back').addEventListener(ev,function(){setRev(false);}); });
 $('btn-pause').addEventListener('click',function(){
   if(!running){return;} paused=!paused; this.textContent=paused?'Resume':'Pause';
 });
 $('btn-restart').addEventListener('click',start);
 $('ov-btn').addEventListener('click',start);
+document.addEventListener('keyup',function(e){ if(e.code==='ArrowLeft'||e.code==='KeyB'){setRev(false);} });
 document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName;
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
   else if(e.code==='KeyP'&&t!=='INPUT'){$('btn-pause').click();}
+  else if((e.code==='ArrowLeft'||e.code==='KeyB')&&t!=='INPUT'){e.preventDefault();setRev(true);}
 });
 
 /* knobs */
