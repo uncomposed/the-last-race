@@ -1,6 +1,6 @@
 # Design notes: review of prototype 0.1 and agreed directions
 
-27 October 2026. Items 1 to 5 and 7 of the agreed directions are now implemented in `prototype.html` (version 2, see `README.md`). Items 6 and 8 to 10 are not. `spec.html` still describes version 1. The review numbers below come from bot-against-bot runs of the unchanged version 1 prototype; the version 2 bot numbers are in the last section. Neither comes from human play.
+27 October 2026. Items 1 to 5 and 7 of the agreed directions are implemented in `prototype.html` version 2, and items 6 and 9 in version 3 (see `README.md`). Items 8 and 10 are not. `spec.html` still describes version 1. The review numbers below come from bot-against-bot runs of the unchanged version 1 prototype; the version 2 bot numbers are in the last section. Neither comes from human play.
 
 ## What the bot runs showed
 
@@ -29,12 +29,13 @@
 3. **[Implemented in version 2] Gap near miss is a scrape.** A gap's floor is the starting height. A lab that reaches the far side before dropping to that floor scrapes through: it loses height and gets a speed cap scaled to the drop. A full miss means out, then the roll. Every failure costs ground or height plus a period of forced caution.
 4. **[Implemented in version 2, with line of sight added later] One visibility rule.** Barriers and gaps are hidden until they are inside a lab's sight. A feature becomes permanently public when two labs see it at the same time, or when a lab crashes into it. The frontier relies on its own sight. Followers see the public map ahead of them. A reckless bot uses public knowledge, so it stops at known gaps it can't cross, and it stays dangerous when it leads into unseen ones.
 5. **[Implemented in version 2] Fix barrier placement**, so barriers exist and need height.
-6. **Singularity: the last gap.**
+6. **[Implemented in version 3, see "Version 3 bot results" for what differs] Singularity: the last gap.**
    - It is the widest gap, with the highest fall odds.
    - A lead buys time to rebalance into sight or extra height before crossing, while followers close in. The first lab across gets the full ceiling growth.
    - Past it, top speed is beyond human reaction time plus braking. Controls stay available, but acting is mostly a guess. A lab under a crash or scrape cap may be slow enough to act meaningfully.
    - Entering first does not guarantee finishing first, or at all. Labs can still hit barriers and scrape gaps inside.
    - Players extrapolate the map they crossed to choose the balance that will carry them through.
+   - *Differences from the plan.* See "Version 3 bot results": inside the stretch acceleration is multiplied by the same factor as top speed (otherwise a lab could not get near it before the finish); braking is not, so a lab cannot brake in time. Gaps inside the stretch are capped at 0.9 of the singularity's width so that it stays the widest gap, which makes them easy at the faster speed. Falls inside the stretch roll at the singularity gap's base odds, without `singOdds`. The first lab across the gap gets a final ceiling of the last regime plus 40 (`C.SINGUP`) rather than a new `CAPS` entry.
 7. **[Implemented in version 2] Seeds vary length and height.**
    - A seed draws a track profile: the number of gaps, their spacing and the finish, plus a hidden difficulty curve.
    - Barrier heights and gap widths both come from that curve, so barriers already seen are evidence about gaps not yet seen.
@@ -46,11 +47,12 @@
    - The seed announces the hazard mix but not the order.
    - A first encounter warns (a scrape) and a repeat bites.
    - A session is three to five runs with a running score. Extinction zeroes that run for everyone, so the shared roll matters even after you are out.
-9. **Controls.**
+9. **[Implemented in version 3; the on-screen hold button is "Floor it"] Controls.**
    - A triangle picker for the split, with hotkeys for the corners and centre.
    - Pace acts as a cruise level.
    - Hold keys give full acceleration forward or back.
    - Reflexes are meant to matter.
+   - *Differences from the plan.* The triangle has hotkeys for the centre and the edge midpoints as well (`1` to `7`). While a lab is capped the picker shows the forced Sight/Height midpoint and keeps the player's own point as a dashed ring. Holding forward (`ArrowRight` or `D`) sets pace to 100% and invests nothing. Reverse wins if both are held. A gate at the start (about x = 150 to 200, jump plus 16 to 20) makes the first seconds a lesson in standing still to build height, and the base top speed fell from 90 to 50 so the opening is slow.
 10. **The roll is a moment.** Freeze the action, show the odds, then roll.
 
 ## Open questions
@@ -149,3 +151,67 @@ The best policy does depend on the seed: the Gambler wins about three games in f
 
 - **The Steward wins 4%.** It caps speed to its sight and now also waits behind slower labs.
 - **The leader's private window is short.** The leader sees a feature only as far as its own sight, so its edge is about one sight length of travel. A longer edge would need a longer lead or more sight.
+
+## Version 3 bot results
+
+27 October 2026. Prototype 0.3, default knobs, seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. Replication: `PF.run(seed,'custom')`. The same numbers came out of the page in Chromium and out of the simulation code loaded in node (6 seeds compared field by field). Version 2 and "Line of sight" numbers above are from earlier prototypes and are not comparable seed for seed: the generator now draws more numbers per track.
+
+**What changed in the rules.** Base top speed 90 to 50. A gate at the start. The last gap is the singularity (widest gap, `singOdds` +30 points, the first lab across gets the final ceiling). After it, an 800 to 1500 stretch of barriers and 0 to 2 gaps continues the difficulty curve past its end (difficulty may exceed 1 there, up to 1.5), with top speed and acceleration times 3, human controls 0.25 s late, bots locked to their crossing pace and split unless capped. Careful bots (Steward, Custom) wait before the singularity gap and fill sight and height (35/65) until both meters are full or the next lab behind is within a sight length. Gap widths were rescaled for the slower speed (`WREF0/1` 112/36 to 84/30). One bot change beyond the brief: a safe bot no longer stops for a gap it cannot yet cross while it is inside a crash or scrape cap, because nothing can go to max speed there and it waited until the time limit (seed 5345, found by the first ensemble).
+
+**Hard requirements.**
+
+- Timeouts 0.0% (0 of 500). No lab that was still in the race stood still for more than 12.1 s.
+- Feasibility, all 500 tracks, 2724 gaps. The ratio is jump coverage at the ceiling (speed and height at the regime a lab has when it reaches that gap, speed times 3 inside the stretch) over the gap's full width. The zone ratio is the clear distance before the gap over the distance needed to reach the edge speed from a standstill (at the stretch's accelerations inside it). The zone is measured from the previous barrier or gap, so it does not include the crash cap distance.
+
+  | Gap class | n | Min coverage ratio | Min zone ratio |
+  |---|---|---|---|
+  | Regular | 1974 | 1.54 | 1.41 |
+  | Singularity | 500 | 1.25 | 1.40 |
+  | Inside the stretch | 250 | 5.82 | 6.40 |
+
+  The singularity gap was the widest gap in every track. No barrier is taller than its regime's height ceiling plus jump minus 6. The gate is public, at x 150 to 200, with the first gap at least 300 beyond it.
+- The first lab across the singularity won 221 of 434 games (50.9%). In 66 games nobody crossed it (everyone fell or the roll ended the run first).
+
+**Outcomes** (500 games)
+
+| | Custom | Sprinter | Steward | Gambler |
+|---|---|---|---|---|
+| Win share | 40.6% | 5.6% | 3.0% | 37.2% |
+| Crossed the singularity gap | 82.8% | 46.2% | 52.4% | 76.4% |
+| First across the singularity (of 434 games) | 251 | 13 | 8 | 162 |
+| Barrier crashes per game, whole track (gate included) | 0.23 | 0.99 | 0.00 | 0.61 |
+| Scrapes per game, whole track | 0.08 | 0.23 | 0.01 | 0.41 |
+| Falls per game, whole track | 0.05 | 0.39 | 0.01 | 0.15 |
+| Falls into the singularity gap per game | 0.02 | 0.05 | 0.01 | 0.07 |
+| Barrier crashes per game inside the stretch | 0.18 | 0.00 | 0.00 | 0.11 |
+| Scrapes per game inside the stretch | 0.00 | 0.00 | 0.00 | 0.00 |
+| Falls into gaps inside the stretch per game | 0.00 | 0.00 | 0.00 | 0.00 |
+
+Extinction (a fall plus a roll ended everyone): 13.6%. Of those, 8.0% of all games came from a fall into the singularity gap, 5.6% from earlier gaps and 0.0% from gaps inside the stretch. Nobody-left 0%. Before the change extinction was 20.8% and the wins were Custom 35.8%, Gambler 28.4%, Sprinter 10.6%, Steward 4.0%.
+
+| | p10 | median | p90 |
+|---|---|---|---|
+| Game time (s), all games | 38.3 | 55.3 | 71.1 |
+| Track length | 2977 | 4134 | 5634 |
+
+Track length ranged 2508 to 6380. The distance from the singularity gap's far edge to the finish ranged 892 to 1589. 256 tracks had no gap inside the stretch, 238 had one and 6 had two.
+
+**The gate** (500 games, every lab cleared it in every game). Seconds from the start line to clearing the gate: Custom median 8.1 (p10 7.5, p90 8.8, max 9.2), Sprinter 7.3 (max 8.1), Steward 8.5 (max 9.5), Gambler 7.1 (max 8.7). Most of that is the walk at pace 70% of a top speed of 50. Time spent stopped before clearing it: Custom median 0.7 s (p90 1.4, max 1.7), Steward 0.4 s (max 1.3), Sprinter 0.1 s (max 0.6), Gambler 0.0 s (max 0.1). The Sprinter hit the gate in 493 games and the Gambler in 215. A crash at the gate costs them little: they build height while the bounce slows them, so it works like a pit stop, as with the "crashes are cheap" finding above.
+
+**By profile shape** (game counts of wins, 500 seeds)
+
+| Shape | n | Extinction | of which at the singularity | Custom | Gambler | Sprinter | Steward |
+|---|---|---|---|---|---|---|---|
+| Early wall | 130 | 3 (2%) | 0 | 72 | 53 | 0 | 2 |
+| Steady climb | 129 | 20 (16%) | 6 | 45 | 41 | 15 | 8 |
+| Staircase | 134 | 20 (15%) | 13 | 47 | 60 | 5 | 2 |
+| Late cliff | 107 | 25 (23%) | 21 | 39 | 32 | 8 | 3 |
+
+**What looks off**
+
+- **The stretch is mild.** Barrier crashes inside the stretch are 0.1 to 0.2 per game for the labs that get there, and there were no scrapes or falls inside the gaps in 500 games. Labs that cross the singularity arrive with a mean reach (height plus jump) of 206 (p10 149, p90 288, first 200 seeds), against a mean stretch barrier height of 174 (p10 116, p90 235). The cause for gaps is structural: the singularity gap must stay the widest and crossable at normal speed, and a gap inside the stretch is crossed at three times the speed, so its coverage ratio is 5.8 or more. Speed-scaled gaps that bite would need the singularity to stop being the widest gap, or the stretch's gaps to be wider than it. Only a capped (slow) lab is at risk there.
+- **Extinction is concentrated at the singularity.** 8.0 of the 13.6 points, and 20 of the 25 late-cliff extinctions at the singularity. The odds there are 54% (3 gaps) to 94% (7 gaps), because `singOdds` adds 30 to a base that already rises 10 per gap.
+- **First across wins about half.** The first lab across wins 51% of its games, so it is an edge but not a guarantee. The final ceiling (+40) and the careful bots' wait both feed it. This was not tuned.
+- **The Steward still wins 3%** and the Sprinter 6%. The Gambler (37%) is close to Custom (41%), and wins more than Custom on staircase tracks.
+- **Games are longer.** Median 55 s against 41 s, since the opening is slower and the track is about 700 longer. From the first lab crossing the singularity to the finish took a mean 7.5 s (p10 4.7, p90 11.6) in the first 200 seeds.
+- **Not tested.** Human play, and the reaction lag and the "Beyond your loop" readout with a person. The lag was checked in the simulation: a pace change reaches the lab 0.27 s later inside the stretch, immediately outside it and immediately while capped.
