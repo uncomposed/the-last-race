@@ -1,6 +1,6 @@
 # Design notes: review of prototype 0.1 and agreed directions
 
-27 October 2026. Nothing here is implemented yet. `prototype.html` and `spec.html` still describe version 1. All numbers below come from bot-against-bot runs of the unchanged prototype, not from human play.
+27 October 2026. Items 1 to 5 and 7 of the agreed directions are now implemented in `prototype.html` (version 2, see `README.md`). Items 6 and 8 to 10 are not. `spec.html` still describes version 1. The review numbers below come from bot-against-bot runs of the unchanged version 1 prototype; the version 2 bot numbers are in the last section. Neither comes from human play.
 
 ## What the bot runs showed
 
@@ -24,18 +24,18 @@
 
 ## Agreed directions
 
-1. **Barrier crash: bounce back.** Throw the lab backward at e × impact speed, decelerating at the braking rate. The bounce distance is then (e·v)²/(2·DEC), and never goes past `backLimit`.
-2. **Barrier crash: forced speed cap.** Afterwards, cap top speed at the speed from which the lab could stop within its sight, until it has travelled a set distance past the barrier. This replaces the timed penalty. No investment penalty for now; add one only if needed.
-3. **Gap near miss is a scrape.** A gap's floor is the starting height. A lab that reaches the far side before dropping to that floor scrapes through: it loses height and gets a speed cap scaled to the drop. A full miss means out, then the roll. Every failure costs ground or height plus a period of forced caution.
-4. **One visibility rule.** Barriers and gaps are hidden until they are inside a lab's sight. A feature becomes permanently public when two labs see it at the same time, or when a lab crashes into it. The frontier relies on its own sight. Followers see the public map ahead of them. A reckless bot uses public knowledge, so it stops at known gaps it can't cross, and it stays dangerous when it leads into unseen ones.
-5. **Fix barrier placement**, so barriers exist and need height.
+1. **[Implemented in version 2] Barrier crash: bounce back.** Throw the lab backward at e × impact speed, decelerating at the braking rate. The bounce distance is then (e·v)²/(2·DEC), and never goes past `backLimit`.
+2. **[Implemented in version 2] Barrier crash: forced speed cap.** Afterwards, cap top speed at the speed from which the lab could stop within its sight, until it has travelled a set distance past the barrier. This replaces the timed penalty. No investment penalty for now; add one only if needed.
+3. **[Implemented in version 2] Gap near miss is a scrape.** A gap's floor is the starting height. A lab that reaches the far side before dropping to that floor scrapes through: it loses height and gets a speed cap scaled to the drop. A full miss means out, then the roll. Every failure costs ground or height plus a period of forced caution.
+4. **[Implemented in version 2] One visibility rule.** Barriers and gaps are hidden until they are inside a lab's sight. A feature becomes permanently public when two labs see it at the same time, or when a lab crashes into it. The frontier relies on its own sight. Followers see the public map ahead of them. A reckless bot uses public knowledge, so it stops at known gaps it can't cross, and it stays dangerous when it leads into unseen ones.
+5. **[Implemented in version 2] Fix barrier placement**, so barriers exist and need height.
 6. **Singularity: the last gap.**
    - It is the widest gap, with the highest fall odds.
    - A lead buys time to rebalance into sight or extra height before crossing, while followers close in. The first lab across gets the full ceiling growth.
    - Past it, top speed is beyond human reaction time plus braking. Controls stay available, but acting is mostly a guess. A lab under a crash or scrape cap may be slow enough to act meaningfully.
    - Entering first does not guarantee finishing first, or at all. Labs can still hit barriers and scrape gaps inside.
    - Players extrapolate the map they crossed to choose the balance that will carry them through.
-7. **Seeds vary length and height.**
+7. **[Implemented in version 2] Seeds vary length and height.**
    - A seed draws a track profile: the number of gaps, their spacing and the finish, plus a hidden difficulty curve.
    - Barrier heights and gap widths both come from that curve, so barriers already seen are evidence about gaps not yet seen.
    - How closely they are coupled can vary by seed, from well signposted to deceptive.
@@ -59,3 +59,51 @@
 - Should crossing a gap reveal it? The tower already shows that the gap exists. If it is revealed, is the width shown the full width or the narrowed width followers face?
 - Should bots' appetite for risk respond to how close the race is? Rivals would then gamble more in a tight race and less when someone leads comfortably, so the player shapes extinction risk without controlling it.
 - How should scoring work? One option is placings counted only when the world survives, so a lab's fall costs it something beyond its own exit.
+
+## Version 2 bot results
+
+27 October 2026. Prototype 0.2, default knobs, seeds 1 to 500, lab 0 driven by the `custom` bot (pace 0.75, cautious, 25/50/25 split) against the Sprinter, Steward and Gambler. Bot play only, no human playtest. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. Replication: `PF.run(seed,'custom')` in the page, one run per seed.
+
+The generator keeps every track feasible: no gap is wider than 65% of the coverage a lab at that regime's ceiling has (smallest ceiling coverage to width ratio seen was 1.54), no barrier is taller than the regime's height ceiling plus jump minus 6, every stretch between gaps has at least two barriers, and no barrier sits in a gap's tower-to-landing zone. Widths and heights are scaled around a reference lab (`HREF0/1`, `WREF0/1` in the code), which was set from measured bot coverage once, not tuned to a target winner.
+
+**Determinism.** 100 seeds: identical barriers, gaps, finish and rolls whatever lab 0 is (custom, steward, human); 100 distinct tracks; the rolls are unchanged by a human playing a different game; two headless runs of one seed and policy give identical results.
+
+**Outcomes** (500 games)
+
+| | Custom | Sprinter | Steward | Gambler |
+|---|---|---|---|---|
+| Win share | 42.2% | 5.4% | 9.6% | 41.6% |
+| Barrier crashes per game | 0.04 | 0.57 | 0.00 | 0.81 |
+| Tower crashes per game | 0.02 | 0.00 | 0.00 | 0.01 |
+| Scrapes per game | 0.03 | 0.79 | 0.02 | 0.81 |
+| Falls per game | 0.01 | 0.01 | 0.00 | 0.00 |
+| Games with at least one barrier crash | 4.4% | 55.8% | 0.0% | 75.2% |
+
+Extinction (a fall plus a roll ended everyone) 1.2%. Nobody-left 0%. Timeouts 0%. No lab stood still for more than 60 s. Every lab crossed gap 1 in every game.
+
+| | p10 | median | p90 |
+|---|---|---|---|
+| Game time (s) | 28.2 | 43.3 | 57.6 |
+| Track length | 1972 | 3346 | 4830 |
+
+Track length ranged 1772 to 5322, so the tails are wider than the 2000 to 4500 aimed at. Gap counts were 97, 104, 98, 112 and 89 games for 3 to 7 gaps.
+
+**By profile shape** (share of games won, 500 seeds)
+
+| Shape | n | Custom | Sprinter | Steward | Gambler | Extinction |
+|---|---|---|---|---|---|---|
+| Steady climb | 114 | 53% | 5% | 11% | 31% | 0% |
+| Early wall | 134 | 21% | 3% | 0% | 76% | 0% |
+| Staircase | 125 | 50% | 8% | 15% | 26% | 1% |
+| Late cliff | 127 | 47% | 6% | 13% | 31% | 4% |
+
+The best policy does depend on the seed: the Gambler wins about three games in four on an early wall and about a quarter to a third elsewhere, and the cautious Custom bot is the reverse. Signposting matters less: Custom wins 44% well signposted, 37% mixed, 46% deceptive. By gap count, Custom falls from 57% at 3 gaps to 29% at 7 and the Steward rises from 2% to 24%.
+
+**Visibility.** At the end of a game 99.8% of barriers and 100% of gaps were public, and 99.9% of both were public before the first lab reached them. The labs run as a pack, so two of them nearly always have a feature in sight together. The leader's private information edge exists only when it gets further ahead of the runner-up than the runner-up's sight.
+
+**What looks off**
+
+- **Extinction is almost gone.** The scrape forgives a miss of about `v * dropH * h`, and at the default `dropH` equal to the air time per height, that doubles the effective coverage for a tall lab. In version 1 about 35% of games ended in the roll. Sensitivity, 300 seeds: `gapScale` 130 gives 11.0% extinction, `dropH` 5 gives 17.7%, both together 25.3%. Barrier scale 130 gives 0.3% extinction but raises barrier crashes to 1.4 per game for the Sprinter and lifts its win share to 14%.
+- **Crashes still pay.** A crashed lab stops and invests, so tall barriers make the Sprinter and Gambler taller, not slower. The bounce and the speed cap cost distance, but the Sprinter's win share is 5% in the default world and rises with taller barriers. Not tested: an investment penalty (item 2 said to add one only if needed).
+- **The Steward almost never wins.** It caps speed to what it can see and so crawls.
+- **Little is private.** See Visibility. If followers are meant to rely on public knowledge, the rule needs a distance condition or a stricter notion of "at the same time".
