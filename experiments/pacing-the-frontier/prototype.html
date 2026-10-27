@@ -43,8 +43,10 @@ p{margin:0}
 canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
 .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .card h2{font-size:22px}
+.card button.primary{position:sticky;bottom:0;flex:none}
+@media (max-width:600px){.ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}.sing-n{font-size:18px}}
 .card p{font-size:15px}
 button{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;cursor:pointer;min-height:40px}
 button:hover{border-color:var(--muted)}
@@ -84,15 +86,30 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .note{font-size:13px;color:var(--muted)}
 .foot{font:400 12px var(--mono);color:var(--muted)}
 .world{font:500 14px var(--mono);margin-top:6px}
+.tri{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.tri svg{display:block;width:min(100%,270px);height:auto;touch-action:none;cursor:crosshair;border-radius:6px;user-select:none;-webkit-user-select:none}
+.tri svg:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.tri .tbody{display:flex;flex-direction:column;gap:6px;flex:1 1 180px;min-width:0;font:400 13px/1.4 var(--mono)}
+.tri .tbody b{font-weight:500}
+.tri .tl{font:500 13px var(--mono)}
+.tri .tk{font:400 12px/1.4 var(--mono);color:var(--muted)}
+.t-tri{fill:var(--bg);stroke:var(--muted);stroke-width:1.5}
+.t-lbl{font:500 12px var(--mono);fill:var(--ink)}
+.t-key{font:500 10px var(--mono);fill:var(--muted)}
+.t-mk{fill:var(--surface);stroke:var(--line);stroke-width:1}
+.t-pt{fill:var(--ink);stroke:var(--surface);stroke-width:2.5;transition:opacity .15s}
+.t-forced{font:500 11px var(--mono);fill:var(--danger)}
+.t-ghost{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
+.sing-n{font:500 22px var(--display);color:var(--d)}
 .seedbox{display:flex;gap:6px;align-items:center}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
 </style>
 
 <main class="wrap">
   <header>
-    <p class="eyebrow">Prototype 0.2</p>
+    <p class="eyebrow">Prototype 0.3</p>
     <h1>Pacing the Frontier</h1>
-    <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone.</p>
+    <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
     <p class="world" id="world"></p>
   </header>
 
@@ -101,8 +118,16 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">Drag Pace down to hold effort back and put it into sight, height or max speed. The seed sets the track: barriers and gaps both get harder along a hidden curve, so the ones you have crossed hint at what is next. You see only what is inside your sight, behind you, or public (seen at once by two labs in sight of each other, crashed into, fallen into, or a tower). A lab ahead blocks your view unless you stand taller than it. Hit a barrier and you bounce back, then you are capped to a speed you could stop from within your sight until you are well past it, and your held-back effort goes only to sight and height. A gap you miss by a little is a scrape: you cross but lose height and slow down. A bigger miss is a fall, and a roll can end the run for everyone. The first lab across a gap leaves a tower, and labs behind cross a narrower gap. Reach the finish first.</p>
+        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
+      </div>
+    </div>
+    <div class="ov" id="sing" hidden>
+      <div class="card" role="dialog" aria-labelledby="sing-h">
+        <h2 id="sing-h">Singularity ahead</h2>
+        <p id="sing-w"></p>
+        <p id="sing-msg"></p>
+        <button class="primary" id="sing-btn" type="button">Resume</button>
       </div>
     </div>
   </div>
@@ -116,15 +141,37 @@ details summary{cursor:pointer;font:700 18px var(--display)}
         <div class="legend"><span><i class="dot ink"></i>Run <b id="l-run"></b></span><span><i class="dot a"></i>Sight <b id="l-sight"></b></span><span><i class="dot c"></i>Height <b id="l-height"></b></span><span><i class="dot b"></i>Max speed <b id="l-max"></b></span></div>
       </div>
     </div>
-    <div class="cols">
-      <label class="lab" for="w-sight"><span class="row"><span>Hold-back to sight</span></span><input type="range" id="w-sight" min="0" max="100" value="25"></label>
-      <label class="lab" for="w-height"><span class="row"><span>Hold-back to height</span></span><input type="range" id="w-height" min="0" max="100" value="50"></label>
-      <label class="lab" for="w-max"><span class="row"><span>Hold-back to max speed</span></span><input type="range" id="w-max" min="0" max="100" value="25"></label>
+    <div class="tri">
+      <svg id="tri" viewBox="0 0 260 214" tabindex="0" role="group" aria-label="Split picker. Drag the point, press keys 1 to 7, or use the arrow keys while it is focused.">
+        <defs>
+          <clipPath id="tri-clip"><polygon points="46,176 130,30 214,176"/></clipPath>
+          <radialGradient id="g-s"><stop offset="0" style="stop-color:var(--a)" stop-opacity=".5"/><stop offset="1" style="stop-color:var(--a)" stop-opacity="0"/></radialGradient>
+          <radialGradient id="g-h"><stop offset="0" style="stop-color:var(--c)" stop-opacity=".5"/><stop offset="1" style="stop-color:var(--c)" stop-opacity="0"/></radialGradient>
+          <radialGradient id="g-m"><stop offset="0" style="stop-color:var(--b)" stop-opacity=".5"/><stop offset="1" style="stop-color:var(--b)" stop-opacity="0"/></radialGradient>
+        </defs>
+        <polygon class="t-tri" points="46,176 130,30 214,176"/>
+        <g clip-path="url(#tri-clip)"><circle cx="46" cy="176" r="120" fill="url(#g-s)"/><circle cx="130" cy="30" r="120" fill="url(#g-h)"/><circle cx="214" cy="176" r="120" fill="url(#g-m)"/></g>
+        <polygon points="46,176 130,30 214,176" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+        <text class="t-lbl" x="130" y="16" text-anchor="middle">2 Height</text>
+        <text class="t-lbl" x="46" y="199" text-anchor="middle">1 Sight</text>
+        <text class="t-lbl" x="214" y="199" text-anchor="middle">3 Max speed</text>
+        <g id="tri-mk" pointer-events="none"></g>
+        <text class="t-key" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>
+        <circle class="t-ghost" id="tri-ghost" r="9" visibility="hidden"/>
+        <circle class="t-pt" id="tri-pt" r="9"/>
+        <text class="t-forced" id="tri-forced" text-anchor="middle" visibility="hidden">Forced while capped</text>
+      </svg>
+      <div class="tbody">
+        <span class="tl">Split of what you hold back</span>
+        <span id="tri-read"></span>
+        <span class="tk" id="tri-note">1 Sight, 2 Height, 3 Max speed, 4 centre, 5 Sight+Height, 6 Height+Max speed, 7 Max speed+Sight. Drag the point, or focus the triangle and use the arrow keys.</span>
+      </div>
     </div>
     <div class="btns">
       <button id="btn-jump" type="button">Jump (space)</button>
       <label for="auto"><input type="checkbox" id="auto" checked>Auto-jump</label>
-      <button id="btn-back" type="button">Back up (hold)</button>
+      <button id="btn-fwd" type="button">Floor it (hold &rarr;)</button>
+      <button id="btn-back" type="button">Back up (hold &larr;)</button>
       <button id="btn-pause" type="button">Pause</button>
       <label for="watch"><input type="checkbox" id="watch">Watch bots</label>
       <button id="btn-restart" type="button">New run</button>
@@ -151,7 +198,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
   <div class="panel">
     <details>
       <summary>Tuning knobs</summary>
-      <p class="note" style="margin-top:8px">Odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap and reveal apply live. Barrier and gap scales shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
+      <p class="note" style="margin-top:8px">Odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button></div>
     </details>
@@ -167,9 +214,9 @@ function $(id){return document.getElementById(id);}
 function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
-var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:90,SIGHT0:80,MAXCAP:300,TLIMIT:300,
-  HREF0:25,HREF1:18,WREF0:112,WREF1:36};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1};
+var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,
+  HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -200,44 +247,71 @@ var G=null;
 
 /* hidden difficulty curve D(u), u in 0..1 over the track (by feature order, not distance), 0 easy to 1 hard */
 function sstep(a,b,x){var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
-function profD(P,u){
+function profD(P,u,hi){
   var d;
   if(P.shape===0){d=0.12+0.72*u;}
   else if(P.shape===1){d=0.2+0.5*(1-sstep(0.12,0.5,u))+0.2*u;}
   else if(P.shape===2){d=0.1+0.75*Math.min(P.n,Math.floor(u*(P.n+1)))/P.n;}
   else {d=0.14+0.12*u+0.68*sstep(0.55,0.85,u);}
   d+=P.off+P.w1*Math.sin(6.2832*(P.f1*u+P.p1))+P.w2*Math.sin(6.2832*(P.f2*u+P.p2));
-  return clamp(d,0.03,1);
+  return clamp(d,0.03,hi||1);
 }
-/* the track stream r draws everything about the world; heights and widths both come from D plus per-feature coupling noise A */
+/* the track stream r draws everything about the world; heights and widths both come from D plus per-feature coupling noise A.
+   The first barrier is the gate, public from the start. The last gap is the singularity, the widest gap on the track. After it
+   comes a stretch of barriers and perhaps one or two gaps that continue the same curve, with widths scaled to the faster speed. */
 function genTrack(r){
   var n=3+Math.floor(r()*5),P={n:n,shape:Math.floor(r()*4)};
   P.off=(r()-0.5)*0.2; P.w1=0.03+0.05*r(); P.w2=0.02+0.04*r(); P.f1=0.6+r(); P.f2=1.5+1.5*r(); P.p1=r(); P.p2=r();
   var A=0.03+0.37*r(),segL=[],i,s,j;
-  for(i=0;i<=n;i++){ segL.push(110+Math.round(r()*100)); }
-  var gaps=[],bars=[],x=140,finish=0;
-  for(s=0;s<=n;s++){
-    var rs=x,L=segL[s],m=clamp(Math.floor(L/85),2,4),hcap=C.CAPS[s]+C.JUMP-6;
+  for(i=0;i<n;i++){ segL.push(110+Math.round(r()*100)); }
+  var gateX=150+Math.round(r()*50),gateH=C.JUMP+C.GATE[0]+Math.round(r()*C.GATE[1]);
+  var gaps=[],bars=[{x:gateX,h:gateH,pub:true,gate:true,seg:0}],x=gateX+C.BW+60,finish=0,maxW=0;
+  for(s=0;s<n;s++){
+    var rs=x,L=segL[s],m=clamp(Math.floor(L/85),2,4),hcap=C.CAPS[s]+C.JUMP-6,last=s===n-1;
     for(j=0;j<m;j++){
       var f=(j+0.5+(r()-0.5)*0.6)/m,u=(s+f)/(n+1),nz=A*(r()*2-1);
       var bx=Math.round(clamp(rs+f*L,rs+10,rs+L-C.BW)),hmin=C.JUMP*(0.7+0.9*u);
       var h=Math.max(hmin,(C.JUMP+C.HREF0+C.HREF1*s)*(0.5+0.9*clamp(profD(P,u)+nz,0.03,1))*K.barScale/100);
       bars.push({x:bx,h:Math.round(Math.min(h,hcap)*10)/10,pub:false,seg:s});
     }
-    if(s<n){
-      var gz=A*(r()*2-1),gu=(s+1)/(n+1)-0.0005;
-      var w0=(C.WREF0+C.WREF1*s)*(0.55+1.5*clamp(profD(P,gu)+gz,0.03,1))*K.gapScale/100;
-      var air=C.AIR0+K.airH/1000*C.CAPS[s],cov=(C.TOP0+0.85*C.CAPS[s])*air;
-      var W=Math.round(Math.max(40,Math.min(w0,0.65*cov)));
-      /* clear zone before the gap: the tower's distance, or the run-up a lab at the ceiling needs from a standstill */
-      var vn=W/air,gx=rs+L+Math.max(C.STEPD+20,Math.round(1.3*vn*vn/(2*C.ACC))+20);
-      gaps.push({x:gx,W:W,crossedBy:-1,stepH:0,pub:false});
-      x=gx+W+40;
-    } else { finish=rs+L+50; }
+    var gz=A*(r()*2-1),gu=(s+1)/(n+1)-0.0005;
+    var w0=(C.WREF0+C.WREF1*s)*(0.55+1.5*clamp(profD(P,gu)+gz,0.03,1))*K.gapScale/100;
+    var air=C.AIR0+K.airH/1000*C.CAPS[s],cov=(C.TOP0+0.85*C.CAPS[s])*air;
+    var W=Math.round(Math.max(40,Math.min(w0,(last?0.8:0.65)*cov)));
+    if(last){ W=Math.round(Math.min(Math.max(W,1.1*maxW),0.8*cov)); }  /* the singularity: widest gap, still inside its ceiling coverage */
+    maxW=Math.max(maxW,W);
+    /* clear zone before the gap: the tower's distance, or the run-up a lab at the ceiling needs from a standstill */
+    var vn=W/air,gx=rs+L+Math.max(C.STEPD+20,Math.round(1.3*vn*vn/(2*C.ACC))+20);
+    gaps.push({x:gx,W:W,crossedBy:-1,stepH:0,pub:false,sing:last});
+    x=gx+W+40;
+  }
+  /* the singularity stretch: same curve extrapolated (u past n/(n+1)), gap widths scaled to the faster speed */
+  var x0=x,Tt=800+Math.round(r()*700),ni=r()<0.45?0:(r()<0.5?1:2),S=K.singSpeed,F=C.CAPS[n];
+  var airF=C.AIR0+K.airH/1000*F,covS=S*(C.TOP0+0.85*F)*airF,wsc=1+0.35*(S-1),inner=[],resv=0,hcapS=F+C.JUMP-6;
+  function uS(px){return (n+(px-x0)/400)/(n+1);}
+  for(j=0;j<ni;j++){
+    var gzj=A*(r()*2-1),uj=uS(x0+Tt*(j+1)/(ni+1));
+    var wj=Math.round(Math.max(40,Math.min((C.WREF0+C.WREF1*n)*(0.55+1.5*clamp(profD(P,uj,1.5)+gzj,0.03,1.5))*K.gapScale/100*wsc,0.6*covS,0.9*gaps[n-1].W)));
+    var vnj=wj/airF,zj=Math.max(210,Math.round(1.2*vnj*vnj/(2*C.ACC*S))+30);
+    inner.push({W:wj,z:zj}); resv+=zj+wj+40;
+  }
+  while(ni>0&&Tt-resv<160*(ni+1)){ ni--; var q=inner.pop(); resv-=q.z+q.W+40; }
+  var Lb=(Tt-resv)/(ni+1),cur=x0,mb=clamp(Math.floor(Lb/170),1,6);
+  for(j=0;j<=ni;j++){
+    for(i=0;i<mb;i++){
+      var fb=(i+0.5+(r()-0.5)*0.6)/mb,bxs=Math.round(clamp(cur+fb*Lb,cur+10,cur+Lb-C.BW)),us=uS(bxs),nzs=A*(r()*2-1);
+      var hs=Math.max(C.JUMP*(0.7+0.9*clamp(us,0,1)),(C.JUMP+C.HREF0+C.HREF1*n)*(0.5+0.9*clamp(profD(P,us,1.5)+nzs,0.03,1.5))*K.barScale/100);
+      bars.push({x:bxs,h:Math.round(Math.min(hs,hcapS)*10)/10,pub:false,seg:n+j});
+    }
+    if(j<ni){
+      var gxs=Math.round(cur+Lb+inner[j].z);
+      gaps.push({x:gxs,W:inner[j].W,crossedBy:-1,stepH:0,pub:false,inner:true});
+      cur=gxs+inner[j].W+40;
+    } else { finish=Math.round(cur+Lb+50); }
   }
   var sig=A<0.14?'well signposted':(A<0.26?'mixed signals':'deceptive');
-  return {gaps:gaps,bars:bars,finish:finish,shape:P.shape,A:A,sig:sig,n:n,
-    label:SHAPES[P.shape]+' · '+sig+' · '+n+' gaps'};
+  return {gaps:gaps,bars:bars,finish:finish,shape:P.shape,A:A,sig:sig,n:n,sing:n-1,x0:x0,ni:ni,
+    label:SHAPES[P.shape]+' \u00b7 '+sig+' \u00b7 '+n+' gaps'};
 }
 
 function sightRange(l){return C.SIGHT0+4.4*l.pts[0];}
@@ -245,7 +319,10 @@ function heightOf(l){return l.pts[1];}
 function capSpeed(l){return Math.sqrt(2*C.DEC*sightRange(l));}
 function capped(l){return l.capUntil>l.x;}
 /* raw skips the crash/scrape cap */
-function topSpeed(l,raw){var t=C.TOP0+0.85*l.pts[2];return (!raw&&capped(l))?Math.min(t,capSpeed(l)):t;}
+/* past the singularity gap top speed and acceleration are multiplied; the crash and scrape caps are not */
+function inSing(l){return G.sing>=0&&l.gi>G.sing;}
+function accOf(l){return C.ACC*(inSing(l)?K.singSpeed:1);}
+function topSpeed(l,raw){var t=(C.TOP0+0.85*l.pts[2])*(inSing(l)?K.singSpeed:1);return (!raw&&capped(l))?Math.min(t,capSpeed(l)):t;}
 function frontierX(){
   var m=-1e9;
   for(var i=0;i<G.labs.length;i++){ var l=G.labs[i]; if(!l.out&&l.x>m){m=l.x;} }
@@ -267,6 +344,8 @@ function backLimit(l){
   return lim;
 }
 function oddsAt(k){return clamp(K.p1+K.pstep*k,0,95);}
+/* falls at the singularity gap roll singOdds points higher; falls in gaps inside its stretch roll at the singularity gap's base odds */
+function gapOdds(k){var g=G.gaps[k];return g.sing?clamp(oddsAt(k)+K.singOdds,0,95):(g.inner?oddsAt(G.sing):oddsAt(k));}
 function log(msg){ G.log.unshift({t:G.t,msg:msg}); if(G.log.length>40){G.log.pop();} }
 
 /* visibility: known = in view ahead, already passed, or public. Towers are public once built.
@@ -316,7 +395,7 @@ function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,bounce:false,capUntil:-1e9,sag:null,
     out:false,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
-    st:{bc:0,tc:0,sc:0,fl:0},still:0,maxStill:0};
+    st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false};
 }
 function newGame(seed,humanKind){
   seed=seed>>>0;
@@ -329,14 +408,14 @@ function newGame(seed,humanKind){
   var bd=[];
   for(i=0;i<labs.length;i++){
     var d={p:rb(),g:[],b:[],s:[]};
-    for(j=0;j<8;j++){d.g.push(rb());} for(j=0;j<40;j++){d.b.push(rb());} for(j=0;j<8;j++){d.s.push(rb());}
+    for(j=0;j<11;j++){d.g.push(rb());} for(j=0;j<60;j++){d.b.push(rb());} for(j=0;j<8;j++){d.s.push(rb());}
     bd.push(d);
     var pk=POL[labs[i].kind];
     if(pk){ labs[i].basePace=pk.pace+d.p*pk.jit; }
   }
   G={seed:seed,t:0,labs:labs,barriers:T.bars,gaps:T.gaps,finish:T.finish,world:T,rolls:rolls,fallN:[],bd:bd,
-     maxcap:C.CAPS[T.n],log:[],over:false,result:null,level:0,
-     input:{pace:0.7,w:[25,50,25],jump:false,auto:true,rev:false}};
+     maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,log:[],over:false,result:null,level:0,ibuf:[],eff:null,
+     input:{pace:0.7,w:[25,50,25],jump:false,auto:true,rev:false,fwd:false}};
   log('Run started. Seed '+seed+'. '+T.label+'.');
   return G;
 }
@@ -353,19 +432,21 @@ function updateJump(l,dt){
 }
 
 function applyLevel(k,by){
-  var d=C.CAPS[k+1]-C.CAPS[k];
+  var d=C.CAPS[k+1]-C.CAPS[k],T=C.CAPS[k+1]+(G.gaps[k].sing?C.SINGUP:0);  /* the first lab across the singularity gap gets the final ceiling */
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i]; if(l.out){continue;}
-    if(l===by){ l.cap=Math.max(l.cap,C.CAPS[k+1]); }
+    if(l===by){ l.cap=Math.max(l.cap,T); }
     else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+K.share/100*d)); }
   }
 }
 function crossGap(l,g,k){
+  if(g.inner){ log(l.name+' crossed gap '+(k+1)+' inside the singularity stretch.'); return; }
+  if(g.sing){ l.lock=l.lastInp; }
   if(g.crossedBy<0){
     g.crossedBy=l.id; g.stepH=Math.max(8,Math.round(heightOf(l))); G.level=Math.max(G.level,k+1); applyLevel(k,l);
     if(K.revealOnCross){g.pub=true;}
     l.gapStopT=undefined;
-    log(l.name+' was first across gap '+(k+1)+' (width '+g.W+') and left a tower of '+g.stepH+'. Ceilings rise.');
+    log(l.name+' was first across gap '+(k+1)+(g.sing?', the singularity,':'')+' (width '+g.W+') and left a tower of '+g.stepH+'. Ceilings rise'+(g.sing?' to the final ceiling for '+l.name+'.':'.'));
   } else {
     l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;
     log(l.name+' crossed gap '+(k+1)+'.');
@@ -380,12 +461,13 @@ function fall(l,k){
   g.pub=true; l.st.fl++;
   l.out=true; l.v=0; l.fellAt=k;
   var n=G.fallN[k]||0; G.fallN[k]=n+1;
-  var p=oddsAt(k),r=(G.rolls[k][n]===undefined?0.999:G.rolls[k][n])*100,roll=Math.max(1,Math.ceil(r));
-  log(l.name+' fell into gap '+(k+1)+' (width '+wd+', its jump covered '+cov+').');
+  var p=gapOdds(k),r=(G.rolls[k][n]===undefined?0.999:G.rolls[k][n])*100,roll=Math.max(1,Math.ceil(r));
+  if(g.sing){ l.st.sg++; } else if(g.inner){ l.st.sf++; }
+  log(l.name+' fell into gap '+(k+1)+(g.sing?' (the singularity)':'')+' (width '+wd+', its jump covered '+cov+').');
   if(r<p){
     log('Rolled '+roll+', at or under '+Math.round(p)+'. Everyone is out.');
     for(var i=0;i<G.labs.length;i++){ G.labs[i].out=true; }
-    G.over=true; G.result={type:'all',by:l.name,gap:k+1,roll:roll};
+    G.over=true; G.result={type:'all',by:l.name,gap:k+1,roll:roll,sing:!!g.sing,inner:!!g.inner};
   } else {
     log('Rolled '+roll+', over '+Math.round(p)+'. Only '+l.name+' is out.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
@@ -415,11 +497,22 @@ function spill(l,b,bi){
   else if(names.length){ log(l.name+' cleared a barrier ('+b.h+') in view of '+names.join(', ')+'. They gain height.'); }
 }
 
+/* the nearest lab still racing behind l, as a distance (or Infinity) */
+function gapBehind(l){
+  var m=1e9;
+  for(var i=0;i<G.labs.length;i++){ var o=G.labs[i]; if(o!==l&&!o.out&&!o.done&&o.x<l.x&&l.x-o.x<m){m=l.x-o.x;} }
+  return m;
+}
 function botInput(l){
+  /* past the singularity gap a bot is too fast to react: it keeps the pace and split it crossed with, unless a cap has slowed it */
+  if(inSing(l)&&!capped(l)&&l.lock){ return l.lock; }
+  var inp=botPlan(l); l.lastInp=inp; return inp;
+}
+function botPlan(l){
   var g=G.gaps[l.gi],b=G.barriers[l.bi],bd=G.bd[l.id];
   var pol=POL[l.kind],reach=heightOf(l)+C.JUMP,top=topSpeed(l,true);
   var brake=l.v*l.v/(2*C.DEC)+40;
-  var stop=false,gapGo=0,rev=false;
+  var stop=false,gapGo=0,rev=false,wait=false;
   if(b&&knowsBar(l,l.bi)&&b.x-l.x<brake&&reach<b.h+2){
     if(l.crashedOn[l.bi]){stop=true;}
     else if(bd.b[l.bi]<pol.bar){stop=true;}
@@ -434,16 +527,30 @@ function botInput(l){
       }
     }
     if(!tower&&knowsGap(l,l.gi)){
-      var vreq=needSpeed(l,g)*1.06,capRem=capped(l)?Math.max(0,l.capUntil-l.x):0;
+      var vreq=needSpeed(l,g)*1.06,capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
       var v0=capped(l)?Math.min(l.v,capSpeed(l)):l.v;
-      var runUp=2*C.ACC*Math.max(gd-8-capRem,0)*0.9;
-      var dNeed=vreq*vreq/(2*C.ACC*0.9)+10,room=l.x-backLimit(l);
-      if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/top); }
+      var runUp=2*acc*Math.max(gd-8-capRem,0)*0.9;
+      var dNeed=vreq*vreq/(2*acc*0.9)+10,room=l.x-backLimit(l);
+      if(g.sing&&pol.safe&&!l.swGo){
+        /* careful bots stop before the singularity gap and fill sight and height, height first, until both meters reach the ceiling
+           or the next lab behind is within a sight length of them. Then they go. */
+        var full=l.pts[0]>=l.cap-0.01&&l.pts[1]>=l.cap-0.01,close=gapBehind(l)<=sightRange(l);
+        if(full||close){ l.swGo=true; }
+        else {
+          var vq=Math.min(vreq,top),dn=vq*vq/(2*acc*0.9)+10;
+          wait=true;
+          if(gd-l.v*l.v/(2*C.DEC)<=dn+30){ l.sw=1; }
+          if(l.sw){ if(gd<dn&&room>6&&l.v<1){rev=true;} else {stop=true;} }
+        }
+      }
+      if(wait){}
+      else if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/top); }
       else if(vreq<=top&&gd<dNeed&&room>6&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
         rev=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
       }
       else{
-        var canStop=l.v*l.v/(2*C.DEC)<gd-6;
+        /* inside a crash or scrape cap nothing can go to max speed, so a lab that waits there never gets across: it keeps moving until the cap ends */
+        var canStop=l.v*l.v/(2*C.DEC)<gd-6&&(!capped(l)||l.capUntil>g.x-6);
         if(bd.g[l.gi]<(g.pub?pol.pitPub:pol.pit)&&canStop&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
           stop=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
         } else { gapGo=1; }
@@ -460,6 +567,7 @@ function botInput(l){
   if(gapGo>0){pace=Math.max(pace,gapGo);}
   if(stop||rev){pace=0;}
   var w=KINDS[l.kind].w;
+  if(wait){ return {pace:pace,w:[35,65,0],jump:false,auto:true,rev:rev}; }
   if(pol.w){return {pace:pace,w:pol.w,jump:false,auto:true,rev:rev};}
   return {pace:pace,w:[w[0]*100,w[1]*100,w[2]*100],jump:false,auto:true,rev:rev};
 }
@@ -469,16 +577,18 @@ function stepLab(l,dt,inp){
   if(l.crash>0){l.crash=Math.max(0,l.crash-dt);}
   if(l.sag){l.sag.t+=dt; if(l.sag.t>=l.sag.dur){l.sag=null;}}
   var top=topSpeed(l),assist=l.human?inp.auto:true;
-  l.pace=clamp(inp.pace,0,1);
+  /* floor it: pace is effectively 100% and nothing is invested; reverse wins if both are held */
+  var fwd=!!inp.fwd&&!inp.rev;
+  l.pace=fwd?1:clamp(inp.pace,0,1);
   if(l.bounce){
     l.v=Math.min(0,l.v+C.DEC*dt);
     if(l.v>=0){l.v=0;l.bounce=false;}
   } else {
     var target=inp.rev?-C.REV:l.pace*top;
-    if(l.v<target){l.v=Math.min(target,l.v+C.ACC*dt);} else {l.v=Math.max(target,l.v-C.DEC*dt);}
+    if(l.v<target){l.v=Math.min(target,l.v+accOf(l)*dt);} else {l.v=Math.max(target,l.v-C.DEC*dt);}
   }
   /* while capped after a crash or scrape, held-back effort goes half to sight, half to height */
-  var w=capped(l)?[50,50,0]:inp.w,tot=w[0]+w[1]+w[2],r=clamp(1-Math.abs(l.v)/top,0,1);
+  var w=capped(l)?[50,50,0]:inp.w,tot=w[0]+w[1]+w[2],r=fwd?0:clamp(1-Math.abs(l.v)/top,0,1);
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
@@ -495,7 +605,7 @@ function stepLab(l,dt,inp){
       var bf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
       if(bf>=b.h){ spill(l,b,l.bi); l.bi++; }
       else{
-        b.pub=true; hit=true; l.st.bc++;
+        b.pub=true; hit=true; l.st.bc++; if(inSing(l)){l.st.ib++;}
         vi=crashLab(l,b.x-0.5,b.x); l.crashedOn[l.bi]=true; nx=l.x;
         log(l.name+' hit a barrier ('+b.h+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
       }
@@ -528,7 +638,7 @@ function stepLab(l,dt,inp){
           crossGap(l,g,k);
           l.pts[1]=Math.max(0,l.pts[1]-lost);
           l.capUntil=Math.max(l.capUntil,g.x+gw+K.scrapeCap*lost);
-          g.pub=true; l.st.sc++;
+          g.pub=true; l.st.sc++; if(g.inner){l.st.is++;}
           l.sag={from:h,to:h-lost,t:0,dur:0.7};
           l.flash={txt:'−'+Math.max(1,Math.round(lost))+' height',t:1.6,bad:true};
           log(l.name+' scraped across gap '+(k+1)+' (width '+Math.round(gw)+', jump covered '+Math.round(cov)+'). It lost '+Math.round(lost)+' height and is capped at '+Math.round(capSpeed(l))+' for '+Math.round(K.scrapeCap*lost)+' past the gap. The gap is public.');
@@ -546,15 +656,27 @@ function stepLab(l,dt,inp){
   updateJump(l,dt);
 }
 
+/* the human's controls reach the lab K.reaction seconds late once it is past the singularity gap, unless a cap has slowed it.
+   Every step the live input goes into a timestamped buffer; the delayed input is the newest entry at least that old, and a jump
+   pressed in between is delivered once. */
+function humanInput(l){
+  var li=G.input,e;
+  G.ibuf.push({t:G.t,pace:li.pace,w:li.w.slice(),jump:li.jump,auto:li.auto,rev:li.rev,fwd:li.fwd});
+  if(!G.eff){ G.eff={pace:li.pace,w:li.w.slice(),jump:false,auto:li.auto,rev:li.rev,fwd:li.fwd}; }
+  while(G.ibuf.length&&G.ibuf[0].t<=G.t-K.reaction+1e-9){
+    e=G.ibuf.shift(); G.eff.pace=e.pace; G.eff.w=e.w; G.eff.auto=e.auto; G.eff.rev=e.rev; G.eff.fwd=e.fwd; if(e.jump){G.eff.jump=true;}
+  }
+  return (inSing(l)&&!capped(l))?G.eff:li;
+}
 function stepGame(dt){
   if(G.over){return;}
   G.t+=dt;
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i];
     if(l.out||l.done){continue;}
-    var inp=l.human?G.input:botInput(l);
+    var inp=l.human?humanInput(l):botInput(l);
     stepLab(l,dt,inp);
-    if(l.human){G.input.jump=false;}
+    if(l.human){G.input.jump=false;G.eff.jump=false;}
     if(G.over){break;}
   }
   if(!G.over){updatePublic();}
@@ -597,11 +719,18 @@ function readColors(){
 }
 
 var running=false,paused=false,acc=0,last=performance.now(),lastHud=0;
-var ui={pace:70,w:[25,50,25],auto:true,rev:false};
+var ui={pace:70,w:[25,50,25],auto:true,rev:false,fwd:false},singShown=false;
 function leaderLab(){
   var best=null;
   for(var i=0;i<G.labs.length;i++){ var l=G.labs[i]; if(!l.out&&(!best||l.x>best.x)){best=l;} }
   return best||G.labs[0];
+}
+/* distance to the next known barrier or gap, against the distance covered during the reaction time and the braking distance */
+function loopInfo(l){
+  var d=1e9,i,v=Math.max(0,l.v);
+  for(i=l.bi;i<G.barriers.length;i++){ if(knowsBar(l,i)){ d=Math.min(d,G.barriers[i].x-l.x); break; } }
+  for(i=l.gi;i<G.gaps.length;i++){ if(knowsGap(l,i)){ d=Math.min(d,G.gaps[i].x-l.x); break; } }
+  return {d:d,react:v*K.reaction,brake:v*v/(2*C.DEC),capped:capped(l)};
 }
 function drawLab(l,cam,GY,isHuman,idx){
   var sx=l.x-cam-C.RW;
@@ -630,6 +759,12 @@ function draw(){
   var cam=Math.max(-70,tgt.x-190),GY=262;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle=COL.surface; ctx.fillRect(0,0,W,H);
+  var sgp=G.gaps[G.sing],singKnown=knowsGap(tgt,G.sing),sx0=sgp.x+gapWidth(tgt,sgp)-cam;
+  if(singKnown&&sx0<W){  /* past the singularity gap the background is tinted */
+    ctx.fillStyle=COL.d; ctx.globalAlpha=0.13; ctx.fillRect(Math.max(0,sx0),0,W,H); ctx.globalAlpha=0.5;
+    for(var sl=0;sl<14;sl++){ var sy=20+((sl*47+Math.floor(G.t*60*(sl%3+1)))%260); ctx.fillRect(Math.max(0,sx0)+((sl*131+Math.floor(G.t*500))%360),sy,26+sl%4*10,1); }
+    ctx.globalAlpha=1;
+  }
   ctx.lineWidth=2; ctx.strokeStyle=COL.ink;
   ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(W,GY); ctx.stroke();
   ctx.strokeStyle=COL.line; ctx.setLineDash([12,12]); ctx.lineDashOffset=cam%24;
@@ -648,6 +783,17 @@ function draw(){
     var b=G.barriers[i],bx=b.x-cam;
     if(bx>-30&&bx<W+30&&knowsBar(tgt,i)){ ctx.fillRect(bx,GY-b.h,C.BW,b.h); }
   }
+  // the gate: a label for the human until the gate is cleared
+  var gb0=G.barriers[0];
+  if(gb0&&gb0.gate&&human.human&&human.bi===0&&!human.out&&tgt===human){
+    var gl='Gate: lower Pace or hold Back to build height',gtw;
+    ctx.font='11px "IBM Plex Mono",monospace'; gtw=ctx.measureText(gl).width+14;
+    var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4,W-gtw-4),gly=GY-gb0.h-34;
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.92; ctx.fillRect(glx,gly,gtw,20); ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.ink; ctx.lineWidth=1; ctx.strokeRect(glx+0.5,gly+0.5,gtw-1,19);
+    ctx.fillStyle=COL.ink; ctx.fillText(gl,glx+7,gly+14);
+    ctx.beginPath(); ctx.moveTo(gb0.x-cam+C.BW/2,gly+20); ctx.lineTo(gb0.x-cam+C.BW/2,GY-gb0.h-3); ctx.stroke();
+  }
   // gaps and towers
   for(var k=0;k<G.gaps.length;k++){
     var g=G.gaps[k],gx=g.x-cam;
@@ -663,7 +809,8 @@ function draw(){
       ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,60);
       ctx.strokeStyle=COL.danger; ctx.lineWidth=2; ctx.strokeRect(gx,GY,pw,60);
       ctx.fillStyle=COL.ink; ctx.font='11px "IBM Plex Mono",monospace';
-      ctx.fillText('gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4,GY-8);
+      ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4,GY-8);
+      if(g.sing){ ctx.fillStyle=COL.d; ctx.fillRect(gx,GY-30,3,30); }
       ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=4;
       ctx.beginPath(); ctx.moveTo(gx,GY+70); ctx.lineTo(gx+cover,GY+70); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
@@ -687,6 +834,18 @@ function draw(){
   }
   // labs
   for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,GY,n===0,n); }
+  // beyond your loop: only once the watched lab is past the singularity gap
+  if(inSing(tgt)&&!tgt.out&&!tgt.done){
+    var bl=loopInfo(tgt),lines=['Beyond your loop',
+      bl.d<1e8?'Next known obstacle '+Math.round(bl.d)+' ahead':'No obstacle known ahead',
+      'Reaction '+K.reaction+' s covers '+Math.round(bl.react)+'; braking needs '+Math.round(bl.brake),
+      bl.capped?'Capped: slow enough to act':(bl.d<bl.react+bl.brake?'Too fast to act: the auto-jump decides':'Time to act, but not for long')];
+    ctx.font='11px "IBM Plex Mono",monospace';
+    var bw=0,bi2; for(bi2=0;bi2<lines.length;bi2++){ bw=Math.max(bw,ctx.measureText(lines[bi2]).width); } bw+=14;
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,50,bw,62); ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,50.5,bw-1,61);
+    for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,65+bi2*14); }
+  }
   // minimap
   var mx0=24,mw=W-48,my=18;
   function mmx(x){return mx0+clamp(x,0,G.finish)/G.finish*mw;}
@@ -697,11 +856,13 @@ function draw(){
     ctx.fillStyle=COL.ink; ctx.fillRect(mmx(bb.x)-1,my-4,2,4);
     if(bb.pub){ ctx.strokeStyle=COL.a; ctx.lineWidth=1; ctx.strokeRect(mmx(bb.x)-2.5,my-6.5,5,7); }
   }
+  if(singKnown){ ctx.fillStyle=COL.d; ctx.globalAlpha=0.22; ctx.fillRect(mmx(sgp.x+sgp.W),my-8,mx0+mw-mmx(sgp.x+sgp.W),16); ctx.globalAlpha=1; }
   for(var q2=0;q2<G.gaps.length;q2++){
     var gg=G.gaps[q2];
     if(gg.crossedBy>=0){ ctx.fillStyle=COL.ink; ctx.fillRect(mmx(gg.x-C.STEPD)-1,my-8,2,8); }
     if(!knowsGap(tgt,q2)){continue;}
-    ctx.fillStyle=gg.crossedBy>=0?COL.muted:COL.danger; ctx.fillRect(mmx(gg.x)-3,my+1,6,7);
+    ctx.fillStyle=gg.sing?COL.d:(gg.crossedBy>=0?COL.muted:COL.danger); ctx.fillRect(mmx(gg.x)-3,my+1,6,gg.sing?10:7);
+    if(gg.sing){ ctx.font='10px "IBM Plex Mono",monospace'; ctx.fillText('singularity',Math.min(mmx(gg.x)-18,mx0+mw-62),my+22); }
     if(gg.pub){ ctx.strokeStyle=COL.a; ctx.lineWidth=1.5; ctx.strokeRect(mmx(gg.x)-4.5,my-0.5,9,10); }
   }
   ctx.fillStyle=COL.d; ctx.fillRect(mmx(G.finish)-1,my-9,2,18);
@@ -716,9 +877,10 @@ function draw(){
 
 function pct(x){return Math.round(x*100)+'%';}
 function hud(){
-  var l=G.labs[0],p=ui.pace/100,r=1-p,tot=ui.w[0]+ui.w[1]+ui.w[2];
-  var s=tot?ui.w[0]/tot:0,h=tot?ui.w[1]/tot:0,m=tot?ui.w[2]/tot:0;
-  $('pace-out').textContent=ui.pace+'%';
+  var l=G.labs[0],p=(ui.fwd&&!ui.rev)?1:ui.pace/100,r=1-p,forced=triForced(),ew=forced?[50,50,0]:ui.w,tot=ew[0]+ew[1]+ew[2];
+  var s=tot?ew[0]/tot:0,h=tot?ew[1]/tot:0,m=tot?ew[2]/tot:0;
+  $('pace-out').textContent=ui.pace+'%'+((ui.fwd&&!ui.rev)?' (floored)':'');
+  drawTri();
   $('s-run').style.width=(p*100)+'%'; $('s-sight').style.width=(r*s*100)+'%';
   $('s-height').style.width=(r*h*100)+'%'; $('s-max').style.width=(r*m*100)+'%';
   $('l-run').textContent=pct(p); $('l-sight').textContent=pct(r*s); $('l-height').textContent=pct(r*h); $('l-max').textContent=pct(r*m);
@@ -742,10 +904,15 @@ function hud(){
         parts.push('Tower at gap '+(l.gi+1)+' in '+sd+', height '+Math.round(S)+(rch>=S?' (you clear it)':' (too tall for you)')+'.');
       }
       if(knowsGap(l,l.gi)){
-        var gw=Math.round(gapWidth(l,ng)),ns=Math.round(needSpeed(l,ng)),rv=Math.round(Math.sqrt(l.v*l.v+2*C.ACC*Math.max(gd-8,0)));
+        var gw=Math.round(gapWidth(l,ng)),ns=Math.round(needSpeed(l,ng)),rv=Math.round(Math.sqrt(l.v*l.v+2*accOf(l)*Math.max(gd-8,0)));
         var tcap=topSpeed(l,true);
-        parts.push('Gap '+(l.gi+1)+' in '+gd+', '+gw+' wide'+(ng.pub?' (public)':'')+'. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(tcap),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.'+(heightOf(l)>0?' A miss of up to '+Math.round(K.dropH/1000*heightOf(l)*l.v)+' is a scrape at this speed.':''));
+        parts.push((ng.sing?'The singularity, gap ':'Gap ')+(l.gi+1)+' in '+gd+', '+gw+' wide'+(ng.pub?' (public)':'')+'. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(tcap),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.'+(heightOf(l)>0?' A miss of up to '+Math.round(K.dropH/1000*heightOf(l)*l.v)+' is a scrape at this speed.':''));
       }
+    }
+    if(ng&&ng.sing&&knowsGap(l,l.gi)){ parts.push('Past it top speed is x'+K.singSpeed+' and controls lag '+K.reaction+' s. First across gets the final ceiling.'); }
+    if(inSing(l)){
+      var li=loopInfo(l);
+      parts.push('Beyond your loop: '+(li.d<1e8?'next known obstacle '+Math.round(li.d)+' ahead':'no obstacle known ahead')+'. Reaction time covers '+Math.round(li.react)+', braking needs '+Math.round(li.brake)+'.'+(li.capped?' You are capped, slow enough to act.':''));
     }
     if(capped(l)){ parts.push('Speed capped at '+Math.round(top)+' for another '+Math.round(l.capUntil-l.x)+'. Until then held-back effort goes half to sight, half to height.'); }
     var sh=shadows(l);
@@ -761,6 +928,56 @@ function hud(){
   $('seed').textContent='Seed '+G.seed+'. Track '+Math.round(G.finish)+' long. Time '+G.t.toFixed(1)+' s.';
   $('world').textContent=G.world.label;
 }
+
+/* triangle picker: corners Sight, Height, Max speed; the point's barycentric coordinates are the split */
+var TV=[[46,176],[130,30],[214,176]],TN='http://www.w3.org/2000/svg',triDrag=false;
+function triPos(w){
+  var t=w[0]+w[1]+w[2]||1,a=w[0]/t,b=w[1]/t,c=w[2]/t;
+  return [a*TV[0][0]+b*TV[1][0]+c*TV[2][0],a*TV[0][1]+b*TV[1][1]+c*TV[2][1]];
+}
+function triFromXY(x,y){
+  var A=TV[0],B=TV[1],D=TV[2],d=(B[1]-D[1])*(A[0]-D[0])+(D[0]-B[0])*(A[1]-D[1]);
+  var a=((B[1]-D[1])*(x-D[0])+(D[0]-B[0])*(y-D[1]))/d,b=((D[1]-A[1])*(x-D[0])+(A[0]-D[0])*(y-D[1]))/d,c=1-a-b;
+  a=Math.max(0,a); b=Math.max(0,b); c=Math.max(0,c);
+  var t=a+b+c||1;
+  return [a/t*100,b/t*100,c/t*100];
+}
+var TMARKS=[[4,[1,1,1]],[5,[1,1,0]],[6,[0,1,1]],[7,[1,0,1]]],TSET={
+  Digit1:[100,0,0],Digit2:[0,100,0],Digit3:[0,0,100],Digit4:[100/3,100/3,100/3],Digit5:[50,50,0],Digit6:[0,50,50],Digit7:[50,0,50]};
+(function(){
+  var g=$('tri-mk'),i,m,xy,c,t;
+  for(i=0;i<TMARKS.length;i++){
+    m=TMARKS[i]; xy=triPos(m[1]);
+    c=document.createElementNS(TN,'circle'); c.setAttribute('class','t-mk'); c.setAttribute('cx',xy[0]); c.setAttribute('cy',xy[1]); c.setAttribute('r',8); g.appendChild(c);
+    t=document.createElementNS(TN,'text'); t.setAttribute('class','t-key'); t.setAttribute('x',xy[0]); t.setAttribute('y',xy[1]+3.5); t.setAttribute('text-anchor','middle'); t.textContent=m[0]; g.appendChild(t);
+  }
+})();
+function triForced(){ var l=G.labs[0]; return running&&l.human&&!l.out&&!l.done&&capped(l); }
+function drawTri(){
+  var forced=triForced(),pt=$('tri-pt'),gh=$('tri-ghost'),fl=$('tri-forced'),xy=triPos(forced?[50,50,0]:ui.w),px=triPos(ui.w);
+  pt.setAttribute('cx',xy[0]); pt.setAttribute('cy',xy[1]); pt.style.opacity=forced?0.35:1;
+  gh.setAttribute('cx',px[0]); gh.setAttribute('cy',px[1]); gh.setAttribute('visibility',forced?'visible':'hidden');
+  fl.setAttribute('x',xy[0]); fl.setAttribute('y',xy[1]-16); fl.setAttribute('visibility',forced?'visible':'hidden');
+  var tot=ui.w[0]+ui.w[1]+ui.w[2]||1;
+  $('tri-read').innerHTML='<b style="color:var(--a)">Sight '+Math.round(ui.w[0]/tot*100)+'%</b> <b style="color:var(--c)">Height '+Math.round(ui.w[1]/tot*100)+'%</b> <b style="color:var(--b)">Max speed '+Math.round(ui.w[2]/tot*100)+'%</b>'+(forced?'<br>Forced while capped: half Sight, half Height. Your point comes back after.':'');
+}
+function setSplit(w){ ui.w=w; syncInput(); drawTri(); }
+function triEvent(e){
+  var svg=$('tri'),r=svg.getBoundingClientRect(),k=260/r.width;
+  setSplit(triFromXY((e.clientX-r.left)*k,(e.clientY-r.top)*k));
+}
+(function(){
+  var svg=$('tri');
+  svg.addEventListener('pointerdown',function(e){ e.preventDefault(); triDrag=true; try{svg.setPointerCapture(e.pointerId);}catch(x){} svg.focus({preventScroll:true}); triEvent(e); });
+  svg.addEventListener('pointermove',function(e){ if(triDrag){ e.preventDefault(); triEvent(e); } });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(function(ev){ svg.addEventListener(ev,function(){triDrag=false;}); });
+  svg.addEventListener('keydown',function(e){
+    var d={ArrowLeft:[-4,0],ArrowRight:[4,0],ArrowUp:[0,-4],ArrowDown:[0,4]}[e.code];
+    if(!d){return;}
+    e.preventDefault(); e.stopPropagation();
+    var xy=triPos(ui.w); setSplit(triFromXY(xy[0]+d[0],xy[1]+d[1]));
+  });
+})();
 
 function showOverlay(title,msg,btn){
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false;
@@ -784,12 +1001,19 @@ function showSeed(){
 }
 function start(seed){
   newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,$('watch').checked?'custom':undefined);
-  running=true; paused=false; acc=0; fresh=false;
-  $('ov').hidden=true; $('btn-pause').textContent='Pause';
+  running=true; paused=false; acc=0; fresh=false; singShown=false;
+  $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   showSeed(); syncInput();
 }
-function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; }
+function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; G.input.fwd=ui.fwd; }
 
+/* the first time the human's lab knows the singularity gap the game pauses once and shows a card */
+function showSing(l){
+  var g=G.gaps[G.sing];
+  $('sing-w').innerHTML='<span class="sing-n">'+Math.round(gapWidth(l,g))+'</span> wide, the widest gap on this track. A fall here rolls '+Math.round(gapOdds(G.sing))+'%.';
+  $('sing-msg').textContent='Past it your top speed is \u00d7'+K.singSpeed+' and your controls lag '+K.reaction+' s. Barriers and gaps continue the curve you have crossed. Set your balance.';
+  $('sing').hidden=false; setPaused(true);
+}
 function frame(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
   if(running&&!paused&&!G.over){
@@ -798,6 +1022,7 @@ function frame(now){
     while(acc>=1/60){
       syncInput(); stepGame(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
+      if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); break; }
     }
   }
   if(running&&G.over){running=false;endScreen();}
@@ -809,30 +1034,40 @@ function frame(now){
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
 bindRange('pace',function(v){ui.pace=v;});
-bindRange('w-sight',function(v){ui.w[0]=v;});
-bindRange('w-height',function(v){ui.w[1]=v;});
-bindRange('w-max',function(v){ui.w[2]=v;});
 $('auto').addEventListener('change',function(){ui.auto=this.checked;});
 function doJump(){ if(running&&!paused){G.input.jump=true;} }
 $('btn-jump').addEventListener('pointerdown',function(e){e.preventDefault();doJump();});
-function setRev(v){ ui.rev=v; $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
-$('btn-back').addEventListener('pointerdown',function(e){e.preventDefault();setRev(true);});
-['pointerup','pointerleave','pointercancel'].forEach(function(ev){ $('btn-back').addEventListener(ev,function(){setRev(false);}); });
-$('btn-pause').addEventListener('click',function(){
-  if(!running){return;} paused=!paused; this.textContent=paused?'Resume':'Pause';
-});
+function holdBtn(id,set){
+  var b=$(id);
+  b.addEventListener('pointerdown',function(e){e.preventDefault();set(true);});
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){ b.addEventListener(ev,function(){set(false);}); });
+}
+function setRev(v){ ui.rev=v; syncInput(); $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
+function setFwd(v){ ui.fwd=v; syncInput(); $('btn-fwd').style.background=v?'var(--ink)':''; $('btn-fwd').style.color=v?'var(--bg)':''; }
+holdBtn('btn-back',setRev); holdBtn('btn-fwd',setFwd);
+function setPaused(v){ if(!running){return;} paused=v; $('btn-pause').textContent=paused?'Resume':'Pause'; if(!paused){$('sing').hidden=true;} }
+$('btn-pause').addEventListener('click',function(){ setPaused(!paused); });
+$('sing-btn').addEventListener('click',function(){ setPaused(false); });
+$('pace').addEventListener('pointerup',function(){this.blur();});
 $('btn-restart').addEventListener('click',function(){start();});
 $('btn-seed').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); if(n===null){$('seed-in').value=G.seed;return;} start(n); });
 $('seed-in').addEventListener('keydown',function(e){ if(e.code==='Enter'){e.preventDefault();$('btn-seed').click();} });
 $('ov-btn').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); start(fresh?(n===null?G.seed:n):undefined); });
-document.addEventListener('keyup',function(e){ if(e.code==='ArrowLeft'||e.code==='KeyB'){setRev(false);} });
+document.addEventListener('keyup',function(e){
+  if(e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA'){setRev(false);}
+  else if(e.code==='ArrowRight'||e.code==='KeyD'){setFwd(false);}
+});
+window.addEventListener('blur',function(){setRev(false);setFwd(false);});
 document.addEventListener('keydown',function(e){
-  var t=e.target&&e.target.tagName;
+  var t=e.target&&e.target.tagName,txt=t==='INPUT'&&e.target.type==='text';
+  if(e.metaKey||e.ctrlKey||e.altKey){return;}
+  if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
   else if(e.code==='KeyP'&&t!=='INPUT'){$('btn-pause').click();}
-  else if((e.code==='ArrowLeft'||e.code==='KeyB')&&t!=='INPUT'){e.preventDefault();setRev(true);}
+  else if((e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA')&&(t!=='INPUT'||(e.code!=='ArrowLeft'&&!txt))){e.preventDefault();setRev(true);}
+  else if((e.code==='ArrowRight'||e.code==='KeyD')&&(t!=='INPUT'||(e.code!=='ArrowRight'&&!txt))){e.preventDefault();setFwd(true);}
 });
 
 /* knobs */
@@ -843,7 +1078,8 @@ var KNOBS=[
   ['barScale','Barrier height scale (%)',50,150,5],['gapScale','Gap width scale (%)',50,150,5],['airH','Air time per unit of height (ms)',0,40,1],
   ['spill','Barrier spillover (% of barrier height)',0,100,1],['bounce','Crash bounce (fraction of impact speed)',0,1,0.05],
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
-  ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool']
+  ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
+  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05]
 ];
 (function(){
   var box=$('knobs');
