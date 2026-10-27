@@ -27,7 +27,7 @@
 1. **[Implemented in version 2] Barrier crash: bounce back.** Throw the lab backward at e × impact speed, decelerating at the braking rate. The bounce distance is then (e·v)²/(2·DEC), and never goes past `backLimit`.
 2. **[Implemented in version 2] Barrier crash: forced speed cap.** Afterwards, cap top speed at the speed from which the lab could stop within its sight, until it has travelled a set distance past the barrier. This replaces the timed penalty. No investment penalty for now; add one only if needed.
 3. **[Implemented in version 2] Gap near miss is a scrape.** A gap's floor is the starting height. A lab that reaches the far side before dropping to that floor scrapes through: it loses height and gets a speed cap scaled to the drop. A full miss means out, then the roll. Every failure costs ground or height plus a period of forced caution.
-4. **[Implemented in version 2] One visibility rule.** Barriers and gaps are hidden until they are inside a lab's sight. A feature becomes permanently public when two labs see it at the same time, or when a lab crashes into it. The frontier relies on its own sight. Followers see the public map ahead of them. A reckless bot uses public knowledge, so it stops at known gaps it can't cross, and it stays dangerous when it leads into unseen ones.
+4. **[Implemented in version 2, with line of sight added later] One visibility rule.** Barriers and gaps are hidden until they are inside a lab's sight. A feature becomes permanently public when two labs see it at the same time, or when a lab crashes into it. The frontier relies on its own sight. Followers see the public map ahead of them. A reckless bot uses public knowledge, so it stops at known gaps it can't cross, and it stays dangerous when it leads into unseen ones.
 5. **[Implemented in version 2] Fix barrier placement**, so barriers exist and need height.
 6. **Singularity: the last gap.**
    - It is the widest gap, with the highest fall odds.
@@ -107,3 +107,45 @@ The best policy does depend on the seed: the Gambler wins about three games in f
 - **Crashes still pay.** A crashed lab stops and invests, so tall barriers make the Sprinter and Gambler taller, not slower. The bounce and the speed cap cost distance, but the Sprinter's win share is 5% in the default world and rises with taller barriers. Not tested: an investment penalty (item 2 said to add one only if needed).
 - **The Steward almost never wins.** It caps speed to what it can see and so crawls.
 - **Little is private.** See Visibility. If followers are meant to rely on public knowledge, the rule needs a distance condition or a stricter notion of "at the same time".
+
+## Line of sight and extinction
+
+27 October 2026, a follow-up to the version 2 results, which showed almost no private knowledge and almost no extinction.
+
+**Diagnosis.** The co-observation rule was not what made everything public. In 200 seeds, the lab that first knew a gap was the frontier lab 83% of the time, and a second lab knew it a median 0.45 s later, almost always through its own sight, because the labs run as a pack. Changing what "public" means only affects the third and fourth labs.
+
+**Changes**
+
+- **Line of sight.** A lab ahead casts a sight shadow. A lab no taller than the one ahead sees nothing past it. A taller lab sees past it only from where its line of sight over the other lab's head meets the ground. A hard "taller sees everything" cut-off did nothing, because the runner-up is taller than the leader 82% of the time, but usually only by about 3.
+- **Memory.** A lab remembers features it has had in view. Without this, a careful lab that saw a gap and then lost it into a shadow ran into it.
+- **Mutual sight.** Co-observation now needs the two labs within sight of each other.
+- **Forced split while capped.** After a crash or scrape, held-back effort goes half to sight and half to height, none to max speed.
+- **Careful bots wait.** The Steward and Custom bots no longer charge a known gap after 10 s, and do not overtake a slower lab whose shadow hides the track.
+- **Run-up zones.** The clear zone in front of a gap is now as long as the run-up a lab at the ceiling needs from a standstill. Before this, some wide late gaps could not be crossed from a stop, and careful bots waited until the time limit.
+- **Default `dropH` 15 → 5.** A scrape now forgives a third of the air time that height adds, not all of it.
+
+**Results** (default knobs, seeds 5000 to 5499, lab 0 = `custom`, bot play only)
+
+- **Private knowledge.** The first lab to know a gap has it to itself for a median 1.7 s (p90 3.9 s), up from 0.45 s. That is roughly the time the leader takes to cover its own sight.
+- **Extinction.** 20.8% of games end in the roll, and 0.4% hit the time limit. Falls in 500 games: Sprinter 199, Gambler 81, Steward 27, Custom 7.
+- **Wins.**
+
+  | Custom | Gambler | Sprinter | Steward |
+  |---|---|---|---|
+  | 35.8% | 28.4% | 10.6% | 4.0% |
+
+- **Length.** Track length 1794 to 6054 (median 3446). Winning time p10/median/p90: 29/45/61 s.
+
+| Shape | n | Extinction | Custom | Gambler | Sprinter | Steward |
+|---|---|---|---|---|---|---|
+| Early wall | 130 | 8% | 33 | 63 | 22 | 2 |
+| Steady climb | 129 | 25% | 52 | 26 | 13 | 5 |
+| Staircase | 134 | 16% | 55 | 40 | 12 | 5 |
+| Late cliff | 107 | 37% | 39 | 13 | 6 | 8 |
+
+(Win columns are game counts.)
+
+**Still off**
+
+- **The Steward wins 4%.** It caps speed to its sight and now also waits behind slower labs.
+- **The leader's private window is short.** The leader sees a feature only as far as its own sight, so its edge is about one sight length of travel. A longer edge would need a longer lead or more sight.

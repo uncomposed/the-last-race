@@ -101,7 +101,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">Drag Pace down to hold effort back and put it into sight, height or max speed. The seed sets the track: barriers and gaps both get harder along a hidden curve, so the ones you have crossed hint at what is next. You see only what is inside your sight, behind you, or public (seen by two labs at once, crashed into, fallen into, or a tower). Hit a barrier and you bounce back, then you are capped to a speed you could stop from within your sight until you are well past it. A gap you miss by a little is a scrape: you cross but lose height and slow down. A bigger miss is a fall, and a roll can end the run for everyone. The first lab across a gap leaves a tower, and labs behind cross a narrower gap. Reach the finish first.</p>
+        <p id="ov-msg">Drag Pace down to hold effort back and put it into sight, height or max speed. The seed sets the track: barriers and gaps both get harder along a hidden curve, so the ones you have crossed hint at what is next. You see only what is inside your sight, behind you, or public (seen at once by two labs in sight of each other, crashed into, fallen into, or a tower). A lab ahead blocks your view unless you stand taller than it. Hit a barrier and you bounce back, then you are capped to a speed you could stop from within your sight until you are well past it, and your held-back effort goes only to sight and height. A gap you miss by a little is a scrape: you cross but lose height and slow down. A bigger miss is a fall, and a roll can end the run for everyone. The first lab across a gap leaves a tower, and labs behind cross a narrower gap. Reach the finish first.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
       </div>
     </div>
@@ -169,7 +169,7 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:90,SIGHT0:80,MAXCAP:300,TLIMIT:300,
   HREF0:25,HREF1:18,WREF0:112,WREF1:36};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:15,scrapeCap:4,revealOnCross:0};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -225,10 +225,12 @@ function genTrack(r){
       bars.push({x:bx,h:Math.round(Math.min(h,hcap)*10)/10,pub:false,seg:s});
     }
     if(s<n){
-      var gx=rs+L+C.STEPD+20,gz=A*(r()*2-1),gu=(s+1)/(n+1)-0.0005;
+      var gz=A*(r()*2-1),gu=(s+1)/(n+1)-0.0005;
       var w0=(C.WREF0+C.WREF1*s)*(0.55+1.5*clamp(profD(P,gu)+gz,0.03,1))*K.gapScale/100;
-      var cov=(C.TOP0+0.85*C.CAPS[s])*(C.AIR0+K.airH/1000*C.CAPS[s]);
+      var air=C.AIR0+K.airH/1000*C.CAPS[s],cov=(C.TOP0+0.85*C.CAPS[s])*air;
       var W=Math.round(Math.max(40,Math.min(w0,0.65*cov)));
+      /* clear zone before the gap: the tower's distance, or the run-up a lab at the ceiling needs from a standstill */
+      var vn=W/air,gx=rs+L+Math.max(C.STEPD+20,Math.round(1.3*vn*vn/(2*C.ACC))+20);
       gaps.push({x:gx,W:W,crossedBy:-1,stepH:0,pub:false});
       x=gx+W+40;
     } else { finish=rs+L+50; }
@@ -267,26 +269,53 @@ function backLimit(l){
 function oddsAt(k){return clamp(K.p1+K.pstep*k,0,95);}
 function log(msg){ G.log.unshift({t:G.t,msg:msg}); if(G.log.length>40){G.log.pop();} }
 
-/* visibility: known = within sight ahead, already passed, or public. Towers are public once built. */
-function knowsBar(l,i){var b=G.barriers[i];return !!b&&(b.pub||l.bi>i||b.x-l.x<=sightRange(l));}
-function knowsGap(l,i){var g=G.gaps[i];return !!g&&(g.pub||l.gi>i||g.x-l.x<=sightRange(l));}
+/* visibility: known = in view ahead, already passed, or public. Towers are public once built.
+   A lab ahead casts a sight shadow. Eye level is height plus body. A lab no taller than the one ahead sees
+   nothing past it. A taller lab sees over it, but only from where its line of sight over the other
+   lab's head meets the ground. */
+function shadows(l){
+  var out=[],sr=sightRange(l),eye=heightOf(l)+C.RW;
+  if(!K.occlude){return out;}
+  for(var i=0;i<G.labs.length;i++){
+    var m=G.labs[i],db=m.x-l.x;
+    if(m===l||m.out||m.done||db<=0||db>=sr){continue;}
+    var top=heightOf(m)+C.RW,end=eye>top?db*eye/(eye-top):sr;
+    if(end>db){out.push({by:m,a:db,b:Math.min(end,sr)});}
+  }
+  return out;
+}
+function inView(l,x,sh){
+  var d=x-l.x; if(d>sightRange(l)){return false;}
+  for(var i=0;i<sh.length;i++){ if(d>sh[i].a&&d<sh[i].b){return false;} }
+  return true;
+}
+function knowsBar(l,i){var b=G.barriers[i];return !!b&&(b.pub||l.bi>i||!!l.seenB[i]||inView(l,b.x,shadows(l)));}
+function knowsGap(l,i){var g=G.gaps[i];return !!g&&(g.pub||l.gi>i||!!l.seenG[i]||inView(l,g.x,shadows(l)));}
+/* each step: a lab remembers everything it has had in view. A feature is public once two labs
+   have it in view at the same time while within sight of each other. */
 function updatePublic(){
-  var nb=G.barriers.length,ng=G.gaps.length,cb=[],cg=[],i,j,l,s;
-  for(i=0;i<nb;i++){cb.push(0);} for(i=0;i<ng;i++){cg.push(0);}
+  var nb=G.barriers.length,ng=G.gaps.length,sb=[],sg=[],i,j,l,s;
+  for(i=0;i<nb;i++){sb.push([]);} for(i=0;i<ng;i++){sg.push([]);}
   for(i=0;i<G.labs.length;i++){
     l=G.labs[i]; if(l.out||l.done){continue;}
-    s=sightRange(l);
-    for(j=l.bi;j<nb&&G.barriers[j].x-l.x<=s;j++){cb[j]++;}
-    for(j=l.gi;j<ng&&G.gaps[j].x-l.x<=s;j++){cg[j]++;}
+    s=shadows(l);
+    for(j=l.bi;j<nb&&G.barriers[j].x-l.x<=sightRange(l);j++){ if(inView(l,G.barriers[j].x,s)){l.seenB[j]=true;sb[j].push(l);} }
+    for(j=l.gi;j<ng&&G.gaps[j].x-l.x<=sightRange(l);j++){ if(inView(l,G.gaps[j].x,s)){l.seenG[j]=true;sg[j].push(l);} }
   }
-  for(j=0;j<nb;j++){ if(cb[j]>=2){G.barriers[j].pub=true;} }
-  for(j=0;j<ng;j++){ if(cg[j]>=2&&!G.gaps[j].pub){ G.gaps[j].pub=true; log('Gap '+(j+1)+' is now public: two labs saw it at once.'); } }
+  for(j=0;j<nb;j++){ if(!G.barriers[j].pub&&mutual(sb[j])){G.barriers[j].pub=true;} }
+  for(j=0;j<ng;j++){ if(!G.gaps[j].pub&&mutual(sg[j])){ G.gaps[j].pub=true; log('Gap '+(j+1)+' is now public: two labs in sight of each other saw it at once.'); } }
+}
+function mutual(ls){
+  for(var a=0;a<ls.length;a++){ for(var b=a+1;b<ls.length;b++){
+    if(Math.abs(ls[a].x-ls[b].x)<=Math.min(sightRange(ls[a]),sightRange(ls[b]))){return true;}
+  } }
+  return false;
 }
 
 function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,bounce:false,capUntil:-1e9,sag:null,
-    out:false,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},flash:null,
+    out:false,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
     st:{bc:0,tc:0,sc:0,fl:0},still:0,maxStill:0};
 }
 function newGame(seed,humanKind){
@@ -410,12 +439,12 @@ function botInput(l){
       var runUp=2*C.ACC*Math.max(gd-8-capRem,0)*0.9;
       var dNeed=vreq*vreq/(2*C.ACC*0.9)+10,room=l.x-backLimit(l);
       if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/top); }
-      else if(vreq<=top&&gd<dNeed&&room>6&&(l.gapStopT===undefined||G.t-l.gapStopT<10)){
+      else if(vreq<=top&&gd<dNeed&&room>6&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
         rev=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
       }
       else{
         var canStop=l.v*l.v/(2*C.DEC)<gd-6;
-        if(bd.g[l.gi]<(g.pub?pol.pitPub:pol.pit)&&canStop&&(l.gapStopT===undefined||G.t-l.gapStopT<10)){
+        if(bd.g[l.gi]<(g.pub?pol.pitPub:pol.pit)&&canStop&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
           stop=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
         } else { gapGo=1; }
       }
@@ -423,7 +452,9 @@ function botInput(l){
   }
   var pace=l.basePace;
   if(pol.safe&&!stop){
-    var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l));
+    var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l)),sh=shadows(l);
+    /* do not pass a slower lab blind: close on it no faster than it can stop behind it */
+    for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(sh[si].a-25,0))); } }
     pace=Math.min(pace,vs/top);
   }
   if(gapGo>0){pace=Math.max(pace,gapGo);}
@@ -446,7 +477,8 @@ function stepLab(l,dt,inp){
     var target=inp.rev?-C.REV:l.pace*top;
     if(l.v<target){l.v=Math.min(target,l.v+C.ACC*dt);} else {l.v=Math.max(target,l.v-C.DEC*dt);}
   }
-  var w=inp.w,tot=w[0]+w[1]+w[2],r=clamp(1-Math.abs(l.v)/top,0,1);
+  /* while capped after a crash or scrape, held-back effort goes half to sight, half to height */
+  var w=capped(l)?[50,50,0]:inp.w,tot=w[0]+w[1]+w[2],r=clamp(1-Math.abs(l.v)/top,0,1);
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
@@ -640,10 +672,12 @@ function draw(){
   }
   // sight bracket
   if(tgt===human){
-    var sr=sightRange(tgt);
+    var sr=sightRange(tgt),sh=shadows(tgt);
     ctx.strokeStyle=COL.a; ctx.lineWidth=5; ctx.beginPath();
     ctx.moveTo(tgt.x-cam,GY+36); ctx.lineTo(tgt.x-cam+sr,GY+36); ctx.stroke();
-    ctx.fillStyle=COL.a; ctx.font='11px "IBM Plex Mono",monospace'; ctx.fillText('sight '+Math.round(sr),tgt.x-cam,GY+52);
+    ctx.strokeStyle=COL.line;
+    for(var si=0;si<sh.length;si++){ ctx.beginPath(); ctx.moveTo(tgt.x-cam+sh[si].a,GY+36); ctx.lineTo(tgt.x-cam+sh[si].b,GY+36); ctx.stroke(); }
+    ctx.fillStyle=COL.a; ctx.font='11px "IBM Plex Mono",monospace'; ctx.fillText('sight '+Math.round(sr)+(sh.length?', shadowed by '+sh.map(function(q){return q.by.name;}).join(', '):''),tgt.x-cam,GY+52);
   }
   // finish
   var fx=G.finish-cam;
@@ -713,7 +747,9 @@ function hud(){
         parts.push('Gap '+(l.gi+1)+' in '+gd+', '+gw+' wide'+(ng.pub?' (public)':'')+'. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(tcap),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.'+(heightOf(l)>0?' A miss of up to '+Math.round(K.dropH/1000*heightOf(l)*l.v)+' is a scrape at this speed.':''));
       }
     }
-    if(capped(l)){ parts.push('Speed capped at '+Math.round(top)+' for another '+Math.round(l.capUntil-l.x)+'.'); }
+    if(capped(l)){ parts.push('Speed capped at '+Math.round(top)+' for another '+Math.round(l.capUntil-l.x)+'. Until then held-back effort goes half to sight, half to height.'); }
+    var sh=shadows(l);
+    for(var si=0;si<sh.length;si++){ parts.push(sh[si].by.name+' hides the track from '+Math.round(sh[si].a)+' to '+Math.round(sh[si].b)+' ahead.'+(sh[si].b>=sightRange(l)?' Stand taller than it to see past.':' Taller would show more.')); }
     txt=parts.join(' ')||'Open track as far as you can see ('+Math.round(sightRange(l))+').';
   }
   $('next').textContent=txt;
@@ -807,7 +843,7 @@ var KNOBS=[
   ['barScale','Barrier height scale (%)',50,150,5],['gapScale','Gap width scale (%)',50,150,5],['airH','Air time per unit of height (ms)',0,40,1],
   ['spill','Barrier spillover (% of barrier height)',0,100,1],['bounce','Crash bounce (fraction of impact speed)',0,1,0.05],
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
-  ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool']
+  ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool']
 ];
 (function(){
   var box=$('knobs');
