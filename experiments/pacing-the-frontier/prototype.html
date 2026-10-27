@@ -150,7 +150,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
+        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
       </div>
     </div>
@@ -230,7 +230,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
   <div class="panel">
     <details>
       <summary>Tuning knobs</summary>
-      <p class="note" style="margin-top:8px">Odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
+      <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button></div>
     </details>
@@ -248,7 +248,7 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:100,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -426,7 +426,7 @@ function mutual(ls){
 function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,bounce:false,capUntil:-1e9,sag:null,
-    out:false,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
+    out:false,dissolved:false,strikes:0,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
     st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false};
 }
 function newGame(seed,humanKind){
@@ -506,6 +506,22 @@ function fall(l,k){
   }
 }
 
+/* three strikes: the first crash into each blockade (barrier, or tower when strikeTower is on) the lab has not crashed into before is a strike.
+   Hitting the same one again is a retry and is free. At K.strikes the government dissolves the lab: it is out, with no extinction roll. */
+function strike(l,what){
+  if(!K.strikes){return false;}
+  l.strikes++;
+  if(l.strikes>=K.strikes){
+    l.out=true; l.dissolved=true; l.v=0; l.st.ds=1;
+    log(l.name+' hit '+what+' (strike '+l.strikes+' of '+K.strikes+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
+    if(allOut()){ G.over=true; G.result={type:'allout'}; }
+    return true;
+  }
+  l.flash={txt:'Strike '+l.strikes+' of '+K.strikes,t:1.8,bad:true};
+  log(l.name+' hit '+what+' (strike '+l.strikes+' of '+K.strikes+').');
+  return false;
+}
+
 /* crash into a barrier or tower: thrown back at bounce times impact speed, capped to a stoppable speed until capDist past it */
 function crashLab(l,x,bx){
   var vi=Math.max(0,l.v);
@@ -537,6 +553,9 @@ function gapBehind(l){
 }
 function botInput(l){
   /* past the singularity gap a bot is too fast to react: it keeps the pace and split it crossed with, unless a cap has slowed it */
+  /* a careful bot that braked for the gap can slide over the edge at pace 0 and would stand there to the time limit; after 15 s still it drops the lock
+     (the longest stop seen with the lock in 500 seeds is 12.1 s, so games that never stalled are unchanged) */
+  if(l.lock&&l.still>15){ l.lock=null; }
   if(inSing(l)&&!capped(l)&&l.lock){ return l.lock; }
   var inp=botPlan(l); l.lastInp=inp; return inp;
 }
@@ -545,9 +564,11 @@ function botPlan(l){
   var pol=POL[l.kind],reach=heightOf(l)+C.JUMP,top=topSpeed(l,true);
   var brake=l.v*l.v/(2*C.DEC)+40;
   var stop=false,gapGo=0,rev=false,wait=false;
+  /* on its last strike a wary bot stops for every blockade it cannot clear */
+  var barP=(K.wary&&K.strikes&&l.strikes>=K.strikes-1)?1:pol.bar;
   if(b&&knowsBar(l,l.bi)&&b.x-l.x<brake&&reach<b.h+2){
     if(l.crashedOn[l.bi]){stop=true;}
-    else if(bd.b[l.bi]<pol.bar){stop=true;}
+    else if(bd.b[l.bi]<barP){stop=true;}
   }
   if(g){
     var gd=g.x-l.x,tower=g.crossedBy>=0&&!l.stepDone[l.gi];
@@ -555,7 +576,7 @@ function botPlan(l){
       var S=g.stepH,sd=g.x-C.STEPD-l.x,key='s'+l.gi;
       if(sd<brake&&reach<S+2){
         if(l.crashedOn[key]){stop=true;}
-        else if(bd.s[l.gi]<pol.bar){stop=true;}
+        else if(bd.s[l.gi]<(K.strikeTower?barP:pol.bar)){stop=true;}
       }
     }
     if(!tower&&knowsGap(l,l.gi)){
@@ -638,8 +659,10 @@ function stepLab(l,dt,inp){
       if(bf>=b.h){ spill(l,b,l.bi); l.bi++; }
       else{
         b.pub=true; hit=true; l.st.bc++; if(inSing(l)){l.st.ib++;}
+        var fresh1=!l.crashedOn[l.bi];
         vi=crashLab(l,b.x-0.5,b.x); l.crashedOn[l.bi]=true; nx=l.x;
         log(l.name+' hit a barrier ('+b.h+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
+        if(fresh1&&strike(l,l.bi===0?'the gate':'a barrier')){return;}
       }
     }
   }
@@ -654,8 +677,10 @@ function stepLab(l,dt,inp){
         if(sf>=S){ spill(l,{h:S},'s'+l.gi); l.stepDone[l.gi]=true; }
         else{
           hit=true; l.st.tc++;
+          var fresh2=!l.crashedOn['s'+l.gi];
           vi=crashLab(l,sx-0.5,sx); l.crashedOn['s'+l.gi]=true; nx=l.x;
           log(l.name+' hit the tower at gap '+(l.gi+1)+' ('+Math.round(S)+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
+          if(fresh2&&K.strikeTower&&strike(l,'the tower at gap '+(l.gi+1))){return;}
         }
       }
     }
@@ -724,7 +749,7 @@ function run(seed,kind){
   for(i=0;i<G.barriers.length;i++){ if(G.barriers[i].pub){nb++;} }
   for(i=0;i<G.gaps.length;i++){ if(G.gaps[i].pub){ng++;} }
   return {type:res.type,winner:res.winner?res.winner.kind+(res.winner.id===0?'*':''):null,wid:res.winner?res.winner.id:-1,t:G.t,
-    outs:G.labs.map(function(l){return l.out?1:0;}),level:G.level,labs:G.labs.map(function(l){return Math.round(l.x);}),
+    outs:G.labs.map(function(l){return l.out?1:0;}),dis:G.labs.map(function(l){return l.dissolved?1:0;}),strikes:G.labs.map(function(l){return l.strikes;}),level:G.level,labs:G.labs.map(function(l){return Math.round(l.x);}),
     gi:G.labs.map(function(l){return l.gi;}),st:G.labs.map(function(l){return l.st;}),still:G.labs.map(function(l){return l.maxStill;}),
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
@@ -787,7 +812,7 @@ function drawLab(l,cam,VW,FW,isHuman,idx){
   if(isHuman){ ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1.5; ctx.strokeRect(sx-2.5,y-2.5,C.RW+5,C.RW+5); }
   ctx.fillStyle=COL.ink; ctx.font=FW;
   var ly=y-7-(idx%2)*12;
-  ctx.fillText(l.out?'out':l.name,sx-2,ly);
+  ctx.fillText(l.dissolved?'dissolved':(l.out?'out':l.name),sx-2,ly);
   if(l.flash){ ctx.fillStyle=l.flash.bad?COL.danger:COL.good; ctx.fillText(l.flash.txt,sx-2,ly-13-(1.4-l.flash.t)*10); }
   ctx.globalAlpha=1;
 }
@@ -953,9 +978,10 @@ function hud(){
     $('v'+i).textContent=Math.round(l.pts[i])+' / '+Math.round(l.cap);
   }
   var top=topSpeed(l);
-  $('read').innerHTML='<span><b>Reach</b> '+Math.round(heightOf(l)+C.JUMP)+'</span><span><b>Sight</b> '+Math.round(sightRange(l))+'</span><span><b>Top speed</b> '+Math.round(top)+'</span><span><b>Speed</b> '+Math.round(l.v)+'</span><span><b>Behind</b> '+Math.round(leadOf(l))+'</span><span><b>Level</b> '+G.level+'</span>'+(capped(l)?'<span><b>Capped</b> '+Math.round(top)+' for '+Math.round(l.capUntil-l.x)+' more</span>':'');
+  $('read').innerHTML='<span><b>Reach</b> '+Math.round(heightOf(l)+C.JUMP)+'</span><span><b>Sight</b> '+Math.round(sightRange(l))+'</span><span><b>Top speed</b> '+Math.round(top)+'</span><span><b>Speed</b> '+Math.round(l.v)+'</span><span><b>Behind</b> '+Math.round(leadOf(l))+'</span><span><b>Level</b> '+G.level+'</span>'+(K.strikes?'<span><b>Strikes</b> '+l.strikes+' of '+K.strikes+'</span>':'')+(capped(l)?'<span><b>Capped</b> '+Math.round(top)+' for '+Math.round(l.capUntil-l.x)+' more</span>':'');
   var nb=G.barriers[l.bi],ng=G.gaps[l.gi],txt='';
-  if(l.out){ txt=(l.human?'You are':l.name+' is')+' out. Watching the rest at 4x.'; }
+  if(l.dissolved){ txt=(l.human?'Your lab was':l.name+' was')+' dissolved after '+l.strikes+(l.strikes===1?' strike':' strikes')+'. Watching the rest at 4x.'; }
+  else if(l.out){ txt=(l.human?'You are':l.name+' is')+' out. Watching the rest at 4x.'; }
   else if(l.done){ txt=(l.human?'You':l.name)+' crossed the finish.'; }
   else {
     var parts=[],rch=heightOf(l)+C.JUMP;
@@ -1049,11 +1075,11 @@ function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
     if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play again'); }
-    else { showOverlay(r.winner.name+' won',(h.out?(h.human?'You fell earlier. ':h.name+' fell earlier. '):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
+    else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
   } else if(r.type==='all'){
     showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play again');
   } else if(r.type==='allout'){
-    showOverlay('Nobody left','Every lab fell in. There is no winner.','Play again');
+    showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
 }
 var fresh=true;
@@ -1142,7 +1168,8 @@ var KNOBS=[
   ['spill','Barrier spillover (% of barrier height)',0,100,1],['bounce','Crash bounce (fraction of impact speed)',0,1,0.05],
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
-  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05]
+  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
+  ['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool']
 ];
 (function(){
   var box=$('knobs');

@@ -215,3 +215,31 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 - **The Steward still wins 3%** and the Sprinter 6%. The Gambler (37%) is close to Custom (41%), and wins more than Custom on staircase tracks.
 - **Games are longer.** Median 55 s against 41 s, since the opening is slower and the track is about 700 longer. From the first lab crossing the singularity to the finish took a mean 7.5 s (p10 4.7, p90 11.6) in the first 200 seeds.
 - **Not tested.** Human play, and the reaction lag and the "Beyond your loop" readout with a person. The lag was checked in the simulation: a pace change reaches the lab 0.27 s later inside the stretch, immediately outside it and immediately while capped.
+
+## Three strikes (experiment)
+
+27 October 2026. Prototype 0.3 plus the `strikes` rule, default knobs unless a row says otherwise, seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. Replication: set `PF.K.strikes` (and `barScale`) and call `PF.run(seed,'custom')`.
+
+**The rule.** A strike is the first crash into a blockade the lab has not crashed into before: a barrier (the gate included) or, with `strikeTower` on, a tower. A repeat crash into the same blockade is free. The government dissolves a lab at `strikes` strikes: out at once, no extinction roll, and it gets no later level-ups. `wary` makes a bot on its last strike stop for every blockade it cannot clear. The knob defaults are `strikes` 3, `strikeTower` 1, `wary` 1.
+
+**Baseline unchanged.** With `strikes` 0 the numbers of "Version 3 bot results" reproduce exactly (Custom 203, Gambler 186, Sprinter 28, Steward 15 wins; 68 extinctions).
+
+**At the default track the rule almost never fires.** Strikes per 500 games (a lab's own count, so the gate is included): Sprinter 495, Gambler 307, Custom 122, Steward 2. The Sprinter's 495 is almost all the gate, which it hits in 493 of 500 games. Nobody reached three strikes in 2000 lab-games, so 3 strikes changed nothing. At 2 strikes 33 labs were dissolved (Gambler 28, Custom 3, Sprinter 2, Steward 0) and wins moved by at most 10 games (Custom 207, Gambler 176, Sprinter 28, Steward 21).
+
+**It bites when barriers are taller.** Labs dissolved per 500 games, and wins, at 3 strikes with `wary` on. Extinction (the roll) is nearly unchanged, since dissolution does not roll.
+
+| Barrier scale | Dissolved: Custom / Sprinter / Steward / Gambler | Wins: Custom / Gambler / Steward / Sprinter, strikes 0 | Wins, strikes 3 |
+|---|---|---|---|
+| 100 | 0 / 0 / 0 / 0 | 203 / 186 / 15 / 28 | 203 / 186 / 15 / 28 |
+| 130 | 2 / 13 / 0 / 35 | 146 / 165 / 65 / 59 | 147 / 152 / 72 / 61 |
+| 150 | 6 / 33 / 0 / 82 | 145 / 160 / 80 / 52 | 149 / 133 / 99 / 54 |
+
+At 150 the Gambler loses 16.4% of its runs to dissolution and the Sprinter 6.6%, the careful Custom 1.2% and the Steward none. The Steward gains most (80 to 99 wins) and the Gambler loses most (160 to 133). Four strikes at 150 dissolve 16 labs, so one extra strike removes most of the effect. `wary` matters little (150, 3 strikes: 82 Gamblers dissolved with it, 90 without).
+
+**Findings and caveats**
+
+- **The gate is a free strike for reckless labs.** Whether it should count is a design choice. The Sprinter hits it in 493 of 500 games, so for the Sprinter 3 strikes behaves like 2. The Gambler hits it in 215. Not tested: exempting the gate.
+- **Dissolution falls on the labs that already crash most** (Gambler, then Sprinter), and the careful Custom and Steward almost never reach it.
+- **Bots do not react until their last strike** (and only if `wary` is on). A human who counts strikes can change how they play, so these rates describe the bots and not a human. Not tested: human play.
+- **Time-outs.** At barrier scale 130 and 150, 3 to 7 games in 500 time out whether or not the rule is on. That predates this change.
+- **A deadlock this exposed.** A careful bot that brakes for the singularity gap can slide over the edge at pace 0, and the frozen input kept it still to the time limit. It needs few live labs to show, and 3 of 500 games hit it at 2 strikes. A bot that has stood still for 15 s past the gap now drops its frozen input. The longest stop with the input frozen in version 3 was 12.1 s, and the baseline numbers did not change.
