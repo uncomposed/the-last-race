@@ -11,8 +11,8 @@ A small side-scrolling pacing game about racing, stopping and building height, m
 - **Barriers** are visible, fixed heights that rise through the run. A barrier is cleared when jump plus height is at least its height. A crash stops you and cuts max speed for a few seconds, and you stay in front of it until you can cross.
 - **Learning from barriers.** When a lab clears a barrier it earlier crashed into, every lab below that height gains up to a third of the barrier's height, never past it. A lab that clears a barrier in view of another lab gives that lab the same bump.
 - **Shared sight.** Labs in view of each other are topped up to at least 75% of the best sight among them.
-- **Gaps** are hidden until in sight. A fall takes that lab out, then a roll decides whether the run ends for everyone. The odds start low and rise at each gap.
-- **Tower.** The first lab across a gap leaves the height it had when it crossed as a tower in front of the gap. Labs behind must clear the tower, then cross the gap, which is narrower the further past it the leader is: full size divided by one plus that distance over 25.
+- **Gaps** are hidden until in sight and have a width, some of them wide. A jump covers speed at the edge times air time, and height adds air time, so a wide gap needs run-up speed as well as height. Acceleration from a standstill is slow, so a lab that stops too close to a wide gap cannot cross it. A fall takes that lab out, then a roll decides whether the run ends for everyone. The odds start low and rise at each gap.
+- **Tower.** The first lab across a gap leaves the height it had when it crossed as a tower in front of the gap. Labs behind must clear the tower, which does not shrink, then cross the gap, which is narrower the further past it the leader is: full width divided by one plus that distance over 25.
 - **Regimes.** Each gap crossed first lifts the ceilings. The frontier lab gets the full level-up, every other lab gets a share at once, and labs further behind refill faster.
 - First lab over the finish line wins.
 

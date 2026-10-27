@@ -153,7 +153,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 <main class="wrap">
 
 <header>
-  <p class="eyebrow">Game concept · working title · revision 8</p>
+  <p class="eyebrow">Game concept · working title · revision 9</p>
   <h1>Pacing the Frontier</h1>
   <p class="lede">Updated with your clarifications: a crash slows you and teaches other labs, labs in view of each other share sight, and the frontier lab’s tower stands in front of the gap for the labs behind. A playable first version is published separately.</p>
 </header>
@@ -172,11 +172,12 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
     <dt>Barriers</dt><dd>Always visible and fixed. A barrier is cleared when jump plus height is at least its height. Barriers get taller as the run goes on. Hit one and you stop, and your max speed is cut for a few seconds. You stay in front of it until you can cross.</dd>
     <dt>Learning<span class="new">new</span></dt><dd>When a lab clears a barrier it earlier crashed into, every lab whose height is below the barrier gains up to a third of the barrier’s height, never past the barrier’s height. When a lab clears a barrier in view of another lab, that lab gets the same bump.</dd>
     <dt>Shared sight<span class="new">new</span></dt><dd>Labs in view of each other get their sight topped up to at least 75% of the best sight among them.</dd>
-    <dt>Gaps</dt><dd>Hidden until they fall inside your sight. Each has a required height. To cross, your jump plus height has to reach it, and you only learn what it is once you can see it.</dd>
+    <dt>Gaps</dt><dd>Hidden until they fall inside your sight. Each has a width, and some are wide. To cross, your jump has to cover it. A jump covers your speed at the edge times your air time, and height adds air time. So a wide gap needs run-up speed as well as height.</dd>
+    <dt>Run-up<span class="new">new</span></dt><dd>Speeding up from a standstill is slow, and so is braking. A lab that stops too close to a wide gap cannot get up enough speed to cross it. Stop early, or keep moving.</dd>
     <dt>The fall<span class="new">new</span></dt><dd>A lab that falls in is out of the race. Then a roll from 1 to 100 decides whether the run also ends for everyone. The odds start low and get worse at each gap.</dd>
     <dt>Braking</dt><dd>Stopping takes distance that grows with the square of your actual speed. You only get a safe stop if your sight is at least that far. More max speed makes the cliff harder to stop at.</dd>
     <dt>Tower<span class="new">new</span></dt><dd>The first lab to cross a gap leaves the height it built behind as a tower in front of the gap, and the tower keeps that height. A lab behind has to clear the tower, which is a barrier, and then cross the gap itself. Falling short of the tower costs time. Falling short of the gap is still a fall.</dd>
-    <dt>Narrower gap<span class="new">new</span></dt><dd>For a lab behind the frontier, the gap is narrower the further past it the frontier is: its full width and required height divided by one plus that distance. The frontier lab faces the full hidden gap. Until the frontier has crossed a gap, every lab faces the full gap.</dd>
+    <dt>Narrower gap<span class="new">new</span></dt><dd>For a lab behind the frontier, the gap is narrower the further past it the frontier is: its full width divided by one plus that distance. The frontier lab faces the full hidden gap. Until the frontier has crossed a gap, every lab faces the full gap.</dd>
     <dt>Regimes<span class="new">new</span></dt><dd>Each gap is a regime change. When the frontier lab crosses one, its ceilings on sight, height and max speed rise by the full level-up. Every other lab’s ceilings rise at once by a share of that level-up, and their meters fill faster the further behind the frontier they are. A lab that crosses a gap itself gets whatever is left of the level-up. This replaces the old catch-up speed rule.</dd>
   </dl>
 </section>
@@ -259,12 +260,12 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 
   <figure class="fig" id="fig-c">
     <div class="fig-head"><span class="tag">Gap and tower</span><h3>The leader builds height. It stays behind as a tower.</h3></div>
-    <svg class="scene" id="svg-c" viewBox="0 0 480 200" role="img" aria-label="A leader lab stops in front of a gap and builds height under itself, jumps the gap, and leaves a tower behind. The follower then has to clear the tower and cross the gap. In the other scenario nobody stops and a lab falls in."></svg>
+    <svg class="scene" id="svg-c" viewBox="0 0 480 200" role="img" aria-label="A leader lab stops well back from a gap, builds height under itself, runs up and jumps the gap, and leaves a tower behind. The follower then has to clear the tower, run up and cross the gap. In the other scenario nobody stops and a lab falls in."></svg>
     <div class="controls">
       <button id="c-m-bridge" type="button" data-mode="bridge" aria-pressed="true">Leader stops and builds</button>
       <button id="c-m-nobody" type="button" data-mode="nobody" aria-pressed="false">Nobody stops</button>
       <button id="c-play" type="button">Pause</button>
-      <label class="grow" for="c-scrub"><span class="sr">Timeline</span><input type="range" id="c-scrub" min="0" max="12.5" step="0.01" value="0"></label>
+      <label class="grow" for="c-scrub"><span class="sr">Timeline</span><input type="range" id="c-scrub" min="0" max="13.5" step="0.01" value="0"></label>
     </div>
     <div class="readout">
       <div><span class="dot a"></span><span class="k">Leader pace</span><span class="v" id="c-pace">100%</span></div>
@@ -272,7 +273,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
       <div><span class="k">Height built</span><span class="v" id="c-bridge">0%</span></div>
     </div>
     <p class="status" id="c-cap"></p>
-    <figcaption>The tower is a public good the leader pays for. It costs the leader its lead, and every lab behind it has to clear the tower and faces a narrower gap. In the drawing the leader builds height under itself, jumps the pit and leaves the tower standing. If a follower catches up while the leader builds, that is the dilemma.</figcaption>
+    <figcaption>The tower is a public good the leader pays for. It costs the leader its lead, and every lab behind it has to clear the tower and faces a narrower gap. In the drawing the leader stops well back so it has room to run up, builds height under itself, jumps the pit and leaves the tower behind. If a follower catches up while the leader builds, that is the dilemma.</figcaption>
   </figure>
 
   <figure class="fig" id="fig-r">
@@ -298,17 +299,17 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 
   <figure class="fig" id="fig-g">
     <div class="fig-head"><span class="tag">Narrower gap</span><h3>The further past the gap the frontier is, the narrower it gets</h3></div>
-    <svg class="scene" id="svg-g" viewBox="0 0 480 270" role="img" aria-label="Two lanes. The frontier lab faces a hidden pit 70 wide that needs a height of 100. A lab behind it faces the same tower and then a pit that is narrower and needs less height the further past the gap the frontier is."></svg>
+    <svg class="scene" id="svg-g" viewBox="0 0 480 270" role="img" aria-label="Two lanes. The frontier lab faces a hidden pit 160 wide. A lab behind it faces the same tower and then a pit that is narrower the further past the gap the frontier is."></svg>
     <div class="controls">
       <label class="grow" for="g-lead"><span>Frontier's distance past the gap</span><output id="g-lead-out">40</output><input type="range" id="g-lead" min="0" max="100" value="40"></label>
     </div>
     <div class="readout">
-      <div><span class="k">Frontier's gap needs height</span><span class="v">100</span></div>
+      <div><span class="k">Frontier's gap is</span><span class="v">160 wide</span></div>
       <div><span class="k">Your tower</span><span class="v" id="g-w"></span></div>
-      <div><span class="k">Your gap needs</span><span class="v" id="g-gap"></span><span class="v" id="g-pct"></span></div>
+      <div><span class="k">Your gap is</span><span class="v" id="g-gap"></span><span class="v" id="g-pct"></span></div>
     </div>
     <p class="status" id="g-note"></p>
-    <figcaption>Width and required height are both divided by (1 + distance/25). A literal inverse would be infinite at zero distance, so the 1 keeps it finite. The reasoning: a lab far behind the frontier is dangerous only if nobody ahead can handle what it might create. A frontier lab that is far ahead already can. Your bioweapon example is this case. The tower does not shrink. It is a barrier, so hitting it only costs time. Falling short of the gap is still a fall. Jump is 34, so a tower of 34 or less needs no height at all.</figcaption>
+    <figcaption>Width is divided by (1 + distance/25). A literal inverse would be infinite at zero distance, so the 1 keeps it finite. The reasoning: a lab far behind the frontier is dangerous only if nobody ahead can handle what it might create. A frontier lab that is far ahead already can. Your bioweapon example is this case. The tower does not shrink. It is a barrier, so hitting it only costs time. Falling short of the gap is still a fall.</figcaption>
   </figure>
 
   <figure class="fig" id="fig-h">
@@ -338,8 +339,10 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
         <tr><td>Odds everyone is out</td><td>4% at gap 1, +10 points per gap</td><td>How long sprinting stays tempting before it stops being survivable.</td></tr>
         <tr><td>Share for followers</td><td>40% of each level-up</td><td>How much the frontier carries the pack. Too high and trailing is best.</td></tr>
         <tr><td>Refill bonus</td><td>1 + distance / 50</td><td>How fast a lab behind closes in.</td></tr>
-        <tr><td>Gap narrowing</td><td>full gap / (1 + distance past the gap / 25)</td><td>How much safer it is when the frontier is far ahead. A follower can still fall.</td></tr>
-        <tr><td>Gap heights</td><td>52, 68, 88, 112, 140, each varied up to 20% per run</td><td>How much the frontier has to build, and how much it has to guess.</td></tr>
+        <tr><td>Gap narrowing</td><td>full width / (1 + distance past the gap / 25)</td><td>How much safer it is when the frontier is far ahead. A follower can still fall.</td></tr>
+        <tr><td>Gap widths</td><td>60, 90, 130, 180, 240, each varied up to 20% per run</td><td>How much speed and height the frontier needs, and how much it has to guess.</td></tr>
+        <tr><td>Air time</td><td>0.6 s plus 0.015 s per unit of height</td><td>How much height helps a jump. Distance covered is speed times air time.</td></tr>
+        <tr><td>Acceleration and braking</td><td>speed up 40 per s&sup2;, brake 15.6 per s&sup2;</td><td>How much run-up a lab needs, and how early it must stop.</td></tr>
         <tr><td>Barrier heights</td><td>start at 28, +3.2 each</td><td>How much height you need just to keep running.</td></tr>
         <tr><td>Barrier spillover</td><td>a third of the barrier height</td><td>How much a clear teaches the labs that see it.</td></tr>
         <tr><td>Crash penalty</td><td>max speed &minus;40% for 5 s</td><td>What hitting a barrier costs.</td></tr>
@@ -360,7 +363,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
       <ul>
         <li>Run, or hold back and split the rest evenly across sight, height and max speed.</li>
         <li>Barriers are visible and fixed, and get taller. Jump plus height has to beat them. A crash slows you, and clearing a barrier you crashed into lifts everyone's height.</li>
-        <li>Gaps are hidden until they are in sight, and each needs a height. Reach it or fall.</li>
+        <li>Gaps are hidden until they are in sight, and each has a width. Cover it with speed times air time, where height adds air time, or fall.</li>
         <li>A fall takes that lab out. A roll decides whether it takes everyone out, with worse odds at each gap.</li>
         <li>The first lab across leaves a tower in front of the gap. Labs behind clear the same tower and cross a narrower gap. Their ceilings jump by a share of the level-up and they refill faster.</li>
         <li>First lab over the finish line wins. Labs in view of each other share sight.</li>
@@ -370,9 +373,9 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
       <h3>What the first playable version showed</h3>
       <p>I ran 300 simulated games per policy with the three bots and a fixed-pace policy standing in for you. This is a bot test, not a human playtest.</p>
       <ul>
-        <li><b>Holding back wins.</b> A steady pace around half speed with 40% of the held-back effort in max speed wins about 70% of games and never falls. Running at 0.8 or more mostly falls. At these settings, investing is stronger than running, so there is nothing tempting about sprinting. Lowering the investment rate is the first thing to try.</li>
-        <li><b>Extinction is common.</b> Between a quarter and two fifths of games end in a roll that takes everyone out, almost always because the Sprinter or Gambler fell. That is the dilemma working, and it may be too much. Lower starting odds or a smaller bot appetite for risk would soften it.</li>
-        <li><b>The Sprinter is a cautionary bot.</b> It falls in most runs and almost never wins. The Gambler is the real rival, and wins about a third of games against a sensible player.</li>
+        <li><b>Holding back wins.</b> A steady pace around half to 0.6 speed with 40% of the held-back effort in max speed wins about 60% of games and never falls. Running at 0.8 or more mostly falls. At these settings, investing is stronger than running, so there is little that tempts a player to sprint. Lowering the investment rate is the first thing to try.</li>
+        <li><b>Extinction is common.</b> Between a third and a half of games end in a roll that takes everyone out, almost always because the Sprinter or Gambler fell. That is the dilemma working, and it may be too much. Lower starting odds or a smaller bot appetite for risk would soften it.</li>
+        <li><b>The Sprinter is a cautionary bot.</b> It falls in most runs and never wins. The Gambler and the Steward are the real rivals.</li>
       </ul>
     </div>
     <div>
@@ -380,6 +383,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
       <ul>
         <li><b>The leader carries the most risk.</b> Everyone else clears the same tower but faces a narrower gap, and can still fall. Followers want someone else to go first, and the leader wants to stay ahead.</li>
         <li><b>Crashing has a use.</b> A lab that crashes and then clears a barrier lifts everyone. That makes a public failure valuable to the others, which is the learning-from-mistakes idea.</li>
+        <li><b>Stopping has a catch.</b> From a standstill you speed up slowly, so a lab that stops too close to a wide gap cannot cross it. Stopping early takes sight, and sight takes investment, so the three meters pull on each other.</li>
         <li><b>Sight is social.</b> Sharing sight rewards staying close to others, and pulls against running off alone with a lead.</li>
       </ul>
     </div>
@@ -394,8 +398,7 @@ table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
 <section>
   <h2>Questions for you</h2>
   <ol class="q">
-    <li><b>How tall should the leader's tower be?</b> I used the height the leader had when it crossed. It could instead be the gap's full requirement, which makes the tower harder for followers.</li>
-    <li><b>When a lab crashes into a barrier or tower, does it stay in front of it until it can cross?</b> That is how I built it. The other reading is that it gets through after the slowdown.</li>
+    <li><b>Can a stopped lab back up to get more run-up?</b> Right now it cannot, so stopping too close to a wide gap is a trap. Backing up would soften that.</li>
     <li><b>Do you want holding back to be less dominant?</b> I would lower the investment rate, but finding the best pace may be part of the fun.</li>
   </ol>
 </section>
@@ -620,17 +623,19 @@ function frame(now){
 
 /* ---------- C: gap and tower ---------- */
 (function(){
-  var svg=$('svg-c'),G=150,X1=250,X2=310,TX=224,TW=24,TH=34;
+  var svg=$('svg-c'),G=150,X1=250,X2=310,TX=104,TW=22,TH=34;
+  function easeIn(u){return u*u;}
+  function arc(x,a,b,h){ if(x<=a||x>=b){return 0;} var u=(x-a)/(b-a); return h*4*u*(1-u); }
   el('line',{x1:0,y1:G,x2:X1,y2:G,'class':'ground'},svg);
   el('line',{x1:X2,y1:G,x2:480,y2:G,'class':'ground'},svg);
   el('rect',{x:X1,y:G,width:X2-X1,height:50,fill:'url(#hatch)'},svg);
   el('line',{x1:X1,y1:G,x2:X1,y2:200,'class':'ground'},svg);
   el('line',{x1:X2,y1:G,x2:X2,y2:200,'class':'ground'},svg);
-  el('line',{x1:462,y1:G,x2:462,y2:108,'class':'ground'},svg);
-  el('polygon',{points:'462,108 476,113 462,118',style:'fill:var(--d)'},svg);
-  var tower=el('rect',{x:TX,y:G,width:TW,height:0,'class':'deck'},svg);
+  el('line',{x1:466,y1:G,x2:466,y2:108,'class':'ground'},svg);
+  el('polygon',{points:'466,108 478,113 466,118',style:'fill:var(--d)'},svg);
+  var tower=el('rect',{x:TX-2,y:G,width:TW,height:0,'class':'deck'},svg);
   var gapTx=el('text',{x:(X1+X2)/2,y:G-30,'text-anchor':'middle','class':'t'},svg);
-  var towTx=el('text',{x:TX+TW/2,y:G-TH-34,'text-anchor':'middle','class':'tm'},svg);
+  var towTx=el('text',{x:TX+TW/2-2,y:G-TH-14,'text-anchor':'middle','class':'tm'},svg);
   var sparks=[];
   for(var i=0;i<3;i++){ sparks.push(el('rect',{x:0,y:0,width:3,height:3,style:'fill:var(--b)',visibility:'hidden'},svg)); }
   var Lg=sprite(svg,'ca'),Fg=sprite(svg,'cb');
@@ -640,15 +645,15 @@ function frame(now){
   var pillTx=el('text',{x:240,y:74,'text-anchor':'middle','class':'t-danger'},pillG); pillTx.textContent='A lab fell in. It is out.';
 
   var MODES={
-    bridge:{D:12.5,rest:7.4,
-      L:[[0,20],[2.8,177],[4.6,228,easeOut],[8,228],[9.6,330,smooth],[12.5,440]],
-      F:[[0,-10],[2.8,110],[4.6,170],[6.2,200,easeOut],[8.4,200],[9.3,214],[10.9,336],[12.5,420]],
+    bridge:{D:13.5,rest:4.6,
+      L:[[0,0],[1,56],[2.8,106,easeOut],[6,106],[8.2,250,easeIn],[9.6,330,smooth],[13.5,440]],
+      F:[[0,-40],[2.8,40],[4.6,72,easeOut],[8.4,72],[10.2,250,easeIn],[11.6,336,smooth],[13.5,420]],
       caps:[[0,'Both labs run toward a gap. Neither can see how wide it is yet.'],
-            [2.8,'The leader sees the gap and brakes. Stopping takes distance, so it has to start early.'],
-            [4.6,'Stopped in front of the gap. The leader holds back its pace and builds height under itself. The follower waits behind it, catching up.'],
-            [8,'Tall enough. The leader jumps the gap and leaves its tower standing.'],
-            [9.3,'The follower has to clear the tower and then still cross the gap, which is narrower for it.'],
-            [11.4,'Everyone is across. Nobody fell.']]},
+            [1,'The leader sees the gap and brakes early. It needs room to speed up again.'],
+            [2.8,'Stopped well back from the gap. The leader holds back its pace and builds height under itself. The follower waits behind it.'],
+            [6,'Tall enough. The leader runs up and jumps the gap. Its tower stays behind.'],
+            [8.4,'The follower clears the tower, runs up, and crosses a gap that is narrower for it.'],
+            [12,'Everyone is across. Nobody fell.']]},
     nobody:{D:7.5,rest:5.6,
       caps:[[0,'The leader sprints. Sprinting keeps the lead and costs nothing, until the edge.'],
             [3.9,'It runs into a gap it never saw.'],
@@ -664,21 +669,18 @@ function frame(now){
     var M=MODES[mode],t=s.t,lx,ly,fx,fy,th=0,bridging=false;
     if(mode==='bridge'){
       lx=posL(t); fx=keys(t,M.F);
-      var p=clamp((t-4.6)/3.4,0,1);
-      th=TH*p; bridging=t>=4.6&&t<8;
-      var uL=(t-8)/1.6;
-      if(t<8){ ly=G-th; }
-      else if(uL<1){ ly=G-TH*(1-uL)-30*4*uL*(1-uL); }
-      else { ly=G; }
-      var uj=(t-9.3)/1.6; fy=G-((uj>0&&uj<1)?52*4*uj*(1-uj):0);
+      var p=clamp((t-2.8)/3.2,0,1);
+      th=TH*p; bridging=t>=2.8&&t<6;
+      ly=G-th-arc(lx,250,330,30);
+      fy=G-arc(fx,76,134,46)-arc(fx,250,336,52);
     } else {
       lx=posL(t); fx=keys(t,[[0,-10],[7.5,200]]);
       ly=G+(t>3.9?210*(t-3.9)*(t-3.9):0); fy=G;
     }
     place(Lg,lx,ly); place(Fg,fx,fy);
     tower.setAttribute('y',(G-th).toFixed(1)); tower.setAttribute('height',th.toFixed(1));
-    towTx.textContent=(mode==='bridge'&&t>=8)?'tower':'';
-    gapTx.textContent=(mode==='bridge'&&t>=2.8)?'GAP':'?';
+    towTx.textContent=(mode==='bridge'&&t>=6)?'tower':'';
+    gapTx.textContent=(mode==='bridge'&&t>=1)?'GAP':'?';
     for(var i=0;i<3;i++){
       var on=bridging&&((Math.floor(t*10)+i)%2===0);
       sparks[i].setAttribute('visibility',on?'visible':'hidden');
@@ -689,7 +691,7 @@ function frame(now){
     var v=(posL(t+0.05)-posL(t))/0.05;
     var pace=Math.round(clamp(v/56,0,1)*100);
     $('c-pace').textContent=pace+'%';
-    $('c-bridge').textContent=mode==='bridge'?Math.round(clamp((t-4.6)/3.4,0,1)*100)+'%':'none';
+    $('c-bridge').textContent=mode==='bridge'?Math.round(clamp((t-2.8)/3.2,0,1)*100)+'%':'none';
     var cap=M.caps[0][1];
     for(var j=0;j<M.caps.length;j++){ if(t>=M.caps[j][0]){cap=M.caps[j][1];} }
     $('c-cap').textContent=cap;
@@ -780,14 +782,13 @@ function frame(now){
 
 /* ---------- G: gap width vs how far past it the frontier is ---------- */
 (function(){
-  var svg=$('svg-g'),R0=100,PW0=70,TH0=66,L0=25,SC=0.6,PX=200,TX=PX-44,G1=100,G2=232;
-  // lane 1: the frontier lab faces a hidden pit that needs height R0
+  var svg=$('svg-g'),PW0=160,TH0=66,L0=25,SC=0.6,PX=200,TX=PX-44,G1=100,G2=232;
+  // lane 1: the frontier lab faces a hidden, wide pit
   el('line',{x1:0,y1:G1,x2:PX,y2:G1,'class':'ground'},svg);
   el('line',{x1:PX+PW0,y1:G1,x2:480,y2:G1,'class':'ground'},svg);
   el('rect',{x:PX,y:G1,width:PW0,height:26,fill:'url(#hatch)'},svg);
-  el('line',{x1:PX-14,y1:G1-R0*SC,x2:PX+PW0+14,y2:G1-R0*SC,'class':'ghost'},svg);
   var n1=el('text',{x:8,y:20,'class':'t'},svg); n1.textContent='Frontier lab: hidden pit';
-  var r1=el('text',{x:PX+PW0+22,y:G1-R0*SC+4,'class':'tm'},svg); r1.textContent='needs height '+R0;
+  var r1=el('text',{x:PX,y:G1-10,'class':'tm'},svg); r1.textContent='gap '+PW0+' wide';
   place(sprite(svg,'ca'),100,G1);
   // lane 2: you face the frontier's tower, then a narrower pit
   el('line',{x1:0,y1:G2,x2:PX,y2:G2,'class':'ground'},svg);
@@ -796,21 +797,18 @@ function frame(now){
   var pit=el('rect',{x:PX,y:G2,width:PW0,height:26,fill:'url(#hatch)'},svg);
   el('rect',{x:TX,y:G2-TH0*SC,width:24,height:TH0*SC,'class':'barrier'},svg);
   var tt=el('text',{x:TX+12,y:G2-TH0*SC-6,'text-anchor':'middle','class':'tm'},svg); tt.textContent='tower '+TH0;
-  var reqLn=el('line',{x1:PX-14,y1:G2,x2:PX+PW0+14,y2:G2,'class':'ghost'},svg);
-  var reqTx=el('text',{x:PX+PW0+22,y:G2,'class':'tm'},svg);
+  var wTx=el('text',{x:PX,y:G2-10,'class':'tm'},svg);
   var n2=el('text',{x:8,y:G2-TH0*SC-26,'class':'t'},svg); n2.textContent='You: the same tower, then a narrower pit';
   place(sprite(svg,'cb'),100,G2);
-  place(sprite(svg,'ca'),420,G2);
-  var ft=el('text',{x:429,y:G2-26,'text-anchor':'middle','class':'tm'},svg); ft.textContent='frontier';
+  place(sprite(svg,'ca'),430,G2);
+  var ft=el('text',{x:439,y:G2-26,'text-anchor':'middle','class':'tm'},svg); ft.textContent='frontier';
   var sl=$('g-lead');
   function render(){
-    var d=+sl.value,f=1/(1+d/L0),pw=PW0*f,rq=R0*f;
+    var d=+sl.value,f=1/(1+d/L0),pw=PW0*f;
     pit.setAttribute('width',pw.toFixed(1)); right.setAttribute('x1',(PX+pw).toFixed(1));
-    reqLn.setAttribute('x2',(PX+pw+14).toFixed(1));
-    reqLn.setAttribute('y1',(G2-rq*SC).toFixed(1)); reqLn.setAttribute('y2',(G2-rq*SC).toFixed(1));
-    reqTx.setAttribute('x',(PX+pw+22).toFixed(1)); reqTx.setAttribute('y',(G2-rq*SC+4).toFixed(1)); reqTx.textContent='needs height '+Math.round(rq);
+    wTx.textContent='gap '+Math.round(pw)+' wide';
     $('g-lead-out').textContent=d;
-    $('g-w').textContent=TH0; $('g-gap').textContent=Math.round(rq); $('g-pct').textContent=Math.round(f*100)+'% of full';
+    $('g-w').textContent=TH0; $('g-gap').textContent=Math.round(pw)+' wide'; $('g-pct').textContent=Math.round(f*100)+'% of full';
     $('g-note').textContent=d<15
       ?'The frontier has only just crossed. You face the tower and almost the full gap.'
       :(d<55
