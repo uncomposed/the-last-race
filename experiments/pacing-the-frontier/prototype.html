@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Frontier Pacing Prototype</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +41,9 @@ p{margin:0}
 .eyebrow{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .sub{color:var(--muted);max-width:62ch}
 .stage{position:relative}
-canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
+canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
+.rotate{display:none;font:500 13px var(--mono);color:var(--muted)}
+@media (orientation:portrait) and (max-width:600px){canvas{aspect-ratio:4/3}.rotate{display:block}}
 .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
@@ -50,6 +53,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 .card p{font-size:15px}
 button{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;cursor:pointer;min-height:40px}
 button:hover{border-color:var(--muted)}
+#btn-jump,#btn-fwd,#btn-back{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 :focus-visible{outline:2px solid var(--a);outline-offset:2px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -103,6 +107,33 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .sing-n{font:500 22px var(--display);color:var(--d)}
 .seedbox{display:flex;gap:6px;align-items:center}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+/* landscape phone: the track fills the screen height, the controls sit in a column on the right */
+@media (orientation:landscape) and (max-height:540px){
+  body{padding:6px max(8px,env(safe-area-inset-right,0px)) 24px max(8px,env(safe-area-inset-left,0px))}
+  .wrap{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:8px;align-items:start}
+  .wrap>header{display:none}
+  .stage{grid-column:1;grid-row:1}
+  canvas{aspect-ratio:auto;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  .panel.pace{grid-column:2;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px);overflow-y:auto;padding:8px;gap:6px}
+  .wrap>.panel:not(.pace),.wrap>.foot{grid-column:1/-1}
+  .pace .cols{grid-template-columns:minmax(0,1fr);gap:4px}
+  .pace .cols>.lab:nth-child(2){display:none}
+  .pace input[type=range]{height:28px}
+  .tri{flex-direction:column;align-items:stretch;gap:0}
+  .tri svg{width:100%;max-height:32vh;max-height:32dvh}
+  .tri .tbody{flex:none;font-size:12px}
+  .tri .tbody{display:none}
+  .pace .lab{font-size:12px;gap:0}
+  .pace .btns{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'jump jump' 'fwd back' 'pause restart' 'auto auto';gap:6px}
+  .pace .btns>*{min-width:0}
+  #btn-jump{grid-area:jump;min-height:46px;flex:none}
+  #btn-fwd{grid-area:fwd}#btn-back{grid-area:back}#btn-pause{grid-area:pause}#btn-restart{grid-area:restart}
+  #btn-fwd,#btn-back{min-height:46px;padding:6px 4px;font-size:13px}
+  #btn-pause,#btn-restart{min-height:32px;padding:2px 4px;font-size:12px}
+  .pace .btns label[for=auto]{grid-area:auto;font-size:12px}
+  .pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
+  .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
+}
 </style>
 
 <main class="wrap">
@@ -111,6 +142,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <h1>Pacing the Frontier</h1>
     <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
     <p class="world" id="world"></p>
+    <p class="rotate">Turn your phone sideways for the best view.</p>
   </header>
 
   <div class="stage">
@@ -700,10 +732,16 @@ function run(seed,kind){
 window.PF={C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
 
 /* ---------- UI ---------- */
-var narrow=window.innerWidth<600;
-var cv=$('cv'),ctx=cv.getContext('2d'),W=narrow?480:720,H=narrow?340:360;
+/* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge */
+var cv=$('cv'),ctx=cv.getContext('2d'),W=720,H=360,GY=264,Z=1;
 var dpr=Math.min(2,window.devicePixelRatio||1);
-cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+function fitCanvas(){
+  W=Math.max(240,cv.clientWidth||720); H=Math.max(150,cv.clientHeight||360); GY=H-96;
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+fitCanvas();
+window.addEventListener('resize',fitCanvas);
 var COL={},hatch=null,colAge=0;
 function readColors(){
   var cs=getComputedStyle(document.documentElement);
@@ -732,22 +770,22 @@ function loopInfo(l){
   for(i=l.gi;i<G.gaps.length;i++){ if(knowsGap(l,i)){ d=Math.min(d,G.gaps[i].x-l.x); break; } }
   return {d:d,react:v*K.reaction,brake:v*v/(2*C.DEC),capped:capped(l)};
 }
-function drawLab(l,cam,GY,isHuman,idx){
+function drawLab(l,cam,VW,FW,isHuman,idx){
   var sx=l.x-cam-C.RW;
-  if(sx<-40||sx>W+40){return;}
+  if(sx<-40||sx>VW+40){return;}
   var h=heightOf(l),dip=0;
   if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
   var y=GY-h-(l.jt>=0?l.jy:0)+dip-C.RW;
   if(l.out){ y=GY+26; ctx.globalAlpha=0.4; }
   if(h>1&&!l.out){
-    ctx.setLineDash([3,3]); ctx.strokeStyle=COL.muted; ctx.lineWidth=1;
+    ctx.setLineDash([3,3]); ctx.strokeStyle=COL.muted; ctx.lineWidth=(1/Z)*1;
     ctx.strokeRect(sx+0.5,GY-h+0.5,C.RW,h); ctx.setLineDash([]);
   }
   ctx.fillStyle=COL[l.col]; ctx.fillRect(sx,y,C.RW,C.RW);
   ctx.fillStyle=COL.surface; ctx.fillRect(sx+4,y+5,3,4); ctx.fillRect(sx+11,y+5,3,4);
-  if(l.crash>0||l.sag){ ctx.strokeStyle=COL.danger; ctx.lineWidth=2; ctx.strokeRect(sx-1,y-1,C.RW+2,C.RW+2); }
-  if(isHuman){ ctx.strokeStyle=COL.ink; ctx.lineWidth=1.5; ctx.strokeRect(sx-2.5,y-2.5,C.RW+5,C.RW+5); }
-  ctx.fillStyle=COL.ink; ctx.font='11px "IBM Plex Mono",monospace';
+  if(l.crash>0||l.sag){ ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(sx-1,y-1,C.RW+2,C.RW+2); }
+  if(isHuman){ ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1.5; ctx.strokeRect(sx-2.5,y-2.5,C.RW+5,C.RW+5); }
+  ctx.fillStyle=COL.ink; ctx.font=FW;
   var ly=y-7-(idx%2)*12;
   ctx.fillText(l.out?'out':l.name,sx-2,ly);
   if(l.flash){ ctx.fillStyle=l.flash.bad?COL.danger:COL.good; ctx.fillText(l.flash.txt,sx-2,ly-13-(1.4-l.flash.t)*10); }
@@ -756,62 +794,69 @@ function drawLab(l,cam,GY,isHuman,idx){
 function draw(){
   if(!COL.ink||colAge++>45){readColors();colAge=0;}
   var human=G.labs[0],tgt=(human.out||human.done)?leaderLab():human;  /* tgt is the viewer: only what it knows is drawn */
-  var cam=Math.max(-70,tgt.x-190),GY=262;
+  /* zoom out so every lab, barrier and tower in view fits between the HUD band and the ground */
+  var VW0=W/Z,cam0=Math.max(-70,tgt.x-0.26*VW0),need=C.JUMP+C.RW+40,zi;
+  for(zi=0;zi<G.labs.length;zi++){ var zl=G.labs[zi]; if(!zl.out&&zl.x>cam0-40&&zl.x<cam0+VW0+40){ need=Math.max(need,heightOf(zl)+C.JUMP+C.RW+30); } }
+  for(zi=0;zi<G.barriers.length;zi++){ var zb=G.barriers[zi]; if(zb.x>cam0-30&&zb.x<cam0+VW0+30&&knowsBar(tgt,zi)){ need=Math.max(need,zb.h+(zb.gate?60:20)); } }
+  for(zi=0;zi<G.gaps.length;zi++){ var zg=G.gaps[zi]; if(zg.crossedBy>=0&&zg.x-C.STEPD>cam0-30&&zg.x-C.STEPD<cam0+VW0+30){ need=Math.max(need,zg.stepH+20); } }
+  var zT=clamp((GY-80)/need,0.3,1); Z+=(zT-Z)*(zT<Z?0.25:0.06);
+  var VW=W/Z,cam=Math.max(-70,tgt.x-0.26*VW),FW=(11/Z).toFixed(2)+'px "IBM Plex Mono",monospace';
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle=COL.surface; ctx.fillRect(0,0,W,H);
+  ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */
   var sgp=G.gaps[G.sing],singKnown=knowsGap(tgt,G.sing),sx0=sgp.x+gapWidth(tgt,sgp)-cam;
-  if(singKnown&&sx0<W){  /* past the singularity gap the background is tinted */
-    ctx.fillStyle=COL.d; ctx.globalAlpha=0.13; ctx.fillRect(Math.max(0,sx0),0,W,H); ctx.globalAlpha=0.5;
-    for(var sl=0;sl<14;sl++){ var sy=20+((sl*47+Math.floor(G.t*60*(sl%3+1)))%260); ctx.fillRect(Math.max(0,sx0)+((sl*131+Math.floor(G.t*500))%360),sy,26+sl%4*10,1); }
+  if(singKnown&&sx0<VW){  /* past the singularity gap the background is tinted */
+    ctx.fillStyle=COL.d; ctx.globalAlpha=0.13; ctx.fillRect(Math.max(0,sx0),GY-GY/Z,VW,H/Z); ctx.globalAlpha=0.5;
+    for(var sl=0;sl<14;sl++){ var sy=GY-GY/Z+20+((sl*47+Math.floor(G.t*60*(sl%3+1)))%260); ctx.fillRect(Math.max(0,sx0)+((sl*131+Math.floor(G.t*500))%360),sy,26+sl%4*10,1); }
     ctx.globalAlpha=1;
   }
-  ctx.lineWidth=2; ctx.strokeStyle=COL.ink;
-  ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(W,GY); ctx.stroke();
+  ctx.lineWidth=(1/Z)*2; ctx.strokeStyle=COL.ink;
+  ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(VW,GY); ctx.stroke();
   ctx.strokeStyle=COL.line; ctx.setLineDash([12,12]); ctx.lineDashOffset=cam%24;
-  ctx.beginPath(); ctx.moveTo(0,GY+10); ctx.lineTo(W,GY+10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,GY+10); ctx.lineTo(VW,GY+10); ctx.stroke();
   ctx.setLineDash([]); ctx.lineDashOffset=0;
   // reach line for the lab being watched
   var reach=heightOf(tgt)+C.JUMP;
-  ctx.strokeStyle=COL.a; ctx.globalAlpha=0.55; ctx.lineWidth=1.5; ctx.setLineDash([2,5]);
-  ctx.beginPath(); ctx.moveTo(0,GY-reach); ctx.lineTo(W,GY-reach); ctx.stroke();
+  ctx.strokeStyle=COL.a; ctx.globalAlpha=0.55; ctx.lineWidth=(1/Z)*1.5; ctx.setLineDash([2,5]);
+  ctx.beginPath(); ctx.moveTo(0,GY-reach); ctx.lineTo(VW,GY-reach); ctx.stroke();
   ctx.setLineDash([]); ctx.globalAlpha=1;
-  ctx.fillStyle=COL.a; ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='right';
-  ctx.fillText('reach '+Math.round(reach),W-6,GY-reach-4); ctx.textAlign='left';
+  ctx.fillStyle=COL.a; ctx.font=FW; ctx.textAlign='right';
+  ctx.fillText('reach '+Math.round(reach),VW-6,GY-reach-4); ctx.textAlign='left';
   // barriers
   ctx.fillStyle=COL.ink;
   for(var i=0;i<G.barriers.length;i++){
     var b=G.barriers[i],bx=b.x-cam;
-    if(bx>-30&&bx<W+30&&knowsBar(tgt,i)){ ctx.fillRect(bx,GY-b.h,C.BW,b.h); }
+    if(bx>-30&&bx<VW+30&&knowsBar(tgt,i)){ ctx.fillRect(bx,GY-b.h,C.BW,b.h); }
   }
   // the gate: a label for the human until the gate is cleared
   var gb0=G.barriers[0];
   if(gb0&&gb0.gate&&human.human&&human.bi===0&&!human.out&&tgt===human){
     var gl='Gate: lower Pace or hold Back to build height',gtw;
-    ctx.font='11px "IBM Plex Mono",monospace'; gtw=ctx.measureText(gl).width+14;
-    var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4,W-gtw-4),gly=GY-gb0.h-34;
+    ctx.font=FW; gtw=ctx.measureText(gl).width+14;
+    var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4,VW-gtw-4),gly=GY-gb0.h-34;
     ctx.fillStyle=COL.surface; ctx.globalAlpha=0.92; ctx.fillRect(glx,gly,gtw,20); ctx.globalAlpha=1;
-    ctx.strokeStyle=COL.ink; ctx.lineWidth=1; ctx.strokeRect(glx+0.5,gly+0.5,gtw-1,19);
+    ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1; ctx.strokeRect(glx+0.5,gly+0.5,gtw-1,19);
     ctx.fillStyle=COL.ink; ctx.fillText(gl,glx+7,gly+14);
     ctx.beginPath(); ctx.moveTo(gb0.x-cam+C.BW/2,gly+20); ctx.lineTo(gb0.x-cam+C.BW/2,GY-gb0.h-3); ctx.stroke();
   }
   // gaps and towers
   for(var k=0;k<G.gaps.length;k++){
     var g=G.gaps[k],gx=g.x-cam;
-    if(gx<-(g.W+40)||gx>W+80){continue;}
+    if(gx<-(g.VW+40)||gx>VW+80){continue;}
     if(g.crossedBy>=0){
       var sh=g.stepH,tx=g.x-C.STEPD-cam;
       ctx.fillStyle=COL.ink; ctx.globalAlpha=0.85; ctx.fillRect(tx,GY-sh,C.BW,sh); ctx.globalAlpha=1;
-      ctx.fillStyle=COL.ink; ctx.font='11px "IBM Plex Mono",monospace';
+      ctx.fillStyle=COL.ink; ctx.font=FW;
       ctx.fillText('tower '+Math.round(sh),tx-4,GY-sh-5);
     }
     if(knowsGap(tgt,k)){
       var pw=gapWidth(tgt,g),cover=tgt.v*airT(tgt);
       ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,60);
-      ctx.strokeStyle=COL.danger; ctx.lineWidth=2; ctx.strokeRect(gx,GY,pw,60);
-      ctx.fillStyle=COL.ink; ctx.font='11px "IBM Plex Mono",monospace';
+      ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY,pw,60);
+      ctx.fillStyle=COL.ink; ctx.font=FW;
       ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4,GY-8);
       if(g.sing){ ctx.fillStyle=COL.d; ctx.fillRect(gx,GY-30,3,30); }
-      ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=4;
+      ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=(1/Z)*4;
       ctx.beginPath(); ctx.moveTo(gx,GY+70); ctx.lineTo(gx+cover,GY+70); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
       ctx.fillText('your jump now '+Math.round(cover),gx,GY+86);
@@ -820,20 +865,22 @@ function draw(){
   // sight bracket
   if(tgt===human){
     var sr=sightRange(tgt),sh=shadows(tgt);
-    ctx.strokeStyle=COL.a; ctx.lineWidth=5; ctx.beginPath();
+    ctx.strokeStyle=COL.a; ctx.lineWidth=(1/Z)*5; ctx.beginPath();
     ctx.moveTo(tgt.x-cam,GY+36); ctx.lineTo(tgt.x-cam+sr,GY+36); ctx.stroke();
     ctx.strokeStyle=COL.line;
     for(var si=0;si<sh.length;si++){ ctx.beginPath(); ctx.moveTo(tgt.x-cam+sh[si].a,GY+36); ctx.lineTo(tgt.x-cam+sh[si].b,GY+36); ctx.stroke(); }
-    ctx.fillStyle=COL.a; ctx.font='11px "IBM Plex Mono",monospace'; ctx.fillText('sight '+Math.round(sr)+(sh.length?', shadowed by '+sh.map(function(q){return q.by.name;}).join(', '):''),tgt.x-cam,GY+52);
+    ctx.fillStyle=COL.a; ctx.font=FW; ctx.fillText('sight '+Math.round(sr)+(sh.length?', shadowed by '+sh.map(function(q){return q.by.name;}).join(', '):''),tgt.x-cam,GY+52);
   }
   // finish
   var fx=G.finish-cam;
-  if(fx>-20&&fx<W+20){
-    ctx.strokeStyle=COL.ink; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(fx,GY); ctx.lineTo(fx,GY-90); ctx.stroke();
+  if(fx>-20&&fx<VW+20){
+    ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(fx,GY); ctx.lineTo(fx,GY-90); ctx.stroke();
     ctx.fillStyle=COL.d; ctx.beginPath(); ctx.moveTo(fx,GY-90); ctx.lineTo(fx+26,GY-80); ctx.lineTo(fx,GY-70); ctx.fill();
   }
   // labs
-  for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,GY,n===0,n); }
+  for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,VW,FW,n===0,n); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */
+  drawMeters(tgt);
   // beyond your loop: only once the watched lab is past the singularity gap
   if(inSing(tgt)&&!tgt.out&&!tgt.done){
     var bl=loopInfo(tgt),lines=['Beyond your loop',
@@ -842,9 +889,9 @@ function draw(){
       bl.capped?'Capped: slow enough to act':(bl.d<bl.react+bl.brake?'Too fast to act: the auto-jump decides':'Time to act, but not for long')];
     ctx.font='11px "IBM Plex Mono",monospace';
     var bw=0,bi2; for(bi2=0;bi2<lines.length;bi2++){ bw=Math.max(bw,ctx.measureText(lines[bi2]).width); } bw+=14;
-    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,50,bw,62); ctx.globalAlpha=1;
-    ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,50.5,bw-1,61);
-    for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,65+bi2*14); }
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,80,bw,62); ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,80.5,bw-1,61);
+    for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,95+bi2*14); }
   }
   // minimap
   var mx0=24,mw=W-48,my=18;
@@ -875,6 +922,22 @@ function draw(){
   }
 }
 
+/* sight, height and max speed meters along the top of the canvas, under the minimap */
+function drawMeters(l){
+  var names=['Sight','Height','Max speed'],cols=[COL.a,COL.c,COL.b],gap=10,x0=24,cw=(W-48-2*gap)/3,y=56,top=topSpeed(l);
+  ctx.font='10px "IBM Plex Mono",monospace';
+  for(var i=0;i<3;i++){
+    var x=x0+i*(cw+gap),v=Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];
+    if(i===2&&ctx.measureText(nm+' '+v+' \u00b7 top '+Math.round(top)).width<=cw){ v+=' \u00b7 top '+Math.round(top); }
+    if(ctx.measureText(nm+' '+v).width>cw){ nm=nm.charAt(0); }
+    if(ctx.measureText(nm+' '+v).width>cw){ v=String(Math.round(l.pts[i])); }
+    ctx.fillStyle=COL.bg; ctx.fillRect(x,y,cw,5);
+    ctx.fillStyle=cols[i]; ctx.fillRect(x,y,cw*clamp(l.pts[i]/G.maxcap,0,1),5);
+    ctx.fillStyle=COL.ink; ctx.fillRect(x+cw*clamp(l.cap/G.maxcap,0,1)-1,y-2,2,9);
+    ctx.fillStyle=COL.muted; ctx.fillText(nm,x,y-4); ctx.textAlign='right'; ctx.fillStyle=COL.ink; ctx.fillText(v,x+cw,y-4); ctx.textAlign='left';
+  }
+  if(capped(l)&&!l.out){ ctx.fillStyle=COL.danger; ctx.fillText('capped at '+Math.round(top)+' for '+Math.round(l.capUntil-l.x),x0,y+18); }
+}
 function pct(x){return Math.round(x*100)+'%';}
 function hud(){
   var l=G.labs[0],p=(ui.fwd&&!ui.rev)?1:ui.pace/100,r=1-p,forced=triForced(),ew=forced?[50,50,0]:ui.w,tot=ew[0]+ew[1]+ew[2];
