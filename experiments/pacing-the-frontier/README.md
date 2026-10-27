@@ -20,4 +20,4 @@ A small side-scrolling pacing game about racing, stopping and building height, m
 
 Prototype 0.1. Bot-versus-bot simulation showed that holding back is stronger than running at the starting investment rate, and that a quarter to two fifths of games end in extinction, mostly because the Sprinter or Gambler falls. This is a bot test, not a human playtest.
 
-Open design items are listed at the end of `spec.html`.
+Open design items are listed at the end of `spec.html`. `DESIGN-NOTES.md` records a review of version 0.1 and the agreed directions for the next version.
