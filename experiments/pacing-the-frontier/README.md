@@ -1,6 +1,6 @@
 # Pacing the Frontier
 
-A small side-scrolling pacing game about racing, stopping and building height, meant to give intuition for racing dynamics and optimal stopping. It is a separate experiment from the main campaign. Nothing here is calibrated to evidence. All numbers are game conventions to be tuned.
+A small side-scrolling pacing game about racing, stopping and building height, meant to give intuition for racing dynamics and optimal stopping. Nothing here is calibrated to evidence. All numbers are game conventions to be tuned.
 
 - `prototype.html` is a playable single-file version: one human and three bots (Sprinter, Steward, Gambler), with a panel of tuning knobs. Open it in a browser (`?seed=N` loads a seed). No build step.
 - **Rivals.** `?rivals=steward,gambler` (any of `sprinter`, `steward`, `gambler`) races only those bots; headless, `PF.run(seed,kind,roster)` or `PF.setRoster([...])`. Every bot-stream draw is still made in slot order, so the remaining labs, the track and the rolls match a full race, and with all three (or none given) results are identical to before.
@@ -61,3 +61,7 @@ Open design items are listed at the end of `spec.html` (which still describes ve
 ## Publishing
 
 `.github/workflows/pages.yml` publishes `prototype.html` as `index.html`, with `spec.html` beside it, on GitHub Pages. It runs on pushes to `main` that touch this folder, or by hand. The repository must be public (or on a plan with private Pages), with Settings > Pages > Source set to "GitHub Actions".
+
+## Checks
+
+`check/sim-check.mjs` replays 300 races (seeds 1 to 100 with chill on, chill off, and Steward alone) and compares each game's full result with `check/reference.json`. It needs only Node: `node experiments/pacing-the-frontier/check/sim-check.mjs`. When the simulation section of `prototype.html` (from `function $(id)` to `window.PF={`) is byte-identical to the recorded one, it skips the replay, so UI changes cost nothing. When race results change on purpose, run it with `--write` and commit `reference.json` with the change. `.github/workflows/pacing-check.yml` runs it on pushes and pull requests that touch this folder.

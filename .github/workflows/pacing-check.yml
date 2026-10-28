@@ -1,0 +1,17 @@
+name: Pacing the Frontier checks
+# Replays a fixed set of races and compares them with check/reference.json. Plain Node, no install; skipped in
+# seconds when the simulation section of the page is unchanged.
+on:
+  push:
+    paths: ['experiments/pacing-the-frontier/**', '.github/workflows/pacing-check.yml']
+  pull_request:
+    paths: ['experiments/pacing-the-frontier/**', '.github/workflows/pacing-check.yml']
+permissions:
+  contents: read
+jobs:
+  sim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: node experiments/pacing-the-frontier/check/sim-check.mjs

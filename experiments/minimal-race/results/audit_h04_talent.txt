@@ -1,4 +1,0 @@
-talent share at Q12 mean: {'frontier': 0.381, 'safety': 0.247, 'incumbent': 0.187, 'challenger': 0.077, 'state': 0.108}
-peak share mean: {'frontier': 0.52, 'safety': 0.411, 'incumbent': 0.301, 'challenger': 0.192, 'state': 0.218}
-dTalent quarter of public incident vs not: 0.0026 1501 0.0019
-truth-C leader changes V,B,delta,se: 0.92 0.863 0.057 0.085

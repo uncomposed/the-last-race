@@ -1,1 +1,0 @@
-python3 run.py --variant variants/h17_learn_automation.py --seeds 300 --out    6.59s user 0.03s system 97% cpu 6.800 total
