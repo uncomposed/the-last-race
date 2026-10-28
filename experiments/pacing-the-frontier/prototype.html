@@ -100,6 +100,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .t-key{font:500 10px var(--mono);fill:var(--muted)}
 .t-mk{fill:var(--surface);stroke:var(--line);stroke-width:1}
 .t-pt{fill:var(--ink);stroke:var(--surface);stroke-width:2.5;transition:opacity .15s}
+#tri.pad .t-pt{stroke:var(--muted);stroke-width:6}
 .t-forced{font:500 11px var(--mono);fill:var(--danger)}
 .t-ghost{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
 .sing-n{font:500 22px var(--display);color:var(--d)}
@@ -246,7 +247,7 @@ body.chill #btn-jump{display:none}
       <div class="tbody">
         <span class="tl">Split of what you hold back</span>
         <span id="tri-read"></span>
-        <span class="tk" id="tri-note">1 Sight, 2 Height, 3 Max speed, 4 centre, 5 Sight+Height, 6 Height+Max speed, 7 Max speed+Sight. Drag the point, or focus the triangle and use the arrow keys.</span>
+        <span class="tk" id="tri-note">1 Sight, 2 Height, 3 Max speed, 4 centre, 5 Sight+Height, 6 Height+Max speed, 7 Max speed+Sight. Drag the point (on a touch screen, swipe anywhere in the box and the point follows like a trackpad cursor, or tap to place it), or focus the triangle and use the arrow keys.</span>
       </div>
     </div>
     <div class="btns">
@@ -1250,9 +1251,26 @@ function triEvent(e){
 }
 (function(){
   var svg=$('tri');
-  svg.addEventListener('pointerdown',function(e){ e.preventDefault(); triDrag=true; try{svg.setPointerCapture(e.pointerId);}catch(x){} svg.focus({preventScroll:true}); triEvent(e); });
-  svg.addEventListener('pointermove',function(e){ if(triDrag){ e.preventDefault(); triEvent(e); } });
-  ['pointerup','pointercancel','lostpointercapture'].forEach(function(ev){ svg.addEventListener(ev,function(){triDrag=false;}); });
+  /* a mouse places the point where it is. A finger works like a trackpad: a swipe anywhere in the box moves
+     the point by the swipe, so the thumb never covers it. A tap without a swipe still places the point there. */
+  var pad=null;
+  svg.addEventListener('pointerdown',function(e){
+    e.preventDefault(); triDrag=true; try{svg.setPointerCapture(e.pointerId);}catch(x){} svg.focus({preventScroll:true});
+    if(e.pointerType==='mouse'){ pad=null; triEvent(e); return; }
+    pad={x:e.clientX,y:e.clientY,t:e.timeStamp,moved:false}; svg.classList.add('pad');
+  });
+  svg.addEventListener('pointermove',function(e){
+    if(!triDrag){return;}
+    e.preventDefault();
+    if(!pad){ triEvent(e); return; }
+    var dx=e.clientX-pad.x,dy=e.clientY-pad.y;
+    if(!pad.moved&&dx*dx+dy*dy<64){return;}
+    var k=260/svg.getBoundingClientRect().width,xy=triPos(ui.w);
+    pad.moved=true; pad.x=e.clientX; pad.y=e.clientY;
+    setSplit(triFromXY(xy[0]+dx*k,xy[1]+dy*k));
+  });
+  svg.addEventListener('pointerup',function(e){ if(pad&&!pad.moved&&e.timeStamp-pad.t<400){ triEvent(e); } });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(function(ev){ svg.addEventListener(ev,function(){ triDrag=false; pad=null; svg.classList.remove('pad'); }); });
   svg.addEventListener('keydown',function(e){
     var d={ArrowLeft:[-4,0],ArrowRight:[4,0],ArrowUp:[0,-4],ArrowDown:[0,4]}[e.code];
     if(!d){return;}
