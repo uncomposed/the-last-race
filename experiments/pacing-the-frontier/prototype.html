@@ -107,7 +107,8 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .sing-n{font:500 22px var(--display);color:var(--d)}
 .seedbox{display:flex;gap:6px;align-items:center}
 /* left-thumb throttle: shown only on a landscape phone, where it replaces the pace slider */
-.throttle{display:none}
+.lcol{display:none}
+.card.small{max-width:300px}
 .throttle{flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:ns-resize}
 .th-lbl,.throttle output{font:500 11px var(--mono);color:var(--muted);text-align:center}
 .throttle output{color:var(--ink);font-size:13px}
@@ -118,8 +119,14 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 /* landscape phone: the track fills the screen height, the controls sit in a column on the right */
 @media (orientation:landscape) and (max-height:540px){
   body{padding:6px max(8px,env(safe-area-inset-right,0px)) 24px max(8px,env(safe-area-inset-left,0px))}
-  .wrap{max-width:none;display:grid;grid-template-columns:56px minmax(0,1fr) 200px;gap:8px;align-items:start}
-  .throttle{display:flex;grid-column:1;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  .wrap{max-width:none;display:grid;grid-template-columns:84px minmax(0,1fr) 220px;gap:8px;align-items:start}
+  /* left thumb: pace, back up and jump; right thumb: the split, floor it and the rest */
+  .lcol{display:flex;flex-direction:column;gap:6px;grid-column:1;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  .throttle{display:flex;flex:1;min-height:0}
+  .lcol button{flex:none;min-width:0;padding:4px}
+  .lcol #btn-jump{flex:none;min-height:84px;font-size:15px}
+  .lcol #btn-back{flex:none;min-height:52px;font-size:13px}
+  .kh{display:none}
   .pace .cols>.lab:nth-child(1){display:none}
   .wrap>header{display:none}
   .stage{grid-column:2;grid-row:1}
@@ -130,15 +137,14 @@ details summary{cursor:pointer;font:700 18px var(--display)}
   .pace .cols>.lab:nth-child(2){display:none}
   .pace input[type=range]{height:28px}
   .tri{flex-direction:column;align-items:stretch;gap:0}
-  .tri svg{width:100%;max-height:32vh;max-height:32dvh}
+  .tri svg{width:100%;max-height:56vh;max-height:56dvh}
   .tri .tbody{flex:none;font-size:12px}
   .tri .tbody{display:none}
   .pace .lab{font-size:12px;gap:0}
-  .pace .btns{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'jump jump' 'fwd back' 'pause restart' 'auto auto';gap:6px}
+  .pace .btns{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'fwd fwd' 'pause restart' 'auto auto';gap:6px}
   .pace .btns>*{min-width:0}
-  #btn-jump{grid-area:jump;min-height:46px;flex:none}
-  #btn-fwd{grid-area:fwd}#btn-back{grid-area:back}#btn-pause{grid-area:pause}#btn-restart{grid-area:restart}
-  #btn-fwd,#btn-back{min-height:46px;padding:6px 4px;font-size:13px}
+  #btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:restart}
+  #btn-fwd{min-height:52px;padding:6px 4px;font-size:14px}
   #btn-pause,#btn-restart{min-height:32px;padding:2px 4px;font-size:12px}
   .pace .btns label[for=auto]{grid-area:auto;font-size:12px}
   .pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
@@ -155,10 +161,12 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <p class="rotate">Turn your phone sideways for the best view.</p>
   </header>
 
+  <div class="lcol" id="lcol">
   <div class="throttle" id="throttle" role="slider" aria-label="Pace" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
     <span class="th-lbl">Pace</span>
     <div class="th-track" id="th-track"><div class="th-fill" id="th-fill"></div><div class="th-knob" id="th-knob"></div></div>
     <output id="th-out">70%</output>
+  </div>
   </div>
 
   <div class="stage">
@@ -168,6 +176,13 @@ details summary{cursor:pointer;font:700 18px var(--display)}
         <h2 id="ov-title">Pacing the Frontier</h2>
         <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
+      </div>
+    </div>
+    <div class="ov" id="ready" hidden>
+      <div class="card small" role="dialog" aria-labelledby="ready-h">
+        <h2 id="ready-h">Ready</h2>
+        <p id="ready-msg"></p>
+        <button class="primary" id="ready-btn" type="button">Go</button>
       </div>
     </div>
     <div class="ov" id="sing" hidden>
@@ -216,10 +231,10 @@ details summary{cursor:pointer;font:700 18px var(--display)}
       </div>
     </div>
     <div class="btns">
-      <button id="btn-jump" type="button">Jump (space)</button>
+      <button id="btn-jump" type="button">Jump <span class="kh">(space)</span></button>
       <label for="auto" title="Auto-jump for everyone. Off: you jump by hand, and the bots jump with their own timing error."><input type="checkbox" id="auto" checked>Chill mode</label>
-      <button id="btn-fwd" type="button">Floor it (hold &rarr;)</button>
-      <button id="btn-back" type="button">Back up (hold &larr;)</button>
+      <button id="btn-fwd" type="button">Floor it <span class="kh">(hold &rarr;)</span></button>
+      <button id="btn-back" type="button">Back up <span class="kh">(hold &larr;)</span></button>
       <button id="btn-pause" type="button">Pause</button>
       <label for="watch"><input type="checkbox" id="watch">Watch bots</label>
       <button id="btn-restart" type="button">New run</button>
@@ -1247,12 +1262,19 @@ function showSeed(){
   $('seed-in').value=G.seed;
   try{ history.replaceState(null,'','?seed='+G.seed); }catch(e){}
 }
+/* a new run loads its track and waits on a small card, so pace, split and chill mode can be set before Go */
 function start(seed){
   newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,$('watch').checked?'custom':undefined);
-  running=true; paused=false; acc=0; fresh=false; singShown=false;
+  running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
-  showSeed(); syncInput();
+  $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set your pace, split and chill mode, then go.';
+  $('ready').hidden=false; showSeed();
 }
+function go(){
+  if(running||G.over||$('ready').hidden){return;}
+  $('ready').hidden=true; running=true; last=performance.now(); syncInput();
+}
+$('ready-btn').addEventListener('click',go);
 function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; G.input.fwd=ui.fwd; }
 
 /* the first time the human's lab knows the singularity gap the game pauses once and shows a card */
@@ -1282,6 +1304,16 @@ function frame(now){
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
 bindRange('pace',function(v){ui.pace=v;});
+/* on a landscape phone Jump and Back up move to the left column under the throttle, and back again otherwise */
+(function(){
+  var mq=window.matchMedia('(orientation:landscape) and (max-height:540px)'),bt=document.querySelector('.pace .btns');
+  function place(){
+    if(mq.matches){ $('lcol').appendChild($('btn-back')); $('lcol').appendChild($('btn-jump')); }
+    else { bt.insertBefore($('btn-jump'),bt.firstChild); bt.insertBefore($('btn-back'),$('btn-pause')); }
+  }
+  if(mq.addEventListener){mq.addEventListener('change',place);} else if(mq.addListener){mq.addListener(place);}
+  place();
+})();
 /* left-thumb throttle: drag anywhere on it, top is 100%, bottom is 0%; the ends snap */
 function showThrottle(){
   var v=(ui.fwd&&!ui.rev)?100:ui.pace;
@@ -1326,6 +1358,7 @@ document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName,txt=t==='INPUT'&&e.target.type==='text';
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
+  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt){e.preventDefault();go();return;}
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
