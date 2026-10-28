@@ -160,11 +160,12 @@ body.cue-build .rb-cue,body.cue-build .th-cue{display:block}
 body.cue-build .rb,body.cue-build .th-track{box-shadow:0 0 0 2px var(--ink)}
 @media (prefers-reduced-motion:no-preference){
   body.cue-build .rb-cue{animation:cue-x .9s ease-in-out infinite}
-  body.cue-build .th-cue{animation:cue-y .9s ease-in-out infinite}
+  body.cue-build .th-cue{animation:cue-yd .9s ease-in-out infinite}
   body.cue-build .rb,body.cue-build .th-track{animation:cue-ring 1.2s ease-in-out infinite}
 }
 @keyframes cue-x{0%,100%{transform:translateX(2px)}50%{transform:translateX(-5px)}}
 @keyframes cue-y{0%,100%{transform:translateY(2px)}50%{transform:translateY(-5px)}}
+@keyframes cue-yd{0%,100%{transform:translateY(-2px)}50%{transform:translateY(5px)}}
 @keyframes cue-ring{0%,100%{box-shadow:0 0 0 1px var(--ink)}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--ink) 40%,transparent)}}
 /* the investment flow: one fixed layer above everything but the cards, never catching a touch */
 #flow{position:fixed;left:0;top:0;width:100vw;height:100vh;aspect-ratio:auto;pointer-events:none;z-index:6;background:none;border:0;border-radius:0}
@@ -212,16 +213,16 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 /* left-thumb throttle and Jump, shown only on a landscape phone */
 .lcol{display:none}
 .throttle{--p:.7;flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:ns-resize}
-/* Run on top, Build below: dragging up grows Build, like stacking blocks; the ends snap */
+/* Build on top, Run below: push up for more Run, like a throttle lever; the ends snap */
 .th-lbl{display:flex;flex-direction:column;align-items:center;font:500 11px/1.2 var(--mono);color:var(--muted)}
 .th-lbl output{font:600 14px/1.2 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
 .th-track{position:relative;flex:1;min-height:0;border-radius:4px;border:1px solid var(--line);
   background:var(--bg) repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 16%,transparent) 6px 8px)}
-.th-run{position:absolute;left:0;right:0;top:0;height:calc(var(--p) * 100%);background:var(--run);border-radius:3px 3px 0 0}
-.th-split{position:absolute;right:0;bottom:0;width:4px;top:calc(var(--p) * 100%);display:flex;flex-direction:column}
-.th-knob{position:absolute;left:5px;right:5px;top:calc(var(--p) * 100%);height:12px;margin-top:-6px;border-radius:4px;background:var(--surface);border:1.5px solid var(--ink);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 35%,transparent)}
+.th-run{position:absolute;left:0;right:0;bottom:0;height:calc(var(--p) * 100%);background:var(--run);border-radius:0 0 3px 3px}
+.th-split{position:absolute;right:0;top:0;width:4px;bottom:calc(var(--p) * 100%);display:flex;flex-direction:column}
+.th-knob{position:absolute;left:5px;right:5px;bottom:calc(var(--p) * 100%);height:12px;margin-bottom:-6px;border-radius:4px;background:var(--surface);border:1.5px solid var(--ink);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 35%,transparent)}
 .th-knob::before{content:'';position:absolute;top:2.5px;bottom:2.5px;left:50%;width:14px;transform:translateX(-50%);background:repeating-linear-gradient(90deg,var(--muted) 0 1.5px,transparent 1.5px 4px)}
-.th-cue{left:50%;top:calc(var(--p) * 100%);margin:-26px 0 0 -7px;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:10px solid var(--run-ink)}
+.th-cue{left:50%;bottom:calc(var(--p) * 100%);margin:0 0 -26px -7px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--run-ink)}
 /* controls never select text or open the callout; while a run is playing, touches on the controls and track neither scroll nor zoom */
 .panel.pace,.lcol,.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .panel.pace,.lcol,.stage,button{touch-action:manipulation}
@@ -390,9 +391,9 @@ html.epi-open{overflow:hidden}
 
   <div class="lcol" id="lcol">
     <div class="throttle" id="throttle" role="slider" aria-label="Run or Build" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="Run 70 percent, Build 30 percent">
-      <span class="th-lbl">Run<output id="th-rv">70%</output></span>
+      <span class="th-lbl">Build<output id="th-bv">30%</output></span>
       <div class="th-track" id="th-track"><div class="th-run"></div><div class="th-split" id="th-build"><i id="th-s0"></i><i id="th-s1"></i><i id="th-s2"></i></div><div class="th-knob"></div><div class="th-cue"></div></div>
-      <span class="th-lbl"><output id="th-bv">30%</output>Build</span>
+      <span class="th-lbl"><output id="th-rv">70%</output>Run</span>
     </div>
   </div>
 
@@ -3134,11 +3135,11 @@ function showBar(){
   var bw=rb.clientWidth;
   if(bw){ var hx=12+(bw-24)*run/100; rbFit($('rb-lr'),hx-6); rbFit($('rb-lb'),bw-hx-6); }
 }
-/* left-thumb throttle: Run on top, Build below. Drag anywhere on it: up grows Build, down grows Run; the ends snap */
+/* left-thumb throttle: Build on top, Run below. Drag anywhere on it: up grows Run, down grows Build; the ends snap */
 (function(){
   var th=$('throttle'),on=false;
   function set(e){
-    var r=$('th-track').getBoundingClientRect(),v=clamp((e.clientY-r.top)/r.height*100,0,100);
+    var r=$('th-track').getBoundingClientRect(),v=clamp((r.bottom-e.clientY)/r.height*100,0,100);
     v=v<4?0:(v>96?100:Math.round(v)); ui.pace=v; $('pace').value=v; showBar();
   }
   th.addEventListener('pointerdown',function(e){e.preventDefault();on=true;th.setPointerCapture(e.pointerId);set(e);});
