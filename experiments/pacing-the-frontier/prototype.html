@@ -326,6 +326,9 @@ var POL={
 var HANDS={lag:0.40,lagSD:0.15,jumpSD:0.25,judge:0.20};
 var PRESETS={Rookie:30,Pro:70,Machine:100};
 var SKILL={};
+/* rival roster: null races all three bots; a list of kinds (e.g. ['steward','gambler']) drops the others after every bot-stream draw
+   is made in slot order, so the remaining labs, the track and the rolls are the same as in a full race. Set by ?rivals=, PF.setRoster or newGame's roster */
+var G_ROSTER=null;
 var SHAPES=['Steady climb','Early wall','Staircase','Late cliff'];
 
 /* ---------- simulation (no DOM below this banner until UI) ---------- */
@@ -501,7 +504,7 @@ function handsN(l,tag,idx){
 function sloppy(l){ if(l.human){return 0;} var s=SKILL[l.kind]!==undefined?SKILL[l.kind]:K.skill; return clamp(1-s/100,0,1); }
 /* a misjudgment fixed per obstacle, which fades while the lab stands still and takes a closer look */
 function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*Math.exp(-l.still/2):1; }
-function newGame(seed,humanKind){
+function newGame(seed,humanKind,roster){
   seed=seed>>>0;
   var rt=rngMaker(seed),rb=rngMaker((seed^0x9E3779B9)>>>0),rr=rngMaker((seed^0x85EBCA6B)>>>0);
   var T=genTrack(rt),i,j;
@@ -517,6 +520,8 @@ function newGame(seed,humanKind){
     var pk=POL[labs[i].kind];
     if(pk){ labs[i].basePace=pk.pace+d.p*pk.jit; }
   }
+  var ros=roster||G_ROSTER;
+  if(ros){ labs=labs.filter(function(l){return l.id===0||ros.indexOf(l.kind)>=0;}); }
   G={seed:seed,t:0,labs:labs,barriers:T.bars,gaps:T.gaps,finish:T.finish,world:T,rolls:rolls,fallN:[],bd:bd,
      maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,log:[],over:false,result:null,level:0,ibuf:[],eff:null,
      input:{pace:0.7,w:[25,50,25],jump:false,auto:true,rev:false,fwd:false}};
@@ -858,8 +863,8 @@ function stepGame(dt){
 }
 
 /* headless run for tuning: the first lab is driven by a bot policy */
-function run(seed,kind){
-  newGame(seed,kind);
+function run(seed,kind,roster){
+  newGame(seed,kind,roster);
   var guard=0;
   while(!G.over&&guard<20000){ stepGame(1/30); guard++; }
   var res=G.result||{type:'none'},nb=0,ng=0,i;
@@ -871,7 +876,7 @@ function run(seed,kind){
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
 }
-window.PF={HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
+window.PF={setRoster:function(r){G_ROSTER=r||null;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
 
 /* ---------- UI ---------- */
 /* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge.
@@ -1472,6 +1477,8 @@ var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
 if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill(); }
+var qr=/[?&]rivals=([a-z,]+)/i.exec(location.search);
+if(qr){ G_ROSTER=qr[1].toLowerCase().split(',').filter(function(k){return POL[k]&&k!=='custom';}); }
 var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
