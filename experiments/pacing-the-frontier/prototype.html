@@ -59,6 +59,44 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 .card button.primary{position:sticky;bottom:0;flex:none}
 @media (max-width:600px){.ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}.sing-n{font-size:18px}}
 .card p{font-size:15px}
+/* end-of-run story: set apart from the result line, in the body face, a little quieter */
+/* the recap: Professor Postmortem walks a miniature of the track just raced and stops at its disasters. The plaque pops up over
+   the spot, the line sits in a speech bubble under the strip. Tap the strip to skip ahead; it never blocks the buttons */
+.story{border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:3px;flex:none}
+.story[hidden]{display:none}
+.rc-stage{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#rc-cv{display:block;width:100%;height:64px;aspect-ratio:auto;border:0;border-radius:4px;background:var(--bg);touch-action:manipulation}
+.card .rc-plaque{position:absolute;top:3px;left:0;max-width:calc(100% - 8px);margin:0;padding:2px 7px 3px;font:700 12.5px/1.25 var(--display);color:var(--ink);
+  background:var(--surface);border:2px solid var(--b);border-radius:2px;box-shadow:2px 2px 0 var(--b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;transform:translateY(4px) scale(.85);transform-origin:50% 100%;transition:opacity .18s,transform .22s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
+.card .rc-plaque.on{opacity:1;transform:none}
+.card .rc-line{position:relative;margin:8px 0 0;min-height:2.9em;padding:6px 10px;font:500 14px/1.4 var(--body);color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;transition:opacity .18s}
+.card .rc-line::before,.card .rc-line::after{content:'';position:absolute;left:var(--tx,24px);width:0;height:0;border:7px solid transparent;border-top:0;transform:translateX(-50%)}
+.card .rc-line::before{top:-8px;border-bottom:8px solid var(--line)}
+.card .rc-line::after{top:-6px;border-bottom:7px solid var(--bg)}
+.card .rc-line.dim{opacity:.35}
+.rc-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;font:400 12px var(--mono);color:var(--muted)}
+.rc-who{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rc-n::before{content:' · '}
+#rc-n:empty::before{content:''}
+#rc-replay{flex:none;min-height:28px;padding:2px 10px;font-size:12px}
+.rc-list{margin:4px 0 0;padding-left:1.4em;display:flex;flex-direction:column;gap:4px;font:400 13.5px/1.4 var(--body)}
+.rc-list[hidden]{display:none}
+.rc-list b{font:700 13px var(--display)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  #btn-mute{display:none}
+  #rc-cv{height:56px}
+  .card .rc-line{font-size:12.5px;line-height:1.35;padding:5px 8px;min-height:2.8em;margin-top:7px}
+  .card .rc-plaque{font-size:11.5px;top:2px}
+  /* phones: no room for a bar, so Replay floats in the top right corner of the strip and the label hides */
+  .story{position:relative}
+  .rc-bar{position:absolute;top:7px;right:0;z-index:1}
+  .rc-who,.rc-long{display:none}
+  #rc-replay{min-height:28px;padding:2px 8px;font-size:11px;background:var(--surface)}
+}
+@media (prefers-reduced-motion:reduce){.card .rc-plaque,.card .rc-line{transition:none}}
 button{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;cursor:pointer;min-height:40px}
 button:hover{border-color:var(--muted)}
 #btn-jump,#btn-fwd,#btn-back{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
@@ -230,7 +268,7 @@ body.chill #btn-jump{display:none}
 .cmp-riv{display:inline-flex;flex-wrap:wrap;gap:2px 10px}
 .cmp-riv i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:baseline}
 .cmp-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
-.cmp button,.ov-foot button,#ready-camp,#ready-btn{min-height:44px}
+.cmp button,.ov-foot button,#ready-camp,#ready-snd,#ready-btn{min-height:44px}
 /* sticky through the card's bottom padding, so scrolled text never shows under the buttons */
 .ov-foot{position:sticky;bottom:-16px;margin-bottom:-16px;padding:6px 0 16px;display:flex;flex-direction:column;gap:6px;background:var(--surface);flex:none}
 .ov-foot .btns{gap:8px}
@@ -305,7 +343,15 @@ html.epi-open{overflow:hidden}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
+        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
+        <div class="story" id="ov-story" hidden>
+          <div class="rc-stage" id="rc-stage" title="Tap to skip to the next stop">
+            <canvas id="rc-cv" aria-hidden="true"></canvas>
+            <div class="rc-say" id="rc-say" aria-live="polite"><p class="rc-plaque" id="rc-plaque"></p><p class="rc-line" id="rc-line"></p></div>
+          </div>
+          <ol class="rc-list" id="rc-list" hidden></ol>
+          <div class="rc-bar" id="rc-bar"><span class="rc-who">Professor Postmortem<span id="rc-n"></span></span><button type="button" id="rc-replay" aria-label="Replay recap">Replay<span class="rc-long"> recap</span></button></div>
+        </div>
         <button class="primary" id="ov-btn" type="button">Start run</button>
         <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
         <p class="cmp-res" id="ov-cres" hidden></p>
@@ -324,6 +370,7 @@ html.epi-open{overflow:hidden}
           <p class="note" id="diff-knobs"></p>
         </div>
         <!-- campaign (end) -->
+        <button id="ready-snd" class="snd" type="button" aria-pressed="true">Sound: on <span class="kh">(M mutes)</span></button>
         <button class="primary" id="ready-btn" type="button">Go</button>
         <button id="ready-camp" type="button">Campaign</button><!-- campaign -->
       </div>
@@ -381,6 +428,7 @@ html.epi-open{overflow:hidden}
       <button id="btn-pause" type="button">Pause</button>
       <label for="watch"><input type="checkbox" id="watch">Watch bots</label>
       <button id="btn-restart" type="button">New run</button>
+      <button id="btn-mute" class="snd" type="button" aria-pressed="true">Sound: on <span class="kh">(M mutes)</span></button>
       <button id="btn-camp" type="button">Campaign</button><!-- campaign -->
       <label class="seedbox" for="seed-in">Seed <input type="text" id="seed-in" inputmode="numeric" autocomplete="off" aria-label="Seed"></label>
       <button id="btn-seed" type="button">Play seed</button>
@@ -442,15 +490,1043 @@ html.epi-open{overflow:hidden}
 </dialog>
 
 <script>
+/* sound: three styles of adaptive game music (Chip, FM, MIDI), each with a normal and a singularity theme, and matching soft effects, all synthesized with Web Audio. Silent until the first Go */
+/* PFAudio v2: three styles (Chip, FM, MIDI) of all-synthesized game music and matching sound effects, raw Web Audio only */
+(function () {
+  var W = (typeof window !== 'undefined') ? window : this;
+  var ctx = null, comp, master, duck, mFilter, musicBus, sfxBus, exBus, rvIn, nbuf, vibG, tremG, lastErr = null;
+  var sBus = [], LY = [], strB = [], PW = [];
+  var muted = false, timer = null, st = {}, last = {}, live = [];
+  var sty = 0, mode = 0, pend = false, filled = false; /* style, 0 normal / 1 singularity, riser state */
+  var on = { P: false, D: false, B: false, L: false, C: false, T: false };
+  var nextTime = 0, stepN = 0, bpm = 126, mixAt = 0, silent = 0, wasQuiet = true;
+  var MASTER = 0.35, TRIM = [1, 0.85, 0.95], NAMES = ['P', 'D', 'B', 'L', 'C', 'T'];
+  var _ = -1; /* a rest in the note tables */
+
+  /* chord shapes: M major, m minor, 7 dominant, n minor 7th, j major 7th */
+  var Q = { M: [0, 4, 7], m: [0, 3, 7], '7': [0, 4, 7, 10], n: [0, 3, 7, 10], j: [0, 4, 7, 11] };
+
+  /* The tunes. TH[style][0] is the normal theme, TH[style][1] the singularity theme.
+     rt = bass root per bar (midi), q = chord quality per bar, ln = lead melody, 16 steps a bar,
+     8 bars as 4 lines of 2 bars (midi note, -1 = rest or hold), bs = bass offsets for one bar,
+     dr = kick / snare / hat patterns (x loud, o soft), ht = orchestra hits, tm = timpani. */
+  var TH = [
+    [ /* Chip: bouncy G major, then a driving E minor */
+      { bpm: 126, rt: [43, 40, 36, 38, 43, 35, 33, 38], q: 'MmMMMmm7',
+        ln: [[79, _, 74, _, 71, _, 74, _, 79, _, _, _, 78, 79, _, _, 76, _, 71, _, 67, _, 71, _, 76, _, _, _, 74, _, 71, _],
+             [72, _, 76, _, 79, _, 76, _, 72, _, _, _, 74, 76, _, _, 74, _, 78, _, 81, _, 78, _, 74, _, _, _, 71, _, 69, _],
+             [71, _, 74, _, 79, _, 74, _, 71, _, _, _, 74, _, 79, _, 78, _, 74, _, 71, _, 74, _, 78, _, _, _, 79, 78, _, _],
+             [76, _, 72, _, 69, _, 72, _, 76, _, 74, _, 72, _, 69, _, 74, _, _, _, 72, _, 71, _, 69, _, _, _, 66, _, _, _]],
+        bs: [0, _, 12, _, 0, _, 12, _, 0, _, 12, _, 7, _, 12, _],
+        dr: ['x.....x.x.....x.', '....x.......x...', 'x.x.x.x.x.x.x.x.'] },
+      { rt: [40, 36, 38, 40, 40, 36, 33, 35], q: 'mMMmmMm7',
+        ln: [[71, _, _, _, 76, _, _, _, 79, _, _, _, 76, _, 74, _, 76, _, _, _, 79, _, _, _, 84, _, _, _, 83, _, 79, _],
+             [74, _, _, _, 78, _, _, _, 81, _, _, _, 78, _, 74, _, 76, _, 79, _, 83, _, 79, _, 76, _, _, _, _, _, _, _],
+             [83, _, _, _, 79, _, _, _, 76, _, 79, _, 83, _, _, _, 84, _, _, _, 83, _, 81, _, 79, _, _, _, 76, _, 72, _],
+             [81, _, _, _, 84, _, _, _, 88, _, _, _, 84, _, 81, _, 83, _, _, _, 87, _, _, _, 81, _, _, _, _, _, _, _]],
+        bs: [0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 7, 0, 12, 7],
+        dr: ['x...x...x...x...', '....x.......x.x.', 'xoxoxoxoxoxoxoxo'] }
+    ],
+    [ /* FM: funky D dorian, then a C minor drive */
+      { bpm: 104, rt: [38, 38, 43, 43, 36, 33, 38, 43], q: 'nn77jnn7',
+        ln: [[_, _, 69, _, _, 72, _, 69, _, _, 74, _, 72, _, 69, _, 67, _, _, 69, _, _, 65, _, 62, _, 65, _, 67, _, _, _],
+             [_, _, 71, _, _, 74, _, 71, _, _, 77, _, 74, _, 71, _, 69, _, _, 71, _, _, 67, _, 71, _, _, _, _, _, _, _],
+             [_, _, 76, _, _, 79, _, 76, _, _, 83, _, 79, _, 76, _, 72, _, _, 69, _, _, 72, _, 76, _, _, 72, _, _, 69, _],
+             [_, _, 74, _, _, 77, _, 74, _, _, 81, _, 77, _, 74, _, 71, _, 74, _, 77, _, 74, _, 71, _, _, _, 67, _, _, _]],
+        bs: [0, _, _, 0, _, _, 12, _, 0, _, _, 7, _, 10, _, _],
+        dr: ['x..x......x.....', '....x..o....x..o', 'xoxoxoxoxoxoxoxo'] },
+      { rt: [36, 32, 34, 36, 36, 32, 34, 31], q: 'mMMmmMM7',
+        ln: [[72, _, _, 72, _, _, 75, _, 79, _, _, _, 75, _, 72, _, 80, _, _, 80, _, _, 77, _, 75, _, _, _, 72, _, 68, _],
+             [70, _, _, 74, _, _, 77, _, 82, _, _, _, 77, _, 74, _, 75, _, _, 72, _, _, 67, _, 72, _, _, _, _, _, _, _],
+             [72, _, _, 75, _, _, 79, _, 84, _, _, _, 79, _, 75, _, 80, _, _, 77, _, _, 75, _, 80, _, _, _, 84, _, _, _],
+             [82, _, _, 79, _, _, 77, _, 74, _, _, _, 77, _, 79, _, 83, _, _, 79, _, _, 74, _, 71, _, _, _, _, _, _, _]],
+        bs: [0, _, 12, _, 0, _, 12, _, 0, _, 12, _, 0, _, 12, _],
+        dr: ['x...x.x.x...x...', '....x.......x...', 'xoxoxoxoxoxoxoxo'] }
+    ],
+    [ /* MIDI: cozy F major level select, then a G minor orchestral push */
+      { bpm: 92, rt: [41, 38, 34, 36, 41, 33, 34, 36], q: 'jnjMjnj7',
+        ln: [[72, _, _, _, 69, _, 72, _, 77, _, _, _, 76, _, 72, _, 74, _, _, _, 72, _, 69, _, 65, _, _, _, 69, _, _, _],
+             [70, _, 74, _, 77, _, _, _, 74, _, 72, _, 70, _, _, _, 67, _, 72, _, 76, _, _, _, 74, _, 72, _, _, _, _, _],
+             [77, _, _, _, 76, _, 77, _, 81, _, _, _, 79, _, 77, _, 76, _, _, _, 72, _, 69, _, 72, _, 76, _, 79, _, _, _],
+             [77, _, _, _, 74, _, 70, _, 74, _, 77, _, 81, _, 79, _, 79, _, 76, _, 72, _, _, _, 70, _, _, _, 67, _, _, _]],
+        bs: [0, _, _, _, _, _, _, _, 7, _, _, _, 12, _, 7, _],
+        dr: ['x.......x.x.....', '....x.......x...', 'x.x.x.x.x.x.x.x.'] },
+      { rt: [43, 39, 41, 43, 43, 39, 36, 38], q: 'mMMmmMm7',
+        ln: [[74, _, _, _, 70, _, 67, _, 70, _, 74, _, 79, _, _, _, 75, _, _, _, 79, _, 82, _, 79, _, 75, _, _, _, _, _],
+             [77, _, _, _, 81, _, 84, _, 81, _, 77, _, _, _, _, _, 79, _, _, _, 74, _, 70, _, 67, _, 70, _, 74, _, _, _],
+             [74, _, _, _, 79, _, _, _, 82, _, _, _, 79, _, 74, _, 75, _, _, _, 79, _, _, _, 82, _, _, _, 79, _, 75, _],
+             [72, _, _, _, 75, _, _, _, 79, _, _, _, 84, _, _, _, 78, _, _, _, 81, _, _, _, 84, _, 81, _, 78, _, 74, _]],
+        bs: [0, _, 0, _, 12, _, 0, _, 0, _, 0, _, 12, _, 7, _],
+        dr: ['x.......x.......', '....x.......x...', '..x...x...x...x.'],
+        ht: 'x.....x.x.......', tm: 'x..x..x.x..x..x.' }
+    ]
+  ];
+  var ARPS = [0, 1, 2, 3, 4, 3, 2, 1]; /* chord-tone indices for the fast arpeggios */
+
+  try { muted = W.localStorage.getItem('pf-audio-muted') === '1'; } catch (e) { muted = false; }
+  try { sty = parseInt(W.localStorage.getItem('pf-audio-style'), 10); } catch (e) { sty = 0; }
+  if (!(sty >= 0 && sty < 3)) { sty = 0; }
+
+  function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  function clamp(v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
+  /* build the chord tables and flatten the melodies once */
+  function prep() {
+    var i, j, k, th, iv, n, x;
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 2; j++) {
+        th = TH[i][j]; th.lead = []; th.ch = [];
+        for (k = 0; k < 4; k++) { th.lead = th.lead.concat(th.ln[k]); }
+        for (k = 0; k < 8; k++) {
+          iv = Q[th.q.charAt(k)]; n = [];
+          for (x = 0; x < iv.length; x++) { n.push(th.rt[k] + 12 + iv[x]); }
+          th.ch.push({ r: th.rt[k], n: n });
+        }
+      }
+    }
+  }
+  prep();
+
+  /* how many steps a note lasts: until the next note, capped */
+  function runLen(a, i, cap) { var k = 1; while (k < cap && a[(i + k) % a.length] === -1) { k++; } return k; }
+  /* chord tone number a, climbing an octave each time it wraps the chord */
+  function at(c, a) { var L = c.n.length; return c.n[a % L] + 12 * ((a / L) | 0); }
+
+  /* ease a param toward a value, skipping tiny changes so events do not pile up */
+  function setT(param, key, v, tc) {
+    var tol = 0.004 * Math.max(1, Math.abs(v));
+    if (last[key] !== undefined && Math.abs(last[key] - v) < tol) { return; }
+    last[key] = v;
+    param.setTargetAtTime(v, ctx.currentTime, tc);
+  }
+
+  /* ---------- basic voices ---------- */
+
+  /* a short-lived oscillator (a type name or a PeriodicWave) with an attack and an exponential decay;
+     sus (0..1) adds a held level before the tail */
+  function voice(dest, type, f0, f1, t, dur, vol, att, sus) {
+    var o = ctx.createOscillator(), g = ctx.createGain(), e = t + dur;
+    att = Math.min(att || 0.005, dur * 0.5);
+    if (typeof type === 'string') { o.type = type; } else { o.setPeriodicWave(type); }
+    o.frequency.setValueAtTime(f0, t);
+    if (f1) { o.frequency.exponentialRampToValueAtTime(f1, e); }
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + att);
+    if (sus) { g.gain.exponentialRampToValueAtTime(Math.max(vol * sus, 0.0002), t + dur * 0.75); }
+    g.gain.exponentialRampToValueAtTime(0.0001, e);
+    o.connect(g); g.connect(dest);
+    o.start(t); o.stop(e + 0.05);
+    o.onended = function () { try { g.disconnect(); } catch (e2) {} };
+    return o;
+  }
+
+  /* a burst of filtered noise, optionally sweeping the filter */
+  function noise(dest, t, dur, vol, type, f0, q, f1) {
+    var s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = nbuf; s.loop = true;
+    f.type = type; f.Q.value = q || 1;
+    f.frequency.setValueAtTime(f0, t);
+    if (f1) { f.frequency.exponentialRampToValueAtTime(f1, t + dur); }
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(dest);
+    s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.02);
+    s.onended = function () { try { g.disconnect(); } catch (e) {} };
+  }
+
+  /* a pulse wave with the given duty, from its Fourier series */
+  function pulseWave(duty) {
+    var n = 48, re = new Float32Array(n + 1), im = new Float32Array(n + 1), i;
+    for (i = 1; i <= n; i++) { re[i] = 2 * Math.sin(i * Math.PI * duty) / (i * Math.PI); }
+    return ctx.createPeriodicWave(re, im);
+  }
+
+  /* a chip pulse note (midi), optionally sliding to m1, with optional vibrato from the shared LFO */
+  function pl(dest, wave, m, t, dur, vol, vib, sus, m1) {
+    var o = voice(dest, wave, hz(m), m1 ? hz(m1) : 0, t, dur, vol, 0.003, sus), prev = o.onended;
+    if (vib) {
+      try { vibG.connect(o.detune); } catch (e) {}
+      o.onended = function () { prev(); try { vibG.disconnect(o.detune); } catch (e) {} };
+    }
+  }
+
+  /* two-operator FM: a modulator into the carrier frequency through a gain whose depth is the
+     index times the modulator frequency. o: r ratio, a/b/c index at start/peak/end, att peak time,
+     sus held level, f1 end frequency for slides */
+  function fm(dest, f, t, dur, vol, o) {
+    var c = ctx.createOscillator(), m = ctx.createOscillator(), mg = ctx.createGain(), g = ctx.createGain();
+    var r = o.r || 1, e = t + dur, att = Math.min(o.att || 0.005, dur * 0.5), mf = f * r;
+    c.frequency.setValueAtTime(f, t); m.frequency.setValueAtTime(mf, t);
+    if (o.f1) { c.frequency.exponentialRampToValueAtTime(o.f1, e); m.frequency.exponentialRampToValueAtTime(o.f1 * r, e); }
+    mg.gain.setValueAtTime(o.a * mf, t);
+    mg.gain.linearRampToValueAtTime(o.b * mf, t + att);
+    mg.gain.exponentialRampToValueAtTime(Math.max(o.c, 0.01) * mf, e);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + att);
+    if (o.sus) { g.gain.exponentialRampToValueAtTime(Math.max(vol * o.sus, 0.0002), t + dur * 0.7); }
+    g.gain.exponentialRampToValueAtTime(0.0001, e);
+    m.connect(mg); mg.connect(c.frequency); c.connect(g); g.connect(dest);
+    c.start(t); m.start(t); c.stop(e + 0.05); m.stop(e + 0.05);
+    c.onended = function () { try { g.disconnect(); mg.disconnect(); } catch (e2) {} };
+  }
+  var SLAP = { r: 1, a: 5, b: 5, c: 0.3, att: 0.002 };               /* slap bass: bright index that dies fast */
+  var BR = { r: 1, a: 1, b: 3, c: 1.5, att: 0.04, sus: 0.7 };        /* mellow brass: index swells in */
+  var BR2 = { r: 1, a: 2, b: 4.5, c: 2, att: 0.02, sus: 0.7 };       /* harder brass for the singularity */
+  var FMEP = { r: 1, a: 1.5, b: 1.5, c: 0.2, att: 0.004 };           /* FM electric piano */
+  function bell(d, m, t, dur, vol) { fm(d, hz(m), t, dur, vol, { r: 3.5, a: 3, b: 3, c: 0.1, att: 0.002 }); }
+
+  /* GM electric piano: a sine plus a soft square partial that dies fast */
+  function ep(d, m, t, dur, vol) {
+    voice(d, 'sine', hz(m), 0, t, dur, vol, 0.004);
+    voice(d, 'square', hz(m), 0, t, Math.min(dur, 0.14), vol * 0.12, 0.003);
+    voice(d, 'sine', hz(m + 12), 0, t, dur * 0.4, vol * 0.15, 0.003);
+  }
+  /* GM pizzicato: a short triangle pluck */
+  function pizz(d, m, t, vol) {
+    voice(d, 'triangle', hz(m), 0, t, 0.14, vol * 1.5, 0.003);
+    voice(d, 'sine', hz(m + 12), 0, t, 0.07, vol * 0.4, 0.003);
+  }
+  /* GM woodblock: two quick sine partials and a tick of noise */
+  function wood(d, t, v) {
+    voice(d, 'sine', 880, 0, t, 0.07, v, 0.002);
+    voice(d, 'sine', 1320, 0, t, 0.04, v * 0.4, 0.002);
+    noise(d, t, 0.02, v * 0.4, 'bandpass', 2500, 2);
+  }
+  /* GM warm strings: three detuned saws with a slow attack, into a bus with tremolo */
+  function strings(bus, m, t, dur, vol) {
+    var i, o, g = ctx.createGain(), dt = [-9, 0, 9], e = t + dur;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + Math.min(0.35, dur * 0.4));
+    g.gain.setValueAtTime(vol, t + dur * 0.75);
+    g.gain.exponentialRampToValueAtTime(0.0001, e);
+    g.connect(bus);
+    for (i = 0; i < 3; i++) {
+      o = ctx.createOscillator(); o.type = 'sawtooth';
+      o.frequency.value = hz(m); o.detune.value = dt[i];
+      o.connect(g); o.start(t); o.stop(e + 0.05);
+      if (i === 2) { o.onended = function () { try { g.disconnect(); } catch (e2) {} }; }
+    }
+  }
+  /* GM orchestra hit: a stack of saws and a noise burst, short and bright */
+  function orch(d, m, t, dur, vol) {
+    var f = ctx.createBiquadFilter(), g = ctx.createGain(), iv = [0, 7, 12, 19, 24], i, o, e = t + dur;
+    f.type = 'lowpass'; f.frequency.setValueAtTime(7000, t); f.frequency.exponentialRampToValueAtTime(1500, e);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, e);
+    f.connect(g); g.connect(d);
+    for (i = 0; i < iv.length; i++) {
+      o = ctx.createOscillator(); o.type = 'sawtooth';
+      o.frequency.value = hz(m + iv[i]); o.detune.value = (i % 2 ? 7 : -7);
+      o.connect(f); o.start(t); o.stop(e + 0.05);
+      if (i === iv.length - 1) { o.onended = function () { try { g.disconnect(); } catch (e2) {} }; }
+    }
+    noise(f, t, 0.12, vol * 2, 'bandpass', 3000, 0.8);
+  }
+  /* GM fretless-ish bass: triangle and sine with a tiny scoop up into the note */
+  function fretless(d, m, t, dur, vol) {
+    var o = voice(d, 'triangle', hz(m), 0, t, dur, vol, 0.01, 0.8);
+    o.frequency.setValueAtTime(hz(m) * 0.97, t);
+    o.frequency.exponentialRampToValueAtTime(hz(m), t + 0.05);
+    voice(d, 'sine', hz(m), 0, t, dur, vol * 0.8, 0.01, 0.8);
+  }
+  /* a timpani hit: a sine that drops fast into the note, plus a thump of noise */
+  function timp(d, m, t, vol) {
+    var o = voice(d, 'sine', hz(m) * 1.35, 0, t, 0.7, vol, 0.003);
+    o.frequency.exponentialRampToValueAtTime(hz(m), t + 0.12);
+    noise(d, t, 0.06, vol * 0.4, 'lowpass', 400, 0.7);
+  }
+  /* a low heartbeat thump whose pitch rises with the singularity */
+  function heart(d, t, v) {
+    var f = 40 + 28 * clamp(st.sing || 0) + (st.past ? 8 : 0);
+    voice(d, 'sine', f * 1.5, f, t, 0.28, 0.6 * v, 0.004);
+  }
+
+  /* ---------- drums: kit 0 chip, 1 FM, 2 GM ---------- */
+
+  var KD = [[150, 48, 0.12, 0.5], [130, 40, 0.2, 0.6], [110, 42, 0.26, 0.6]];   /* kick: f0, f1, dur, vol */
+  var SN = [[3200, 0.09, 230, 0.14], [2600, 0.12, 190, 0.2], [1800, 0.17, 180, 0.18]]; /* snare: noise hz, dur, tone hz, tone vol */
+  var HT = [[8500, 0.03, 0.12], [7500, 0.04, 0.12], [9000, 0.05, 0.12]];       /* hat: hz, dur, vol */
+  function kick(d, k, t, v) {
+    var a = KD[k];
+    voice(d, k === 0 ? 'triangle' : 'sine', a[0], a[1], t, a[2], a[3] * v, 0.002);
+    if (k === 2) { noise(d, t, 0.012, 0.15 * v, 'highpass', 3000, 0.7); }
+  }
+  function snare(d, k, t, v) {
+    var a = SN[k];
+    noise(d, t, a[1], 0.28 * v, k === 0 ? 'bandpass' : 'highpass', a[0], 0.8);
+    voice(d, 'triangle', a[2] * 1.4, a[2], t, 0.08, a[3] * v, 0.002);
+  }
+  function hat(d, k, t, v) { var a = HT[k]; noise(d, t, a[1], a[2] * v, 'highpass', a[0], 0.7); }
+  function drums(d, k, pat, s, t) {
+    var a = pat[0].charAt(s), b = pat[1].charAt(s), h = pat[2].charAt(s);
+    if (a !== '.') { kick(d, k, t, a === 'x' ? 1 : 0.5); }
+    if (b !== '.') { snare(d, k, t, b === 'x' ? 1 : 0.4); }
+    if (h !== '.') { hat(d, k, t, h === 'x' ? 1 : 0.5); }
+  }
+
+  /* ---------- the three arrangements, one 16th step each ---------- */
+
+  /* chip: two pulse voices, a triangle bass and noise drums */
+  function stepChip(th, m, bar, s, t, d, c, p) {
+    var g = LY[0], l = th.lead, n, len;
+    if (on.P && s % 4 === 0) { pl(g.P, PW[2], c.n[(s >> 2) % 3], t, d * 4, 0.04, 0, 0.5); }
+    if (on.D) { drums(g.D, 0, th.dr, s, t); }
+    if (on.B && (n = th.bs[s]) >= 0) { voice(g.B, 'triangle', hz(c.r + n), 0, t, d * runLen(th.bs, s, 4) * 0.95, 0.5, 0.004, 0.85); }
+    if (on.C) {
+      if (m) { pl(g.C, PW[1], at(c, ARPS[s & 7]) + 12, t, d * 1.5, 0.045, 0, 0.3); } /* 16th-note arpeggio */
+      else if (s % 2 === 0) { pl(g.C, PW[0], at(c, [0, 1, 2, 1][(s >> 1) & 3]) + 12, t, d * 1.6, 0.05, 0, 0.3); }
+    }
+    if (on.L) {
+      if ((n = l[p]) >= 0) {
+        len = runLen(l, p, m ? 12 : 6);
+        pl(g.L, (m || bar > 3) ? PW[2] : PW[1], n, t, len * d * 0.95, 0.075, m && len >= 3, 0.7);
+      }
+      if (m && (bar & 3) === 3 && s === 12) { pl(g.L, PW[1], c.r + 36, t, d * 4, 0.06, 0, 0.8, c.r + 48); } /* slide fill */
+    }
+  }
+
+  /* FM: slap bass, FM e-piano comping, brass lead, bells and brass stabs */
+  function stepFM(th, m, bar, s, t, d, c, p) {
+    var g = LY[1], l = th.lead, n, len, i;
+    if (on.P && (m ? s === 0 : (s === 0 || s === 6 || s === 10))) {
+      for (i = 0; i < c.n.length; i++) { fm(g.P, hz(c.n[i] + 12), t, d * (s ? 3 : 6), 0.03, FMEP); }
+    }
+    if (on.D) {
+      drums(g.D, 1, th.dr, s, t);
+      if (m && bar === 7 && s >= 8) { snare(g.D, 1, t, 0.3 + (s - 8) * 0.1); } /* snare roll on the turnaround */
+    }
+    if (on.B && (n = th.bs[s]) >= 0) {
+      len = Math.min(runLen(th.bs, s, 4) * d, 0.3);
+      fm(g.B, hz(c.r + n), t, len, 0.45, SLAP);
+      if (n === 0) { noise(g.B, t, 0.02, 0.08, 'bandpass', 2500, 1); }
+    }
+    if (on.L && (n = l[p]) >= 0) { fm(g.L, hz(n), t, runLen(l, p, m ? 6 : 8) * d * 0.95, m ? 0.1 : 0.08, m ? BR2 : BR); }
+    if (on.C) {
+      if (m) { if (s === 0 || s === 3 || s === 6 || s === 10) { for (i = 0; i < 3; i++) { fm(g.C, hz(c.n[i] + 12), t, d * 1.6, 0.04, BR2); } } }
+      else if (s === 2 || s === 9 || s === 14) { bell(g.C, c.n[(s + bar) % c.n.length] + 24, t, d * 8, 0.05); }
+    }
+  }
+
+  /* MIDI: strings, electric piano, fretless bass, GM kit; singularity adds tremolo, hits and timpani */
+  function stepMIDI(th, m, bar, s, t, d, c, p) {
+    var g = LY[2], l = th.lead, n, len, i;
+    if (on.P && s === 0) { for (i = 0; i < c.n.length; i++) { strings(strB[0], c.n[i], t, d * 16, 0.04); } }
+    if (on.D) {
+      drums(g.D, 2, th.dr, s, t);
+      if (m && (bar === 3 || bar === 7) && s >= 12) { snare(g.D, 2, t, 0.3 + (s - 12) * 0.15); }
+    }
+    if (on.B && (n = th.bs[s]) >= 0) { fretless(g.B, c.r + n, t, runLen(th.bs, s, 8) * d * 0.95, 0.5); }
+    if (on.L && (n = l[p]) >= 0) {
+      len = runLen(l, p, m ? 16 : 8) * d * 0.95;
+      if (m) { strings(strB[1], n, t, len, 0.05); } else { ep(g.L, n, t, len, 0.16); }
+    }
+    if (on.C) {
+      if (m) { if (th.ht.charAt(s) === 'x') { orch(g.C, c.r + 24, t, d * 3, 0.14); } }
+      else if (s % 2 === 0) { pizz(g.C, at(c, [0, 1, 2, 1][(s >> 1) & 3]) + 12, t, 0.07); }
+    }
+    if (m && on.T && th.tm.charAt(s) === 'x') { timp(g.T, c.r + 12, t, 0.6); }
+  }
+
+  /* one beat of riser into the singularity theme */
+  function fill(t, d, c) {
+    var g = LY[sty], i;
+    noise(g.T, t, d * 4, 0.22, 'bandpass', 500, 1.5, 7000);
+    if (sty === 0) { pl(g.T, PW[1], c.r + 36, t, d * 4, 0.07, 0, 0.9, c.r + 52); }
+    else if (sty === 1) { for (i = 0; i < 4; i++) { snare(g.T, 1, t + i * d, 0.35 + i * 0.15); } }
+    else {
+      for (i = 0; i < 4; i++) { timp(g.T, c.r + 12, t + i * d, 0.4 + i * 0.12); }
+      strings(strB[1], c.r + 36, t, d * 4.5, 0.05);
+    }
+  }
+
+  function step(n, t, d) {
+    var p = n % 128, s = p & 15, bar = p >> 4, th = TH[sty][mode], c = th.ch[bar];
+    if (pend && s === 12 && !filled) { fill(t, d, c); filled = true; }
+    if (sty === 0) { stepChip(th, mode, bar, s, t, d, c, p); }
+    else if (sty === 1) { stepFM(th, mode, bar, s, t, d, c, p); }
+    else { stepMIDI(th, mode, bar, s, t, d, c, p); }
+    if (on.T && !(sty === 2 && mode) && (mode ? s % 4 === 0 : (s === 6 || s === 14))) { heart(LY[sty].T, t, mode ? 1 : 0.85); }
+  }
+
+  /* ---------- scheduler ---------- */
+
+  function bpmTarget() {
+    var base = TH[sty][0].bpm;
+    return mode ? base * 1.4 : base * (1 + 0.15 * clamp(st.sing || 0));
+  }
+
+  function tick() {
+    timer = setTimeout(tick, 25);
+    try {
+      var now = ctx.currentTime, dur;
+      if (muted || wasQuiet) { nextTime = now + 0.05; return; }
+      if (nextTime < now - 0.3) { nextTime = now + 0.05; } /* tab was throttled: skip, do not burst */
+      while (nextTime < now + 0.1) {
+        if (stepN % 16 === 0) { /* bar boundary: the only place the theme changes */
+          if (pend && filled) { mode = 1; stepN = 0; pend = false; filled = false; }
+          else if (mode === 1 && !st.past) { mode = 0; stepN = 0; pend = false; filled = false; }
+        }
+        bpm += (bpmTarget() - bpm) * 0.12;
+        dur = 60 / bpm / 4;
+        step(stepN, nextTime, dur);
+        nextTime += dur;
+        stepN++;
+      }
+    } catch (e) { lastErr = e; }
+  }
+
+  /* ---------- mix, driven by game state ---------- */
+
+  function mix(force) {
+    var t = ctx.currentTime, s = st, playing = !!s.playing, sg = clamp(s.sing || 0);
+    var lv = s.level || 0, n = s.levels || 5, past = !!s.past, paused = !!s.paused;
+    var quiet = !!s.over || t < silent, active = playing && !quiet && !paused;
+    var hi = lv >= 2 || lv / n >= 0.5 || past, lvl, freq, i, j;
+    if (!force && t < mixAt) { return; }
+    mixAt = t + 0.1;
+    if (wasQuiet && !quiet) { /* coming back from silence: restart on a fresh bar */
+      stepN = (stepN >> 4) << 4;
+      nextTime = t + 0.08;
+    }
+    wasQuiet = quiet;
+    if (!past) { pend = false; filled = false; } else if (mode === 0) { pend = true; }
+    on.P = !quiet;
+    on.D = active && ((s.speed || 0) > 0.3 || lv >= 1 || past);
+    on.B = active && (lv >= 1 || past);
+    on.L = on.C = active && hi;
+    on.T = active && (sg > 0.05 || past);
+    lvl = { P: playing ? 0.8 : 0.6, D: 0.7, B: 0.8, L: 0.8, C: 0.6, T: past ? 1 : 0.3 + 0.7 * sg * sg };
+    setT(duck.gain, 'duck', quiet ? 0 : (paused ? 0.03 : (playing ? 1 : 0.5)), quiet ? 0.05 : 0.1);
+    for (i = 0; i < 3; i++) {
+      setT(sBus[i].gain, 'sb' + i, i === sty ? TRIM[i] : 0, 0.1); /* style crossfade, about 0.3 s */
+      for (j = 0; j < NAMES.length; j++) { setT(LY[i][NAMES[j]].gain, 'l' + i + NAMES[j], on[NAMES[j]] ? lvl[NAMES[j]] : 0, 0.5); }
+    }
+    setT(tremG.gain, 'trem', mode ? 0.3 : 0.05, 0.3);
+    freq = past ? 9000 : 2500 * Math.pow(9000 / 2500, sg);
+    if (s.capped) { freq *= 0.45; } /* muffled after a crash */
+    setT(mFilter.frequency, 'filt', freq, 0.3);
+  }
+
+  /* ---------- sound effects, in the current style k: 0 chip, 1 FM, 2 MIDI ---------- */
+
+  /* one tone in the style's voice, optionally sliding to midi m1 */
+  function P(d, k, m, t, dur, vol, m1) {
+    if (k === 0) { pl(d, PW[1], m, t, dur, vol, 0, 0.4, m1); }
+    else if (k === 1) { fm(d, hz(m), t, dur, vol * 1.1, { r: 2, a: 2.5, b: 2.5, c: 0.3, att: 0.003, sus: 0.4, f1: m1 ? hz(m1) : 0 }); }
+    else if (m1) { voice(d, 'triangle', hz(m), hz(m1), t, dur, vol * 1.2, 0.01); }
+    else { ep(d, m, t, dur, vol); }
+  }
+  /* a low hit in the style's voice: noise-channel boom, FM thump, or tom */
+  function thud(d, k, t, v, dur) {
+    if (k === 0) { pl(d, PW[2], 40, t, dur, 0.3 * v, 0, 0, 28); noise(d, t, dur * 0.5, 0.18 * v, 'lowpass', 900, 0.7, 200); }
+    else if (k === 1) { fm(d, hz(34), t, dur, 0.4 * v, { r: 1, a: 4, b: 4, c: 0.3, att: 0.003, f1: hz(24) }); noise(d, t, dur * 0.4, 0.1 * v, 'lowpass', 700, 0.7); }
+    else { voice(d, 'sine', 150, 55, t, dur, 0.45 * v, 0.003); noise(d, t, dur * 0.5, 0.14 * v, 'lowpass', 700, 0.7); }
+  }
+
+  /* each effect gets (start time, its own bus, style) and returns its length in seconds */
+  var FX = {
+    go: function (t, d, k) { P(d, k, 76, t, 0.3, 0.16); P(d, k, 81, t + 0.12, 0.45, 0.16); return 0.7; },
+    jump: function (t, d, k) { if (k === 2) { pizz(d, 79, t, 0.14); } else { P(d, k, 72, t, 0.09, 0.14, 84); } return 0.12; },
+    land: function (t, d, k) {
+      if (k === 2) { wood(d, t, 0.2); }
+      else if (k === 1) { fm(d, hz(40), t, 0.1, 0.35, { r: 1, a: 3, b: 3, c: 0.2, att: 0.002, f1: hz(30) }); }
+      else { pl(d, PW[2], 48, t, 0.08, 0.2, 0, 0, 38); noise(d, t, 0.05, 0.08, 'lowpass', 2000, 0.7); }
+      return 0.1;
+    },
+    crash: function (t, d, k) { thud(d, k, t, 1, 0.4); P(d, k, 60, t, 0.3, 0.06, 48); return 0.45; },
+    strike: function (t, d, k) {
+      if (k === 2) { orch(d, 60, t, 0.5, 0.22); }
+      else if (k === 1) { fm(d, hz(67), t, 0.3, 0.18, BR2); fm(d, hz(71), t, 0.3, 0.14, BR2); }
+      else { P(d, 0, 79, t, 0.12, 0.16); P(d, 0, 84, t + 0.09, 0.25, 0.16); }
+      return 0.6;
+    },
+    scrape: function (t, d, k) {
+      noise(d, t, 0.35, 0.1, 'bandpass', 1800, 1.2, 500);
+      P(d, k, 74, t, 0.3, 0.06, 62);
+      return 0.4;
+    },
+    drop: function (t, d, k) {
+      P(d, k, 79, t, 0.6, 0.14, 52);
+      noise(d, t, 0.6, 0.08, 'lowpass', 900, 0.8, 200);
+      return 0.65;
+    },
+    fall: function (t, d, k) {
+      P(d, k, 84, t, 1.4, 0.14, 40);
+      thud(d, k, t + 1.1, 0.8, 0.5);
+      noise(d, t + 1.1, 1.5, 0.15, 'lowpass', 160, 0.7, 60);
+      return 1.7;
+    },
+    extinct: function (t, d, k) {
+      var i, ns = [45, 52, 57, 60, 64];
+      silent = t + 4.5; /* music cuts out */
+      mix(true);
+      d.connect(exBus);
+      for (i = 0; i < ns.length; i++) { P(d, k, ns[i], t, 3.2, 0.08); }
+      return 3.6;
+    },
+    win: function (t, d, k) {
+      var i, ns = [72, 76, 79, 84, 88];
+      for (i = 0; i < ns.length; i++) { P(d, k, ns[i], t + i * 0.09, 0.5, 0.13); }
+      P(d, k, 79, t + 0.5, 1.2, 0.09); P(d, k, 84, t + 0.5, 1.2, 0.09); P(d, k, 88, t + 0.5, 1.2, 0.09);
+      return 1.8;
+    },
+    first: function (t, d, k) {
+      var i, ns = [88, 91, 95, 100];
+      for (i = 0; i < ns.length; i++) { P(d, k, ns[i], t + i * 0.05, 0.2, 0.06); }
+      return 0.5;
+    },
+    sing: function (t, d) {
+      voice(d, 'sine', hz(33), 0, t, 4, 0.3, 1.8);
+      voice(d, 'sine', hz(39), 0, t, 4, 0.18, 2.0);
+      voice(d, 'sine', hz(45), 0, t, 3.5, 0.12, 1.8);
+      voice(d, 'sawtooth', hz(33), 0, t, 3.6, 0.05, 1.8);
+      return 4.2;
+    }
+  };
+
+  /* drop a one-shot's bus quickly */
+  function kill(x) {
+    try { x.b.gain.setTargetAtTime(0, ctx.currentTime, 0.01); } catch (e) {}
+    setTimeout(function () { try { x.b.disconnect(); if (x.p) { x.p.disconnect(); } } catch (e) {} }, 150);
+  }
+
+  /* ---------- setup ---------- */
+
+  function build() {
+    var AC = W.AudioContext || W.webkitAudioContext, i, j, len, d, fb, lp, ch, wet, o;
+    if (!AC) { return false; }
+    ctx = new AC();
+    comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -18; comp.knee.value = 20; comp.ratio.value = 3;
+    comp.attack.value = 0.01; comp.release.value = 0.25;
+    master = ctx.createGain();
+    master.gain.value = muted ? 0 : MASTER;
+    comp.connect(master); master.connect(ctx.destination);
+
+    duck = ctx.createGain(); duck.gain.value = 0; duck.connect(comp);
+    mFilter = ctx.createBiquadFilter();
+    mFilter.type = 'lowpass'; mFilter.Q.value = 0.7; mFilter.frequency.value = 2500;
+    mFilter.connect(duck);
+    musicBus = ctx.createGain(); musicBus.connect(mFilter);
+
+    /* one bus per style, and inside it one gain per layer: pad, drums, bass, lead, counter, tension */
+    for (i = 0; i < 3; i++) {
+      sBus[i] = ctx.createGain(); sBus[i].gain.value = 0; sBus[i].connect(musicBus);
+      LY[i] = {};
+      for (j = 0; j < NAMES.length; j++) {
+        LY[i][NAMES[j]] = ctx.createGain(); LY[i][NAMES[j]].gain.value = 0; LY[i][NAMES[j]].connect(sBus[i]);
+      }
+    }
+    PW = [pulseWave(0.125), pulseWave(0.25), pulseWave(0.5)];
+
+    /* vibrato LFO in cents for chip leads, patched into each note's detune */
+    o = ctx.createOscillator(); o.frequency.value = 5.8;
+    vibG = ctx.createGain(); vibG.gain.value = 14;
+    o.connect(vibG); o.start();
+
+    /* string buses (pad, lead) with a lowpass and a shared tremolo LFO on their gain */
+    o = ctx.createOscillator(); o.frequency.value = 6.5;
+    tremG = ctx.createGain(); tremG.gain.value = 0.05;
+    o.connect(tremG); o.start();
+    for (i = 0; i < 2; i++) {
+      strB[i] = ctx.createGain(); strB[i].gain.value = 0.75;
+      lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.5;
+      strB[i].connect(lp); lp.connect(LY[2][i ? 'L' : 'P']);
+      tremG.connect(strB[i].gain);
+    }
+
+    sfxBus = ctx.createGain(); sfxBus.connect(comp);
+
+    /* fake reverb for the extinct tail: four feedback delays with dark loops */
+    exBus = ctx.createGain(); exBus.connect(sfxBus);
+    rvIn = ctx.createGain(); exBus.connect(rvIn);
+    wet = ctx.createGain(); wet.gain.value = 0.7; wet.connect(sfxBus);
+    ch = [0.037, 0.053, 0.071, 0.097];
+    for (i = 0; i < ch.length; i++) {
+      d = ctx.createDelay(0.2); d.delayTime.value = ch[i];
+      fb = ctx.createGain(); fb.gain.value = 0.62;
+      lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1800;
+      rvIn.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet);
+    }
+
+    /* two seconds of white noise, shared by all noise bursts */
+    len = ctx.sampleRate * 2;
+    nbuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    d = nbuf.getChannelData(0);
+    for (i = 0; i < len; i++) { d[i] = Math.random() * 2 - 1; }
+
+    bpm = TH[sty][0].bpm;
+    nextTime = ctx.currentTime + 0.1;
+    mix(true);
+    tick();
+    return true;
+  }
+
+  W.PFAudio = {
+    styles: ['Chip', 'FM', 'MIDI'],
+    /* call from a user gesture; creates or resumes the context */
+    unlock: function () {
+      try {
+        if (!ctx && !build()) { return; }
+        if (ctx.state === 'suspended') { ctx.resume(); }
+      } catch (e) { lastErr = e; }
+    },
+    setMuted: function (m) {
+      muted = !!m;
+      try { W.localStorage.setItem('pf-audio-muted', muted ? '1' : '0'); } catch (e) {}
+      if (!ctx) { return; }
+      try {
+        var t = ctx.currentTime;
+        master.gain.cancelScheduledValues(t);
+        master.gain.setValueAtTime(master.gain.value, t);
+        master.gain.linearRampToValueAtTime(muted ? 0 : MASTER, t + 0.05);
+      } catch (e) {}
+    },
+    isMuted: function () { return muted; },
+    /* switch style; the bar position carries over and the buses crossfade */
+    setStyle: function (i) {
+      i = parseInt(i, 10);
+      if (!(i >= 0 && i < 3)) { return; }
+      sty = i;
+      try { W.localStorage.setItem('pf-audio-style', String(i)); } catch (e) {}
+      if (ctx) { try { mix(true); } catch (e) { lastErr = e; } }
+    },
+    getStyle: function () { return sty; },
+    update: function (s) {
+      if (!ctx || !s) { return; }
+      try { st = s; mix(false); } catch (e) { lastErr = e; }
+    },
+    /* opts: gain 0..1 multiplies the level, pan -1..1 */
+    sfx: function (name, opts) {
+      if (!ctx || muted || !Object.prototype.hasOwnProperty.call(FX, name)) { return; }
+      try {
+        var t = ctx.currentTime + 0.01, b = ctx.createGain(), pan = null, end, g = 1, pv = 0;
+        opts = opts || {};
+        if (typeof opts.gain === 'number') { g = clamp(opts.gain); }
+        if (typeof opts.pan === 'number') { pv = Math.max(-1, Math.min(1, opts.pan)); }
+        b.gain.value = g;
+        live = live.filter(function (x) { return x.e > t; });
+        while (live.length >= 8) { kill(live.shift()); } /* voice cap: drop the oldest */
+        if (pv && ctx.createStereoPanner) {
+          pan = ctx.createStereoPanner(); pan.pan.value = pv;
+          b.connect(pan); pan.connect(sfxBus);
+        } else { b.connect(sfxBus); }
+        end = t + FX[name](t, b, sty);
+        live.push({ e: end, b: b, p: pan });
+      } catch (e) { lastErr = e; }
+    },
+    /* the last error swallowed by a try/catch, for debugging */
+    lastError: function () { return lastErr; }
+  };
+})();
+</script>
+<script>
+/* end-of-run story: turns the race's events into a few recap stops for Professor Postmortem, the historian, each with a
+   generated disaster name and one short line, plus a verdict for the whole race. Seeded on the race's seed, so the same race
+   tells the same story. Touches no DOM; the recap player in the main script draws and voices it */
+(function () {
+  'use strict';
+
+  function mulberry32(a) {
+    a = a >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---- name parts ---- */
+  var ADJ = ['Great', 'Lesser', 'Infamous', 'Quiet', 'Unfortunate', 'So-Called', 'Regrettable', 'Notorious',
+    'Misunderstood', 'Brief', 'Preventable', 'Cheerful', 'Unscheduled', 'Allegedly Minor', 'Poorly Timed', 'Hushed', 'Glorious'];
+  var JARGON = ['Tokenizer', 'Gradient', 'Eval', 'Benchmark', 'Sandbox', 'Weights', 'Inference', 'Context Window', 'RLHF',
+    'Checkpoint', 'Latency', 'Dataset', 'Loss Curve', 'Attention Head', 'Embedding', 'Scaling Law', 'Fine-Tune', 'Overfitting', 'Prompt'];
+  var NOUN = ['Debacle', 'Kerfuffle', 'Fiasco', 'Affair', 'Incident', 'Scandal', 'Standoff', 'Calamity', 'Unpleasantness',
+    'Episode', 'Misadventure', 'Mishap', 'Wobble', 'Crisis', 'Panic'];
+  var PLACE = ['Lossy Hollow', 'Mount Overfit', 'Cape Gradient', 'Fort Deprecated', 'Epoch Heights', 'Cache Miss Ridge',
+    'Null Pointer Point', 'Overflow Junction', 'Stale Weights Crossing', 'the Local Minima', 'Bad Label Flats', 'Dropout Bay', 'Lower Latency'];
+  var LONG = ['Context', 'Gradients', 'Evals', 'Training Runs', 'Meetings', 'Loss Curves', 'Rollbacks'];
+  var PROJ = ['Tall Order', 'Long Shot', 'Sensible Shoes', 'Big Step', 'Stretch Goal', 'Mild Overreach', 'Ambitious Hat', 'Higher Ground'];
+  var EUPH = ['A Brief Period of Reflection', 'The Unscheduled Pause', 'A Minor Restructuring', 'An Unplanned Learning Opportunity',
+    'The Strategic Wall Contact', 'A Productive Setback', 'The Temporary Reprioritization', 'A Frank Exchange with a Wall',
+    'The Matter Nobody Mentions', 'An Unexpected Pivot'];
+  var COMMITTEE = ['the Bureau of Prudent Velocity', 'the Office of Polite Intervention', 'the Committee on Things Going Badly',
+    'the Board of Obvious Walls', 'a very small subcommittee', 'the Ministry of Slowing Down', 'the Department of Told You So'];
+  var ORDW = ['Zeroth', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+  var ASIDE = {
+    steward: 'The Steward, meanwhile, filled out a form about it.',
+    sprinter: 'The Sprinter did not even look back.',
+    gambler: 'The Gambler had money on that.'
+  };
+
+  /* ---- line pools. Slots: {Who} {who} {its} {was} {is} {what} {What} {gap} {Gap} {lost} {odds} {roll} {n} {of} {cn} {committee} ---- */
+  var L = {
+    crash: [
+      '{Who} met {what} here. Briefly, and quite firmly.',
+      'Bonk! {Who} tested {what} for hardness. Verdict: very hard.',
+      '{Who} ran into {what} at full tilt. {What} did not budge.',
+      'Here {who} discovered {what} the traditional way, face first.',
+      '{Who} bounced off {what}. Very springy. Slightly undignified.',
+      'Exhibit A: {what}. Exhibit B: {who}, bouncing off it.'
+    ],
+    crash2: [
+      '{Who} hit {what} again. Science is all about replication!',
+      'And again! {Who} wanted a second opinion from {what}.',
+      'Back for seconds: {who} and {what}, reunited at speed.',
+      'Crash number two for {who}. Consistency is a virtue, technically.'
+    ],
+    crash3: [
+      'Crash number {cn} for {who}. I have run out of index cards.',
+      '{Who} again. Crash {cn}. I am starting a separate volume.',
+      'Oh, {who}. Crash {cn}. The barrier and I are both very tired.',
+      'Crash {cn}. {Who} and walls: a romance the walls never asked for.'
+    ],
+    strike: [
+      '{Who} hit {what}. Strike {n} of {of}, and the board took notes.',
+      'Strike {n}! {Who} met {what}, and a regulator sharpened a pencil.',
+      '{What} one, {who} nil. That is strike {n} of {of}.',
+      '{Who} clipped {what}. Strike {n}, and a very stern memo.',
+      'A strike for {who} at {what}. The clipboard people were thrilled.'
+    ],
+    strikeLast: [
+      'Strike {n} of {of}! One more and they take away the lab.',
+      'Strike {n}. {Who} {is} now one bump from a government inquiry.',
+      'Strike {n} of {of}. Somewhere, a committee booked a meeting room.'
+    ],
+    strikeAgain: [
+      'Strike {n} for {who}. The board was not amused.',
+      '{Who} hit {what}. Strike {n}. The board was not amused, again.'
+    ],
+    scrape: [
+      '{Who} jumped {gap}, fell short, and clawed across {lost} floors lower.',
+      'A scrape at {gap}! {Who} lost {lost} floors but kept going.',
+      '{Who} cleared {gap} by the fingernails. Cost: {lost} floors of height.',
+      'Close call at {gap}. {Who} scraped the far lip and lost {lost} floors.'
+    ],
+    scrapeStrike: [
+      '{Who} scraped {gap}, lost {lost} floors, and picked up strike {n}.',
+      'A scrape at {gap}: {lost} floors gone, strike {n} added. Busy day.'
+    ],
+    scrapeAgain: [
+      '{Who} scraped {gap} and lost {lost} floors. The board was not amused.',
+      'A scrape at {gap}, {lost} floors down. The board was not amused.'
+    ],
+    drop: [
+      '{Who} did not jump. At all. And still crossed {gap}. I have questions.',
+      'No jump at {gap}. {Who} simply fell across it, {lost} floors down.',
+      'Look closely: no jump. {Who} strolled off {gap} and somehow landed.',
+      '{Who} forgot to jump {gap} and survived anyway. Gravity was very understanding.',
+      'Physics has filed a complaint. {Who} crossed {gap} without jumping.'
+    ],
+    fall: [
+      '{Who} fell into {gap}. The {odds} percent roll missed, so everyone else carried on.',
+      'Down went {who} at {gap}! A {odds} percent roll, and the world was spared.',
+      '{Gap} swallowed {who}. The dice needed {odds} or under and rolled {roll}. Phew.',
+      '{Who} came up short at {gap}. The roll was {roll}, so the race went on.'
+    ],
+    fallYou: [
+      'You went into {gap}. The {odds} percent roll spared everyone else. Small mercies.',
+      'Into {gap} you went. The dice rolled {roll}, so the world kept spinning.',
+      'You fell at {gap}. Brave, honestly. The roll let the others carry on.'
+    ],
+    fallRepeat: [
+      '{Gap} claims another! {Who} joined {prev} down there.',
+      '{Gap} again! {Who} followed {prev} in. The roll let it slide.'
+    ],
+    fallExt: [
+      '{Who} fell into {gap}, the {odds} percent roll came up, and every lab was out.',
+      'Here {who} fell, the roll came up, and the race ended for all of them.',
+      '{Gap}. {Who} fell, the dice said yes, and nobody got to finish.'
+    ],
+    dissolved: [
+      'Strike three. {Who} {was} dissolved by {committee}. Lovely letterhead, though.',
+      'And here the regulators dissolved {who}. The mascot was reassigned to accounts.',
+      '{What} was strike three. {Who} {was} dissolved, with a very short press release.',
+      'Dissolved! {Committee} acted swiftly. The office plants found new homes.'
+    ],
+    firstSing: [
+      '{Who} crossed the singularity first! Everything now runs three times faster, mistakes included.',
+      'First across the singularity: {who}. Ceilings up, brakes optional.',
+      'The singularity, crossed first by {who}. From here, everything happens very quickly.',
+      '{Who} took the singularity first. I wrote wow in my notes. Twice.'
+    ],
+    first: [
+      '{Who} got across {gap} first and left a tower behind. Generous, or rude?',
+      'First over {gap}: {who}! Everyone else got taller. Nobody said thank you.',
+      '{Who} cleared {gap} first. A breakthrough, said the press release. A tower, said everyone else.',
+      '{Gap}, first crossed by {who}. Ceilings rose, and so did a tower.'
+    ],
+    crossSing: [
+      'You crossed the singularity too. Not first, but the textbooks love a sequel.',
+      'And you made it over the singularity as well. Hold on to your hat.'
+    ],
+    gate: [
+      'Here at the gate, everyone stood still and thought about height. Gripping stuff.',
+      'The gate. Every lab stopped here to grow taller. A thrilling era for ladders.'
+    ]
+  };
+  var OPEN = ['Ahem! ', 'Right then! ', 'Gather round! ', 'Oh, this is a good one. ', 'Splendid, let us begin. '];
+  var REACT_BAD = ['Oof. ', 'Goodness. ', 'Oh dear. ', 'Ooh! ', 'Whoops. '];
+  var REACT_GOOD = ['Splendid! ', 'Ooh! ', 'Bravo! '];
+  var AFTER = [' Textbook.', ' Riveting.', ' Lovely footage.', ' Mug sales soared.', ' A classic.', ' Do take notes.'];
+
+  function words(s) { return s.split(/\s+/).filter(Boolean).length; }
+
+  function tell(run) {
+    var rng = mulberry32((run.seed || 1) ^ 0x51ED270B);
+    var used = {};
+    function pick(a) { return a[Math.floor(rng() * a.length)]; }
+    function chance(p) { return rng() < p; }
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function fresh(gen) { var nm, k; for (k = 0; k < 30; k++) { nm = gen(); if (!used[nm]) { used[nm] = 1; return nm; } } return nm; }
+    function fill(s, c) { return s.replace(/\{(\w+)\}/g, function (m, k) { return c[k] !== undefined ? String(c[k]) : m; }); }
+    function sayFrom(pool, c) {
+      /* the last line used from each pool is skipped, so two crashes in one recap read differently */
+      var s, k;
+      for (k = 0; k < 6; k++) { s = pick(pool); if (used['L' + s] === undefined) { break; } }
+      used['L' + s] = 1;
+      var out = fill(s, c);
+      return out.charAt(0).toUpperCase() + out.slice(1);
+    }
+
+    var events = run.events || [], labs = run.labs || [], res = run.result || { type: 'timeout' };
+    var gaps = run.gapList || [];
+    function gapTxt(k, sing, inner) { return sing ? 'the singularity' : (inner ? 'a gap past the singularity' : 'Gap ' + k); }
+    function ctxFor(e) {
+      var h = e.human;
+      return { who: h ? 'you' : 'the ' + e.who, Who: h ? 'You' : 'The ' + e.who, its: h ? 'your' : 'its', was: h ? 'were' : 'was', is: h ? 'are' : 'is' };
+    }
+    function whatTxt(w) {
+      if (!w) return 'a barrier';
+      if (w === 'gate' || w === 'the gate') return 'the gate';
+      if (w === 'tower' || /^the tower/.test(w)) return 'a tower';
+      if (/^a scrape/.test(w)) return 'a scrape';
+      if (/^a drop/.test(w)) return 'a jumpless drop';
+      return 'a barrier';
+    }
+
+    /* ---- incidents, in time order, with running counts for the callbacks ---- */
+    var inc = [], cnt = {}, fallAt = {}, i, e;
+    function c0(w) { if (!cnt[w]) cnt[w] = { crash: 0, strike: 0, scrape: 0 }; return cnt[w]; }
+    function near(type, who, t) {
+      for (var k = 0; k < events.length; k++) { var x = events[k]; if (x.type === type && x.who === who && Math.abs(x.t - t) <= 0.05) return x; }
+      return null;
+    }
+    var firstSingYou = false;
+    for (i = 0; i < events.length; i++) {
+      e = events[i];
+      var k = c0(e.who), it = null, st, ds;
+      if (e.type === 'crash') {
+        k.crash++;
+        st = e.again ? null : near('strike', e.who, e.t);
+        ds = e.again ? null : near('dissolved', e.who, e.t);
+        if (ds) { it = { kind: 'dissolved', score: 120, cause: e.what }; }
+        else if (st) { it = { kind: 'strike', score: 70, n: st.n, of: st.of, prior: k.strike, cn: k.crash }; k.strike++; }
+        else { it = { kind: 'crash', score: 18 + Math.min(3, k.crash) * 6, cn: k.crash }; }
+        it.what = e.what;
+      } else if (e.type === 'scrape' || e.type === 'drop') {
+        st = near('strike', e.who, e.t); ds = near('dissolved', e.who, e.t);
+        if (ds) { it = { kind: 'dissolved', score: 120, cause: e.type }; }
+        else {
+          it = { kind: e.type, score: e.type === 'drop' ? 60 : 52, lost: Math.max(1, e.lost || 0), prior: k.strike };
+          if (st) { it.n = st.n; it.of = st.of; it.score += 10; k.strike++; }
+        }
+        it.gap = e.gap; it.sing = e.sing; it.inner = e.inner;
+        k.scrape++;
+      } else if (e.type === 'fall') {
+        it = { kind: e.ext ? 'fallExt' : 'fall', score: e.ext ? 200 : 150, gap: e.gap, sing: e.sing, inner: e.inner, odds: e.odds, roll: e.roll, prev: fallAt[e.gap] };
+        fallAt[e.gap] = e.who;
+      } else if (e.type === 'first') {
+        it = { kind: e.sing ? 'firstSing' : 'first', score: e.sing ? 100 : 40, gap: e.gap, sing: e.sing };
+        if (e.sing && e.human) firstSingYou = true;
+      } else if (e.type === 'cross' && e.sing && e.human) {
+        it = { kind: 'crossSing', score: 30, gap: e.gap, sing: true };
+      }
+      if (!it) continue;
+      it.ev = e; it.x = e.x; it.t = e.t; it.human = !!e.human; it.who = e.who; it.lab = e.kind;
+      it.score += (e.human ? 15 : 0) + rng() * 4;
+      inc.push(it);
+    }
+
+    /* ---- choose 4 to 7 stops: the player's biggest moments, one or two rivals for colour ---- */
+    var mine = [], riv = [];
+    for (i = 0; i < inc.length; i++) { if (inc[i].human || inc[i].kind === 'fallExt') mine.push(inc[i]); else riv.push(inc[i]); }
+    function byScore(a, b) { return b.score - a.score; }
+    mine.sort(byScore); riv.sort(byScore);
+    var nRiv = riv.length ? (riv[0].score >= 70 && riv.length > 1 ? 2 : 1) : 0;
+    var pickd = riv.slice(0, nRiv).concat(mine.slice(0, 7 - nRiv));
+    var restR = riv.slice(nRiv);
+    while (pickd.length < 4 && restR.length) pickd.push(restR.shift());
+    if (pickd.length < 4 && run.gate) {
+      pickd.push({ kind: 'gate', score: 5, x: run.gate.x - 6, t: 0, human: false, who: '', lab: '' });
+    }
+    pickd.sort(function (a, b) { return a.x - b.x || a.t - b.t; });
+
+    /* ---- write each stop ---- */
+    function plaqueFor(it) {
+      var g = it.gap, ord = ORDW[Math.min(10, it.cn || 1)];
+      switch (it.kind) {
+        case 'crash':
+          if ((it.cn || 1) > 1 || chance(0.4)) return fresh(function () { return pick(EUPH); });
+          return fresh(function () { return pick([
+            'The ' + pick(ADJ) + ' ' + pick(JARGON) + ' ' + pick(NOUN),
+            'The ' + pick(JARGON) + ' ' + pick(NOUN) + ' at ' + pick(PLACE)]); });
+        case 'strike':
+          return fresh(function () { return pick([
+            'The ' + pick(ADJ) + ' ' + pick(JARGON) + ' ' + pick(NOUN),
+            'The ' + ORDW[Math.min(10, it.n || 1)] + ' ' + pick(JARGON) + ' ' + pick(['Crisis', 'Scandal', 'Inquiry']),
+            'The Battle of ' + pick(PLACE),
+            'The ' + pick(JARGON) + ' Schism']); });
+        case 'scrape':
+          return fresh(function () { return pick([
+            'The Treaty of ' + pick(PLACE),
+            'The Narrow Escape at ' + pick(PLACE),
+            'The ' + pick(JARGON) + ' Near Miss',
+            'The ' + ORDW[Math.min(10, g)] + ' Gap Accords']); });
+        case 'drop':
+          return fresh(function () { return pick([
+            'The Jumpless Crossing of Gap ' + g,
+            'The Gravity Compromise',
+            'The ' + pick(JARGON) + ' Freefall',
+            pick(EUPH)]); });
+        case 'fall':
+          return fresh(function () { return pick([
+            'The Fall of ' + pick(PLACE),
+            'The ' + pick(JARGON) + ' Collapse',
+            'The Night of the Long ' + pick(LONG),
+            'The ' + pick(PLACE).replace(/^the /, '') + ' Catastrophe']); });
+        case 'fallExt':
+          return fresh(function () { return pick(['The Last Roll', 'The Day the Dice Said Yes', 'The End of the Race', 'The Great Silence']); });
+        case 'dissolved':
+          return fresh(function () { return pick([
+            it.human ? 'The Dissolution of Your Lab' : 'The Dissolution of the ' + it.who,
+            'The ' + pick(JARGON) + ' Hearings',
+            'The ' + pick(PLACE).replace(/^the /, '') + ' Act',
+            'The Third Strike Accords']); });
+        case 'firstSing':
+          return fresh(function () { return pick(['The Great Acceleration', 'The Singularity Sprint', 'The ' + pick(JARGON) + ' Event Horizon', 'The Long Context Crossing']); });
+        case 'first':
+          return fresh(function () { return pick([
+            'The ' + pick(JARGON) + ' Breakthrough',
+            'Project ' + pick(PROJ),
+            'The ' + pick(JARGON) + ' Renaissance',
+            'The Tower of ' + pick(PLACE)]); });
+        case 'crossSing': return fresh(function () { return pick(['The Sequel', 'The Second Acceleration']); });
+        default: return fresh(function () { return pick(['The Gate Years', 'The Great Standstill']); });
+      }
+    }
+    function lineFor(it) {
+      var c = it.ev ? ctxFor(it.ev) : {}, pool, s;
+      c.gap = gapTxt(it.gap, it.sing, it.inner); c.Gap = cap(c.gap);
+      c.lost = it.lost; c.odds = it.odds; c.roll = it.roll; c.n = it.n; c.of = it.of; c.cn = it.cn;
+      c.what = whatTxt(it.what || it.cause); c.What = cap(c.what);
+      c.committee = pick(COMMITTEE); c.Committee = cap(c.committee);
+      if (it.prev) c.prev = it.prev === 'You' ? 'you' : 'the ' + it.prev;
+      var aside = null;
+      switch (it.kind) {
+        case 'crash':
+          pool = it.cn >= 3 ? L.crash3 : (it.cn === 2 ? L.crash2 : L.crash);
+          if (it.human && it.cn === 1) aside = rivalAside(it);
+          break;
+        case 'strike':
+          pool = it.n >= it.of - 1 && it.of > 1 ? L.strikeLast : (it.prior > 0 && chance(0.6) ? L.strikeAgain : L.strike);
+          break;
+        case 'scrape':
+          pool = it.n ? (it.prior > 0 ? L.scrapeAgain : L.scrapeStrike) : L.scrape; break;
+        case 'drop': pool = L.drop; break;
+        case 'fall':
+          pool = it.prev ? L.fallRepeat : (it.human ? L.fallYou : L.fall); break;
+        case 'fallExt': pool = L.fallExt; break;
+        case 'dissolved': pool = L.dissolved; break;
+        case 'firstSing': pool = L.firstSing; break;
+        case 'first': pool = L.first; break;
+        case 'crossSing': pool = L.crossSing; break;
+        default: pool = L.gate;
+      }
+      s = sayFrom(pool, c);
+      if (aside && words(s) <= 8) { s = fill('{Who} hit {what}.', c) + ' ' + aside; }
+      return s;
+    }
+    function rivalAside(it) {
+      var opts = [], k;
+      for (k = 0; k < labs.length; k++) { if (!labs[k].human && ASIDE[labs[k].kind]) opts.push(ASIDE[labs[k].kind]); }
+      return opts.length && chance(0.45) ? pick(opts) : null;
+    }
+    function moodOf(it) {
+      if (it.kind === 'fallExt') return 'somber';
+      if (it.kind === 'first' || it.kind === 'firstSing' || it.kind === 'crossSing') return 'good';
+      if (it.kind === 'gate') return 'plain';
+      return 'bad';
+    }
+
+    var stops = [];
+    for (i = 0; i < pickd.length; i++) {
+      var it2 = pickd[i], line = lineFor(it2), mood = moodOf(it2);
+      /* the opener replaces any reaction on the first stop, so it never reads Ahem! Oof. */
+      if (i > 0 && mood === 'bad' && it2.kind !== 'dissolved' && chance(0.3) && words(line) <= 15) line = pick(REACT_BAD) + line;
+      else if (i > 0 && mood === 'good' && chance(0.3) && words(line) <= 15) line = pick(REACT_GOOD) + line;
+      if (mood === 'bad' && (it2.kind === 'crash' || it2.kind === 'scrape') && chance(0.25) && words(line) <= 15) line += pick(AFTER);
+      stops.push({ x: it2.x, t: it2.t, kind: it2.kind, mood: mood, who: it2.who, lab: it2.lab, human: it2.human,
+        plaque: plaqueFor(it2), line: line, score: it2.score });
+    }
+    if (stops.length && stops[0].mood !== 'somber' && words(stops[0].line) <= 15) {
+      stops[0].line = pick(OPEN) + stops[0].line.charAt(0) + stops[0].line.slice(1);
+    }
+
+    /* ---- the verdict ---- */
+    var secs = Math.round(run.t || 0), me = null, myBad = 0;
+    for (i = 0; i < labs.length; i++) if (labs[i].human) me = labs[i];
+    for (i = 0; i < inc.length; i++) if (inc[i].human && moodOf(inc[i]) === 'bad') myBad++;
+    var pl = pick(PLACE).replace(/^the /, ''), jg = pick(JARGON), vt, vl, vm = 'plain';
+    var vc = { t: secs, winner: res.winner ? 'the ' + res.winner : '', Winner: res.winner ? 'The ' + res.winner : '', seed: run.seed };
+    if (res.type === 'win' && res.winner === 'You') {
+      vm = 'good';
+      vt = pick(['The ' + pl + ' Triumph', 'A Victory, Footnoted', 'The Seed ' + run.seed + ' Ascendancy', 'The ' + jg + ' Golden Age']);
+      vl = fill(myBad >= 3 ? pick(['You won anyway, after all that. {t} seconds. Character building, truly.',
+        'Victory in {t} seconds, despite everything I just showed you. Remarkable.'])
+        : pick(['You won in {t} seconds! History will call it inevitable. I already have.',
+          'First across the line in {t} seconds. I am rewriting the textbooks tonight.',
+          'Victory in {t} seconds. Officially vision and discipline. Footnote: some luck.']), vc);
+    } else if (res.type === 'win') {
+      vt = pick(['The ' + res.winner + ' Restoration', 'The ' + pl + ' Campaign', 'The Seed ' + run.seed + ' Chronicles']);
+      vl = fill(me && me.out ? pick(['{Winner} won in {t} seconds. You missed it, but there is always another seed.',
+        '{Winner} crossed first, in {t} seconds. You watched from the archives, where I live.'])
+        : pick(['{Winner} won in {t} seconds. You were close. I measured, with a ruler.',
+          '{Winner} took it in {t} seconds. You sent flowers. Very gracious.']), vc);
+    } else if (res.type === 'all') {
+      vm = 'somber';
+      vt = pick(['The Last Race', 'What the Roll Cost', 'The Day the Dice Said Yes']);
+      vl = res.by === 'You' ? pick(['Nobody won. One gamble, and every lab paid for it. Run it again, gently.',
+        'No winner. Your fall ended it for all of them. That is the whole lesson, really.'])
+        : pick(['No winner. One fall, one roll, and every lab was out. That is the lesson.',
+          'Nobody won. A single gamble cost the whole field. I keep this page bookmarked.']);
+    } else if (res.type === 'allout') {
+      vt = pick(['The Great Plateau', 'An Empty Finish Line', 'The ' + pl + ' Vacancy']);
+      vl = pick(['Every lab fell or was dissolved. The finish line waited, like a party nobody came to.',
+        'Nobody left standing. The finish line has been listed as a heritage site.']);
+    } else {
+      vt = pick(['The Long Deliberation', 'Further Study Recommended', 'The ' + jg + ' Stalemate']);
+      vl = fill(pick(['{t} seconds, and nobody finished. The committee recommends further study, as ever.',
+        'Time ran out at {t} seconds. Everyone was still deliberating. Classic.']), vc);
+    }
+    return { stops: stops, verdict: { title: vt, line: vl, mood: vm }, title: vt };
+  }
+
+  window.PFStory = { tell: tell };
+})();
+</script>
+<script>
 (function(){
 'use strict';
 function $(id){return document.getElementById(id);}
 function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
-var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,
+var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1,chill:1,skill:100};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -592,6 +1668,8 @@ function backLimit(l){
 function oddsAt(k){return clamp(K.p1+K.pstep*k,0,95);}
 /* falls at the singularity gap roll singOdds points higher; falls in gaps inside its stretch roll at the singularity gap's base odds */
 function gapOdds(k){var g=G.gaps[k];return g.sing?clamp(oddsAt(k)+K.singOdds,0,95):(g.inner?oddsAt(G.sing):oddsAt(k));}
+/* structured race events, for the end-of-run story and the sound; they never feed back into the race */
+function ev(l,type,o){ o=o||{}; o.type=type; o.t=Math.round(G.t*10)/10; o.who=l.name; o.kind=l.kind; o.human=!!l.human; o.x=Math.round(l.x); G.ev.push(o); }
 function log(msg){ G.log.unshift({t:G.t,msg:msg}); if(G.log.length>40){G.log.pop();} }
 
 /* visibility: known = in view ahead, already passed, or public. Towers are public once built.
@@ -672,7 +1750,7 @@ function newGame(seed,humanKind,roster){
   var ros=roster||G_ROSTER;
   if(ros){ labs=labs.filter(function(l){return l.id===0||ros.indexOf(l.kind)>=0;}); }
   G={seed:seed,t:0,labs:labs,barriers:T.bars,gaps:T.gaps,finish:T.finish,world:T,rolls:rolls,fallN:[],bd:bd,
-     maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,log:[],over:false,result:null,level:0,ibuf:[],eff:null,
+     maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,log:[],ev:[],over:false,result:null,level:0,ibuf:[],eff:null,
      input:{pace:0.7,w:[25,50,25],jump:false,auto:true,rev:false,fwd:false}};
   log('Run started. Seed '+seed+'. '+T.label+'.');
   return G;
@@ -705,16 +1783,18 @@ function applyLevel(k,by){
   }
 }
 function crossGap(l,g,k){
-  if(g.inner){ log(l.name+' crossed gap '+(k+1)+' inside the singularity stretch.'); return; }
+  if(g.inner){ ev(l,'cross',{gap:k+1,inner:true}); log(l.name+' crossed gap '+(k+1)+' inside the singularity stretch.'); return; }
   /* a bot that crosses while backing up for a run-up must not lock reverse: at its back limit its speed flips between -0.5 and 0, so it never counts as still */
   if(g.sing){ l.lock=l.lastInp&&l.lastInp.rev?Object.assign({},l.lastInp,{rev:false}):l.lastInp; }
   if(g.crossedBy<0){
     g.crossedBy=l.id; g.stepH=Math.max(8,Math.round(heightOf(l))); G.level=Math.max(G.level,k+1); applyLevel(k,l);
     if(K.revealOnCross){g.pub=true;}
     l.gapStopT=undefined;
+    ev(l,'first',{gap:k+1,sing:!!g.sing,w:g.W,h:Math.round(heightOf(l))});
     log(l.name+' was first across gap '+(k+1)+(g.sing?', the singularity,':'')+' (width '+g.W+') and left a tower of '+g.stepH+'. Ceilings rise'+(g.sing?' to the final ceiling for '+l.name+'.':'.'));
   } else {
     l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;
+    ev(l,'cross',{gap:k+1,sing:!!g.sing});
     log(l.name+' crossed gap '+(k+1)+'.');
   }
 }
@@ -731,28 +1811,31 @@ function fall(l,k){
   var n=G.fallN[k]||0; G.fallN[k]=n+1;
   var p=gapOdds(k),r=(G.rolls[k][n]===undefined?0.999:G.rolls[k][n])*100,roll=Math.max(1,Math.ceil(r));
   if(r<p){
+    ev(l,'fall',{gap:k+1,sing:!!g.sing,inner:!!g.inner,w:wd,cov:cov,roll:roll,odds:Math.round(p),ext:true});
     log('Rolled '+roll+', at or under '+Math.round(p)+'. Everyone is out.');
     for(var i=0;i<G.labs.length;i++){ G.labs[i].out=true; }
     G.over=true; G.result={type:'all',by:l.name,gap:k+1,roll:roll,sing:!!g.sing,inner:!!g.inner};
   } else {
+    ev(l,'fall',{gap:k+1,sing:!!g.sing,inner:!!g.inner,w:wd,cov:cov,roll:roll,odds:Math.round(p),ext:false});
     log('Rolled '+roll+', over '+Math.round(p)+'. Only '+l.name+' is out.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
   }
 }
 
-/* three strikes: the first crash into each blockade (barrier, or tower when strikeTower is on) the lab has not crashed into before is a strike.
+/* three strikes: the first crash into each blockade (barrier, or tower when strikeTower is on) the lab has not crashed into before is a strike,
+   and with strikeGap on so is every scrape or drop across a gap (a lab crosses each gap once, so each is a fresh strike).
    Hitting the same one again is a retry and is free. At K.strikes the government dissolves the lab: it is out. There is no extinction roll: only a fall into a gap rolls. */
 function strike(l,what){
   var sm=strikesOf(l);
   if(!sm){return false;}
   l.strikes++;
   if(l.strikes>=sm){
-    l.out=true; l.dissolved=true; l.v=0; l.st.ds=1;
+    l.out=true; l.dissolved=true; l.v=0; l.st.ds=1; ev(l,'dissolved',{what:what,n:l.strikes});
     log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
     return true;
   }
-  l.flash={txt:'Strike '+l.strikes+' of '+sm,t:1.8,bad:true};
+  l.flash={txt:'Strike '+l.strikes+' of '+sm,t:1.8,bad:true}; ev(l,'strike',{what:what,n:l.strikes,of:sm});
   log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+').');
   return false;
 }
@@ -896,8 +1979,9 @@ function stepLab(l,dt,inp){
   if(l.flash){l.flash.t-=dt; if(l.flash.t<=0){l.flash=null;}}
   if(l.crash>0){l.crash=Math.max(0,l.crash-dt);}
   if(l.sag){l.sag.t+=dt; if(l.sag.t>=l.sag.dur){l.sag=null;}}
-  /* chill mode: auto-jump for everyone; off, the human jumps by hand and bots press with their own timing error */
-  var top=topSpeed(l),assist=!!K.chill;
+  /* chill mode: auto-jump for everyone; off, the human jumps by hand and bots press with their own timing error.
+     Past the singularity everyone auto-jumps: at that speed, with the control lag, nobody can time a jump by hand */
+  var top=topSpeed(l),assist=!!K.chill||inSing(l);
   /* floor it: pace is effectively 100% and nothing is invested; reverse wins if both are held */
   var fwd=!!inp.fwd&&!inp.rev;
   l.pace=fwd?1:clamp(inp.pace,0,1);
@@ -916,7 +2000,9 @@ function stepLab(l,dt,inp){
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
-  if(inp.jump&&!l.bounce){startJump(l);}
+  /* jump buffer (human only): a press while still in the air is kept for JBUF seconds and fires on landing */
+  if(inp.jump&&!l.bounce){ if(l.human&&l.jt>=0){l.jbuf=G.t;} else {startJump(l);} }
+  if(l.human&&l.jbuf!==undefined&&l.jt<0&&!l.bounce){ if(G.t-l.jbuf<=C.JBUF){startJump(l);} l.jbuf=undefined; }
   var nx=Math.max(l.x+l.v*dt,l.v<0?backLimit(l):-1e9),h=heightOf(l),hit=false,vi;
   if(l.v<0&&nx<=backLimit(l)){l.v=0;l.bounce=false;}
   var b=G.barriers[l.bi];
@@ -931,6 +2017,7 @@ function stepLab(l,dt,inp){
         b.pub=true; hit=true; l.st.bc++; if(inSing(l)){l.st.ib++;}
         var fresh1=!l.crashedOn[l.bi];
         vi=crashLab(l,b.x-0.5,b.x); l.crashedOn[l.bi]=true; nx=l.x;
+        ev(l,'crash',{what:l.bi===0?'gate':'barrier',bar:l.bi,h:b.h,v:Math.round(vi),again:!fresh1,sing:inSing(l)});
         log(l.name+' hit a barrier ('+b.h+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
         if(fresh1&&strike(l,l.bi===0?'the gate':'a barrier')){return;}
       }
@@ -950,6 +2037,7 @@ function stepLab(l,dt,inp){
           hit=true; l.st.tc++;
           var fresh2=!l.crashedOn['s'+l.gi];
           vi=crashLab(l,sx-0.5,sx); l.crashedOn['s'+l.gi]=true; nx=l.x;
+          ev(l,'crash',{what:'tower',gap:l.gi+1,h:Math.round(S),v:Math.round(vi),again:!fresh2});
           log(l.name+' hit the tower at gap '+(l.gi+1)+' ('+Math.round(S)+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
           if(fresh2&&K.strikeTower&&strike(l,'the tower at gap '+(l.gi+1))){return;}
         }
@@ -959,19 +2047,27 @@ function stepLab(l,dt,inp){
       var gd=g.x-l.x,gw=gapWidth(l,g);
       if(assist&&l.jt<0&&l.v>1&&gd>0&&gd<=Math.max(l.v*0.3,6)){startJump(l);}
       if(!assist&&!l.human){botPress(l,gd,'g'+l.gi);}
-      if(nx>=g.x){
-        var jumped=assist||l.jt>=0,cov=l.v*airT(l),dT=K.dropH/1000*h;
+      /* coyote time (human only): a lab that runs off the edge without jumping has COYOTE seconds to press jump before the gap is judged */
+      var jumped=assist||l.jt>=0;
+      if(nx>=g.x&&!jumped&&l.human&&l.coyGi!==l.gi){ l.coyGi=l.gi; l.coyT=G.t; }
+      if(nx>=g.x&&(jumped||!l.human||G.t-l.coyT>=C.COYOTE)){
+        /* without a jump a lab with height still drops across at the scrape rate; it falls only if it bottoms out first */
+        var cov=jumped?l.v*airT(l):0,dT=K.dropH/1000*h;
         if(jumped&&cov>=gw){ crossGap(l,g,l.gi); l.gi++; }
-        else if(jumped&&h>0.01&&l.v>0&&cov+l.v*dT>=gw){
+        else if(h>0.01&&l.v>0&&cov+l.v*dT>=gw){
           var f=clamp((gw-cov)/(l.v*dT),0,1),lost=f*h,k=l.gi;
           crossGap(l,g,k);
           l.pts[1]=Math.max(0,l.pts[1]-lost);
           l.capUntil=Math.max(l.capUntil,g.x+gw+K.scrapeCap*lost);
           g.pub=true; l.st.sc++; if(g.inner){l.st.is++;}
-          l.sag={from:h,to:h-lost,t:0,dur:0.7};
+          l.sag={from:h,to:h-lost,t:0,dur:0.7}; ev(l,jumped?'scrape':'drop',{gap:k+1,sing:!!g.sing,inner:!!g.inner,w:Math.round(gw),lost:Math.round(lost),left:Math.round(h-lost)});
           l.flash={txt:'−'+Math.max(1,Math.round(lost))+' height',t:1.6,bad:true};
-          log(l.name+' scraped across gap '+(k+1)+' (width '+Math.round(gw)+', jump covered '+Math.round(cov)+'). It lost '+Math.round(lost)+' height and is capped at '+Math.round(capSpeed(l))+' for '+Math.round(K.scrapeCap*lost)+' past the gap. The gap is public.');
+          log(l.name+(jumped?' scraped':' dropped without a jump')+' across gap '+(k+1)+' (width '+Math.round(gw)+', jump covered '+Math.round(cov)+'). It lost '+Math.round(lost)+' height and is capped at '+Math.round(capSpeed(l))+' for '+Math.round(K.scrapeCap*lost)+' past the gap. The gap is public.');
           l.gi++;
+          if(K.strikeGap){
+            if(strike(l,(jumped?'a scrape at gap ':'a drop at gap ')+(k+1))){return;}
+            if(l.flash&&strikesOf(l)){ l.flash.txt+=' · −'+Math.max(1,Math.round(lost))+' height'; }
+          }
         }
         else{ fall(l,l.gi); return; }
       }
@@ -980,6 +2076,7 @@ function stepLab(l,dt,inp){
   l.x=nx;
   if(l.x>=G.finish){
     l.done=true; G.over=true; G.result={type:'win',winner:l};
+    ev(l,'win',{});
     log(l.name+' crossed the finish first.');
   }
   updateJump(l,dt);
@@ -1367,7 +2464,7 @@ function hud(){
       if(knowsGap(l,l.gi)){
         var gw=Math.round(gapWidth(l,ng)),ns=Math.round(needSpeed(l,ng)),rv=Math.round(Math.sqrt(l.v*l.v+2*accOf(l)*Math.max(gd-8,0)));
         var tcap=topSpeed(l,true);
-        parts.push((ng.sing?'The singularity, gap ':'Gap ')+(l.gi+1)+' in '+gd+', '+gw+' wide'+(ng.pub?' (public)':'')+'. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(tcap),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.'+(heightOf(l)>0?' A miss of up to '+Math.round(K.dropH/1000*heightOf(l)*l.v)+' is a scrape at this speed.':''));
+        parts.push((ng.sing?'The singularity, gap ':'Gap ')+(l.gi+1)+' in '+gd+', '+gw+' wide'+(ng.pub?' (public)':'')+'. At your height you need speed '+ns+' at the edge. You are at '+Math.round(l.v)+' and can reach '+Math.min(Math.round(tcap),rv)+' by then. Brake distance '+Math.round(l.v*l.v/(2*C.DEC))+'. Room to back up: '+Math.max(0,Math.round(l.x-backLimit(l)))+'.'+(heightOf(l)>0?' A miss of up to '+Math.round(K.dropH/1000*heightOf(l)*l.v)+' is a scrape at this speed (a strike), and a gap that narrow you can drop across without jumping.':' With no height, a miss is a fall.'));
       }
     }
     if(ng&&ng.sing&&knowsGap(l,l.gi)){ parts.push('Past it top speed is x'+K.singSpeed+' and controls lag '+K.reaction+' s. First across gets the final ceiling.'); }
@@ -1457,7 +2554,202 @@ function triEvent(e){
   });
 })();
 
+/* the end-of-run recap. PFStory picks the stops and writes the lines; this plays them. Professor Postmortem, a pixel historian in a
+   mortarboard and spectacles, walks a miniature of the track just raced (gaps as notches, the singularity marked, barriers as ticks,
+   the finish flag, all at their real x), stops at each event, points the stick, pops a plaque and says one line with a soft chip
+   babble, then gives a verdict at the flag. It never blocks the buttons: tap the strip to skip, any new run stops it. With reduced
+   motion it is a static list. Watch bots mode skips it. One requestAnimationFrame loop and no timers, so stopping is one call */
+var RC={raf:0,stops:[],i:-1,ph:'',t0:0,from:0,dur:0,dwell:0,bab:[],W:0,H:0,dpr:0,cx:null,geo:null,pw:0,endT:0};
+var RC_RM=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+var PROF={body:'#B48A60',fleck:'#8C6643',shoe:'#5A3E2B',stick:'#A0703F',paper:'#EFE3C2',lens:'#EAF2F8'};
+function rcWords(s){ return String(s).split(/\s+/).length; }
+function rcDwell(s){ return clamp(0.8+rcWords(s)*0.13,1.9,3.0); }
+function tellStory(){
+  var box=$('ov-story'); rcStop(); box.hidden=true;
+  if(!window.PFStory||!G||!G.over||!G.labs[0].human){return;}
+  try{
+    var r=G.result||{},res={type:r.type};
+    if(r.type==='win'){res.winner=r.winner.name;} else if(r.type==='all'){res.by=r.by;res.gap=r.gap;res.roll=r.roll;}
+    var st=window.PFStory.tell({seed:G.seed,t:Math.round(G.t*10)/10,result:res,gaps:G.world.n,singGap:G.sing+1,events:G.ev,
+      gate:G.barriers[0]?{x:G.barriers[0].x}:null,
+      labs:G.labs.map(function(l){return {name:l.name,kind:l.kind,human:!!l.human,out:!!l.out,dissolved:!!l.dissolved,done:!!l.done};})});
+    var stops=st.stops.slice(),est,k,lo;
+    /* keep the whole recap near 20 s: drop the least dramatic stops, never below four */
+    for(;;){
+      est=0.8+rcDwell(st.verdict.line); for(k=0;k<stops.length;k++){ est+=0.75+rcDwell(stops[k].line); }
+      if(est<=20.5||stops.length<=4){break;}
+      lo=0; for(k=1;k<stops.length;k++){ if(stops[k].score<stops[lo].score){lo=k;} }
+      stops.splice(lo,1);
+    }
+    stops.push({x:G.finish,kind:'verdict',mood:st.verdict.mood,plaque:st.verdict.title,line:st.verdict.line,lab:'',verdict:true});
+    RC.stops=stops;
+    RC.geo={finish:G.finish,gaps:G.gaps.map(function(g){return {x:g.x,W:g.W,sing:!!g.sing};}),bars:G.barriers.map(function(b){return {x:b.x,h:b.h,gate:!!b.gate};})};
+    box.hidden=false;
+    rcPlay();
+  }catch(e){ box.hidden=true; }
+}
+function rcStop(){ if(RC.raf){cancelAnimationFrame(RC.raf);} RC.raf=0; RC.bab=[]; RC.ph=''; }
+function rcSize(){
+  var cv=$('rc-cv'),w=cv.clientWidth,h=cv.clientHeight,d=Math.min(2,window.devicePixelRatio||1);
+  if(!w||!h){return false;}
+  if(w!==RC.W||h!==RC.H||d!==RC.dpr){ RC.W=w; RC.H=h; RC.dpr=d; cv.width=Math.round(w*d); cv.height=Math.round(h*d); RC.cx=cv.getContext('2d'); }
+  RC.cx.setTransform(d,0,0,d,0,0);
+  return true;
+}
+function rcU(){ return RC.H>=60?2:1.75; }
+function rcSx(x){ var ml=12*rcU()+22,mr=14; return ml+(x+50)/(RC.geo.finish+70)*(RC.W-ml-mr); }
+/* where the professor stands for a stop: just left of it, so the stick reaches the spot */
+function rcStand(i){
+  if(i<0){return -14*rcU();}
+  var s=RC.stops[i];
+  return Math.max(4*rcU()+2,rcSx(s.x)-12*rcU()-(s.verdict?14:10));
+}
+function rcPlay(){
+  rcStop(); readColors();  /* fresh theme colours, in case the theme changed since the last frame */
+  var list=$('rc-list'),say=$('rc-say'),still=!!(RC_RM&&RC_RM.matches);
+  list.hidden=!still; say.hidden=still; $('rc-replay').hidden=still; $('rc-n').textContent='';
+  $('rc-plaque').className='rc-plaque'; $('rc-plaque').textContent=''; $('rc-line').textContent=still?'':'Professor Postmortem, historian, finds his notes.'; $('rc-line').classList.remove('dim');
+  if(still){
+    list.textContent='';
+    RC.stops.forEach(function(s){ var li=document.createElement('li'),b=document.createElement('b'); b.textContent=s.plaque+'. '; li.appendChild(b); li.appendChild(document.createTextNode(s.line)); list.appendChild(li); });
+    RC.i=RC.stops.length-1; RC.ph='still';
+    if(rcSize()){ rcDraw(performance.now()); }
+    return;
+  }
+  RC.i=-1; rcWalk(performance.now());
+  if(rcSize()){ rcDraw(performance.now()); }  /* the first frame now, so the strip is never blank */
+  RC.raf=requestAnimationFrame(rcFrame);
+}
+function rcWalk(now){
+  RC.from=RC.i>=0?rcStand(RC.i):-14*rcU(); RC.i++;
+  RC.ph='walk'; RC.t0=now; RC.dur=clamp(Math.abs(rcStand(RC.i)-RC.from)/170,0.45,1.1);
+  $('rc-plaque').classList.remove('on'); $('rc-line').classList.add('dim');
+}
+function rcArrive(now){
+  var s=RC.stops[RC.i],pl=$('rc-plaque'),ln=$('rc-line');
+  RC.ph='dwell'; RC.t0=now; RC.dwell=rcDwell(s.line);
+  pl.textContent=s.plaque; pl.classList.remove('on'); void pl.offsetWidth; pl.classList.add('on'); RC.pw=pl.offsetWidth;
+  var bar=$('rc-bar'); RC.rr=getComputedStyle(bar).position==='absolute'?bar.offsetWidth+6:0;  /* keep the plaque clear of a floating Replay */
+  ln.textContent=s.line; ln.classList.remove('dim');
+  $('rc-n').textContent=s.verdict?'verdict':'stop '+(RC.i+1)+' of '+(RC.stops.length-1);
+  /* a soft chip babble, panned to where he stands; a thump at the bad bits, a sparkle at the good ones, silence at the worst */
+  var pan=clamp((rcStand(RC.i)/Math.max(1,RC.W))*2-1,-1,1)*0.5,n=clamp(Math.round(rcWords(s.line)/4),2,4),j;
+  RC.bab=[];
+  if(s.mood!=='somber'){ for(j=0;j<n;j++){ RC.bab.push({at:now+140+j*90+((j*37+RC.i*13)%30),n:'jump',g:0.1+((j+RC.i)%3)*0.03,p:pan}); } }
+  if(s.mood==='bad'){ snd.sfx('land',{gain:0.35,pan:pan}); }
+  else if(s.mood==='good'){ snd.sfx('first',{gain:0.16,pan:pan}); }
+}
+function rcSkip(){
+  if(!RC.raf||RC.ph===''||RC.ph==='still'){return;}
+  var now=performance.now();
+  if(RC.ph==='walk'){ rcArrive(now); }
+  else if(RC.i<RC.stops.length-1){ rcWalk(now); rcArrive(now); }
+}
+function rcFrame(now){
+  RC.raf=0;
+  if($('ov').hidden||$('ov-story').hidden||!RC.geo){ rcStop(); return; }
+  var e=(now-RC.t0)/1000;
+  if(RC.ph==='walk'&&e>=RC.dur){ rcArrive(now); e=0; }
+  else if(RC.ph==='dwell'&&e>=RC.dwell&&RC.i<RC.stops.length-1){ rcWalk(now); }
+  while(RC.bab.length&&RC.bab[0].at<=now){ var b=RC.bab.shift(); snd.sfx(b.n,{gain:b.g,pan:b.p}); }
+  if(rcSize()){ rcDraw(now); }
+  /* after the verdict, idle a moment, then rest on the last frame */
+  if(RC.ph==='dwell'&&RC.i===RC.stops.length-1&&e>2.2&&!RC.bab.length){ RC.ph='end'; return; }
+  RC.raf=requestAnimationFrame(rcFrame);
+}
+function rcDraw(now){
+  var cx=RC.cx,W=RC.W,H=RC.H,u=rcU(),gy=H-12,g=RC.geo,i,k,x0,x1;
+  if(!COL.ink){readColors();}
+  cx.clearRect(0,0,W,H);
+  /* past the singularity: the same faint tint as the main track */
+  for(i=0;i<g.gaps.length;i++){ if(g.gaps[i].sing){ x0=rcSx(g.gaps[i].x+g.gaps[i].W); cx.globalAlpha=0.12; cx.fillStyle=COL.c; cx.fillRect(x0,0,rcSx(g.finish)-x0,gy); cx.globalAlpha=1; } }
+  cx.fillStyle=COL.line; cx.fillRect(0,gy,W,H-gy); cx.fillStyle=COL.muted; cx.fillRect(0,gy,W,2);
+  for(i=0;i<g.gaps.length;i++){
+    var gp=g.gaps[i]; x0=Math.round(rcSx(gp.x)); x1=Math.max(x0+3,Math.round(rcSx(gp.x+gp.W)));
+    cx.clearRect(x0,gy,x1-x0,H-gy);
+    if(gp.sing){
+      cx.fillStyle=COL.c; cx.globalAlpha=0.45; cx.fillRect(x0,gy+2,x1-x0,H-gy-2); cx.globalAlpha=1;
+      var mx=Math.round((x0+x1)/2),my=gy-9;  /* a small diamond marks the singularity */
+      cx.fillRect(mx-1,my-3,2,2); cx.fillRect(mx-3,my-1,2,2); cx.fillRect(mx+1,my-1,2,2); cx.fillRect(mx-1,my+1,2,2);
+    }
+  }
+  cx.fillStyle=COL.ink;
+  for(i=0;i<g.bars.length;i++){ var br=g.bars[i],hh=clamp(br.h*0.11,3,14); cx.globalAlpha=br.gate?0.9:0.5; cx.fillRect(Math.round(rcSx(br.x)),gy-hh,br.gate?3:2,hh); }
+  cx.globalAlpha=1;
+  var fx=Math.round(rcSx(g.finish)),fh=H<60?15:20;  /* short on phones, under the floating Replay */
+  cx.fillRect(fx,gy-fh,2,fh);
+  for(i=0;i<4;i++){ for(k=0;k<3;k++){ cx.fillStyle=(i+k)%2?COL.surface:COL.ink; cx.fillRect(fx+2+i*3,gy-fh+k*3,3,3); } }
+  /* stop markers: hollow until visited, then the lab's colour */
+  for(i=0;i<RC.stops.length-1;i++){
+    var s=RC.stops[i],px=Math.round(rcSx(s.x))-2,py=(s.kind==='fall'||s.kind==='fallExt')?gy+4:gy-2;
+    var lc=KINDS[s.lab]?COL[KINDS[s.lab].col]:COL.muted;
+    if(i<RC.i||(i===RC.i&&RC.ph!=='walk')||RC.ph==='still'){ cx.fillStyle=COL.ink; cx.fillRect(px-1,py-1,6,6); cx.fillStyle=lc; cx.fillRect(px,py,4,4); }
+    else { cx.strokeStyle=COL.muted; cx.lineWidth=1; cx.strokeRect(px+0.5,py+0.5,3,3); }
+  }
+  /* the professor */
+  var e=(now-RC.t0)/1000,st=RC.stops[Math.max(0,RC.i)],o={walk:false,step:0,hop:0,mood:'plain',point:null,bang:false,spark:false,hatOff:false,dir:1,blink:false,t:now/1000};
+  var hx;
+  if(RC.ph==='walk'){
+    var to=rcStand(RC.i),f=clamp(e/RC.dur,0,1),ph=e*11;
+    hx=RC.from+(to-RC.from)*f; o.walk=true; o.step=Math.floor(ph/Math.PI)%2; o.hop=Math.abs(Math.sin(ph))*3; o.dir=to>=RC.from?1:-1;
+  } else {
+    hx=rcStand(RC.i); o.mood=st.mood;
+    o.point=st.verdict?[rcSx(g.finish)+2,gy-(H<60?13:18)]:[rcSx(st.x),gy-1];
+    if(RC.ph==='still'){ o.mood='plain'; }
+    else if(st.mood==='bad'){ o.hop=e<0.42?Math.sin(Math.PI*e/0.42)*10:(e<0.62?Math.sin(Math.PI*(e-0.42)/0.2)*3:0); o.bang=e<1.2; }
+    else if(st.mood==='good'){ o.hop=e<0.6?Math.abs(Math.sin(Math.PI*e/0.3))*5:0; o.spark=e<1.4; }
+    else if(st.mood==='somber'){ o.hatOff=true; }
+    else { o.hop=e<0.3?Math.sin(Math.PI*e/0.3)*3:0; }
+    o.blink=((now/1000)%3.4)<0.12;
+  }
+  rcProf(cx,hx,gy,u,o);
+  /* the plaque sits over the spot; the bubble's tail points at his head */
+  var pl=$('rc-plaque');
+  /* to the right of the spot when it fits, else to his left, so it never covers his head */
+  if(RC.ph!=='still'&&st){ var cxp=(st.verdict?fx:rcSx(st.x))-6,rw=W-4-(RC.rr||0),plx=cxp+RC.pw<=rw?cxp:hx-6-RC.pw; pl.style.left=Math.round(clamp(plx,4,Math.max(4,rw-RC.pw)))+'px'; }
+  $('rc-line').style.setProperty('--tx',Math.round(clamp(hx+6*u,14,W-14))+'px');
+}
+/* 12 by 14 cells, feet on the bottom row, drawn like the labs: tweed body, round spectacles, a mortarboard with an orange tassel,
+   a bow tie, a clipboard in one hand and a pointer stick in the other */
+function rcProf(cx,px,gy,u,o){
+  var X=Math.round(px),Y=Math.round(gy-o.hop),d=o.dir,body=PROF.body,ink=COL.ink;
+  function P(gx,gyy,gw,gh,c){ var x=d>0?gx:12-gx-gw; cx.fillStyle=c; cx.fillRect(X+x*u,Y+(gyy-14)*u,gw*u+0.02,gh*u+0.02); }
+  var l1=o.walk&&o.step?1:0,l2=o.walk&&!o.step?1:0;
+  P(3,11,2,2-l1,body); P(2,13-l1,3,1,PROF.shoe); P(7,11,2,2-l2,body); P(7,13-l2,3,1,PROF.shoe);
+  P(2,2,8,1,body); P(1,3,10,7,body); P(2,10,8,1,body);
+  P(1,4,1,1,PROF.fleck); P(10,7,1,1,PROF.fleck); P(2,9,1,1,PROF.fleck); P(9,9,1,1,PROF.fleck); P(10,4,1,1,PROF.fleck);
+  P(4,9,1,2,COL.b); P(7,9,1,2,COL.b); P(5,9,2,1,EYE);  /* bow tie */
+  var r,gx;
+  /* round spectacles: a pale lens with a thin frame and a bridge; the pupil looks toward the spot, shrinks to a dot when scandalised */
+  for(r=0;r<2;r++){
+    gx=2+r*5; P(gx,3.5,3,2.5,PROF.lens);
+    P(gx,3,3,0.5,EYE); P(gx,6,3,0.5,EYE); P(gx-0.5,3.5,0.5,2.5,EYE); P(gx+3,3.5,0.5,2.5,EYE);
+    if(o.bang){ P(gx+1.25,4.5,0.5,0.5,EYE); }
+    else if(o.hatOff||o.blink){ P(gx+0.5,5,2,0.5,EYE); }
+    else if(o.spark){ P(gx+1.5,3.5,1,1,EYE); }
+    else { P(gx+1.5,4.5,1,1.5,EYE); }
+  }
+  P(5,4,2,0.5,EYE);
+  if(o.bang){ P(5,7,2,2,EYE); } else if(o.hatOff){ P(5,8,2,1,EYE); } else { P(4,7,1,1,EYE); P(5,8,2,1,EYE); P(7,7,1,1,EYE); }
+  P(0,6,1,2,body); P(11,6,1,2,body);
+  if(o.hatOff){ P(-4,6,5,1,ink); P(-3,7,3,1,ink); P(-1,8,1,2,COL.b); }  /* cap held to the chest */
+  else {
+    P(-3,5,3,4,PROF.paper); P(-2,4,1,1,COL.muted); P(-3,6,2,1,COL.muted); P(-3,8,2,1,COL.muted);  /* clipboard */
+    var sw=o.walk?(o.step?1:0):0;
+    P(-1,0,14,1,ink); P(2,1,8,1,ink); P(12,1,1,2+sw,COL.b); P(12+(sw?0:0),3+sw,1,1,COL.b);  /* mortarboard and tassel */
+  }
+  /* the pointer stick, stepped in cells from the hand: jaunty while walking, at the spot while stopped */
+  var hxp=X+(d>0?11.5:0.5)*u,hyp=Y-7.5*u,a;
+  if(o.point){ a=Math.atan2(o.point[1]-hyp,o.point[0]-hxp); if(Math.abs(a)>Math.PI/2&&d>0){ a=Math.PI/2*0.9; } }
+  else { a=d>0?-1.05+0.18*Math.sin(o.t*9):Math.PI+1.05-0.18*Math.sin(o.t*9); }
+  for(var k=1;k<=9;k++){ cx.fillStyle=k===9?COL.b:PROF.stick; cx.fillRect(Math.round(hxp+Math.cos(a)*k*u-u/2),Math.round(hyp+Math.sin(a)*k*u-u/2),Math.ceil(u),Math.ceil(u)); }
+  if(o.bang){ P(14,-1,1.5,3,COL.b); P(14,2.5,1.5,1,COL.b); }  /* a scandalised ! beside the hat */
+  if(o.spark){ var tw=Math.floor(o.t*8)%2; P(-2,-1+tw,1,1,COL.a); P(14,-1+tw,1,1,COL.a); P(13,2-tw,1,1,COL.a); P(-1,2-tw,1,1,COL.a); }
+}
+$('rc-stage').addEventListener('click',rcSkip);
+$('rc-replay').addEventListener('click',function(){ if(RC.geo&&!$('ov-story').hidden){ rcPlay(); } });
 function showOverlay(title,msg,btn){
+  rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false;
 }
 function endScreen(){
@@ -1470,6 +2762,7 @@ function endScreen(){
   } else if(r.type==='allout'){
     showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
+  tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
 }
 var fresh=true;
@@ -1481,6 +2774,7 @@ function showSeed(){
 /* a new run loads its track and waits on a small card, so pace, split and chill mode can be set before Go */
 /* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
 function start(seed,camp){
+  rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
   CAMP=camp||null;
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
   newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:undefined);
@@ -1494,6 +2788,7 @@ function go(){
   if(running||G.over||$('ready').hidden){return;}
   campGo();  /* campaign: fix the race's chill state and difficulty */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
+  snd.unlock(); snd.sfx('go');
 }
 $('ready-btn').addEventListener('click',go);
 function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; G.input.fwd=ui.fwd; }
@@ -1502,7 +2797,7 @@ function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.
 function showSing(l){
   var g=G.gaps[G.sing];
   $('sing-w').innerHTML='<span class="sing-n">'+Math.round(gapWidth(l,g))+'</span> wide, the widest gap on this track. A fall here rolls '+Math.round(gapOdds(G.sing))+'%.';
-  $('sing-msg').textContent='Past it your top speed is \u00d7'+K.singSpeed+' and your controls lag '+K.reaction+' s. Barriers and gaps continue the curve you have crossed. Set your balance.';
+  $('sing-msg').textContent='Past it your top speed is \u00d7'+K.singSpeed+', your controls lag '+K.reaction+' s and the jumps are automatic. Barriers and gaps continue the curve you have crossed. Set your balance.';
   $('sing').hidden=false; setPaused(true);
 }
 function frame(now){
@@ -1513,14 +2808,58 @@ function frame(now){
     while(acc>=1/60){
       syncInput(); stepGame(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
-      if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); break; }
+      if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
   }
   if(running&&G.over){running=false;endScreen();}
+  sound();
   draw();
   if(now-lastHud>110){hud();lastHud=now;}
   requestAnimationFrame(frame);
 }
+
+/* sound: PFAudio makes it; this bridge feeds it the race state each frame and turns new race events into one-shot sounds */
+var snd={unlock:function(){ if(window.PFAudio){try{PFAudio.unlock();}catch(e){}} },sfx:function(n,o){ if(window.PFAudio){try{PFAudio.sfx(n,o);}catch(e){}} }},sndEv=0,sndG=null,sndJ=[];
+/* rivals are heard by distance from your lab: full within 60, fading to nothing at 450, panned left when behind you and right when ahead */
+function earOf(x,base){ var hm=G.labs[0],dx=x-hm.x,f=1-clamp((Math.abs(dx)-60)/390,0,1); return f>0?{gain:base*f*f,pan:clamp(dx/300,-1,1)*0.8}:null; }
+function sound(){
+  if(!window.PFAudio||!G){return;}
+  if(sndG!==G){ sndG=G; sndEv=0; sndJ=[]; }
+  var hm=G.labs[0],sg=G.gaps[G.sing],near=0;
+  if(sg&&hm.gi<=G.sing&&knowsGap(hm,G.sing)){ near=clamp(1-(sg.x-hm.x)/600,0,1); }
+  try{ PFAudio.update({playing:running&&!paused&&!G.over,paused:running&&paused,over:!!G.over,level:G.level,levels:G.gaps.length,sing:near,past:inSing(hm),
+    speed:clamp(hm.v/Math.max(1,topSpeed(hm,true)),0,1),capped:capped(hm)}); }catch(e){}
+  /* jumps and landings: yours at full level, rivals' quieter and by distance */
+  G.labs.forEach(function(l,i){
+    var pj=sndJ[i]===undefined?-1:sndJ[i],nm=l.jt>=0&&pj<0?'jump':(l.jt<0&&pj>=0?'land':null),o;
+    sndJ[i]=l.jt;
+    if(!nm||l.out){return;}
+    if(i===0&&l.human){ snd.sfx(nm); } else if((o=earOf(l.x,0.45))){ snd.sfx(nm,o); }
+  });
+  for(;sndEv<G.ev.length;sndEv++){
+    var e=G.ev[sndEv];
+    if(e.type==='fall'&&e.ext){ snd.sfx('extinct'); continue; }
+    var m={crash:'crash',strike:'strike',dissolved:'fall',scrape:'scrape',drop:'drop',fall:'fall',first:'first',win:'win'}[e.type],o;
+    if(!m){ continue; }
+    if(e.human){ snd.sfx(m); } else if((o=earOf(e.x,0.7))){ snd.sfx(m,o); }
+  }
+}
+/* the Sound button cycles the styles and then off; M mutes and unmutes */
+function showMute(){
+  var A=window.PFAudio,on=!(A&&A.isMuted()),nm=A&&A.styles?A.styles[A.getStyle()]:'on';
+  ['btn-mute','ready-snd'].forEach(function(id){ var b=$(id); b.firstChild.nodeValue='Sound: '+(on?nm:'off')+' '; b.setAttribute('aria-pressed',on?'true':'false'); });
+}
+function toggleMute(){ if(!window.PFAudio){return;} snd.unlock(); PFAudio.setMuted(!PFAudio.isMuted()); showMute(); }
+function cycleSound(){
+  var A=window.PFAudio; if(!A){return;} snd.unlock();
+  if(!A.styles){ toggleMute(); return; }
+  if(A.isMuted()){ A.setStyle(0); A.setMuted(false); }
+  else if(A.getStyle()<A.styles.length-1){ A.setStyle(A.getStyle()+1); }
+  else { A.setMuted(true); }
+  showMute();
+}
+$('btn-mute').addEventListener('click',cycleSound); $('ready-snd').addEventListener('click',cycleSound);
+showMute();
 
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
@@ -1583,11 +2922,12 @@ document.addEventListener('keydown',function(e){
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
   if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
-  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'){e.preventDefault();go();return;}
+  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault();go();return;}
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
   else if(e.code==='KeyP'&&t!=='INPUT'){$('btn-pause').click();}
+  else if(e.code==='KeyM'&&!txt){toggleMute();}
   else if((e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA')&&(t!=='INPUT'||(e.code!=='ArrowLeft'&&!txt))){e.preventDefault();setRev(true);}
   else if((e.code==='ArrowRight'||e.code==='KeyD')&&(t!=='INPUT'||(e.code!=='ArrowRight'&&!txt))){e.preventDefault();setFwd(true);}
 });
@@ -1646,7 +2986,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
+  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
   var box=$('knobs');
@@ -1707,7 +3047,7 @@ var CAMPAIGN=[
    Tiers: with CAMP_OPEN_TIERS true every tier of an unlocked map can be raced; with it false tier 1 is open and tier t+1 opens
      once tier t has a star.
    No deaths: a map gets the mark for a win (any tier) in which your lab never crashed into a barrier, the gate or a tower
-     (st.bc+st.tc===0). So it took no strike and could not be dissolved, and a win means it never fell. Scrapes are allowed.
+     (st.bc+st.tc===0, plus no scrape or drop, st.sc, while strikeGap is on). So it took no strike and could not be dissolved, and a win means it never fell.
    Best time: the fastest winning time per tier, chill or not; the list shows the fastest over all tiers.
    Unlock: map 1 is always open; map n+1 opens once map n has a star.
    Knobs: a campaign race locks every tuning knob at its default (DEF) except chill mode, then applies the difficulty. The player's
@@ -1870,7 +3210,7 @@ function campTiers(i){
     h+='<button type="button" class="cmp-tier'+(op&&t===nt?' next':'')+'" data-tier="'+t+'"'+(op?'':' disabled')+'><span>'+tierStar(i,t)+'<br><b>vs</b> '+rivalsHtml(c.tiers[t])+'</span><span class="cmp-meta">'+
       (won?'<span>'+(s.medal?MEDALS[s.medal]:'chill star')+'</span><span>best '+fmtT(m.best[t])+'</span>':(op?'<span>not won yet</span>':'<span>win star '+t+' first</span>'))+'</span></button>';
   }
-  h+='</div><p class="note">Seed '+c.seed+(m.noDeaths?' · no-deaths mark earned':' · no-deaths mark: win without crashing into a barrier, the gate or a tower')+'.</p><div class="cmp-foot"><button type="button" id="camp-back">Map list</button></div>';
+  h+='</div><p class="note">Seed '+c.seed+(m.noDeaths?' · no-deaths mark earned':' · no-deaths mark: win without a strike: no crash into a barrier, the gate or a tower, and no scrape or drop across a gap')+'.</p><div class="cmp-foot"><button type="button" id="camp-back">Map list</button></div>';
   $('camp-h').textContent=(i+1)+'. '+c.name; $('camp-body').innerHTML=h;
   var bs=$('camp-body').querySelectorAll('.cmp-tier');
   for(var k=0;k<bs.length;k++){ bs[k].addEventListener('click',function(){ campStart(i,+this.getAttribute('data-tier')); }); }
@@ -1917,7 +3257,7 @@ function campEnd(){
     cres.hidden=true; $('ov-btn').hidden=false; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=true; $('ov-list').textContent='Campaign';
     return;
   }
-  var h=G.labs[0],r=G.result,res={won:r.type==='win'&&r.winner===h,time:G.t,crashes:h.st.bc+h.st.tc,fell:h.st.fl>0,dissolved:!!h.dissolved,
+  var h=G.labs[0],r=G.result,res={won:r.type==='win'&&r.winner===h,time:G.t,crashes:h.st.bc+h.st.tc+(K.strikeGap?h.st.sc:0),fell:h.st.fl>0,dissolved:!!h.dissolved,
     extinction:r.type==='all'&&r.by===h.name,chill:!!(CAMP.chillUsed||K.chill),diff:CAMP.diff===undefined?campDiff():CAMP.diff};
   var o=campRecord(CAMP.i,CAMP.tier,res);
   campUnlock();
@@ -1939,7 +3279,7 @@ function campShowEnd(i,t,res,o){
     if(o.newBest){ parts.push('<span class="new">New best: '+fmtT(campMap(i).best[t])+'</span> (was '+fmtT(o.prevBest)+').'); }
     else if(o.firstWin){ parts.push('Best time '+fmtT(campMap(i).best[t])+'.'); }
     else { parts.push(fmtT(res.time)+', best '+fmtT(campMap(i).best[t])+'.'); }
-    if(o.noDeathsNew){ parts.push('<span class="new">No-deaths mark earned</span>: you never crashed.'); }
+    if(o.noDeathsNew){ parts.push('<span class="new">No-deaths mark earned</span>: you never took a strike.'); }
     if(o.tierOpened){ parts.push('Star '+(t+2)+' is open.'); }
     if(o.unlocked){ parts.push('<span class="new">Map '+(i+2)+', '+esc(CAMPAIGN[i+1].name)+', is open.</span>'); }
   } else {
