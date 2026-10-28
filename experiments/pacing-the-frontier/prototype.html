@@ -230,6 +230,38 @@ body.chill #btn-jump{display:none}
   .ov-foot{bottom:-10px;margin-bottom:-10px;padding-bottom:10px}
 }
 /* ---- campaign (end) ---- */
+/* end-of-campaign epilogue: a full-screen modal dialog opened by window.showEpilogue(summary), or by ?epilogue=careful|reckless|mixed */
+dialog.epi{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+dialog.epi::backdrop{background:var(--bg)}
+html.epi-open{overflow:hidden}
+.epi-in{max-width:640px;margin:0 auto;padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(40px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.epi-top{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;padding-block:8px;background:var(--bg);z-index:1}
+.epi-x{min-width:44px;min-height:44px;padding:4px 12px}
+.epi h2:focus{outline:none}
+.epi h2{font:700 clamp(26px,5.5vw,38px)/1.1 var(--display);margin:0}
+.epi-stats{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0;padding:10px 12px;font:400 13px var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.epi-stats div{display:flex;gap:6px}.epi-stats dt{color:var(--muted)}.epi-stats dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.epi-body{display:flex;flex-direction:column;gap:14px;font:17px/1.6 var(--body);max-width:62ch}
+.epi-body p{text-wrap:pretty}
+.epi-sign{font:500 15px var(--mono);color:var(--muted)}
+.epi details{font:400 13px/1.5 var(--mono)}
+.epi details summary{font:500 14px var(--mono)}
+.epi-maps{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 16px}
+.epi-maps li{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:2px 0}
+.epi-maps .st{color:var(--b);letter-spacing:.1em;white-space:nowrap}
+.epi h3{font:700 18px var(--display);margin:8px 0 0}
+.epi-read{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.epi-read a{color:var(--a)}
+.epi-read span{color:var(--muted)}
+.epi-done{align-self:flex-start;margin-top:4px}
+@media (orientation:landscape) and (max-height:540px){.epi-in{gap:12px;padding-top:max(8px,env(safe-area-inset-top,0px))}.epi-body{font-size:16px;line-height:1.55}}
+@media (prefers-reduced-motion:no-preference){
+  dialog.epi[open] .epi-in>*{animation:epi-fade .6s ease-out both}
+  dialog.epi[open] .epi-in>*:nth-child(2){animation-delay:.08s}
+  dialog.epi[open] .epi-in>*:nth-child(3){animation-delay:.16s}
+  dialog.epi[open] .epi-in>*:nth-child(n+4){animation-delay:.3s}
+}
+@keyframes epi-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 </style>
 
 <main class="wrap">
@@ -365,6 +397,22 @@ body.chill #btn-jump{display:none}
   </div>
 </div>
 <!-- campaign (end) -->
+<dialog class="epi" id="epi" aria-labelledby="epi-h">
+  <div class="epi-in">
+    <div class="epi-top"><p class="eyebrow">Epilogue &middot; after the finish</p><button class="epi-x" id="epi-x" type="button" aria-label="Close epilogue">Close</button></div>
+    <h2 id="epi-h" tabindex="-1">After the finish</h2>
+    <dl class="epi-stats" id="epi-stats"></dl>
+    <div class="epi-body" id="epi-body"></div>
+    <details id="epi-mapbox" hidden><summary>Your nine maps</summary><ul class="epi-maps" id="epi-maps"></ul></details>
+    <h3>Further reading</h3>
+    <ul class="epi-read">
+      <li><a href="https://ai-2027.com/">AI 2027</a> <span>a scenario to read alongside the game</span></li>
+      <li><a href="https://ai-2040.com/">AI 2040: Plan A</a> <span>its more hopeful companion</span></li>
+      <li><a href="https://80000hours.org/problem-profiles/artificial-intelligence/">80,000 Hours on risks from AI</a> <span>an overview of the problem</span></li>
+    </ul>
+    <button class="primary epi-done" id="epi-done" type="button">Back to the maps</button>
+  </div>
+</dialog>
 
 <script>
 (function(){
@@ -1646,10 +1694,10 @@ function campBest(i){ var b=campMap(i).best,m=null; for(var t=0;t<3;t++){ if(b[t
 function campNextTier(i){ for(var t=0;t<3;t++){ if(!campMap(i).won[t]){return t;} } return 2; }
 function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(campStars(i)<1){return false;} } return true; }
 function campSummary(){
-  var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i); return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:m.best.slice(),bestTime:campBest(i)}; });
+  var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i); return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice()}; });
   var st=CS.stats;
   return {maps:maps,totalStars:maps.reduce(function(a,m){return a+m.stars;},0),noDeathMaps:maps.filter(function(m){return m.noDeaths;}).length,
-    totalFalls:st.falls,extinctionsCaused:st.extinctions,dissolved:st.dissolved,races:st.races,wins:st.wins};
+    falls:st.falls,extinctions:st.extinctions,dissolutions:st.dissolved,races:st.races,wins:st.wins};
 }
 /* records one campaign race. res: {won, time, crashes, fell, dissolved, extinction}. Returns what changed, for the end overlay */
 function campRecord(i,t,res){
@@ -1780,6 +1828,7 @@ window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,state:function(){return CS;},
     showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play again');
     campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
   stars:campStars,open:campOpen};
+window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(location.search).get('epilogue')){campList();} });
 /* ---------- campaign (end) ---------- */
 
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
@@ -1792,5 +1841,148 @@ var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
 requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* Epilogue. window.showEpilogue(summary) opens it once the campaign is done; ?epilogue=careful|reckless|mixed previews a sample.
+   summary = {maps:[{name,stars,noDeaths,best}], falls, extinctions, dissolutions, totalStars, wins}; any field may be missing.
+   Closing it (Close, Esc or Back to the maps) fires a 'pf:epilogue-close' event on window. Reads nothing from the simulation. */
+(function(){
+'use strict';
+var dlg=document.getElementById('epi'),back=null;
+if(!dlg){return;}
+function num(v){ return typeof v==='number'&&isFinite(v)&&v>=0?Math.round(v):null; }
+var WORDS=['no','one','two','three','four','five','six','seven','eight','nine'];
+function word(n){ return n<WORDS.length?WORDS[n]:String(n); }
+function times(n){ return n===1?'once':n===2?'twice':word(n)+' times'; }
+function pl(n,one,many){ return n+' '+(n===1?one:(many||one+'s')); }
+function el(tag,cls,txt){ var e=document.createElement(tag); if(cls){e.className=cls;} if(txt!=null){e.textContent=txt;} return e; }
+function read(s){
+  s=s&&typeof s==='object'?s:{};
+  var maps=Array.isArray(s.maps)?s.maps.filter(function(m){return m&&typeof m==='object';}):[];
+  var clean=null,known=0,starSum=0,starKnown=0;
+  maps.forEach(function(m){
+    if(typeof m.noDeaths==='boolean'){ known++; clean=(clean||0)+(m.noDeaths?1:0); }
+    var st=num(m.stars); if(st!==null){ starSum+=Math.min(3,st); starKnown++; }
+  });
+  var stars=num(s.totalStars); if(stars===null&&starKnown){ stars=starSum; }
+  var nMaps=maps.length||9;
+  return {maps:maps,nMaps:nMaps,falls:num(s.falls),ext:num(s.extinctions),dis:num(s.dissolutions),wins:num(s.wins),
+          stars:stars,maxStars:3*nMaps,clean:clean,known:known};
+}
+/* style: careful if few falls and mostly clean maps, reckless if many falls or few clean maps, else mixed */
+function style(d){
+  var cleanShare=d.known?d.clean/d.known:null;
+  if(d.falls===null&&cleanShare===null){ return 'mixed'; }
+  if((d.falls!==null&&d.falls>=8)||(cleanShare!==null&&d.known>=5&&cleanShare<=0.3)){ return 'reckless'; }
+  if((d.falls===null||d.falls<=2)&&(cleanShare===null||cleanShare>=0.67)){ return 'careful'; }
+  return 'mixed';
+}
+function story(d){
+  var k=style(d),P=[],cleanTxt=d.clean!==null?(word(d.clean)+' of the '+(d.known===9?'nine':d.known)+' maps'):null;
+  var title={careful:'The long way round',reckless:'Fast, and then some',mixed:'Quick where it was safe'}[k];
+  P.push('Every map carries a star now. The labs have gone home, the towers still stand at the edges of the gaps, and from the far side of the finish the race is easier to see than it ever was while you were in it.');
+  if(k==='careful'){
+    P.push('You raced like someone who had read the fine print. Again and again you held back pace when it would have been easy not to, and spent it on seeing further and standing taller. The Sprinter passed you on the straights, and you let it.'+
+      (d.falls!==null?' Across the whole campaign you fell '+(d.falls===0?'not once':times(d.falls))+(cleanTxt?', and '+cleanTxt+' you finished without a single fall.':'.'):(cleanTxt?' You finished '+cleanTxt+' without a single fall.':''))+
+      ' The odd thing about care is that it rarely looks like winning while it is happening. It looks like standing still at a gate while everyone else is a blur. It shows up later, as the gap you saw coming and the jump you had already built for.');
+  } else if(k==='reckless'){
+    P.push('You raced the way the Sprinter wishes it could: pace high, split thin, eyes on the lab ahead rather than the ground beyond it. It was fast, sometimes gloriously so'+
+      (d.falls!==null?', and the falls came with it, '+d.falls+' across the campaign'+(cleanTxt?', with only '+cleanTxt+' finished clean':''):(cleanTxt?', and only '+cleanTxt+' finished without a fall':''))+'.'+
+      ' Speed is not a vice in this game. The trouble is what speed does to sight. At full pace the track arrives faster than you can learn it, and a gap you never saw is a gap you cannot plan for. You found that out the honest way, by falling into a few.');
+  } else {
+    P.push('You raced the way most people do once they have learned a track: careful where the map had taught you to be, quick where it had not yet.'+
+      (cleanTxt?' You finished '+cleanTxt+' without a fall':'')+(d.falls!==null?(cleanTxt?', and fell '+times(d.falls)+' on the rest.':' You fell '+times(d.falls)+' in all.'):(cleanTxt?'.':''))+
+      ' That is not a bad way to play. It is how the Gambler plays, and the Gambler often does well. The question this game keeps asking is whether you can tell, before the edge, which kind of stretch you are in.');
+  }
+  if(d.dis){ P[P.length-1]+=' Your lab was dissolved '+times(d.dis)+' along the way: three strikes against walls you could have waited out. The government in this game is not subtle, but it is not wrong either.'; }
+  if(d.ext===0){
+    P.push('And through all of it, the race never ended for everyone on your account. That is worth a moment, because it is not the default. One lab’s fall can roll the dice for every lab on the track, and you never made the rest of the track roll them.');
+  } else if(d.ext===1||d.ext===2){
+    P.push((d.ext===1?'Once':'Twice')+', a fall you were part of rolled the dice for every lab on the track, and the dice came up badly. Everyone was out: you, the Sprinter, the Gambler, and the Steward, who had done everything right. No placings, no finish, just a quiet track. It is the rule that feels least fair, and it is the rule the game is about.');
+  } else if(d.ext!==null){
+    P.push(word(d.ext).charAt(0).toUpperCase()+word(d.ext).slice(1)+' times, a fall you were part of ended the race for every lab on the track, not just for you. The Steward, building height at the edge with all the patience in the world, was out too. In this game the worst outcome is shared, and nobody gets to opt out of somebody else’s gamble.');
+  } else {
+    P.push('Somewhere in all those runs the other dice were rolling too, the ones that can end a race for every lab at once. In this game a fall is never only your own business.');
+  }
+  if(d.stars===null){
+    P.push('You got through all nine maps, which was the point.');
+  } else if(d.stars>=Math.round(d.maxStars*0.88)){
+    P.push(d.stars+' stars of '+d.maxStars+' means you got good. You learned to read these tracks: what each one showed you early, and what it was likely hiding past your sight. That is the real skill here, reasoning from what the map has already shown you.');
+  } else if(d.stars>=Math.round(d.maxStars*0.55)){
+    P.push(d.stars+' stars of '+d.maxStars+': solid, with room left. Some maps you read well. On others the track kept its secret until it was too late to plan for it. Those are the ones worth another run, slower.');
+  } else {
+    P.push(d.stars+' stars of '+d.maxStars+'. You got through all of them, which was the point, and left stars on the table, which is fine. The track gives up its secrets to labs that slow down long enough to look.');
+  }
+  P.push('None of this is a forecast. It is a game, and its numbers are conventions tuned for play, not for truth. But it tries to give a feel for one idea. In a race where everyone is going fast, the lab that sees furthest ahead does not win every time; it gets to choose. Seeing the gap before you reach it is the difference between a jump and a fall, and a jump built for in advance is cheaper than one improvised at the edge. If that sounds true of more than a pixel track, the reading below is a good place to think it through.');
+  var sign={careful:'Go easy on the Sprinter. It never had your sight.',reckless:'The Steward would like a word.',mixed:'The Gambler sends its regards.'}[k];
+  return {kind:k,title:title,paras:P,sign:sign};
+}
+function fill(d,st){
+  document.getElementById('epi-h').textContent=st.title;
+  var body=document.getElementById('epi-body'); body.textContent='';
+  st.paras.forEach(function(p){ body.appendChild(el('p',null,p)); });
+  body.appendChild(el('p','epi-sign',st.sign));
+  var dl=document.getElementById('epi-stats'); dl.textContent='';
+  [['Stars',d.stars===null?null:d.stars+' / '+d.maxStars],['Wins',d.wins],['Falls',d.falls],
+   ['Clean maps',d.clean===null?null:d.clean+' / '+d.known],['Ended for everyone',d.ext],['Dissolved',d.dis]].forEach(function(r){
+    if(r[1]===null||r[1]===undefined){return;}
+    var w=el('div'); w.appendChild(el('dt',null,r[0])); w.appendChild(el('dd',null,String(r[1]))); dl.appendChild(w);
+  });
+  dl.hidden=!dl.childNodes.length;
+  var ul=document.getElementById('epi-maps'); ul.textContent='';
+  d.maps.forEach(function(m,i){
+    var li=el('li'),s=num(m.stars),b=typeof m.best==='number'&&isFinite(m.best)?m.best.toFixed(1)+' s':'';
+    li.appendChild(el('span',null,(typeof m.name==='string'&&m.name?m.name:'Map '+(i+1))+(m.noDeaths===true?' · clean':'')));
+    var r=el('span','st',(s===null?'':'★★★'.slice(0,Math.min(3,s))+'☆☆☆'.slice(0,3-Math.min(3,s)))+(b?' '+b:''));
+    if(s!==null){ r.setAttribute('aria-label',pl(Math.min(3,s),'star')+(b?', best '+b:'')); }
+    li.appendChild(r); ul.appendChild(li);
+  });
+  document.getElementById('epi-mapbox').hidden=!d.maps.length;
+}
+function close(){
+  if(!dlg.open){return;}
+  dlg.close(); document.documentElement.classList.remove('epi-open');
+  if(back&&back.isConnected&&typeof back.focus==='function'){ try{back.focus({preventScroll:true});}catch(e){} }
+  back=null;
+  try{ window.dispatchEvent(new CustomEvent('pf:epilogue-close')); }catch(e){}
+}
+window.showEpilogue=function(summary){
+  var d=read(summary),st=story(d);
+  fill(d,st);
+  if(!dlg.open){
+    back=document.activeElement&&document.activeElement!==document.body?document.activeElement:null;
+    var pb=document.getElementById('btn-pause'); /* pause a run in progress */
+    if(document.body.classList.contains('playing')&&pb&&pb.textContent==='Pause'){ pb.click(); }
+    document.documentElement.classList.add('epi-open');
+    if(typeof dlg.showModal==='function'){ dlg.showModal(); } else { dlg.setAttribute('open',''); }
+  }
+  dlg.scrollTop=0;
+  document.getElementById('epi-h').focus({preventScroll:true});
+  return st.kind;
+};
+document.getElementById('epi-x').addEventListener('click',close);
+document.getElementById('epi-done').addEventListener('click',close);
+dlg.addEventListener('cancel',function(e){ e.preventDefault(); close(); });
+/* keep the game's hotkeys (Space, arrows, 1 to 7, P) from acting behind the card; Esc closes even without native dialog support */
+['keydown','keyup'].forEach(function(t){ dlg.addEventListener(t,function(e){ if(t==='keydown'&&e.key==='Escape'){ e.preventDefault(); close(); } e.stopPropagation(); }); });
+function sample(kind){
+  var names=['Gate','Steady climb','Early wall','Staircase','Late cliff','Fog','Two towers','Long gaps','Singularity'];
+  var P={careful:{stars:[3,3,3,3,2,3,3,2,3],clean:[1,1,1,1,1,1,1,0,1],falls:1,extinctions:0,dissolutions:0,wins:7},
+         reckless:{stars:[2,1,2,1,1,2,1,1,2],clean:[1,0,0,0,0,0,0,0,0],falls:14,extinctions:3,dissolutions:2,wins:4},
+         mixed:{stars:[3,2,2,3,1,2,3,2,1],clean:[1,1,0,1,0,1,1,0,0],falls:5,extinctions:1,dissolutions:0,wins:5}}[kind];
+  return {maps:names.map(function(n,i){ return {name:n,stars:P.stars[i],noDeaths:!!P.clean[i],best:28+i*4.3+(kind==='reckless'?-3:kind==='careful'?5:0)}; }),
+          falls:P.falls,extinctions:P.extinctions,dissolutions:P.dissolutions,wins:P.wins,
+          totalStars:P.stars.reduce(function(a,b){return a+b;},0)};
+}
+window.showEpilogue.sample=sample;
+/* the game rewrites the query to ?seed=N on load, so read the address the page was opened with, and keep the preview in it for a reload */
+var nav=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0],src=(nav&&nav.name||'')+' '+location.search;
+var q=/[?&]epilogue=(careful|reckless|mixed)\b/i.exec(src);
+if(q){
+  var kind=q[1].toLowerCase();
+  if(!/[?&]epilogue=/.test(location.search)){ try{ history.replaceState(null,'',(location.search||'?')+(location.search?'&':'')+'epilogue='+kind); }catch(e){} }
+  window.showEpilogue(sample(kind));
+}
 })();
 </script>
