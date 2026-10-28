@@ -22,7 +22,7 @@ feed
 view
 ```
 
-At the Q2 2025 opening, the public treaty members are Antropic, DeepQuest, and Metamind. Both governments have monitoring 1. The player feed includes their slowdown claims, possible construction by DeepQuest and Metamind, and possible training by OpenBrain and xSpace. Our private opening control audit is not shared public evidence. No hidden save contents or rival private audits were inspected for this report.
+At the Q2 2025 opening, the public treaty members are Reasonance (then called Antropic), DeepQuest, and Metamind. Both governments have monitoring 1. The player feed includes their slowdown claims, possible construction by DeepQuest and Metamind, and possible training by OpenBrain and xSpace. Our private opening control audit is not shared public evidence. No hidden save contents or rival private audits were inspected for this report.
 
 ## Mechanisms and diagnostic evidence
 

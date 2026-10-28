@@ -2,6 +2,10 @@
 
 The supplied package can support case-based decision briefings. It cannot calibrate the game's numerical parameters: 27 of its 30 topics are marked NOT FOUND, three PARTIAL, and the 13 retained rows contain no quantitative estimates. NOT FOUND describes this package's retained evidence, not the absence of research in the world.
 
+## Provenance
+
+The repository owner compiled the supplied package on 13 October 2026 with an AI research assistant (Codex), from public web sources. The workbook, CSV and HTML it came from are not in the repository; `research/supplied-dataset.json` records their SHA-256 hashes. The snapshot holds short paraphrased summaries, classifications and links to public documents, not copied articles, and is distributed under the repository's Apache-2.0 license. Its search log is the assistant's own record and does not prove the searches occurred (see below).
+
 ## Model and implementation boundary
 
 The player allocates cash, quarterly compute and three interventions. Companies and governments act through existing policies; uncertainty, evidence interpretation and limited observability affect decisions. The research addresses failure paths and organizational responses. It does not identify starting fleets, revenue, construction costs, likelihood functions, catastrophe rates or actor preferences.
