@@ -448,6 +448,9 @@ var SKILL={};
 /* rival roster: null races all three bots; a list of kinds (e.g. ['steward','gambler']) drops the others after every bot-stream draw
    is made in slot order, so the remaining labs, the track and the rolls are the same as in a full race. Set by ?rivals=, PF.setRoster or newGame's roster */
 var G_ROSTER=null;
+/* the player's own strike limit (lab 0): null uses K.strikes, as in free play. Campaign difficulty sets it (see the campaign block) */
+var PSTRIKES=null;
+function strikesOf(l){ return (l.id===0&&PSTRIKES!==null)?PSTRIKES:K.strikes; }
 var SHAPES=['Steady climb','Early wall','Staircase','Late cliff'];
 
 /* ---------- simulation (no DOM below this banner until UI) ---------- */
@@ -713,16 +716,17 @@ function fall(l,k){
 /* three strikes: the first crash into each blockade (barrier, or tower when strikeTower is on) the lab has not crashed into before is a strike.
    Hitting the same one again is a retry and is free. At K.strikes the government dissolves the lab: it is out. There is no extinction roll: only a fall into a gap rolls. */
 function strike(l,what){
-  if(!K.strikes){return false;}
+  var sm=strikesOf(l);
+  if(!sm){return false;}
   l.strikes++;
-  if(l.strikes>=K.strikes){
+  if(l.strikes>=sm){
     l.out=true; l.dissolved=true; l.v=0; l.st.ds=1;
-    log(l.name+' hit '+what+' (strike '+l.strikes+' of '+K.strikes+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
+    log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
     return true;
   }
-  l.flash={txt:'Strike '+l.strikes+' of '+K.strikes,t:1.8,bad:true};
-  log(l.name+' hit '+what+' (strike '+l.strikes+' of '+K.strikes+').');
+  l.flash={txt:'Strike '+l.strikes+' of '+sm,t:1.8,bad:true};
+  log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+').');
   return false;
 }
 
@@ -779,7 +783,7 @@ function botPlan(l){
   var brake=l.v*l.v/(2*C.DEC)+40;
   var stop=false,gapGo=0,rev=false,wait=false,commit=false;
   /* on its last strike a wary bot stops for every blockade it cannot clear */
-  var barP=(K.wary&&K.strikes&&l.strikes>=K.strikes-1)?1:pol.bar;
+  var barP=(K.wary&&strikesOf(l)&&l.strikes>=strikesOf(l)-1)?1:pol.bar;
   if(b&&knowsBar(l,l.bi)&&(b.x-l.x)*judged(l,2,l.bi)<brake&&reach<b.h+2){
     if(l.crashedOn[l.bi]){stop=true;}
     else if(bd.b[l.bi]<barP){stop=true;}
@@ -841,7 +845,7 @@ function botPlan(l){
   }
   var pace=l.basePace;
   /* wary 2: on its last strike a bot also caps its speed to what it can see, as the careful bots always do */
-  var lastStrike=K.wary===2&&K.strikes&&l.strikes>=K.strikes-1;
+  var lastStrike=K.wary===2&&strikesOf(l)&&l.strikes>=strikesOf(l)-1;
   if((pol.safe||lastStrike)&&!stop){
     var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l)),sh=shadows(l);
     /* do not pass a slower lab blind: close on it no faster than it can stop behind it. A lab that has stood still for 2 s stands on solid ground,
@@ -995,7 +999,7 @@ function run(seed,kind,roster){
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
 }
-window.PF={setRoster:function(r){G_ROSTER=r||null;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
+window.PF={setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
 
 /* ---------- UI ---------- */
 /* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge.
@@ -1051,7 +1055,7 @@ function drawCritter(l,sx,y,h){
   var r=l.ivr||0,w=l.ivw||[0,0,0],tot=w[0]+w[1]+w[2]||1,act=null;
   if(!dead&&!dizzy&&!air&&r>=0.5){ var iv=[w[0]/tot,w[1]/tot,w[2]/tot]; act=iv[0]>=iv[1]&&iv[0]>=iv[2]?'sight':(iv[1]>=iv[2]?'height':'max'); }
   var sprint=!dead&&!air&&!dizzy&&l.v>1&&l.v>=0.97*top;
-  var nervous=!dead&&(capped(l)||(K.strikes>0&&l.strikes===K.strikes-1));
+  var nervous=!dead&&(capped(l)||(strikesOf(l)>0&&l.strikes===strikesOf(l)-1));
   var step=Math.floor(Math.abs(l.x)/(sprint?3:5))%2,tk=Math.floor(G.t*6+l.id)%2;
   var blink=!dead&&!dizzy&&((G.t+l.id*0.7)%3.2)<0.12;
   var bob=won?-Math.abs(Math.sin(G.t*8))*5:0;
@@ -1130,9 +1134,9 @@ function drawLab(l,cam,VW,FW,isHuman,idx){
   var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name),lx=CM?Math.max(sx-2,4/Z):sx-2;  /* phones: names stay on screen */
   ctx.fillText(lt,lx,ly);
   /* strike pips beside the name: filled for each strike, hollow for those left */
-  if(K.strikes){
+  if(strikesOf(l)){
     var pw=5/Z,px0=lx+ctx.measureText(lt).width+4/Z;
-    for(var si=0;si<K.strikes;si++){
+    for(var si=0;si<strikesOf(l);si++){
       var pxs=px0+si*(pw+2/Z),pys=ly-pw-1/Z;
       if(si<l.strikes){ ctx.fillStyle=COL.danger; ctx.fillRect(pxs,pys,pw,pw); }
       else { ctx.strokeStyle=COL.muted; ctx.lineWidth=1/Z; ctx.strokeRect(pxs+0.5/Z,pys+0.5/Z,pw-1/Z,pw-1/Z); }
@@ -1319,7 +1323,7 @@ function hud(){
     $('v'+i).textContent=Math.round(l.pts[i])+' / '+Math.round(l.cap);
   }
   var top=topSpeed(l);
-  $('read').innerHTML='<span><b>Reach</b> '+Math.round(heightOf(l)+C.JUMP)+'</span><span><b>Sight</b> '+Math.round(sightRange(l))+'</span><span><b>Top speed</b> '+Math.round(top)+'</span><span><b>Speed</b> '+Math.round(l.v)+'</span><span><b>Behind</b> '+Math.round(leadOf(l))+'</span><span><b>Level</b> '+G.level+'</span>'+(K.strikes?'<span><b>Strikes</b> '+l.strikes+' of '+K.strikes+'</span>':'')+(capped(l)?'<span><b>Capped</b> '+Math.round(top)+' for '+Math.round(l.capUntil-l.x)+' more</span>':'');
+  $('read').innerHTML='<span><b>Reach</b> '+Math.round(heightOf(l)+C.JUMP)+'</span><span><b>Sight</b> '+Math.round(sightRange(l))+'</span><span><b>Top speed</b> '+Math.round(top)+'</span><span><b>Speed</b> '+Math.round(l.v)+'</span><span><b>Behind</b> '+Math.round(leadOf(l))+'</span><span><b>Level</b> '+G.level+'</span>'+(strikesOf(l)?'<span><b>Strikes</b> '+l.strikes+' of '+strikesOf(l)+'</span>':'')+(capped(l)?'<span><b>Capped</b> '+Math.round(top)+' for '+Math.round(l.capUntil-l.x)+' more</span>':'');
   var nb=G.barriers[l.bi],ng=G.gaps[l.gi],txt='';
   if(l.dissolved){ txt=(l.human?'Your lab was':l.name+' was')+' dissolved after '+l.strikes+(l.strikes===1?' strike':' strikes')+'. Watching the rest at 4x.'; }
   else if(l.out){ txt=(l.human?'You are':l.name+' is')+' out. Watching the rest at 4x.'; }
@@ -1572,7 +1576,7 @@ document.addEventListener('keydown',function(e){
       :'<b>Slow down to invest.</b> The pace you hold back buys sight, height or speed. Steer the split with the triangle (drag the dot, or keys 1 to 7); Up and Down set Pace.'; },
     tall:function(){ return TOUCH?'<b>Too tall?</b> Back up, or put more into Height.':'<b>Too tall?</b> Back up (hold ←), or put more into Height.'; },
     gap:function(){ return '<b>Gap ahead.</b> '+(K.chill?'':(TOUCH?'Tap Jump at the edge. ':'Jump with Space at the edge. '))+'A fall rolls the dice for everyone.'; },
-    strike:function(){ return '<b>Strike '+G.labs[0].strikes+' of '+K.strikes+'.</b> Each new barrier you crash into is a strike. At '+K.strikes+' your lab is dissolved.'; }
+    strike:function(){ var sm=strikesOf(G.labs[0]); return '<b>Strike '+G.labs[0].strikes+' of '+sm+'.</b> Each new barrier you crash into is a strike. At '+sm+' your lab is dissolved.'; }
   };
   function want(id){ if(!seen[id]&&id!==cur&&q.indexOf(id)<0){ q.push(id); } }
   function hide(){ cur=null; el.hidden=true; }
@@ -1589,7 +1593,7 @@ document.addEventListener('keydown',function(e){
       if(G.barriers[i].h>heightOf(l)+C.JUMP&&knowsBar(l,i)){ want('tall'); break; }
     }
     var g=G.gaps[l.gi]; if(g&&g.x-l.x<=sightRange(l)&&knowsGap(l,l.gi)){ want('gap'); }
-    if(K.strikes&&l.strikes>0){ want('strike'); }
+    if(strikesOf(l)&&l.strikes>0){ want('strike'); }
     if(cur){ left-=dt; shownT+=dt; if(left<=0||(q.length&&shownT>=2.5)){ hide(); } }
     if(!cur&&q.length){ show(q.shift()); }
     requestAnimationFrame(tick);
