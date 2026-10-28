@@ -429,3 +429,23 @@ The aim point is half a jump's duration before the obstacle. A jump lasts 0.5 to
 - The default stays at 1, so earlier results are unchanged.
 
 Replication: in the page, set `PF.K.chill`, `PF.K.skill`, `PF.K.wary`, `PF.SKILL.custom=100` and, for the ablation, `PF.HANDS`, then call `PF.run(seed,'custom')` for seeds 5000 to 5499.
+
+## Campaign maps
+
+The nine campaign maps were re-measured on the current code (chill on, skill 100, wary 1) after the deadlock fixes, Floor it and bot hands changed how bots drive. Eight probe strategies played each map 40 times against each roster, with jitter on the probe and the seed's own bot and roll draws (what a player on that map faces). Six of the old nine still held; 210 (tied with scout), 1077 (no probe won), 175 (runup no longer won), 1863 and 63 (weak) were replaced from a sweep of seeds 1 to 3000. Wins out of 40 for the map's strategy, with the runner-up, all three rivals:
+
+| Order | Seed | Strategy | Wins (runner-up) | Trick | 1★ / 2★ / 3★ rivals |
+|---|---|---|---|---|---|
+| 1 | 114 | runup | 39 (climber 2) | wide gaps from the start | S / SG / SP |
+| 2 | 1784 | climber | 37 (bold 12) | six 173-high walls right after the singularity | S / SG / ALL |
+| 3 | 1167 | gamble | 34 (drafter 2) | low walls after the gate, then seven wide gaps | S / SG / ALL |
+| 4 | 717 | scout | 40 (gamble 1) | a 300 wall late, a hidden 253 gap behind it | S / ALL / SG |
+| 5 | 2972 | balanced | 37 (gamble 5) | a 185 gap right after the singularity | SP / S / SG |
+| 6 | 1548 | bold | 32 (climber 1) | an early singularity, then six 173 walls | S / SG / SP |
+| 7 | 1115 | rush | 38 (balanced 9) | narrow early gaps, towers around the singularity | S / ALL / SP |
+| 8 | 322 | drafter | 40 (bold 1) | a 451-wide singularity late | ALL / SG / SP |
+| 9 | 199 | climber, harder | 31 (scout 9) | a staircase to 328 walls, a 491 singularity late | ALL / S / SP |
+
+S = Steward alone, SG = Steward and Gambler, SP = Sprinter and Steward, ALL = all three. Tiers are ordered by measured difficulty (mean wins over the probes), not by the number of rivals. Since the earlier sweep the pattern flipped: Steward alone is now usually the easiest, Sprinter with Steward most often the hardest, and on 199 and 322 the full field is the easiest. On several maps the best strategy changes with the roster (for example scout wins 1115 and 1548 against Steward alone), so a star ladder does not always repeat the map's one lesson.
+
+Caveats. A map is a fixed seed, so its bots and rolls are fixed too; with 40 other bot and roll draws only 114, 717, 2972 and 1548 keep a clear winner, so the other tricks partly ride on that seed's luck. With chill off, 114, 322 and 199 favour a different strategy (hand-timed jumps hit more tall barriers and rivals strike out early). Time-outs: 6 in 92,160 games. Scripts and CSVs were kept out of the repo.

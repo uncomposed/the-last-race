@@ -1648,19 +1648,20 @@ var KNOBS=[
      theme  which strategy the map tests (a note for editors, not shown)
      hint   one line shown in the list, the tier pick and the Ready card
      tiers  the rival rosters for 1, 2 and 3 stars, as bot kinds ('sprinter', 'steward', 'gambler')
-   PLACEHOLDERS: seeds, names, hints and tiers are first guesses until the map re-sweep. The tier order must be set from measured
-   difficulty per map (in the tier sweeps Steward alone was sometimes the hardest roster), not from the number of rivals.
+   Seeds, tiers and hints come from the map re-sweep (chill on, skill 100, wary 1; see DESIGN-NOTES.md "Campaign maps"): each map's
+   strategy beats the others there with all three rivals, and the tiers are ordered by measured difficulty, not by the number of
+   rivals (Sprinter with Steward is often the hardest; the full field is sometimes the easiest).
    Progress is keyed by seed, so changing a seed resets that map's stars. */
 var CAMPAIGN=[
-  {seed:1784,name:'The Long Climb',theme:'climber',hint:'Tall walls ahead. Build height early.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:210,name:'Sheer Face',theme:'climber (harder)',hint:'The walls keep growing. Height before haste.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:63,name:'Open Throttle',theme:'rush',hint:'A short, fast track. Hesitate and you lose it.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:1167,name:'Coin Toss',theme:'gamble',hint:'Wide gaps reward the bold, and punish them.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:1863,name:'Fog Line',theme:'scout',hint:'Hidden gaps. See before you leap.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:1077,name:'Even Keel',theme:'balanced',hint:'No single trick works here. Balance your split.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:175,name:'Long Approach',theme:'runup',hint:'Wide gaps need speed. Leave room to run up.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:1548,name:'Nerve',theme:'bold',hint:'Fortune favours an early lead.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
-  {seed:322,name:'Slipstream',theme:'drafter',hint:'Let the leaders show you the way, then pass.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]}
+  {seed:114,name:'Long Approach',theme:'runup',hint:'Wide gaps from the very start. Carry speed into them.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
+  {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Build height early.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
+  {seed:1167,name:'Coin Toss',theme:'gamble',hint:'Low walls after the gate, then seven wide gaps. Careful costs more than it saves.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
+  {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. See before you leap.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
+  {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. Balance your split.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
+  {seed:1548,name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then a row of tall walls. Take the lead early.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
+  {seed:1115,name:'Open Throttle',theme:'rush',hint:'Narrow gaps early, towers around the singularity. Be first across.',tiers:[['steward'],['sprinter','steward','gambler'],['sprinter','steward']]},
+  {seed:322,name:'Slipstream',theme:'drafter',hint:'A long road to a very wide singularity. Follow the pack, then pass.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
+  {seed:199,name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase to the tallest walls, and a very wide singularity late.',tiers:[['sprinter','steward','gambler'],['steward'],['sprinter','steward']]}
 ];
 /* Rules.
    Stars: tier t (1 to 3) is earned by winning the map against tiers[t-1]. Tier 1 is always open on an unlocked map; tier t+1 opens
@@ -1730,7 +1731,7 @@ function campShow(){
 function campClose(){ $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
 function campList(){
   campShow();
-  var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. More stars mean more rivals. '+s.totalStars+' of '+(3*CAMPAIGN.length)+' stars'+(s.noDeathMaps?', '+s.noDeathMaps+' without a crash':'')+'.</p><ol class="cmp-list">';
+  var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. Each star races a different set of rivals. '+s.totalStars+' of '+(3*CAMPAIGN.length)+' stars'+(s.noDeathMaps?', '+s.noDeathMaps+' without a crash':'')+'.</p><ol class="cmp-list">';
   CAMPAIGN.forEach(function(c,i){
     var open=campOpen(i),m=campMap(i),b=campBest(i);
     h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+'</span><span class="cmp-hint">'+
