@@ -42,8 +42,6 @@ p{margin:0}
 .sub{color:var(--muted);max-width:62ch}
 .stage{position:relative}
 canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
-.rotate{display:none;font:500 13px var(--mono);color:var(--muted)}
-@media (orientation:portrait) and (max-width:600px){canvas{aspect-ratio:4/3}.rotate{display:block}}
 .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
@@ -106,49 +104,45 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .t-ghost{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
 .sing-n{font:500 22px var(--display);color:var(--d)}
 .seedbox{display:flex;gap:6px;align-items:center}
-/* left-thumb throttle: shown only on a landscape phone, where it replaces the pace slider */
-.lcol{display:none}
 .card.small{max-width:300px}
-.throttle{flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:ns-resize}
-.th-lbl,.throttle output{font:500 11px var(--mono);color:var(--muted);text-align:center}
-.throttle output{color:var(--ink);font-size:13px}
-.th-track{position:relative;flex:1;border-radius:4px;background:var(--bg);overflow:hidden}
-.th-fill{position:absolute;left:0;right:0;bottom:0;background:var(--a);opacity:.35}
-.th-knob{position:absolute;left:0;right:0;height:6px;margin-bottom:-3px;background:var(--ink);border-radius:3px}
+/* chill mode is a switch; with it on nobody needs the Jump button */
+#auto{appearance:none;-webkit-appearance:none;width:38px;height:22px;margin:0;flex:none;border-radius:11px;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
+#auto::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:left .15s}
+#auto:checked{background:var(--a)} #auto:checked::after{left:19px}
+.pace.chill #btn-jump{display:none}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
-/* landscape phone: the track fills the screen height, the controls sit in a column on the right */
+/* phones: the controls sit under the track as a deck. Pace on top, then Back up, Jump and Floor it in one row (Jump hides in chill mode),
+   the split triangle below, Pause, New run and Chill mode at the bottom. In landscape the deck is one short band under the track */
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  .wrap{gap:8px}
+  .wrap>header{display:none}
+  .panel.pace{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:8px;
+    grid-template-areas:"pace pace pace pace pace pace" "back back jump jump fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
+  .panel.pace.chill{grid-template-areas:"pace pace pace pace pace pace" "back back back fwd fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
+  .pace .cols,.pace .tri,.pace .btns{display:contents}
+  .pace .cols>.lab:first-child{grid-area:pace}
+  .pace .cols>.lab:nth-child(2),.pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
+  .pace input[type=range]{height:28px}
+  .pace .lab{font-size:12px;gap:0}
+  #tri{grid-area:tri;justify-self:center;width:auto;height:min(26vh,220px);height:min(26dvh,220px);max-width:100%}
+  #btn-back{grid-area:back}#btn-jump{grid-area:jump}#btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:new}
+  #btn-back,#btn-jump,#btn-fwd{min-height:54px;min-width:0;padding:4px;font-size:15px}
+  #btn-pause,#btn-restart{min-height:38px;min-width:0;padding:2px 4px;font-size:13px}
+  .pace .btns label[for=auto]{grid-area:chill;justify-content:center;font-size:12px}
+  .kh{display:none}
+  .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
+}
+@media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:3/2} }
 @media (orientation:landscape) and (max-height:540px){
   body{padding:6px max(8px,env(safe-area-inset-right,0px)) 24px max(8px,env(safe-area-inset-left,0px))}
-  .wrap{max-width:none;display:grid;grid-template-columns:84px minmax(0,1fr) 220px;gap:8px;align-items:start}
-  /* left thumb: pace, back up and jump; right thumb: the split, floor it and the rest */
-  .lcol{display:flex;flex-direction:column;gap:6px;grid-column:1;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
-  .throttle{display:flex;flex:1;min-height:0}
-  .lcol button{flex:none;min-width:0;padding:4px}
-  .lcol #btn-jump{flex:none;min-height:84px;font-size:15px}
-  .lcol #btn-back{flex:none;min-height:52px;font-size:13px}
-  .kh{display:none}
-  .pace .cols>.lab:nth-child(1){display:none}
-  .wrap>header{display:none}
-  .stage{grid-column:2;grid-row:1}
-  canvas{aspect-ratio:auto;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
-  .panel.pace{grid-column:3;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px);overflow-y:auto;padding:8px;gap:6px}
-  .wrap>.panel:not(.pace),.wrap>.foot{grid-column:1/-1}
-  .pace .cols{grid-template-columns:minmax(0,1fr);gap:4px}
-  .pace .cols>.lab:nth-child(2){display:none}
-  .pace input[type=range]{height:28px}
-  .tri{flex-direction:column;align-items:stretch;gap:0}
-  .tri svg{width:100%;max-height:56vh;max-height:56dvh}
-  .tri .tbody{flex:none;font-size:12px}
-  .tri .tbody{display:none}
-  .pace .lab{font-size:12px;gap:0}
-  .pace .btns{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:'fwd fwd' 'pause restart' 'auto auto';gap:6px}
-  .pace .btns>*{min-width:0}
-  #btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:restart}
-  #btn-fwd{min-height:52px;padding:6px 4px;font-size:14px}
-  #btn-pause,#btn-restart{min-height:32px;padding:2px 4px;font-size:12px}
-  .pace .btns label[for=auto]{grid-area:auto;font-size:12px}
-  .pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
-  .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
+  .wrap{max-width:none}
+  canvas{aspect-ratio:auto;height:calc(100vh - 150px);height:calc(100dvh - 150px)}
+  .panel.pace{grid-template-columns:repeat(6,minmax(0,1fr)) auto minmax(84px,.9fr);
+    grid-template-areas:"pace pace pace pace pace pace tri pause" "back back jump jump fwd fwd tri new" "back back jump jump fwd fwd tri chill"}
+  .panel.pace.chill{grid-template-areas:"pace pace pace pace pace pace tri pause" "back back back fwd fwd fwd tri new" "back back back fwd fwd fwd tri chill"}
+  #tri{height:112px}
+  #btn-back,#btn-jump,#btn-fwd{min-height:0;height:100%}
+  #btn-pause,#btn-restart{min-height:30px}
 }
 </style>
 
@@ -158,16 +152,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <h1>Pacing the Frontier</h1>
     <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
     <p class="world" id="world"></p>
-    <p class="rotate">Turn your phone sideways for the best view.</p>
   </header>
-
-  <div class="lcol" id="lcol">
-  <div class="throttle" id="throttle" role="slider" aria-label="Pace" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
-    <span class="th-lbl">Pace</span>
-    <div class="th-track" id="th-track"><div class="th-fill" id="th-fill"></div><div class="th-knob" id="th-knob"></div></div>
-    <output id="th-out">70%</output>
-  </div>
-  </div>
 
   <div class="stage">
     <canvas id="cv" width="720" height="360" role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."></canvas>
@@ -1141,7 +1126,6 @@ function hud(){
   var l=G.labs[0],p=(ui.fwd&&!ui.rev)?1:ui.pace/100,r=1-p,forced=triForced(),ew=forced?[50,50,0]:ui.w,tot=ew[0]+ew[1]+ew[2];
   var s=tot?ew[0]/tot:0,h=tot?ew[1]/tot:0,m=tot?ew[2]/tot:0;
   $('pace-out').textContent=ui.pace+'%'+((ui.fwd&&!ui.rev)?' (floored)':'');
-  showThrottle();
   drawTri();
   $('s-run').style.width=(p*100)+'%'; $('s-sight').style.width=(r*s*100)+'%';
   $('s-height').style.width=(r*h*100)+'%'; $('s-max').style.width=(r*m*100)+'%';
@@ -1304,33 +1288,10 @@ function frame(now){
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
 bindRange('pace',function(v){ui.pace=v;});
-/* on a landscape phone Jump and Back up move to the left column under the throttle, and back again otherwise */
-(function(){
-  var mq=window.matchMedia('(orientation:landscape) and (max-height:540px)'),bt=document.querySelector('.pace .btns');
-  function place(){
-    if(mq.matches){ $('lcol').appendChild($('btn-back')); $('lcol').appendChild($('btn-jump')); }
-    else { bt.insertBefore($('btn-jump'),bt.firstChild); bt.insertBefore($('btn-back'),$('btn-pause')); }
-  }
-  if(mq.addEventListener){mq.addEventListener('change',place);} else if(mq.addListener){mq.addListener(place);}
-  place();
-})();
-/* left-thumb throttle: drag anywhere on it, top is 100%, bottom is 0%; the ends snap */
-function showThrottle(){
-  var v=(ui.fwd&&!ui.rev)?100:ui.pace;
-  $('th-fill').style.height=v+'%'; $('th-knob').style.bottom=v+'%';
-  $('th-out').textContent=ui.pace+'%'; $('throttle').setAttribute('aria-valuenow',ui.pace);
-}
-(function(){
-  var th=$('throttle'),on=false;
-  function set(e){
-    var r=$('th-track').getBoundingClientRect(),v=clamp((r.bottom-e.clientY)/r.height*100,0,100);
-    v=v<4?0:(v>96?100:Math.round(v)); ui.pace=v; $('pace').value=v; showThrottle();
-  }
-  th.addEventListener('pointerdown',function(e){e.preventDefault();on=true;th.setPointerCapture(e.pointerId);set(e);});
-  th.addEventListener('pointermove',function(e){if(on){set(e);}});
-  ['pointerup','pointercancel'].forEach(function(ev){th.addEventListener(ev,function(){on=false;});});
-})();
-$('auto').addEventListener('change',function(){ui.auto=this.checked;K.chill=this.checked?1:0;});
+
+function showChill(){ document.querySelector('.panel.pace').classList.toggle('chill',!!K.chill); }
+$('auto').addEventListener('change',function(){ui.auto=this.checked;K.chill=this.checked?1:0;showChill();});
+showChill();
 function doJump(){ if(running&&!paused){G.input.jump=true;} }
 $('btn-jump').addEventListener('pointerdown',function(e){e.preventDefault();doJump();});
 function holdBtn(id,set){
@@ -1408,7 +1369,7 @@ var KNOBS=[
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
-if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; }
+if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill(); }
 var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
