@@ -41,6 +41,11 @@ p{margin:0}
 .eyebrow{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .sub{color:var(--muted);max-width:62ch}
 .stage{position:relative}
+/* phones: a small sound on/off button on the track, under the meters (the full Sound button has no room there) */
+.snd-mini{display:none;position:absolute;top:58px;right:6px;z-index:2;width:44px;height:44px;min-width:0;padding:0;border-radius:50%;
+  align-items:center;justify-content:center;background:color-mix(in srgb,var(--surface) 85%,transparent)}
+.snd-mini .x{display:none}.snd-mini.off .w{display:none}.snd-mini.off .x{display:inline}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){ .snd-mini{display:flex} }
 canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
 .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
@@ -338,6 +343,7 @@ html.epi-open{overflow:hidden}
   </div>
 
   <div class="stage">
+    <button id="snd-mini" class="snd-mini" type="button" aria-pressed="true" aria-label="Sound on"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M3 7h3l4-3v12l-4-3H3z" fill="currentColor"/><path class="w" d="M13 7c1.3 1.6 1.3 4.4 0 6M15.5 5c2.6 2.8 2.6 7.2 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="x" d="M13 7l5 6M18 7l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <canvas id="cv" width="720" height="360" role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."></canvas>
     <p class="hint" id="hint" role="status" aria-live="polite" hidden></p>
     <div class="ov" id="ov">
@@ -496,7 +502,7 @@ html.epi-open{overflow:hidden}
   var W = (typeof window !== 'undefined') ? window : this;
   var ctx = null, comp, master, duck, mFilter, musicBus, sfxBus, exBus, rvIn, nbuf, vibG, tremG, lastErr = null;
   var sBus = [], LY = [], strB = [], PW = [];
-  var muted = false, timer = null, st = {}, last = {}, live = [];
+  var silentEl = null, muted = false, timer = null, st = {}, last = {}, live = [];
   var sty = 0, mode = 0, pend = false, filled = false; /* style, 0 normal / 1 singularity, riser state */
   var on = { P: false, D: false, B: false, L: false, C: false, T: false };
   var nextTime = 0, stepN = 0, bpm = 126, mixAt = 0, silent = 0, wasQuiet = true;
@@ -1066,9 +1072,20 @@ html.epi-open{overflow:hidden}
     styles: ['Chip', 'FM', 'MIDI'],
     /* call from a user gesture; creates or resumes the context */
     unlock: function () {
+      /* iPhones mute Web Audio with the silent switch unless the page asks for a playback session; older Safari needs a
+         silent media element started inside the tap for the same effect */
+      try { if (W.navigator && W.navigator.audioSession) { W.navigator.audioSession.type = 'playback'; } } catch (e) {}
+      try {
+        if (!silentEl && W.Audio) {
+          silentEl = new W.Audio('data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA');
+          silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.volume = 0.01;
+          var pr = silentEl.play(); if (pr && pr.catch) { pr.catch(function () { silentEl = null; }); }
+        }
+      } catch (e) { silentEl = null; }
       try {
         if (!ctx && !build()) { return; }
-        if (ctx.state === 'suspended') { ctx.resume(); }
+        /* suspended before the first tap; interrupted on iOS after a call or an app switch */
+        if (ctx.state !== 'running' && ctx.state !== 'closed') { ctx.resume(); }
       } catch (e) { lastErr = e; }
     },
     setMuted: function (m) {
@@ -2800,7 +2817,7 @@ function go(){
   if(running||G.over||$('ready').hidden){return;}
   campGo();  /* campaign: fix the race's chill state and difficulty */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
-  snd.unlock(); snd.sfx('go');
+  sndStarted=true; snd.unlock(); snd.sfx('go');
 }
 $('ready-btn').addEventListener('click',go);
 function syncInput(){ G.input.pace=ui.pace/100; G.input.w=ui.w; G.input.auto=ui.auto; G.input.rev=ui.rev; G.input.fwd=ui.fwd; }
@@ -2859,6 +2876,7 @@ function sound(){
 /* the Sound button cycles the styles and then off; M mutes and unmutes */
 function showMute(){
   var A=window.PFAudio,on=!(A&&A.isMuted()),nm=A&&A.styles?A.styles[A.getStyle()]:'on';
+  var mi=$('snd-mini'); mi.classList.toggle('off',!on); mi.setAttribute('aria-pressed',on?'true':'false'); mi.setAttribute('aria-label',on?'Sound on':'Sound off');
   ['btn-mute','ready-snd'].forEach(function(id){ var b=$(id); b.firstChild.nodeValue='Sound: '+(on?nm:'off')+' '; b.setAttribute('aria-pressed',on?'true':'false'); });
 }
 function toggleMute(){ if(!window.PFAudio){return;} snd.unlock(); PFAudio.setMuted(!PFAudio.isMuted()); showMute(); }
@@ -2870,7 +2888,10 @@ function cycleSound(){
   else { A.setMuted(true); }
   showMute();
 }
-$('btn-mute').addEventListener('click',cycleSound); $('ready-snd').addEventListener('click',cycleSound);
+/* mobile browsers only start or resume audio inside a tap, so every tap or key press tries once the player has started a race */
+var sndStarted=false;
+['pointerup','touchend','keydown'].forEach(function(t){ document.addEventListener(t,function(){ if(sndStarted){snd.unlock();} },true); });
+$('btn-mute').addEventListener('click',cycleSound); $('snd-mini').addEventListener('click',function(){ sndStarted=true; toggleMute(); }); $('ready-snd').addEventListener('click',cycleSound);
 showMute();
 
 /* controls */
