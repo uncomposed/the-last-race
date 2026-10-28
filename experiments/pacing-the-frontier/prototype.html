@@ -1961,7 +1961,7 @@ function campShowEnd(i,t,res,o){
   $('ov-retry').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } });
   $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campNextTier(n)); } });
   $('ov-up').addEventListener('click',function(){ if(CAMP&&CAMP.tier<2){ campStart(CAMP.i,CAMP.tier+1); } });
-  $('ov-list').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
+  $('ov-list').addEventListener('click',function(){ campList(); });
   $('ready-camp').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
   $('btn-camp').addEventListener('click',campList);
   $('camp-close').addEventListener('click',campClose);
