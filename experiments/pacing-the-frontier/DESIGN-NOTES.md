@@ -493,3 +493,18 @@ The mean never rises from Easy to Hard in any of the 27 cells (it is flat in a f
 **Choice.** Difficulty is your own strike limit only: Easy 4, Medium 3, Hard 2. Rivals are the same on every difficulty. The Ready card says so in one line ("Hard wins gold. Your lab has 2 strikes; rivals are the same.").
 
 Caveats. The ladder is steeper downwards than upwards (Easy +3.7 points, Hard −5.7). The probe never misjudges a jump; a human with chill off crashes more, so the strike limit probably matters more for people than here. With chill off the map strategy is best in only 14 of 27 cells even at the defaults (as "Campaign maps" noted for 114, 322 and 199). The control lag past the singularity (`reaction`) affects only the human and was not measured. Scripts and CSVs were kept out of the repo.
+
+## Gap strikes
+
+28 October 2026. A scrape or drop across a gap is now a strike (`strikeGap`, default 1), and a lab that runs off an edge without jumping drops across at the scrape rate instead of falling at once, if it has the height. Bots always press jump, so the drop rule alone changed no bot result; the strike did (159 of the 300 reference games).
+
+**Free play, 600 bot races (seeds 1001 to 1600), strikeGap 0 against 1.** Dissolved labs a race 0.20 to 0.41 (chill on) and 0.47 to 0.75 (chill off). Extinction stayed at about 8 to 9%. With chill off, wins moved toward the Steward (27% to 34%) and away from the Gambler (27% to 21%). One seed block.
+
+**Campaign ladder, re-measured (chill off, 9 maps × 3 tiers × 8 probes × 40 runs, mode J).** The probe strategies behind "Campaign difficulty" were not kept, so they were rebuilt and fitted to that table. The fit is not an independent check: at strikeGap 0 the mean wins land within 1.8 points of the published row (24.1%, 21.7%, 16.5% against 24.1%, 20.4%, 14.7%), but the map strategies win about 12% less and are best in 10 cells rather than 13 or 14. The rule effect below is paired (same jitter, rule 0 against 1), which is the part to trust.
+
+| All 27 | Easy (4 strikes) | Medium (3) | Hard (2) |
+|---|---|---|---|
+| strikeGap 0 (rebuilt probes) | 260 (24.1%) | 234 (21.7%) | 178 (16.5%) |
+| strikeGap 1 | 253 (23.4%) | 222 (20.5%) | 150 (13.9%) |
+
+At Medium the probe is dissolved in 23.0% of runs (was 17.5%); scrapes and drops are about 12% of its strikes. The ladder stays monotone in total; the mean rises from Easy to Hard in 4 of 27 cells by 1 or 2 games of 40 (114 2★, 1548 1★ to 3★), against 2 cells with the rebuilt probes under the old rule. The cost falls on the risky lessons: gamble on 1167 (Medium 31 to 21, Hard to 0 or 1) and rush on 1115 2★ (26 to 1 at Medium). Choice: keep Easy 4, Medium 3, Hard 2. Inference, not shown: 1167 and 1115 may now teach a different lesson than their names say; worth a hand playtest. Scripts and CSVs were kept out of the repo.
