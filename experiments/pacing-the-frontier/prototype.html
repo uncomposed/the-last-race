@@ -175,6 +175,51 @@ body.chill #btn-jump{display:none}
   .kh{display:none}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
+/* ---- campaign (begin): map list overlay, tier pick, campaign lines on the Ready card and end overlay ---- */
+.cmp{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:color-mix(in srgb,var(--bg) 88%,transparent)}
+.cmp[hidden]{display:none}
+.cmp .card{width:100%;max-width:560px;max-height:100%;gap:10px}
+.cmp-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cmp-top h2{font-size:22px}
+.cmp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cmp-row{width:100%;display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:4px 10px;align-items:center;text-align:left;padding:8px 10px;min-height:56px;font:400 13px/1.35 var(--body);background:var(--bg)}
+.cmp-row[disabled]{cursor:default;opacity:.55}
+.cmp-row[disabled]:hover{border-color:var(--line)}
+.cmp-n{font:700 18px var(--display);color:var(--muted);text-align:center}
+.cmp-name{font:600 15px/1.25 var(--body);display:block}
+.cmp-hint{display:block;color:var(--muted);font-size:12.5px}
+.cmp-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font:400 12px var(--mono);white-space:nowrap}
+.cmp-stars{font:400 17px/1 var(--body);letter-spacing:1px;color:var(--b)}
+.cmp-stars .off{color:var(--line)}
+.cmp-nd{font:500 11px var(--mono);color:var(--good)}
+.cmp-tiers{display:flex;flex-direction:column;gap:6px}
+.cmp-tier{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:56px;width:100%;font:400 13px/1.35 var(--body)}
+.cmp-tier b{font-weight:600}
+.cmp-tier.next{border-color:var(--a);border-width:2px}
+.cmp-riv{display:inline-flex;flex-wrap:wrap;gap:2px 10px}
+.cmp-riv i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:baseline}
+.cmp-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center}
+.cmp button,.ov-foot button,#ready-camp,#ready-btn{min-height:44px}
+/* sticky through the card's bottom padding, so scrolled text never shows under the buttons */
+.ov-foot{position:sticky;bottom:-16px;margin-bottom:-16px;padding:6px 0 16px;display:flex;flex-direction:column;gap:6px;background:var(--surface);flex:none}
+.ov-foot .btns{gap:8px}
+.ov-foot .btns button{flex:1 1 auto}
+.ov-foot button.primary{position:static}
+.cmp-res{font:500 14px/1.45 var(--body)}
+.cmp-res .new{color:var(--good)}
+#ready-camp{width:100%}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  #btn-camp{display:none}
+  .cmp{padding:8px}
+  .cmp .card{padding:10px 12px}
+  .cmp-top h2{font-size:18px}
+  .cmp-row{min-height:52px;padding:6px 8px;gap:2px 8px}
+  .cmp-res{font-size:13px}
+  .ov-foot{bottom:-10px;margin-bottom:-10px;padding-bottom:10px}
+}
+/* ---- campaign (end) ---- */
 </style>
 
 <main class="wrap">
@@ -200,6 +245,10 @@ body.chill #btn-jump{display:none}
         <h2 id="ov-title">Pacing the Frontier</h2>
         <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. A near miss of a gap is a scrape, a bigger miss is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied and your controls lag, so set your balance before you cross. First over the finish wins.</p>
         <button class="primary" id="ov-btn" type="button">Start run</button>
+        <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
+        <p class="cmp-res" id="ov-cres" hidden></p>
+        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-list" type="button">Campaign</button></div></div>
+        <!-- campaign (end) -->
       </div>
     </div>
     <div class="ov" id="ready" hidden>
@@ -207,6 +256,7 @@ body.chill #btn-jump{display:none}
         <h2 id="ready-h">Ready</h2>
         <p id="ready-msg"></p>
         <button class="primary" id="ready-btn" type="button">Go</button>
+        <button id="ready-camp" type="button">Campaign</button><!-- campaign -->
       </div>
     </div>
     <div class="ov" id="sing" hidden>
@@ -262,6 +312,7 @@ body.chill #btn-jump{display:none}
       <button id="btn-pause" type="button">Pause</button>
       <label for="watch"><input type="checkbox" id="watch">Watch bots</label>
       <button id="btn-restart" type="button">New run</button>
+      <button id="btn-camp" type="button">Campaign</button><!-- campaign -->
       <label class="seedbox" for="seed-in">Seed <input type="text" id="seed-in" inputmode="numeric" autocomplete="off" aria-label="Seed"></label>
       <button id="btn-seed" type="button">Play seed</button>
     </div>
@@ -287,13 +338,22 @@ body.chill #btn-jump{display:none}
       <summary>Tuning knobs</summary>
       <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
-      <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button></div>
+      <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button><button id="camp-reset" type="button">Reset campaign progress</button><!-- campaign --></div>
     </details>
   </div>
 
   <p class="foot" id="seed"></p>
   <p class="foot">A game about racing and pacing at the AI frontier, made for intuition, not prediction. Source: <a href="https://github.com/uncomposed/the-last-race">github.com/uncomposed/the-last-race</a> (Apache-2.0). Background reading: <a href="https://ai-2027.com/">AI 2027</a>, its hopeful companion <a href="https://ai-2040.com/">AI 2040: Plan A</a>, and <a href="https://80000hours.org/problem-profiles/artificial-intelligence/">80,000 Hours on risks from AI</a>.</p>
 </main>
+
+<!-- campaign (begin): the map list and tier pick -->
+<div class="cmp" id="camp" hidden role="dialog" aria-modal="true" aria-labelledby="camp-h">
+  <div class="card">
+    <div class="cmp-top"><h2 id="camp-h">Campaign</h2><button id="camp-close" type="button">Close</button></div>
+    <div id="camp-body"></div>
+  </div>
+</div>
+<!-- campaign (end) -->
 
 <script>
 (function(){
@@ -1320,20 +1380,24 @@ function endScreen(){
   } else if(r.type==='allout'){
     showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
+  campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
 }
 var fresh=true;
 function parseSeed(v){ v=String(v||'').trim(); if(!/^\d{1,10}$/.test(v)){return null;} var n=+v; return n<=4294967295?n:null; }
 function showSeed(){
   $('seed-in').value=G.seed;
-  try{ history.replaceState(null,'','?seed='+G.seed); }catch(e){}
+  try{ history.replaceState(null,'','?seed='+G.seed+(G_ROSTER?'&rivals='+G_ROSTER.join(','):'')); }catch(e){}
 }
 /* a new run loads its track and waits on a small card, so pace, split and chill mode can be set before Go */
-function start(seed){
-  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,$('watch').checked?'custom':undefined);
+/* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
+function start(seed,camp){
+  CAMP=camp||null;
+  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:undefined);
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set your pace, split and chill mode, then go.';
   $('ready').hidden=false; showSeed();
+  campReady();
 }
 function go(){
   if(running||G.over||$('ready').hidden){return;}
@@ -1425,8 +1489,9 @@ window.addEventListener('blur',function(){setRev(false);setFwd(false);});
 document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName,txt=t==='INPUT'&&e.target.type==='text';
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
+  if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
-  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt){e.preventDefault();go();return;}
+  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'){e.preventDefault();go();return;}
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
@@ -1472,6 +1537,195 @@ var KNOBS=[
     });
   });
 })();
+
+/* ---------- campaign (begin) ---------- */
+/* The campaign: nine fixed seeds. Edit this table to change the maps. Each entry:
+     seed   the track seed (as for ?seed=)
+     name   a short title for the map list and the Ready card
+     theme  which strategy the map tests (a note for editors, not shown)
+     hint   one line shown in the list, the tier pick and the Ready card
+     tiers  the rival rosters for 1, 2 and 3 stars, as bot kinds ('sprinter', 'steward', 'gambler')
+   PLACEHOLDERS: seeds, names, hints and tiers are first guesses until the map re-sweep. The tier order must be set from measured
+   difficulty per map (in the tier sweeps Steward alone was sometimes the hardest roster), not from the number of rivals.
+   Progress is keyed by seed, so changing a seed resets that map's stars. */
+var CAMPAIGN=[
+  {seed:1784,name:'The Long Climb',theme:'climber',hint:'Tall walls ahead. Build height early.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:210,name:'Sheer Face',theme:'climber (harder)',hint:'The walls keep growing. Height before haste.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:63,name:'Open Throttle',theme:'rush',hint:'A short, fast track. Hesitate and you lose it.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:1167,name:'Coin Toss',theme:'gamble',hint:'Wide gaps reward the bold, and punish them.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:1863,name:'Fog Line',theme:'scout',hint:'Hidden gaps. See before you leap.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:1077,name:'Even Keel',theme:'balanced',hint:'No single trick works here. Balance your split.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:175,name:'Long Approach',theme:'runup',hint:'Wide gaps need speed. Leave room to run up.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:1548,name:'Nerve',theme:'bold',hint:'Fortune favours an early lead.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]},
+  {seed:322,name:'Slipstream',theme:'drafter',hint:'Let the leaders show you the way, then pass.',tiers:[['sprinter'],['sprinter','gambler'],['sprinter','steward','gambler']]}
+];
+/* Rules.
+   Stars: tier t (1 to 3) is earned by winning the map against tiers[t-1]. Tier 1 is always open on an unlocked map; tier t+1 opens
+     once tier t is won. A map's stars are its highest tier won.
+   No deaths: a map gets the mark for a win (any tier) in which your lab never crashed into a barrier, the gate or a tower
+     (st.bc+st.tc===0). So it took no strike and could not be dissolved, and a win means it never fell. Scrapes are allowed.
+   Best time: the fastest winning time per tier; the list shows the fastest over all tiers.
+   Unlock: map 1 is always open; map n+1 opens once map n has a star.
+   Campaign races use whatever skill, chill, wary and other knobs are set; the rivals come from the tier.
+   Progress lives in localStorage under CAMP_KEY (versioned). Every access is in try/catch: without storage it is kept for the page only. */
+var CAMP_KEY='pacing-frontier.campaign.v1',CAMP=null,CS=campLoad();
+function campBlank(){ return {v:1,maps:{},stats:{races:0,wins:0,falls:0,dissolved:0,extinctions:0},epilogue:false}; }
+function campLoad(){
+  try{
+    var o=JSON.parse(window.localStorage.getItem(CAMP_KEY)||'null');
+    if(o&&o.v===1&&o.maps&&typeof o.maps==='object'&&o.stats){ return o; }
+  }catch(e){}
+  return campBlank();
+}
+function campSave(){ try{ window.localStorage.setItem(CAMP_KEY,JSON.stringify(CS)); return true; }catch(e){ return false; } }
+function campMap(i){
+  var k=String(CAMPAIGN[i].seed),m=CS.maps[k];
+  if(!m||!Array.isArray(m.won)){ m=CS.maps[k]={won:[false,false,false],best:[null,null,null],noDeaths:false}; }
+  return m;
+}
+function campStars(i){ var m=campMap(i),s=0; for(var t=0;t<3;t++){ if(m.won[t]){s=t+1;} } return s; }
+function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campStars(i-1)>=1); }
+function campTierOpen(i,t){ return campOpen(i)&&(t===0||!!campMap(i).won[t-1]); }
+function campBest(i){ var b=campMap(i).best,m=null; for(var t=0;t<3;t++){ if(b[t]!==null&&(m===null||b[t]<m)){m=b[t];} } return m; }
+/* the tier a map offers first: the lowest one not yet won, else the top one */
+function campNextTier(i){ for(var t=0;t<3;t++){ if(!campMap(i).won[t]){return t;} } return 2; }
+function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(campStars(i)<1){return false;} } return true; }
+function campSummary(){
+  var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i); return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:m.best.slice(),bestTime:campBest(i)}; });
+  var st=CS.stats;
+  return {maps:maps,totalStars:maps.reduce(function(a,m){return a+m.stars;},0),noDeathMaps:maps.filter(function(m){return m.noDeaths;}).length,
+    totalFalls:st.falls,extinctionsCaused:st.extinctions,dissolved:st.dissolved,races:st.races,wins:st.wins};
+}
+/* records one campaign race. res: {won, time, crashes, fell, dissolved, extinction}. Returns what changed, for the end overlay */
+function campRecord(i,t,res){
+  var m=campMap(i),before=campStars(i),nextOpen=campOpen(i+1),st=CS.stats,out={newBest:false,prevBest:m.best[t],firstWin:false,noDeathsNew:false};
+  st.races++; if(res.fell){st.falls++;} if(res.dissolved){st.dissolved++;} if(res.extinction){st.extinctions++;}
+  if(res.won){
+    st.wins++;
+    if(!m.won[t]){ m.won[t]=true; out.firstWin=true; }
+    if(m.best[t]===null||res.time<m.best[t]){ out.newBest=m.best[t]!==null; m.best[t]=Math.round(res.time*10)/10; }
+    if(!res.crashes&&!m.noDeaths){ m.noDeaths=true; out.noDeathsNew=true; }
+  }
+  out.starsBefore=before; out.stars=campStars(i); out.unlocked=!nextOpen&&campOpen(i+1)&&i+1<CAMPAIGN.length;
+  out.epilogue=false;
+  if(!CS.epilogue&&campAllStarred()){ CS.epilogue=true; out.epilogue=true; }
+  out.saved=campSave();
+  return out;
+}
+function campReset(){ CS=campBlank(); campSave(); if(!$('camp').hidden){campList();} }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function starStr(n){ var s=''; for(var k=0;k<3;k++){ s+=k<n?'★':'<span class="off">☆</span>'; } return '<span class="cmp-stars" aria-label="'+n+' of 3 stars">'+s+'</span>'; }
+function rivalsHtml(ro){ return '<span class="cmp-riv">'+ro.map(function(k){ return '<span><i style="background:var(--'+KINDS[k].col+')"></i>'+esc(KINDS[k].name)+'</span>'; }).join('')+'</span>'; }
+function fmtT(t){ return t===null||t===undefined?'–':t.toFixed(1)+' s'; }
+
+/* the overlay: the map list, and a tier pick for one map */
+var campRet=null;
+function campShow(){
+  if($('camp').hidden){ campRet=document.activeElement; if(running&&!paused){setPaused(true);} }
+  $('camp').hidden=false;
+}
+function campClose(){ $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
+function campList(){
+  campShow();
+  var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. More stars mean more rivals. '+s.totalStars+' of '+(3*CAMPAIGN.length)+' stars'+(s.noDeathMaps?', '+s.noDeathMaps+' without a crash':'')+'.</p><ol class="cmp-list">';
+  CAMPAIGN.forEach(function(c,i){
+    var open=campOpen(i),m=campMap(i),b=campBest(i);
+    h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+'</span><span class="cmp-hint">'+
+      (open?esc(c.hint):'Locked. Earn a star on map '+i+' to open it.')+'</span></span><span class="cmp-meta">'+(open?starStr(campStars(i))+'<span>'+(b===null?'no time yet':'best '+fmtT(b))+'</span>'+(m.noDeaths?'<span class="cmp-nd">no deaths</span>':''):'<span>locked</span>')+'</span></button></li>';
+  });
+  h+='</ol><div class="cmp-foot"><span class="note">Free play (New run) races a random track against all three.</span><button type="button" id="camp-free">Free play</button></div>';
+  $('camp-h').textContent='Campaign'; $('camp-body').innerHTML=h;
+  var rows=$('camp-body').querySelectorAll('.cmp-row');
+  for(var r=0;r<rows.length;r++){ rows[r].addEventListener('click',function(){ campTiers(+this.getAttribute('data-map')); }); }
+  $('camp-free').addEventListener('click',function(){ campClose(); start(); });
+  var f=$('camp-body').querySelector('.cmp-row:not([disabled])'); if(f){ try{f.focus({preventScroll:true});}catch(e){} }
+}
+function campTiers(i){
+  campShow();
+  var c=CAMPAIGN[i],m=campMap(i),nt=campNextTier(i),h='<p class="cmp-hint">'+esc(c.hint)+'</p><div class="cmp-tiers">';
+  for(var t=0;t<3;t++){
+    var op=campTierOpen(i,t);
+    h+='<button type="button" class="cmp-tier'+(op&&t===nt?' next':'')+'" data-tier="'+t+'"'+(op?'':' disabled')+'><span>'+starStr(t+1)+'<br><b>vs</b> '+rivalsHtml(c.tiers[t])+'</span><span class="cmp-meta">'+
+      (m.won[t]?'<span>won</span><span>best '+fmtT(m.best[t])+'</span>':(op?'<span>not won yet</span>':'<span>win '+(t)+(t===1?' star':' stars')+' first</span>'))+'</span></button>';
+  }
+  h+='</div><p class="note">Seed '+c.seed+(m.noDeaths?' · no-deaths mark earned':' · no-deaths mark: win without crashing into a barrier, the gate or a tower')+'.</p><div class="cmp-foot"><button type="button" id="camp-back">Map list</button></div>';
+  $('camp-h').textContent=(i+1)+'. '+c.name; $('camp-body').innerHTML=h;
+  var bs=$('camp-body').querySelectorAll('.cmp-tier');
+  for(var k=0;k<bs.length;k++){ bs[k].addEventListener('click',function(){ campStart(i,+this.getAttribute('data-tier')); }); }
+  $('camp-back').addEventListener('click',campList);
+  var f=$('camp-body').querySelector('.cmp-tier.next')||$('camp-body').querySelector('.cmp-tier:not([disabled])'); if(f){ try{f.focus({preventScroll:true});}catch(e){} }
+}
+/* a campaign race: the map's seed and the tier's roster, then the usual Ready card */
+function campStart(i,t){
+  if(!campTierOpen(i,t)){ return; }
+  $('camp').hidden=true; campRet=null;
+  start(CAMPAIGN[i].seed,{i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()});
+}
+/* called by start(): the Ready card names the map, its hint and rivals in a campaign race */
+function campReady(){
+  if(!CAMP){ $('ready-h').textContent='Ready'; $('ready-camp').textContent='Campaign'; return; }
+  var c=CAMPAIGN[CAMP.i];
+  $('ready-h').textContent=(CAMP.i+1)+'. '+c.name;
+  $('ready-msg').innerHTML=starStr(CAMP.tier+1)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set your pace, split and chill mode, then go.</span>';
+  $('ready-camp').textContent='Map list';
+}
+/* called at the end of endScreen(): in a campaign race, record it and show stars, best time and the next steps */
+function campFoot(){ var foot=$('ov-foot').querySelector('.btns'); if(foot.firstChild!==$('ov-btn')){ foot.insertBefore($('ov-btn'),foot.firstChild); } }
+function campEnd(){
+  var cres=$('ov-cres');
+  campFoot();
+  if(!CAMP){
+    cres.hidden=true; $('ov-btn').hidden=false; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-list').textContent='Campaign';
+    return;
+  }
+  var h=G.labs[0],r=G.result,res={won:r.type==='win'&&r.winner===h,time:G.t,crashes:h.st.bc+h.st.tc,fell:h.st.fl>0,dissolved:!!h.dissolved,
+    extinction:r.type==='all'&&r.by===h.name};
+  campShowEnd(CAMP.i,CAMP.tier,res,campRecord(CAMP.i,CAMP.tier,res));
+}
+function campShowEnd(i,t,res,o){
+  var c=CAMPAIGN[i],cres=$('ov-cres'),parts=[];
+  if(res.won){
+    parts.push(o.firstWin?'You earned '+starStr(t+1)+' on '+esc(c.name)+'.':'Won the '+starStr(t+1)+' tier again.');
+    if(o.newBest){ parts.push('<span class="new">New best: '+fmtT(campMap(i).best[t])+'</span> (was '+fmtT(o.prevBest)+').'); }
+    else if(o.firstWin){ parts.push('Best time '+fmtT(campMap(i).best[t])+'.'); }
+    else { parts.push(fmtT(res.time)+', best '+fmtT(campMap(i).best[t])+'.'); }
+    if(o.noDeathsNew){ parts.push('<span class="new">No-deaths mark earned</span>: you never crashed.'); }
+    if(t<2&&o.firstWin){ parts.push('The '+starStr(t+2)+' tier is open.'); }
+    if(o.unlocked){ parts.push('<span class="new">Map '+(i+2)+', '+esc(CAMPAIGN[i+1].name)+', is open.</span>'); }
+  } else {
+    parts.push('No star this time. Map stars: '+starStr(campStars(i))+'.');
+  }
+  if(o.saved===false){ parts.push('<span class="note">Progress is not saved: this browser has no storage for the page.</span>'); }
+  cres.innerHTML=parts.join(' '); cres.hidden=false;
+  $('ov-btn').hidden=true; $('ov-retry').hidden=false;
+  $('ov-next').hidden=!(i+1<CAMPAIGN.length&&campOpen(i+1));
+  $('ov-list').textContent='Map list';
+  if(o.epilogue){ try{ if(window.showEpilogue){ window.showEpilogue(campSummary()); } }catch(e){} }  /* hook for the epilogue: first time all nine maps have a star */
+}
+(function(){
+  campEnd();  /* the start overlay: Start run and a Campaign button in one row */
+  $('ov-retry').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } });
+  $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campNextTier(n)); } });
+  $('ov-list').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
+  $('ready-camp').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
+  $('btn-camp').addEventListener('click',campList);
+  $('camp-close').addEventListener('click',campClose);
+  $('camp').addEventListener('click',function(e){ if(e.target===this){campClose();} });
+  /* reset asks for a second tap instead of a confirm dialog */
+  var rb=$('camp-reset'),armed=0;
+  rb.addEventListener('click',function(){
+    if(Date.now()-armed<4000){ armed=0; campReset(); rb.textContent='Campaign progress reset'; setTimeout(function(){rb.textContent='Reset campaign progress';},2000); return; }
+    armed=Date.now(); rb.textContent='Tap again to reset campaign';
+    setTimeout(function(){ if(armed&&Date.now()-armed>=4000){ armed=0; rb.textContent='Reset campaign progress'; } },4100);
+  });
+})();
+/* test hooks: PF.campaign.record(map,tier,res) records a race as campRecord does; PF.campaign.end(map,tier,res) also renders the end overlay */
+window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,state:function(){return CS;},summary:campSummary,record:campRecord,reset:campReset,list:campList,tiers:campTiers,start:campStart,
+  end:function(i,t,res){ CAMP={i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()}; running=false; $('ready').hidden=true;
+    showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play again');
+    campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
+  stars:campStars,open:campOpen};
+/* ---------- campaign (end) ---------- */
 
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
