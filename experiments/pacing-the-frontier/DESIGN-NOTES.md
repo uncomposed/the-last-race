@@ -449,3 +449,47 @@ The nine campaign maps were re-measured on the current code (chill on, skill 100
 S = Steward alone, SG = Steward and Gambler, SP = Sprinter and Steward, ALL = all three. Tiers are ordered by measured difficulty (mean wins over the probes), not by the number of rivals. Since the earlier sweep the pattern flipped: Steward alone is now usually the easiest, Sprinter with Steward most often the hardest, and on 199 and 322 the full field is the easiest. On several maps the best strategy changes with the roster (for example scout wins 1115 and 1548 against Steward alone), so a star ladder does not always repeat the map's one lesson.
 
 Caveats. A map is a fixed seed, so its bots and rolls are fixed too; with 40 other bot and roll draws only 114, 717, 2972 and 1548 keep a clear winner, so the other tricks partly ride on that seed's luck. With chill off, 114, 322 and 199 favour a different strategy (hand-timed jumps hit more tall barriers and rivals strike out early). Time-outs: 6 in 92,160 games. Scripts and CSVs were kept out of the repo.
+
+## Campaign difficulty
+
+28 October 2026. Campaign medals exist only with chill mode off: Easy, Medium and Hard earn bronze, silver and gold; a chill win earns a separate chill star with no difficulty choice (see `README.md`, "Campaign"). The question was which levers make Easy, Medium and Hard a clear, monotone ladder with chill off, keep each map's strategy where it was, and leave Medium at the current defaults.
+
+Setup: the nine campaign maps and their three tiers, the eight probe strategies of "Campaign maps", 40 runs per cell with jitter on the probe only and the seed's own bot and roll draws (mode J, as in the map sweep). The probe (lab 0) keeps perfect hands (`SKILL.probe` 100), so it stands in for a decent player, not for any measured person. Default knobs otherwise. Each cell is the map strategy's wins / the mean wins over the eight probes, out of 40, for tiers 1★ · 2★ · 3★. Bot play only; shares are outcomes of this sampling, not calibrated probabilities.
+
+**Rival skill alone (chill off, player strikes 3).**
+
+| Map | Seed | Strategy | Rookie 30 | Pro 70 | Machine 100 |
+|---|---|---|---|---|---|
+| 1 | 114 | runup | 6/12 · 30/10 · 0/13 | 6/10 · 0/3 · 7/9 | 3/9 · 24/4 · 4/7 |
+| 2 | 1784 | climber | 40/18 · 25/8 · 25/8 | 38/13 · 40/8 · 40/7 | 40/13 · 40/12 · 37/9 |
+| 3 | 1167 | gamble | 0/7 · 5/6 · 11/6 | 0/10 · 0/3 · 0/2 | 0/9 · 34/7 · 32/7 |
+| 4 | 717 | scout | 33/6 · 19/7 · 37/9 | 36/9 · 4/4 · 6/4 | 40/10 · 40/6 · 24/6 |
+| 5 | 2972 | balanced | 27/15 · 14/18 · 21/11 | 25/13 · 17/16 · 17/11 | 40/17 · 27/20 · 15/15 |
+| 6 | 1548 | bold | 30/13 · 36/10 · 33/4 | 23/13 · 37/9 · 31/4 | 26/13 · 36/8 · 30/4 |
+| 7 | 1115 | rush | 0/10 · 2/2 · 0/3 | 0/6 · 16/3 · 0/2 | 0/7 · 37/6 · 0/3 |
+| 8 | 322 | drafter | 0/4 · 13/4 · 7/10 | 0/5 · 7/6 · 10/11 | 0/8 · 4/6 · 4/6 |
+| 9 | 199 | climber | 1/2 · 36/14 · 40/11 | 7/3 · 38/13 · 14/4 | 5/2 · 17/7 · 16/2 |
+| All 27 | | | 491/239 (22.1%), strategy best in 9 | 419/200 (18.5%), strategy best in 9 | 575/221 (20.4%), strategy best in 14 |
+
+Only 6 of the 27 cells get harder (or stay level) from Rookie to Pro to Machine on the mean, and Pro is harder than Machine overall. With chill on the presets are flat (mean 20.5%, 20.7%, 20.9%). Because a map fixes the bots' hands noise as well as the track, a skill change reshuffles each race rather than making the rivals uniformly better or worse, and low skill also cuts the number of cells where the map's strategy is best (9 of 27 at 30 and 70, 14 at 100). Rookie rivals together with more strikes (not shown) raised the mean but cut that count to 8, and to 4 at skill 0.
+
+**Player strike limit (chill off, rivals at the defaults).** A new `PSTRIKES` override (null in free play) sets lab 0's own strike limit; the rivals keep `K.strikes` 3.
+
+| Map | Seed | Strategy | Easy: 4 strikes | Medium: 3 | Hard: 2 |
+|---|---|---|---|---|---|
+| 1 | 114 | runup | 3/9 · 24/4 · 4/8 | 3/9 · 24/4 · 4/7 | 3/8 · 20/3 · 4/6 |
+| 2 | 1784 | climber | 40/14 · 40/13 · 37/10 | 40/13 · 40/12 · 37/9 | 23/6 · 21/10 · 24/7 |
+| 3 | 1167 | gamble | 0/9 · 34/8 · 32/7 | 0/9 · 34/7 · 32/7 | 0/9 · 32/7 · 36/6 |
+| 4 | 717 | scout | 40/10 · 40/9 · 24/6 | 40/10 · 40/6 · 24/6 | 6/5 · 34/5 · 22/5 |
+| 5 | 2972 | balanced | 40/17 · 27/20 · 15/15 | 40/17 · 27/20 · 15/15 | 39/10 · 27/13 · 15/8 |
+| 6 | 1548 | bold | 26/13 · 36/8 · 30/4 | 26/13 · 36/8 · 30/4 | 24/13 · 34/8 · 28/4 |
+| 7 | 1115 | rush | 0/15 · 38/6 · 0/8 | 0/7 · 37/6 · 0/3 | 0/6 · 0/0 · 0/2 |
+| 8 | 322 | drafter | 1/9 · 4/8 · 8/7 | 0/8 · 4/6 · 4/6 | 0/6 · 1/3 · 1/3 |
+| 9 | 199 | climber | 5/6 · 17/13 · 16/5 | 5/2 · 17/7 · 16/2 | 5/1 · 17/4 · 16/2 |
+| All 27 | | | 581/260 (24.1%), strategy best in 13 | 575/221 (20.4%), strategy best in 14 | 432/159 (14.7%), strategy best in 14 |
+
+The mean never rises from Easy to Hard in any of the 27 cells (it is flat in a few, such as 1548), and the map strategy's wins rise in only one (1167 3★, 32 to 36). Where the map's strategy is best does not move (13, 14 and 14 cells), and Medium is the current default exactly. Five strikes added little over four (24.5% against 24.1%), and strikes off 24.8%. Halving or raising the fall odds (`p1`, `pstep`, `singOdds`) changed the summed means by at most two games over all 27 cells, since your own fall loses the race either way.
+
+**Choice.** Difficulty is your own strike limit only: Easy 4, Medium 3, Hard 2. Rivals are the same on every difficulty. The Ready card says so in one line ("Hard wins gold. Your lab has 2 strikes; rivals are the same.").
+
+Caveats. The ladder is steeper downwards than upwards (Easy +3.7 points, Hard −5.7). The probe never misjudges a jump; a human with chill off crashes more, so the strike limit probably matters more for people than here. With chill off the map strategy is best in only 14 of 27 cells even at the defaults (as "Campaign maps" noted for 114, 322 and 199). The control lag past the singularity (`reaction`) affects only the human and was not measured. Scripts and CSVs were kept out of the repo.
