@@ -218,39 +218,34 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 
 ## Three strikes (experiment)
 
-27 October 2026. Prototype 0.3 plus the `strikes` rule, seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. Replication: set `PF.K.strikes`, `PF.K.dissolveRoll` and `PF.K.barScale`, then call `PF.run(seed,'custom')`.
+27 October 2026. Prototype 0.3 plus the `strikes` rule, seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. Replication: set `PF.K.strikes` and `PF.K.barScale`, then call `PF.run(seed,'custom')`.
 
-**The rule.** A strike is the first crash into a blockade the lab has not crashed into before: a barrier (the gate included) or, with `strikeTower` on, a tower. A repeat crash into the same blockade is free. The government dissolves a lab at `strikes` strikes: out at once, and it gets no later level-ups. With `dissolveRoll` on, the dissolution then rolls for extinction like a fall. It uses the odds of the gap the lab was heading for (`oddsAt` of that gap, or of the singularity gap inside the stretch) without `singOdds`, because the lab did not fall into anything, and it draws the next roll for that gap from the same stream as falls. `wary` makes a bot on its last strike stop for every blockade it cannot clear.
+**The rule.** A strike is the first crash into a blockade the lab has not crashed into before: a barrier (the gate included) or, with `strikeTower` on, a tower. A repeat crash into the same blockade is free. The government dissolves a lab at `strikes` strikes: out at once, and it gets no later level-ups. Dissolution never rolls for extinction; only a fall into a gap does. A version that rolled on dissolution was tried and removed. `wary` makes a bot on its last strike stop for every blockade it cannot clear.
 
-**Defaults changed.** `strikes` 3, `strikeTower` 1, `wary` 1, `dissolveRoll` 1, and `barScale` 100 to 140 (heights are still capped at the regime's height ceiling plus jump minus 6, so every barrier stays clearable). All results in earlier sections were produced at `barScale` 100. With `strikes` 0 and `barScale` 100 the numbers of "Version 3 bot results" reproduce exactly (Custom 203, Gambler 186, Sprinter 28, Steward 15 wins; 68 extinctions).
+**Defaults changed.** `strikes` 3, `strikeTower` 1, `wary` 1, and `barScale` 100 to 140 (heights are still capped at the regime's height ceiling plus jump minus 6, so every barrier stays clearable). All results in earlier sections were produced at `barScale` 100. With `strikes` 0 and `barScale` 100 the numbers of "Version 3 bot results" reproduce exactly (Custom 203, Gambler 186, Sprinter 28, Steward 15 wins; 68 extinctions).
 
 **At the old barrier height the rule almost never fires.** Strikes per 500 games (a lab's own count, gate included): Sprinter 495, Gambler 307, Custom 122, Steward 2. The Sprinter's 495 is almost all the gate, which it hits in 493 of 500 games. Nobody reached three strikes in 2000 lab-games at `barScale` 100. At 2 strikes 33 labs were dissolved (Gambler 28, Custom 3, Sprinter 2).
 
-**Barrier height sweep** (500 games per row, 3 strikes, `wary` on). "Off" is `strikes` 0. "No roll" is `dissolveRoll` 0, "Roll" is 1. Wins are Custom / Gambler / Steward / Sprinter. Dissolved is Custom / Sprinter / Steward / Gambler. Wins do not sum to 500 because of extinctions and time-outs.
+**Barrier height sweep** (500 games per row, `wary` on). "Off" is `strikes` 0, "3 strikes" is `strikes` 3. Wins are Custom / Gambler / Steward / Sprinter. Dissolved is Custom / Sprinter / Steward / Gambler. Wins do not sum to 500 because of extinctions and time-outs.
 
 | Barrier scale | Rule | Wins | Dissolved | Games ended by the roll |
 |---|---|---|---|---|
 | 100 | Off | 203 / 186 / 15 / 28 | 0 | 68 |
-| 100 | Roll | 203 / 186 / 15 / 28 | 0 / 0 / 0 / 0 | 68 |
+| 100 | 3 strikes | 203 / 186 / 15 / 28 | 0 / 0 / 0 / 0 | 68 |
 | 120 | Off | 153 / 187 / 38 / 55 | 0 | 64 |
-| 120 | No roll | 155 / 181 / 41 / 56 | 1 / 3 / 0 / 17 | 64 |
-| 120 | Roll | 152 / 180 / 40 / 55 | 1 / 3 / 0 / 17 | 70 |
+| 120 | 3 strikes | 155 / 181 / 41 / 56 | 1 / 3 / 0 / 17 | 64 |
 | 130 | Off | 146 / 165 / 65 / 59 | 0 | 62 |
-| 130 | No roll | 147 / 152 / 72 / 61 | 2 / 13 / 0 / 35 | 63 |
-| 130 | Roll | 142 / 152 / 62 / 58 | 2 / 9 / 0 / 35 | 83 |
+| 130 | 3 strikes | 147 / 152 / 72 / 61 | 2 / 13 / 0 / 35 | 63 |
 | **140** | Off | 141 / 157 / 81 / 63 | 0 | 55 |
-| **140** | No roll | 148 / 136 / 93 / 62 | 8 / 33 / 0 / 71 | 56 |
-| **140** | Roll | 137 / 131 / 75 / 57 | 8 / 26 / 0 / 65 | 95 |
+| **140** | 3 strikes | 148 / 136 / 93 / 62 | 8 / 33 / 0 / 71 | 56 |
 | 150 | Off | 145 / 160 / 80 / 52 | 0 | 57 |
-| 150 | No roll | 149 / 133 / 99 / 54 | 6 / 33 / 0 / 82 | 58 |
-| 150 | Roll | 133 / 132 / 79 / 46 | 5 / 23 / 0 / 82 | 105 |
+| 150 | 3 strikes | 149 / 133 / 99 / 54 | 6 / 33 / 0 / 82 | 58 |
 
-140 is the default. Taller barriers alone shift wins toward the Steward (15 wins at 100, 81 at 140 with the rule off) and the Sprinter (28 to 63), and cut the games the roll ends from 68 to 55. With the rule on and the roll on, 140 ends 95 of 500 games (19.0%) in extinction, against 55 (11.0%) with the rule off. Of those 95, 40 follow a dissolution (Gambler 25, Sprinter 9, Custom 6) and 55 follow a fall. Dissolution takes 65 of 500 Gambler runs (13%), 26 Sprinter runs (5%), 8 Custom runs (1.6%) and no Steward runs. Fewer labs are dissolved with the roll on than without (65 against 71 Gamblers) because the run ends sooner. Extinction at 140 with the rule on is higher than the 13.6% of the old default.
+140 is the default. At 140 with the rule on, dissolution takes 71 of 500 Gambler runs (14%), 33 Sprinter runs (6.6%), 8 Custom runs (1.6%) and no Steward runs. The rule moves wins from the Gambler (157 to 136) to the Steward (81 to 93) and leaves extinction almost where it was (55 to 56), since dissolved labs do not roll. Taller barriers alone shift wins toward the Steward (15 wins at 100, 81 at 140 with the rule off) and the Sprinter (28 to 63), and cut the games the roll ends from 68 to 55.
 
 **Findings and caveats**
 
-- **Dissolution now makes the reckless labs a risk to everyone.** A dissolution raises extinction by about 8 points at 140, and almost all of it traces to the Gambler and Sprinter. The end screen says the government dissolved the lab and the roll ended the run.
-- **The gate is a free strike for reckless labs.** The Sprinter hits it in 493 of 500 games, so for the Sprinter 3 strikes behaves like 2, and the first strike also puts a roll at 4% on a bot that did nothing but start. The Gambler hits it in 215. Not tested: exempting the gate.
+- **The gate is a free strike for reckless labs.** The Sprinter hits it in 493 of 500 games, so for the Sprinter 3 strikes behaves like 2. The Gambler hits it in 215. Not tested: exempting the gate.
 - **Dissolution falls on the labs that already crash most** (Gambler, then Sprinter). The careful Custom and Steward almost never reach it.
 - **Bots do not react until their last strike** (and only if `wary` is on). A human who counts strikes can change how they play, so these rates describe the bots and not a human. Not tested: human play.
 - **Time-outs.** At barrier scale 120 and above, 2 to 7 games in 500 time out, whether or not the rule is on (5 at the new default). At 140 the five stuck games (seeds 5149, 5245, 5278, 5422, 5491) were inspected but not traced through the bot logic. In three a careful bot stood still for 220 to 250 s with full sight and height, two of those under a crash cap, where the forced split gives max speed nothing. In two a bot stood in the stretch past the singularity with its frozen input. The causes are not established. They also occur with the rule off, so they are not caused by it. They only end a game when no lab that could finish is moving.
