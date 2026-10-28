@@ -201,8 +201,27 @@ body.chill #btn-jump{display:none}
 .cmp-name{font:600 15px/1.25 var(--body);display:block}
 .cmp-hint{display:block;color:var(--muted);font-size:12.5px}
 .cmp-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font:400 12px var(--mono);white-space:nowrap}
-.cmp-stars{font:400 17px/1 var(--body);letter-spacing:1px;color:var(--b)}
-.cmp-stars .off{color:var(--line)}
+/* star icons: medals are metal-filled stars with a letter (B, S, G); the chill star is a deckchair; an empty slot is an outline */
+:root{--m1:#C27A3A;--m1e:#6E3E14;--m2:#C3CAD3;--m2e:#5D6672;--m3:#F0BE2A;--m3e:#7E5A00;--mtx:#1A1206}
+.cmp-stars{display:inline-flex;gap:2px;line-height:1}
+.si{width:22px;height:22px;display:inline-block;vertical-align:-4px;flex:none;overflow:visible}
+.si path{stroke-linejoin:round}
+.si-0 path{fill:none;stroke:var(--muted);stroke-width:1.5}
+.si-m1 path{fill:var(--m1);stroke:var(--m1e);stroke-width:1.2}
+.si-m2 path{fill:var(--m2);stroke:var(--m2e);stroke-width:1.2}
+.si-m3 path{fill:var(--m3);stroke:var(--m3e);stroke-width:1.2}
+.si text{font:700 9.5px/1 var(--body);fill:var(--mtx);text-anchor:middle}
+.si-c .ch{fill:none;stroke:var(--a);stroke-width:2.3;stroke-linecap:round}
+.si-c .cs{fill:var(--a);stroke:none}
+.cmp-ts{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+.cmp-diff{display:flex;flex-direction:column;gap:6px}
+.cmp-diff[hidden],.cmp-seg[hidden]{display:none}
+.cmp-seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cmp-seg button{min-height:44px;border:0;border-radius:0;margin:0;font:600 14px var(--body);background:var(--bg);color:var(--ink)}
+.cmp-seg button+button{border-left:1px solid var(--line)}
+.cmp-seg button[aria-checked=true]{background:var(--ink);color:var(--bg)}
+.card .cmp-dl{font-size:13px;line-height:1.4}
+.card .cmp-diff .note{font-size:12px}
 .cmp-nd{font:500 11px var(--mono);color:var(--good)}
 .cmp-tiers{display:flex;flex-direction:column;gap:6px}
 .cmp-tier{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:56px;width:100%;font:400 13px/1.35 var(--body)}
@@ -290,7 +309,7 @@ html.epi-open{overflow:hidden}
         <button class="primary" id="ov-btn" type="button">Start run</button>
         <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
         <p class="cmp-res" id="ov-cres" hidden></p>
-        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-list" type="button">Campaign</button></div></div>
+        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-list" type="button">Campaign</button></div></div>
         <!-- campaign (end) -->
       </div>
     </div>
@@ -298,6 +317,13 @@ html.epi-open{overflow:hidden}
       <div class="card small" role="dialog" aria-labelledby="ready-h">
         <h2 id="ready-h">Ready</h2>
         <p id="ready-msg"></p>
+        <!-- campaign (begin): difficulty picker (chill off) or the chill-star line (chill on), and the knob note -->
+        <div class="cmp-diff" id="ready-diff" hidden>
+          <div class="cmp-seg" id="diff-seg" role="radiogroup" aria-label="Difficulty"><button type="button" role="radio" data-diff="0">Easy</button><button type="button" role="radio" data-diff="1">Medium</button><button type="button" role="radio" data-diff="2">Hard</button></div>
+          <p class="cmp-dl" id="diff-line"></p>
+          <p class="note" id="diff-knobs"></p>
+        </div>
+        <!-- campaign (end) -->
         <button class="primary" id="ready-btn" type="button">Go</button>
         <button id="ready-camp" type="button">Campaign</button><!-- campaign -->
       </div>
@@ -381,6 +407,7 @@ html.epi-open{overflow:hidden}
       <summary>Tuning knobs</summary>
       <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
+      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign race (only difficulty and chill mode change). Your values come back when it ends.</p><!-- campaign -->
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button><button id="camp-reset" type="button">Reset campaign progress</button><!-- campaign --></div>
     </details>
   </div>
@@ -1455,6 +1482,7 @@ function showSeed(){
 /* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
 function start(seed,camp){
   CAMP=camp||null;
+  campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
   newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:undefined);
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
@@ -1464,6 +1492,7 @@ function start(seed,camp){
 }
 function go(){
   if(running||G.over||$('ready').hidden){return;}
+  campGo();  /* campaign: fix the race's chill state and difficulty */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
 }
 $('ready-btn').addEventListener('click',go);
@@ -1668,63 +1697,146 @@ var CAMPAIGN=[
   {seed:199,name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase to the tallest walls, and a very wide singularity late.',tiers:[['sprinter','steward','gambler'],['steward'],['sprinter','steward']]}
 ];
 /* Rules.
-   Stars: tier t (1 to 3) is earned by winning the map against tiers[t-1]. Tier 1 is always open on an unlocked map; tier t+1 opens
-     once tier t is won. A map's stars are its highest tier won.
+   Stars: star t (1 to 3) is earned by winning the map against tiers[t-1]. A map's stars are its highest tier won.
+   Medals: with chill mode off the player picks a difficulty, and a win earns that star in bronze (Easy), silver (Medium) or gold
+     (Hard). A star keeps the best medal won for it. Difficulty only changes your own strike limit (CAMP_DIFF; measured in
+     DESIGN-NOTES.md "Campaign difficulty"): the rivals and every other knob are the defaults.
+   Chill star: a win with chill mode on (at any moment of the race) earns the star as a chill star, with no medal and no difficulty
+     choice (chill races use Medium). A star shows its medal if it has one, else the chill star, else nothing. Either kind of win
+     counts as a star for unlocking and for the epilogue.
+   Tiers: with CAMP_OPEN_TIERS true every tier of an unlocked map can be raced; with it false tier 1 is open and tier t+1 opens
+     once tier t has a star.
    No deaths: a map gets the mark for a win (any tier) in which your lab never crashed into a barrier, the gate or a tower
      (st.bc+st.tc===0). So it took no strike and could not be dissolved, and a win means it never fell. Scrapes are allowed.
-   Best time: the fastest winning time per tier; the list shows the fastest over all tiers.
+   Best time: the fastest winning time per tier, chill or not; the list shows the fastest over all tiers.
    Unlock: map 1 is always open; map n+1 opens once map n has a star.
-   Campaign races use whatever skill, chill, wary and other knobs are set; the rivals come from the tier.
-   Progress lives in localStorage under CAMP_KEY (versioned). Every access is in try/catch: without storage it is kept for the page only. */
-var CAMP_KEY='pacing-frontier.campaign.v1',CAMP=null,CS=campLoad();
-function campBlank(){ return {v:1,maps:{},stats:{races:0,wins:0,falls:0,dissolved:0,extinctions:0},epilogue:false}; }
+   Knobs: a campaign race locks every tuning knob at its default (DEF) except chill mode, then applies the difficulty. The player's
+     own knob values come back when the race ends or free play starts (campLock / campUnlock).
+   Progress lives in localStorage under CAMP_KEY (v2). A v1 object (CAMP_KEY_V1) is migrated on load: a won tier becomes a chill
+     star (v1 recorded no difficulty, and chill was the default), best times and no-deaths are kept; the v1 entry is left as it was.
+   Every access is in try/catch: without storage progress is kept for the page only. */
+var CAMP_OPEN_TIERS=true;
+var MEDALS=['none','bronze','silver','gold'];
+var CAMP_DIFF=[
+  {id:'easy',name:'Easy',medal:1,strikes:4},
+  {id:'medium',name:'Medium',medal:2,strikes:3},
+  {id:'hard',name:'Hard',medal:3,strikes:2}
+];
+var CAMP_KEY='pacing-frontier.campaign.v2',CAMP_KEY_V1='pacing-frontier.campaign.v1',CAMP=null,CS=campLoad();
+function campBlank(){ return {v:2,maps:{},stats:{races:0,wins:0,falls:0,dissolved:0,extinctions:0},epilogue:false,diff:1}; }
+function campNum(x){ return typeof x==='number'&&isFinite(x)&&x>=0?x:0; }
+function campStats(s){ s=s&&typeof s==='object'?s:{}; return {races:campNum(s.races),wins:campNum(s.wins),falls:campNum(s.falls),dissolved:campNum(s.dissolved),extinctions:campNum(s.extinctions)}; }
+function campTimes(b){ var o=[null,null,null]; if(Array.isArray(b)){ for(var t=0;t<3;t++){ if(typeof b[t]==='number'&&isFinite(b[t])){o[t]=b[t];} } } return o; }
+/* v1 {v:1,maps:{seed:{won:[3 bool],best:[3],noDeaths}},stats,epilogue} to v2: each won tier becomes a chill star */
+function campMigrate(o1){
+  var o=campBlank();
+  for(var k in o1.maps){ var m=o1.maps[k]; if(!m||!Array.isArray(m.won)){continue;}
+    o.maps[k]={chill:[!!m.won[0],!!m.won[1],!!m.won[2]],medal:[0,0,0],best:campTimes(m.best),noDeaths:!!m.noDeaths}; }
+  o.stats=campStats(o1.stats); o.epilogue=!!o1.epilogue; o.from=1;
+  return o;
+}
 function campLoad(){
   try{
     var o=JSON.parse(window.localStorage.getItem(CAMP_KEY)||'null');
-    if(o&&o.v===1&&o.maps&&typeof o.maps==='object'&&o.stats){ return o; }
+    if(o&&o.v===2&&o.maps&&typeof o.maps==='object'&&o.stats){ o.stats=campStats(o.stats); if(!(o.diff>=0&&o.diff<=2)){o.diff=1;} return o; }
+  }catch(e){}
+  try{
+    var o1=JSON.parse(window.localStorage.getItem(CAMP_KEY_V1)||'null');
+    if(o1&&o1.v===1&&o1.maps&&typeof o1.maps==='object'){ return campMigrate(o1); }
   }catch(e){}
   return campBlank();
 }
 function campSave(){ try{ window.localStorage.setItem(CAMP_KEY,JSON.stringify(CS)); return true; }catch(e){ return false; } }
 function campMap(i){
   var k=String(CAMPAIGN[i].seed),m=CS.maps[k];
-  if(!m||!Array.isArray(m.won)){ m=CS.maps[k]={won:[false,false,false],best:[null,null,null],noDeaths:false}; }
+  if(!m||!Array.isArray(m.chill)||!Array.isArray(m.medal)){ m=CS.maps[k]={chill:[false,false,false],medal:[0,0,0],best:[null,null,null],noDeaths:false}; }
+  if(!Array.isArray(m.best)){ m.best=[null,null,null]; }
   return m;
 }
-function campStars(i){ var m=campMap(i),s=0; for(var t=0;t<3;t++){ if(m.won[t]){s=t+1;} } return s; }
+/* a star's state: medal 0 to 3 (none, bronze, silver, gold) and whether it was won with chill mode */
+function campStar(i,t){ var m=campMap(i); return {medal:Math.max(0,Math.min(3,m.medal[t]|0)),chill:!!m.chill[t]}; }
+function campStarred(i,t){ var s=campStar(i,t); return s.medal>0||s.chill; }
+function campStars(i){ var s=0; for(var t=0;t<3;t++){ if(campStarred(i,t)){s=t+1;} } return s; }
 function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campStars(i-1)>=1); }
-function campTierOpen(i,t){ return campOpen(i)&&(t===0||!!campMap(i).won[t-1]); }
+function campTierOpen(i,t){ return campOpen(i)&&(CAMP_OPEN_TIERS||t===0||campStarred(i,t-1)); }
 function campBest(i){ var b=campMap(i).best,m=null; for(var t=0;t<3;t++){ if(b[t]!==null&&(m===null||b[t]<m)){m=b[t];} } return m; }
-/* the tier a map offers first: the lowest one not yet won, else the top one */
-function campNextTier(i){ for(var t=0;t<3;t++){ if(!campMap(i).won[t]){return t;} } return 2; }
+/* the tier a map offers first: the lowest one without a star, else the lowest one short of gold, else the top one */
+function campNextTier(i){ var t; for(t=0;t<3;t++){ if(!campStarred(i,t)){return t;} } for(t=0;t<3;t++){ if(campStar(i,t).medal<3){return t;} } return 2; }
 function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(campStars(i)<1){return false;} } return true; }
 function campSummary(){
-  var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i); return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice()}; });
+  var med={gold:0,silver:0,bronze:0},chillStars=0;
+  var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i),ms=[],cw=[];
+    for(var t=0;t<3;t++){ var s=campStar(i,t); ms.push(MEDALS[s.medal]); cw.push(s.chill); if(s.medal){med[MEDALS[s.medal]]++;} else if(s.chill){chillStars++;} }
+    return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice(),medals:ms,chillWon:cw}; });
   var st=CS.stats;
   return {maps:maps,totalStars:maps.reduce(function(a,m){return a+m.stars;},0),noDeathMaps:maps.filter(function(m){return m.noDeaths;}).length,
-    falls:st.falls,extinctions:st.extinctions,dissolutions:st.dissolved,races:st.races,wins:st.wins};
+    falls:st.falls,extinctions:st.extinctions,dissolutions:st.dissolved,races:st.races,wins:st.wins,
+    medals:med,medalStars:med.gold+med.silver+med.bronze,chillStars:chillStars};
 }
-/* records one campaign race. res: {won, time, crashes, fell, dissolved, extinction}. Returns what changed, for the end overlay */
+/* records one campaign race. res: {won, time, crashes, fell, dissolved, extinction, chill, diff (0 to 2)}. Returns what changed, for the end overlay */
 function campRecord(i,t,res){
-  var m=campMap(i),before=campStars(i),nextOpen=campOpen(i+1),st=CS.stats,out={newBest:false,prevBest:m.best[t],firstWin:false,noDeathsNew:false};
+  var m=campMap(i),before=campStars(i),nextOpen=campOpen(i+1),tierOpen=t<2&&campTierOpen(i,t+1),st=CS.stats,s0=campStar(i,t),
+    out={newBest:false,prevBest:m.best[t],firstWin:false,noDeathsNew:false,prevMedal:s0.medal,medal:0,medalUp:false,chillNew:false,chill:!!res.chill};
   st.races++; if(res.fell){st.falls++;} if(res.dissolved){st.dissolved++;} if(res.extinction){st.extinctions++;}
   if(res.won){
     st.wins++;
-    if(!m.won[t]){ m.won[t]=true; out.firstWin=true; }
+    out.firstWin=!(s0.medal>0||s0.chill);
+    if(res.chill){ if(!m.chill[t]){ m.chill[t]=true; out.chillNew=true; } }
+    else { var d=Math.max(0,Math.min(2,res.diff|0)); out.medal=CAMP_DIFF[d].medal; if(out.medal>s0.medal){ m.medal[t]=out.medal; out.medalUp=true; } }
     if(m.best[t]===null||res.time<m.best[t]){ out.newBest=m.best[t]!==null; m.best[t]=Math.round(res.time*10)/10; }
     if(!res.crashes&&!m.noDeaths){ m.noDeaths=true; out.noDeathsNew=true; }
   }
   out.starsBefore=before; out.stars=campStars(i); out.unlocked=!nextOpen&&campOpen(i+1)&&i+1<CAMPAIGN.length;
+  out.tierOpened=t<2&&!tierOpen&&campTierOpen(i,t+1);
   out.epilogue=false;
   if(!CS.epilogue&&campAllStarred()){ CS.epilogue=true; out.epilogue=true; }
   out.saved=campSave();
   return out;
 }
-function campReset(){ CS=campBlank(); campSave(); if(!$('camp').hidden){campList();} }
+function campReset(){ var d=CS.diff; CS=campBlank(); CS.diff=d; campSave(); if(!$('camp').hidden){campList();} }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function starStr(n){ var s=''; for(var k=0;k<3;k++){ s+=k<n?'★':'<span class="off">☆</span>'; } return '<span class="cmp-stars" aria-label="'+n+' of 3 stars">'+s+'</span>'; }
+
+/* star icons. A medal star is filled in its metal with a letter (B, S, G), so the metals differ by more than colour. A chill star is a
+   deckchair with a small star over it. An empty slot is an outline. */
+var STAR_P='M12 1.6l3.1 6.6 7.2.9-5.3 5 1.4 7.2L12 17.8l-6.4 3.5 1.4-7.2-5.3-5 7.2-.9z';
+function campStarLabel(s){ return s.medal?MEDALS[s.medal]:(s.chill?'won with chill mode':'not won yet'); }
+function starIcon(s,label){
+  var a=label?' role="img" aria-label="'+esc(label)+'"':' aria-hidden="true"',ti=label?'<title>'+esc(label)+'</title>':'';
+  if(s.medal){ return '<svg class="si si-m'+s.medal+'" viewBox="0 0 24 24"'+a+'>'+ti+'<path d="'+STAR_P+'"/><text x="12" y="15.6">'+'BSG'.charAt(s.medal-1)+'</text></svg>'; }
+  if(s.chill){ return '<svg class="si si-c" viewBox="0 0 24 24"'+a+'>'+ti+'<path class="ch" d="M4.5 6.5 9.5 17h9M9.5 17 7 22M17 17l2 5M12 12.5h6.5l-2 4.5"/><path class="cs" d="M19 1.5l1 2.2 2.4.3-1.8 1.6.5 2.4L19 6.8 16.9 8l.5-2.4-1.8-1.6 2.4-.3z"/></svg>'; }
+  return '<svg class="si si-0" viewBox="0 0 24 24"'+a+'>'+ti+'<path d="'+STAR_P+'"/></svg>';
+}
+/* a map's three stars, with one label for the row */
+function mapStars(i){
+  var h='',lab=[];
+  for(var t=0;t<3;t++){ var s=campStar(i,t); h+=starIcon(s); lab.push('star '+(t+1)+' '+campStarLabel(s)); }
+  return '<span class="cmp-stars" role="img" aria-label="'+campStars(i)+' of 3 stars: '+esc(lab.join(', '))+'">'+h+'</span>';
+}
+/* one star with its number: "Star 2" and its icon */
+function tierStar(i,t){ var s=campStar(i,t); return '<span class="cmp-ts"><span class="cmp-tn">Star '+(t+1)+'</span>'+starIcon(s,'star '+(t+1)+', '+campStarLabel(s))+'</span>'; }
 function rivalsHtml(ro){ return '<span class="cmp-riv">'+ro.map(function(k){ return '<span><i style="background:var(--'+KINDS[k].col+')"></i>'+esc(KINDS[k].name)+'</span>'; }).join('')+'</span>'; }
 function fmtT(t){ return t===null||t===undefined?'–':t.toFixed(1)+' s'; }
+
+/* knob lock: a campaign race runs on the default knobs, except chill mode, with the difficulty on top */
+var CAMP_SAVED=null;
+function knobSync(){
+  var lock=!!CAMP_SAVED;
+  KNOBS.forEach(function(k){ var i=$('k-'+k[0]),o=$('o-k-'+k[0]); if(!i){return;}
+    if(k[5]==='bool'){ i.checked=!!K[k[0]]; o.textContent=K[k[0]]?'on':'off'; } else { i.value=K[k[0]]; o.textContent=K[k[0]]; }
+    i.disabled=lock; });
+  $('knob-reset').disabled=lock; $('knob-lock').hidden=!lock;
+}
+function campDiff(){ return (K.chill||(CAMP&&CAMP.chillUsed))?1:CS.diff; }
+function campApplyDiff(){ PSTRIKES=CAMP_DIFF[campDiff()].strikes; }
+function campLock(){
+  if(!CAMP_SAVED){ var k0={}; for(var k in K){k0[k]=K[k];} CAMP_SAVED={K:k0,ps:PSTRIKES}; }
+  for(var k2 in DEF){ if(k2!=='chill'){K[k2]=DEF[k2];} }
+  campApplyDiff(); knobSync();
+}
+function campUnlock(){
+  if(!CAMP_SAVED){return;}
+  var ch=K.chill; for(var k in CAMP_SAVED.K){K[k]=CAMP_SAVED.K[k];} K.chill=ch; PSTRIKES=CAMP_SAVED.ps; CAMP_SAVED=null; knobSync();
+}
 
 /* the overlay: the map list, and a tier pick for one map */
 var campRet=null;
@@ -1735,11 +1847,13 @@ function campShow(){
 function campClose(){ $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
 function campList(){
   campShow();
-  var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. Each star races a different set of rivals. '+s.totalStars+' of '+(3*CAMPAIGN.length)+' stars'+(s.noDeathMaps?', '+s.noDeathMaps+' without a crash':'')+'.</p><ol class="cmp-list">';
+  var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. Each star races a different set of rivals. With chill mode off a win earns the star in '+
+    'bronze (Easy), silver (Medium) or gold (Hard); with chill mode on it earns a chill star '+starIcon({medal:0,chill:true})+'. '+s.totalStars+' of '+(3*CAMPAIGN.length)+' stars'+
+    (s.medalStars?', '+s.medalStars+' with a medal':'')+(s.noDeathMaps?', '+s.noDeathMaps+(s.noDeathMaps===1?' map':' maps')+' without a crash':'')+'.</p><ol class="cmp-list">';
   CAMPAIGN.forEach(function(c,i){
     var open=campOpen(i),m=campMap(i),b=campBest(i);
     h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+'</span><span class="cmp-hint">'+
-      (open?esc(c.hint):'Locked. Earn a star on map '+i+' to open it.')+'</span></span><span class="cmp-meta">'+(open?starStr(campStars(i))+'<span>'+(b===null?'no time yet':'best '+fmtT(b))+'</span>'+(m.noDeaths?'<span class="cmp-nd">no deaths</span>':''):'<span>locked</span>')+'</span></button></li>';
+      (open?esc(c.hint):'Locked. Earn a star on map '+i+' to open it.')+'</span></span><span class="cmp-meta">'+(open?mapStars(i)+'<span>'+(b===null?'no time yet':'best '+fmtT(b))+'</span>'+(m.noDeaths?'<span class="cmp-nd">no deaths</span>':''):'<span>locked</span>')+'</span></button></li>';
   });
   h+='</ol><div class="cmp-foot"><span class="note">Free play (New run) races a random track against all three.</span><button type="button" id="camp-free">Free play</button></div>';
   $('camp-h').textContent='Campaign'; $('camp-body').innerHTML=h;
@@ -1752,9 +1866,9 @@ function campTiers(i){
   campShow();
   var c=CAMPAIGN[i],m=campMap(i),nt=campNextTier(i),h='<p class="cmp-hint">'+esc(c.hint)+'</p><div class="cmp-tiers">';
   for(var t=0;t<3;t++){
-    var op=campTierOpen(i,t);
-    h+='<button type="button" class="cmp-tier'+(op&&t===nt?' next':'')+'" data-tier="'+t+'"'+(op?'':' disabled')+'><span>'+starStr(t+1)+'<br><b>vs</b> '+rivalsHtml(c.tiers[t])+'</span><span class="cmp-meta">'+
-      (m.won[t]?'<span>won</span><span>best '+fmtT(m.best[t])+'</span>':(op?'<span>not won yet</span>':'<span>win '+(t)+(t===1?' star':' stars')+' first</span>'))+'</span></button>';
+    var op=campTierOpen(i,t),s=campStar(i,t),won=s.medal>0||s.chill;
+    h+='<button type="button" class="cmp-tier'+(op&&t===nt?' next':'')+'" data-tier="'+t+'"'+(op?'':' disabled')+'><span>'+tierStar(i,t)+'<br><b>vs</b> '+rivalsHtml(c.tiers[t])+'</span><span class="cmp-meta">'+
+      (won?'<span>'+(s.medal?MEDALS[s.medal]:'chill star')+'</span><span>best '+fmtT(m.best[t])+'</span>':(op?'<span>not won yet</span>':'<span>win star '+t+' first</span>'))+'</span></button>';
   }
   h+='</div><p class="note">Seed '+c.seed+(m.noDeaths?' · no-deaths mark earned':' · no-deaths mark: win without crashing into a barrier, the gate or a tower')+'.</p><div class="cmp-foot"><button type="button" id="camp-back">Map list</button></div>';
   $('camp-h').textContent=(i+1)+'. '+c.name; $('camp-body').innerHTML=h;
@@ -1769,44 +1883,76 @@ function campStart(i,t){
   $('camp').hidden=true; campRet=null;
   start(CAMPAIGN[i].seed,{i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()});
 }
-/* called by start(): the Ready card names the map, its hint and rivals in a campaign race */
+/* called by start() before the track is drawn: lock the knobs for a campaign race, give them back for free play */
+function campPrep(camp){ if(camp){campLock();}else{campUnlock();} }
+/* called by start(): the Ready card names the map, its hint and rivals, and holds the difficulty picker in a campaign race */
 function campReady(){
-  if(!CAMP){ $('ready-h').textContent='Ready'; $('ready-camp').textContent='Campaign'; return; }
+  var dz=$('ready-diff');
+  if(!CAMP){ $('ready-h').textContent='Ready'; $('ready-camp').textContent='Campaign'; dz.hidden=true; return; }
   var c=CAMPAIGN[CAMP.i];
   $('ready-h').textContent=(CAMP.i+1)+'. '+c.name;
-  $('ready-msg').innerHTML=starStr(CAMP.tier+1)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set your pace, split and chill mode, then go.</span>';
+  $('ready-msg').innerHTML=tierStar(CAMP.i,CAMP.tier)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set your pace, split and chill mode, then go.</span>';
   $('ready-camp').textContent='Map list';
+  campDiffUI();
 }
+function campDiffUI(){
+  var dz=$('ready-diff'),chill=!!K.chill,d=CAMP_DIFF[CS.diff];
+  dz.hidden=false;
+  $('diff-seg').hidden=chill;
+  var bs=dz.querySelectorAll('[data-diff]');
+  for(var k=0;k<bs.length;k++){ var on=+bs[k].getAttribute('data-diff')===CS.diff; bs[k].setAttribute('aria-checked',on?'true':'false'); bs[k].tabIndex=on?0:-1; }
+  $('diff-line').innerHTML=chill?starIcon({medal:0,chill:true})+' Chill on: a win earns a chill star, no medal. Turn chill off to race for one.':
+    starIcon({medal:d.medal,chill:false})+' '+d.name+' wins '+MEDALS[d.medal]+'. Your lab has '+d.strikes+' strikes; rivals are the same.';
+  $('diff-knobs').textContent='Knobs at their defaults, except difficulty and chill mode.';
+}
+function campSetDiff(d){ if(!(d>=0&&d<=2)){return;} CS.diff=d; campSave(); if(CAMP&&!running&&!$('ready').hidden){ campApplyDiff(); campDiffUI(); } }
+/* called by go(): the race's chill state and difficulty are fixed at Go; turning chill on later still makes it a chill race */
+function campGo(){ if(!CAMP){return;} campApplyDiff(); CAMP.chillUsed=!!K.chill; CAMP.diff=campDiff(); }
 /* called at the end of endScreen(): in a campaign race, record it and show stars, best time and the next steps */
 function campFoot(){ var foot=$('ov-foot').querySelector('.btns'); if(foot.firstChild!==$('ov-btn')){ foot.insertBefore($('ov-btn'),foot.firstChild); } }
 function campEnd(){
   var cres=$('ov-cres');
   campFoot();
   if(!CAMP){
-    cres.hidden=true; $('ov-btn').hidden=false; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-list').textContent='Campaign';
+    cres.hidden=true; $('ov-btn').hidden=false; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=true; $('ov-list').textContent='Campaign';
     return;
   }
   var h=G.labs[0],r=G.result,res={won:r.type==='win'&&r.winner===h,time:G.t,crashes:h.st.bc+h.st.tc,fell:h.st.fl>0,dissolved:!!h.dissolved,
-    extinction:r.type==='all'&&r.by===h.name};
-  campShowEnd(CAMP.i,CAMP.tier,res,campRecord(CAMP.i,CAMP.tier,res));
+    extinction:r.type==='all'&&r.by===h.name,chill:!!(CAMP.chillUsed||K.chill),diff:CAMP.diff===undefined?campDiff():CAMP.diff};
+  var o=campRecord(CAMP.i,CAMP.tier,res);
+  campUnlock();
+  campShowEnd(CAMP.i,CAMP.tier,res,o);
 }
 function campShowEnd(i,t,res,o){
-  var c=CAMPAIGN[i],cres=$('ov-cres'),parts=[];
+  var c=CAMPAIGN[i],cres=$('ov-cres'),parts=[],mt=MEDALS[o.medal];
   if(res.won){
-    parts.push(o.firstWin?'You earned '+starStr(t+1)+' on '+esc(c.name)+'.':'Won the '+starStr(t+1)+' tier again.');
+    if(res.chill){
+      parts.push(o.chillNew&&!o.prevMedal?'You earned star '+(t+1)+' on '+esc(c.name)+' as a chill star '+starIcon({medal:0,chill:true},'chill star')+', with chill mode on.':
+        'Won star '+(t+1)+' again, with chill mode on'+(o.prevMedal?' (it keeps its '+MEDALS[o.prevMedal]+')':'')+'.');
+      if(!o.prevMedal){ parts.push('Turn chill off to race it for a medal.'); }
+    } else {
+      var dn=CAMP_DIFF[res.diff|0].name;
+      if(o.medalUp){ parts.push((o.prevMedal?'Star '+(t+1)+' upgraded from '+MEDALS[o.prevMedal]+' to ':'You earned star '+(t+1)+' on '+esc(c.name)+' in ')+mt+' '+starIcon({medal:o.medal,chill:false},mt)+' ('+dn+', chill off).'); }
+      else if(o.medal===o.prevMedal){ parts.push('Won star '+(t+1)+' again in '+mt+' '+starIcon({medal:o.medal,chill:false},mt)+' ('+dn+', chill off).'); }
+      else { parts.push('Won star '+(t+1)+' on '+dn+' ('+mt+'), chill off; it keeps its '+MEDALS[o.prevMedal]+'.'); }
+    }
     if(o.newBest){ parts.push('<span class="new">New best: '+fmtT(campMap(i).best[t])+'</span> (was '+fmtT(o.prevBest)+').'); }
     else if(o.firstWin){ parts.push('Best time '+fmtT(campMap(i).best[t])+'.'); }
     else { parts.push(fmtT(res.time)+', best '+fmtT(campMap(i).best[t])+'.'); }
     if(o.noDeathsNew){ parts.push('<span class="new">No-deaths mark earned</span>: you never crashed.'); }
-    if(t<2&&o.firstWin){ parts.push('The '+starStr(t+2)+' tier is open.'); }
+    if(o.tierOpened){ parts.push('Star '+(t+2)+' is open.'); }
     if(o.unlocked){ parts.push('<span class="new">Map '+(i+2)+', '+esc(CAMPAIGN[i+1].name)+', is open.</span>'); }
   } else {
-    parts.push('No star this time. Map stars: '+starStr(campStars(i))+'.');
+    parts.push('No star this time ('+(res.chill?'chill mode on':CAMP_DIFF[res.diff|0].name+', chill off')+'). Map stars: '+mapStars(i)+'.');
   }
   if(o.saved===false){ parts.push('<span class="note">Progress is not saved: this browser has no storage for the page.</span>'); }
   cres.innerHTML=parts.join(' '); cres.hidden=false;
-  $('ov-btn').hidden=true; $('ov-retry').hidden=false;
-  $('ov-next').hidden=!(i+1<CAMPAIGN.length&&campOpen(i+1));
+  /* loss: Retry, Map list. Win: Next map (if open), Retry, Try n+1 stars (if there is a next tier), Map list */
+  var nx=res.won&&i+1<CAMPAIGN.length&&campOpen(i+1),up=res.won&&t<2&&campTierOpen(i,t+1);
+  $('ov-btn').hidden=true; $('ov-retry').hidden=false; $('ov-next').hidden=!nx; $('ov-up').hidden=!up;
+  $('ov-up').textContent='Try '+(t+2)+' stars';
+  var pri=nx?'ov-next':(up?'ov-up':'ov-retry'),foot=$('ov-foot').querySelector('.btns');
+  ['ov-next','ov-retry','ov-up','ov-list'].forEach(function(id){ $(id).classList.toggle('primary',id===pri); foot.appendChild($(id)); });
   $('ov-list').textContent='Map list';
   if(o.epilogue){ try{ if(window.showEpilogue){ window.showEpilogue(campSummary()); } }catch(e){} }  /* hook for the epilogue: first time all nine maps have a star */
 }
@@ -1814,11 +1960,23 @@ function campShowEnd(i,t,res,o){
   campEnd();  /* the start overlay: Start run and a Campaign button in one row */
   $('ov-retry').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } });
   $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campNextTier(n)); } });
+  $('ov-up').addEventListener('click',function(){ if(CAMP&&CAMP.tier<2){ campStart(CAMP.i,CAMP.tier+1); } });
   $('ov-list').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
   $('ready-camp').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
   $('btn-camp').addEventListener('click',campList);
   $('camp-close').addEventListener('click',campClose);
   $('camp').addEventListener('click',function(e){ if(e.target===this){campClose();} });
+  /* difficulty: a radio group of three buttons; arrows move the choice. Keys stop here so the game's hotkeys do not fire */
+  var seg=$('diff-seg');
+  seg.addEventListener('click',function(e){ var b=e.target.closest('[data-diff]'); if(b){ campSetDiff(+b.getAttribute('data-diff')); b.focus(); } });
+  seg.addEventListener('keydown',function(e){
+    var d={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.code];
+    if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); return; }
+    if(!d){return;} e.preventDefault(); e.stopPropagation();
+    var n=Math.max(0,Math.min(2,CS.diff+d)); campSetDiff(n); seg.querySelector('[data-diff="'+n+'"]').focus();
+  });
+  /* chill mode on the Ready card switches between the picker and the chill-star line; during a race turning it on makes it a chill race */
+  $('auto').addEventListener('change',function(){ if(!CAMP){return;} if(running){ if(K.chill){CAMP.chillUsed=true;} } else if(!$('ready').hidden){ campApplyDiff(); campDiffUI(); } });
   /* reset asks for a second tap instead of a confirm dialog */
   var rb=$('camp-reset'),armed=0;
   rb.addEventListener('click',function(){
@@ -1827,12 +1985,15 @@ function campShowEnd(i,t,res,o){
     setTimeout(function(){ if(armed&&Date.now()-armed>=4000){ armed=0; rb.textContent='Reset campaign progress'; } },4100);
   });
 })();
-/* test hooks: PF.campaign.record(map,tier,res) records a race as campRecord does; PF.campaign.end(map,tier,res) also renders the end overlay */
-window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,state:function(){return CS;},summary:campSummary,record:campRecord,reset:campReset,list:campList,tiers:campTiers,start:campStart,
+/* test hooks: PF.campaign.record(map,tier,res) records a race as campRecord does; PF.campaign.end(map,tier,res) also renders the end overlay.
+   res.chill and res.diff (0 Easy, 1 Medium, 2 Hard) say how it was won. load() re-reads storage (for migration tests); setOpenTiers(b) flips CAMP_OPEN_TIERS */
+window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,KEY_V1:CAMP_KEY_V1,DIFF:CAMP_DIFF,state:function(){return CS;},summary:campSummary,record:campRecord,reset:campReset,list:campList,tiers:campTiers,start:campStart,
   end:function(i,t,res){ CAMP={i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()}; running=false; $('ready').hidden=true;
     showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play again');
     campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
-  stars:campStars,open:campOpen};
+  load:function(){ CS=campLoad(); return CS; },setOpenTiers:function(b){ CAMP_OPEN_TIERS=!!b; },setDiff:campSetDiff,
+  locked:function(){ return !!CAMP_SAVED; },playerStrikes:function(){ return PSTRIKES; },
+  stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen};
 window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(location.search).get('epilogue')){campList();} });
 /* ---------- campaign (end) ---------- */
 
@@ -1850,7 +2011,7 @@ requestAnimationFrame(frame);
 </script>
 <script>
 /* Epilogue. window.showEpilogue(summary) opens it once the campaign is done; ?epilogue=careful|reckless|mixed previews a sample.
-   summary = {maps:[{name,stars,noDeaths,best}], falls, extinctions, dissolutions, totalStars, wins}; any field may be missing.
+   summary = {maps:[{name,stars,noDeaths,best}], falls, extinctions, dissolutions, totalStars, wins, medals:{gold,silver,bronze}, chillStars}; any field may be missing.
    Closing it (Close, Esc or Back to the maps) fires a 'pf:epilogue-close' event on window. Reads nothing from the simulation. */
 (function(){
 'use strict';
@@ -1872,8 +2033,10 @@ function read(s){
   });
   var stars=num(s.totalStars); if(stars===null&&starKnown){ stars=starSum; }
   var nMaps=maps.length||9;
+  var md=s.medals&&typeof s.medals==='object'?s.medals:null,mg=md?num(md.gold):null,ms=md?num(md.silver):null,mb=md?num(md.bronze):null;
   return {maps:maps,nMaps:nMaps,falls:num(s.falls),ext:num(s.extinctions),dis:num(s.dissolutions),wins:num(s.wins),
-          stars:stars,maxStars:3*nMaps,clean:clean,known:known};
+          stars:stars,maxStars:3*nMaps,clean:clean,known:known,
+          medals:md&&(mg!==null||ms!==null||mb!==null)?(mg||0)+' gold · '+(ms||0)+' silver · '+(mb||0)+' bronze':null,chill:num(s.chillStars)};
 }
 /* style: careful if few falls and mostly clean maps, reckless if many falls or few clean maps, else mixed */
 function style(d){
@@ -1900,7 +2063,7 @@ function story(d){
       (cleanTxt?' You finished '+cleanTxt+' without a fall':'')+(d.falls!==null?(cleanTxt?', and fell '+times(d.falls)+' on the rest.':' You fell '+times(d.falls)+' in all.'):(cleanTxt?'.':''))+
       ' That is not a bad way to play. It is how the Gambler plays, and the Gambler often does well. The question this game keeps asking is whether you can tell, before the edge, which kind of stretch you are in.');
   }
-  if(d.dis){ P[P.length-1]+=' Your lab was dissolved '+times(d.dis)+' along the way: three strikes against walls you could have waited out. The government in this game is not subtle, but it is not wrong either.'; }
+  if(d.dis){ P[P.length-1]+=' Your lab was dissolved '+times(d.dis)+' along the way: out of strikes against walls you could have waited out. The government in this game is not subtle, but it is not wrong either.'; }
   if(d.ext===0){
     P.push('And through all of it, the race never ended for everyone on your account. That is worth a moment, because it is not the default. One lab’s fall can roll the dice for every lab on the track, and you never made the rest of the track roll them.');
   } else if(d.ext===1||d.ext===2){
@@ -1930,7 +2093,7 @@ function fill(d,st){
   body.appendChild(el('p','epi-sign',st.sign));
   var dl=document.getElementById('epi-stats'); dl.textContent='';
   [['Stars',d.stars===null?null:d.stars+' / '+d.maxStars],['Wins',d.wins],['Falls',d.falls],
-   ['Clean maps',d.clean===null?null:d.clean+' / '+d.known],['Ended for everyone',d.ext],['Dissolved',d.dis]].forEach(function(r){
+   ['Clean maps',d.clean===null?null:d.clean+' / '+d.known],['Medals',d.medals],['Chill stars',d.chill],['Ended for everyone',d.ext],['Dissolved',d.dis]].forEach(function(r){
     if(r[1]===null||r[1]===undefined){return;}
     var w=el('div'); w.appendChild(el('dt',null,r[0])); w.appendChild(el('dd',null,String(r[1]))); dl.appendChild(w);
   });
