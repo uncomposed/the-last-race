@@ -1,0 +1,874 @@
+<title>Pacing the Frontier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column. Each mechanic is a figure with its own live readout underneath. */
+:root{
+  --bg:#EDF0F4; --surface:#F8F9FB; --ink:#11161D; --muted:#566170; --line:#C9D1DB;
+  --a:#0F8B8D; --b:#C9731C; --c:#7A5AC8; --d:#D6456B;
+  --danger:#D23B2E; --good:#2E8B57;
+  --display:'Pixelify Sans','Courier New',monospace;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1218; --surface:#161C25; --ink:#E8ECF2; --muted:#93A0B2; --line:#2B3442;
+    --a:#3CC3C5; --b:#F0A04B; --c:#A58BEE; --d:#F2708F; --danger:#FF6B5B; --good:#4FC987;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1218; --surface:#161C25; --ink:#E8ECF2; --muted:#93A0B2; --line:#2B3442;
+  --a:#3CC3C5; --b:#F0A04B; --c:#A58BEE; --d:#F2708F; --danger:#FF6B5B; --good:#4FC987;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.55 var(--body);
+  padding-block:32px 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+section{display:flex;flex-direction:column;gap:16px;min-width:0}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(34px,8vw,52px);letter-spacing:.01em}
+h2{font-size:28px}
+h3{font-size:19px;font-weight:500}
+p{margin:0;max-width:65ch}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:18px;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:12px}
+
+/* rules */
+.rules{margin:0;display:grid;grid-template-columns:minmax(0,10ch) minmax(0,1fr);gap:0 18px}
+.rules dt{font:500 13px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding-block:12px;border-top:1px solid var(--line);color:var(--muted)}
+.rules dd{margin:0;padding-block:12px;border-top:1px solid var(--line)}
+.rules .new{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--c);margin-left:6px}
+@media (max-width:520px){
+  .rules{grid-template-columns:minmax(0,1fr)}
+  .rules dt{border-top:1px solid var(--line);padding-bottom:0}
+  .rules dd{border-top:0;padding-top:2px}
+}
+
+/* figures */
+.fig{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.fig-head{display:flex;flex-direction:column;gap:4px}
+.tag{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--a)}
+figcaption{font-size:14px;color:var(--muted);max-width:65ch}
+svg.scene{display:block;width:100%;height:auto;max-width:100%}
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.controls label{font:500 13px var(--mono);display:flex;gap:8px;align-items:center;min-width:0}
+.controls input[type=range]{flex:1 1 120px;min-width:0;accent-color:var(--a)}
+.grow{flex:1 1 220px;display:flex;gap:8px;align-items:center;min-width:0}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+.sliders label{font:500 13px var(--mono);display:flex;flex-direction:column;gap:4px;min-width:0}
+.sliders .row{display:flex;justify-content:space-between;gap:8px}
+.sliders input[type=range]{width:100%;min-width:0;accent-color:var(--a)}
+output{font-variant-numeric:tabular-nums;display:inline-block}
+button{
+  font:500 13px var(--mono); color:var(--ink); background:var(--bg);
+  border:1px solid var(--line); border-radius:4px; padding:7px 12px; cursor:pointer;
+}
+button:hover{border-color:var(--muted)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.readout{display:flex;flex-wrap:wrap;gap:6px 22px;font:400 13px var(--mono)}
+.readout div{display:flex;gap:8px;align-items:center}
+.readout .k{color:var(--muted)}
+.readout .v{font-variant-numeric:tabular-nums}
+.status{font:500 14px/1.4 var(--body);min-height:2.8em}
+.dot{display:inline-block;width:10px;height:10px;flex:0 0 10px}
+.dot.a{background:var(--a)} .dot.b{background:var(--b)} .dot.c{background:var(--c)} .dot.ink{background:var(--ink)} .dot.ok{background:var(--good)} .dot.no{background:var(--danger)} .dot.mu{background:var(--muted)}
+.status .dot{vertical-align:-1px;margin-right:6px}
+.split{display:flex;height:22px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--bg)}
+.split span{display:block;height:100%;min-width:0;transition:width .12s linear}
+.split .s-run{background:var(--ink)} .split .s-sight{background:var(--a)} .split .s-height{background:var(--c)} .split .s-max{background:var(--b)}
+
+/* svg paint */
+.ground{stroke:var(--ink);stroke-width:2;fill:none}
+.ticks{stroke:var(--line);stroke-width:2;stroke-dasharray:12 12;fill:none}
+.barrier{fill:var(--ink)}
+.barrier.hit{fill:var(--danger)}
+.column{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 3}
+.deck{fill:var(--good)}
+.t{fill:var(--ink);font:500 13px var(--mono)}
+.tm{fill:var(--muted);font:400 12px var(--mono)}
+.ca{color:var(--a)} .cb{color:var(--b)} .cc{color:var(--c)} .cd{color:var(--d)}
+.b-pub{fill:var(--a)} .b-priv{fill:var(--muted)}
+.ghost{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 3}
+.sightbar{stroke:var(--a)} .brakebar{stroke:var(--b)}
+.fog{fill:var(--surface);opacity:.93}
+.wash{fill:var(--danger)}
+.pill{fill:var(--surface);stroke:var(--danger);stroke-width:2}
+.t-danger{fill:var(--danger);font:700 16px var(--display)}
+.axis{stroke:var(--muted);stroke-width:1.5;fill:none}
+.curve{stroke:var(--b);stroke-width:3;fill:none}
+.lead{stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4;fill:none}
+
+/* cast */
+.cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.cast > div{display:flex;gap:10px;align-items:center;min-width:0}
+.cast svg{flex:0 0 72px;width:72px;height:56px}
+.cast b{display:block;font:500 13px var(--mono)}
+.cast span{font-size:13px;color:var(--muted);line-height:1.3;display:block}
+
+/* prose */
+.points{display:flex;flex-direction:column;gap:18px}
+.points > div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.points h3{font-size:17px}
+.points ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:65ch}
+.q{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none}
+.q li{padding-top:12px;border-top:1px solid var(--line);max-width:65ch}
+.q b{font-weight:600}
+.tw{overflow-x:auto}
+table.knobs{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+.knobs th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--line)}
+.knobs td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.knobs td:first-child{font-weight:600}
+.knobs td:nth-child(2){font:400 13px var(--mono)}
+.b-sel{fill:var(--danger)} .b-oth{fill:var(--muted);opacity:.45}
+.sr{position:absolute;left:-9999px}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto} .split span{transition:none} }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="7" height="7" style="fill:var(--surface)"/>
+      <line x1="0" y1="0" x2="0" y2="7" style="stroke:var(--danger);stroke-width:2.5"/>
+    </pattern>
+    <symbol id="lab" viewBox="0 0 18 18">
+      <rect width="18" height="18" fill="currentColor"/>
+      <rect x="4" y="5" width="3" height="4" style="fill:var(--surface)"/>
+      <rect x="11" y="5" width="3" height="4" style="fill:var(--surface)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+
+<header>
+  <p class="eyebrow">Game concept · working title · revision 10</p>
+  <h1>Pacing the Frontier</h1>
+  <p class="lede">Updated with your clarifications: a crash slows you and teaches other labs, labs in view of each other share sight, and the frontier lab’s tower stands in front of the gap for the labs behind. A playable first version is published separately.</p>
+  <p class="lede" style="font-size:14px"><b>Note:</b> this page describes version 1 of the game. Version 2 (seeded tracks, one visibility rule, barrier bounce and cap, gap scrape) is described in <code>README.md</code> and <code>DESIGN-NOTES.md</code>; the scenes below were not updated.</p>
+</header>
+
+<section>
+  <h2>The game in one paragraph</h2>
+  <p>You run a small AI lab: a square sprinting along a side-scrolling track toward a finish line, racing three rival labs. Every moment you choose how much of your max speed to run at. Whatever you hold back is not wasted. You split it between three permanent investments, each with a ceiling: sight (how far ahead you can see), height (what you can clear) and max speed itself. Barriers are visible and cost you time if you hit them. Gaps are the real danger. They are hidden until they enter your sight, and a lab that falls into one is out of the race. Then a dice roll decides whether it takes everyone with it, and the odds get worse at every gap. The first lab to reach a gap has to get high enough to cross it, and leaves that height behind as a tower in front of the gap. A lab behind has to clear the same tower and then still cross the gap, which gets narrower the further past it the leader is. Each gap is also a regime change. The frontier lab’s ceilings jump by the full level-up, every other lab’s jump by a share of it, and labs further behind refill their meters faster.</p>
+</section>
+
+<section>
+  <h2>Rules</h2>
+  <dl class="rules">
+    <dt>Goal</dt><dd>Be first across the finish line. A lab that falls into a gap is out. A dice roll then decides whether the run ends for everyone.</dd>
+    <dt>Controls</dt><dd>A pace dial and a jump button. Pace is how much of your max speed you actually run at. On a phone: a slider under the left thumb and a tap to jump.</dd>
+    <dt>Invest<span class="new">new</span></dt><dd>Whatever you hold back from running is spent on three things: <b>sight</b>, <b>height</b> and <b>max speed</b>. You choose the split. Sight and height are your controls and safety. Max speed is capability. All three are permanent, and each fills only up to a ceiling. All three cost the same.</dd>
+    <dt>Barriers</dt><dd>Always visible and fixed. A barrier is cleared when jump plus height is at least its height. Barriers get taller as the run goes on. Hit one and you stop, and your max speed is cut for a few seconds. You stay in front of it until you can cross.</dd>
+    <dt>Learning<span class="new">new</span></dt><dd>When a lab clears a barrier it earlier crashed into, every lab whose height is below the barrier gains up to a third of the barrier’s height, never past the barrier’s height. When a lab clears a barrier in view of another lab, that lab gets the same bump.</dd>
+    <dt>Shared sight<span class="new">new</span></dt><dd>Labs in view of each other get their sight topped up to at least 75% of the best sight among them.</dd>
+    <dt>Gaps</dt><dd>Hidden until they fall inside your sight. Each has a width, and some are wide. To cross, your jump has to cover it. A jump covers your speed at the edge times your air time, and height adds air time. So a wide gap needs run-up speed as well as height.</dd>
+    <dt>Run-up<span class="new">new</span></dt><dd>Speeding up from a standstill is slow, and so is braking. A lab that stops too close to a wide gap cannot get up enough speed to cross it. It can back up to make room, slowly, but not past the last thing it cleared. Better to stop early, or keep moving.</dd>
+    <dt>The fall<span class="new">new</span></dt><dd>A lab that falls in is out of the race. Then a roll from 1 to 100 decides whether the run also ends for everyone. The odds start low and get worse at each gap.</dd>
+    <dt>Braking</dt><dd>Stopping takes distance that grows with the square of your actual speed. You only get a safe stop if your sight is at least that far. More max speed makes the cliff harder to stop at.</dd>
+    <dt>Tower<span class="new">new</span></dt><dd>The first lab to cross a gap leaves the height it built behind as a tower in front of the gap, and the tower keeps that height. A lab behind has to clear the tower, which is a barrier, and then cross the gap itself. Falling short of the tower costs time. Falling short of the gap is still a fall.</dd>
+    <dt>Narrower gap<span class="new">new</span></dt><dd>For a lab behind the frontier, the gap is narrower the further past it the frontier is: its full width divided by one plus that distance. The frontier lab faces the full hidden gap. Until the frontier has crossed a gap, every lab faces the full gap.</dd>
+    <dt>Regimes<span class="new">new</span></dt><dd>Each gap is a regime change. When the frontier lab crosses one, its ceilings on sight, height and max speed rise by the full level-up. Every other lab’s ceilings rise at once by a share of that level-up, and their meters fill faster the further behind the frontier they are. A lab that crosses a gap itself gets whatever is left of the level-up. This replaces the old catch-up speed rule.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>See it move</h2>
+
+  <figure class="fig">
+    <div class="fig-head"><span class="tag">The cast</span><h3>Six things on the track</h3></div>
+    <div class="cast" role="img" aria-label="Six pieces of the game: a lab, a barrier, a gap, height, a tower in front of a gap, and the finish flag.">
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="72" y2="44"/><use href="#lab" class="ca" x="27" y="26" width="18" height="18"/></svg><p><b>Lab</b><span>You and three rivals.</span></p></div>
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="72" y2="44"/><rect class="barrier" x="26" y="16" width="20" height="28"/></svg><p><b>Barrier</b><span>Visible. Hit it and you slow down.</span></p></div>
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="22" y2="44"/><line class="ground" x1="50" y1="44" x2="72" y2="44"/><rect x="22" y="44" width="28" height="12" fill="url(#hatch)"/><text class="t" x="36" y="32" text-anchor="middle">?</text></svg><p><b>Gap</b><span>Hidden until in sight. A fall takes you out.</span></p></div>
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="72" y2="44"/><rect class="column" x="23" y="28" width="26" height="16"/><use href="#lab" class="ca" x="27" y="10" width="18" height="18"/></svg><p><b>Height</b><span>Permanent. Lets you clear barriers.</span></p></div>
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="22" y2="44"/><line class="ground" x1="50" y1="44" x2="72" y2="44"/><rect x="22" y="44" width="28" height="12" fill="url(#hatch)"/><rect class="deck" x="8" y="14" width="10" height="30"/></svg><p><b>Tower</b><span>Left by the frontier lab in front of the gap.</span></p></div>
+      <div><svg viewBox="0 0 72 56" aria-hidden="true"><line class="ground" x1="0" y1="44" x2="72" y2="44"/><line class="ground" x1="30" y1="44" x2="30" y2="10"/><polygon points="30,10 52,16 30,22" style="fill:var(--d)"/></svg><p><b>Finish</b><span>First one over wins.</span></p></div>
+    </div>
+    <figcaption>Colors only separate labs. Everything that matters is also shape: barriers are solid blocks, gaps are hatched.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-a">
+    <div class="fig-head"><span class="tag">Pace and the split</span><h3>Run, or hold back and invest</h3></div>
+    <svg class="scene" id="svg-a" viewBox="0 0 480 200" role="img" aria-label="A lab runs toward a barrier 52 units high. The pace dial sets how much of max speed it runs at. What it holds back is split between sight, height and max speed."></svg>
+    <div class="controls">
+      <label class="grow" for="pace"><span>Pace</span><output id="pace-out">100%</output><input type="range" id="pace" min="0" max="100" value="100"></label>
+      <button id="a-play" type="button">Pause</button>
+      <button id="a-reset" type="button">Reset</button>
+    </div>
+    <div class="split" role="img" aria-label="Your effort: how much runs, and how much goes to sight, height and max speed." id="a-split">
+      <span class="s-run" id="s-run"></span><span class="s-sight" id="s-sight"></span><span class="s-height" id="s-height"></span><span class="s-max" id="s-max"></span>
+    </div>
+    <div class="readout">
+      <div><span class="dot ink"></span><span class="k">Run</span><span class="v" id="l-run"></span></div>
+      <div><span class="dot a"></span><span class="k">Sight</span><span class="v" id="l-sight"></span></div>
+      <div><span class="dot c"></span><span class="k">Height</span><span class="v" id="l-height"></span></div>
+      <div><span class="dot b"></span><span class="k">Max speed</span><span class="v" id="l-max"></span></div>
+    </div>
+    <div class="sliders">
+      <label for="w-sight"><span class="row"><span>Hold-back to sight</span></span><input type="range" id="w-sight" min="0" max="100" value="25"></label>
+      <label for="w-height"><span class="row"><span>Hold-back to height</span></span><input type="range" id="w-height" min="0" max="100" value="50"></label>
+      <label for="w-max"><span class="row"><span>Hold-back to max speed</span></span><input type="range" id="w-max" min="0" max="100" value="25"></label>
+    </div>
+    <div class="readout">
+      <div><span class="k">Height</span><span class="v" id="a-lift">0</span></div>
+      <div><span class="k">Jump + height</span><span class="v" id="a-sum">34</span><span class="k">vs barrier</span><span class="v">52</span></div>
+      <div><span class="k">Sight</span><span class="v" id="a-sight">60</span></div>
+      <div><span class="k">Max speed</span><span class="v" id="a-top">90</span></div>
+      <div><span class="k">Speed now</span><span class="v" id="a-speed">90</span></div>
+    </div>
+    <p class="status" id="a-status">At full pace nothing is invested and the first barrier is too high. Lower Pace, choose how to split the rest, and watch height, sight and max speed grow.</p>
+    <figcaption>The three sliders are weights. They only decide how the held-back share is divided, so they do nothing at 100% pace. Height shows as the platform under the lab, sight as the teal bar, and max speed as a faster run. The ceilings here (70 for sight and height, 150 for max speed) are the first regime. Each gap raises them, shown below.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-b">
+    <div class="fig-head"><span class="tag">Barriers</span><h3>Barriers get taller. Your height has to keep up.</h3></div>
+    <svg class="scene" id="svg-b" viewBox="0 0 480 190" role="img" aria-label="Eight barriers along the track, each taller than the last. A dashed line shows jump plus height. Barriers above the line would be hit."></svg>
+    <div class="controls">
+      <label class="grow" for="b-h"><span>Your height</span><output id="b-h-out">10</output><input type="range" id="b-h" min="0" max="70" value="10"></label>
+    </div>
+    <p class="status" id="b-msg"></p>
+    <figcaption>Barriers are fixed obstacles with no types. Early ones can be jumped with no height at all. Later ones cannot, so a lab that never holds back will start crashing. A crash slows the lab, and when it finally clears the barrier everyone below that height gets a boost, so a public failure teaches the others. Heights here run from 30 to 70 and are placeholders.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-d">
+    <div class="fig-head"><span class="tag">Optimal stopping</span><h3>You have to brake before you can see why</h3></div>
+    <svg class="scene" id="svg-d" viewBox="0 0 480 170" role="img" aria-label="A lab with a sight range and a braking distance. A gap sits ahead, hidden by fog beyond sight range. If braking distance is longer than sight range, the lab sees the gap too late."></svg>
+    <div class="sliders">
+      <label for="d-pace"><span class="row"><span>Pace</span><output id="d-pace-out">100%</output></span><input type="range" id="d-pace" min="10" max="100" value="100"></label>
+      <label for="d-max"><span class="row"><span>Max speed</span><output id="d-max-out">90</output></span><input type="range" id="d-max" min="60" max="150" value="90"></label>
+      <label for="d-sight"><span class="row"><span>Sight invested</span><output id="d-sight-out">15</output></span><input type="range" id="d-sight" min="0" max="70" value="15"></label>
+    </div>
+    <div class="readout">
+      <div><span class="k">Speed</span><span class="v" id="d-speed"></span></div>
+      <div><span class="dot a"></span><span class="k">Sight</span><span class="v" id="d-sightv"></span></div>
+      <div><span class="dot b"></span><span class="k">Braking</span><span class="v" id="d-brake"></span></div>
+    </div>
+    <p class="status" id="d-verdict"></p>
+    <figcaption>Speed is pace times max speed. Braking distance grows with its square. Sight comes only from the sight you invested in. A safe stop needs sight at least as long as braking. Spending on max speed makes the stop longer, so capability and safety pull against each other.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-c">
+    <div class="fig-head"><span class="tag">Gap and tower</span><h3>The leader builds height. It stays behind as a tower.</h3></div>
+    <svg class="scene" id="svg-c" viewBox="0 0 480 200" role="img" aria-label="A leader lab stops well back from a gap, builds height under itself, runs up and jumps the gap, and leaves a tower behind. The follower then has to clear the tower, run up and cross the gap. In the other scenario nobody stops and a lab falls in."></svg>
+    <div class="controls">
+      <button id="c-m-bridge" type="button" data-mode="bridge" aria-pressed="true">Leader stops and builds</button>
+      <button id="c-m-nobody" type="button" data-mode="nobody" aria-pressed="false">Nobody stops</button>
+      <button id="c-play" type="button">Pause</button>
+      <label class="grow" for="c-scrub"><span class="sr">Timeline</span><input type="range" id="c-scrub" min="0" max="13.5" step="0.01" value="0"></label>
+    </div>
+    <div class="readout">
+      <div><span class="dot a"></span><span class="k">Leader pace</span><span class="v" id="c-pace">100%</span></div>
+      <div><span class="dot b"></span><span class="k">Follower</span><span class="v">catching up</span></div>
+      <div><span class="k">Height built</span><span class="v" id="c-bridge">0%</span></div>
+    </div>
+    <p class="status" id="c-cap"></p>
+    <figcaption>The tower is a public good the leader pays for. It costs the leader its lead, and every lab behind it has to clear the tower and faces a narrower gap. In the drawing the leader stops well back so it has room to run up, builds height under itself, jumps the pit and leaves the tower behind. If a follower catches up while the leader builds, that is the dilemma.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-r">
+    <div class="fig-head"><span class="tag">The fall</span><h3>A fall always costs the lab. A roll decides if it costs everyone.</h3></div>
+    <svg class="scene" id="svg-r" viewBox="0 0 480 230" role="img" aria-label="Bars show the chance that a fall ends the run for everyone at gaps 1 to 5, rising each time. A strip from 1 to 100 shows the roll: the red part ends the run for everyone, the rest only takes out the lab that fell."></svg>
+    <div class="sliders">
+      <label for="r-gap"><span class="row"><span>Gap number</span><output id="r-gap-out">3</output></span><input type="range" id="r-gap" min="1" max="5" value="3"></label>
+      <label for="r-p1"><span class="row"><span>Odds at gap 1</span><output id="r-p1-out">4%</output></span><input type="range" id="r-p1" min="0" max="40" value="4"></label>
+      <label for="r-step"><span class="row"><span>Odds added per gap</span><output id="r-step-out">10%</output></span><input type="range" id="r-step" min="0" max="30" value="10"></label>
+    </div>
+    <div class="controls">
+      <button id="r-roll" type="button">Roll for a fall at this gap</button>
+      <button id="r-clear" type="button">Clear tally</button>
+    </div>
+    <div class="readout">
+      <div><span class="k">Odds everyone is out</span><span class="v" id="r-p"></span></div>
+      <div><span class="k">Rolls</span><span class="v" id="r-n">0</span></div>
+      <div><span class="k">Everyone out</span><span class="v" id="r-all">0</span></div>
+    </div>
+    <p class="status" id="r-msg">Press the button to see what a fall does at this gap.</p>
+    <figcaption>Any fall takes the lab out. The roll, from 1 to 100, then decides whether it also ends the run for every lab. Early gaps are gambles you can survive. Later ones are not. Numbers are placeholders: 4% at gap 1 and 10 points more at each gap, capped at 95%.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-g">
+    <div class="fig-head"><span class="tag">Narrower gap</span><h3>The further past the gap the frontier is, the narrower it gets</h3></div>
+    <svg class="scene" id="svg-g" viewBox="0 0 480 270" role="img" aria-label="Two lanes. The frontier lab faces a hidden pit 160 wide. A lab behind it faces the same tower and then a pit that is narrower the further past the gap the frontier is."></svg>
+    <div class="controls">
+      <label class="grow" for="g-lead"><span>Frontier's distance past the gap</span><output id="g-lead-out">40</output><input type="range" id="g-lead" min="0" max="100" value="40"></label>
+    </div>
+    <div class="readout">
+      <div><span class="k">Frontier's gap is</span><span class="v">160 wide</span></div>
+      <div><span class="k">Your tower</span><span class="v" id="g-w"></span></div>
+      <div><span class="k">Your gap is</span><span class="v" id="g-gap"></span><span class="v" id="g-pct"></span></div>
+    </div>
+    <p class="status" id="g-note"></p>
+    <figcaption>Width is divided by (1 + distance/25). A literal inverse would be infinite at zero distance, so the 1 keeps it finite. The reasoning: a lab far behind the frontier is dangerous only if nobody ahead can handle what it might create. A frontier lab that is far ahead already can. Your bioweapon example is this case. The tower does not shrink. It is a barrier, so hitting it only costs time. Falling short of the gap is still a fall.</figcaption>
+  </figure>
+
+  <figure class="fig" id="fig-h">
+    <div class="fig-head"><span class="tag">Regime change</span><h3>Each gap lifts the ceilings. Everyone gets a share.</h3></div>
+    <svg class="scene" id="svg-h" viewBox="0 0 480 236" role="img" aria-label="Step chart of the ceiling on a stat across four regimes. The frontier lab's ceiling rises by the full step at each gap. A lab behind gets only a share of each step. Below, two bars refill toward the ceiling, and the lab behind refills faster."></svg>
+    <div class="sliders">
+      <label for="h-f"><span class="row"><span>Share of each level-up you get at once</span><output id="h-f-out">40%</output></span><input type="range" id="h-f" min="0" max="100" value="40"></label>
+      <label for="h-lead"><span class="row"><span>Distance behind the frontier</span><output id="h-lead-out">50</output></span><input type="range" id="h-lead" min="0" max="100" value="50"></label>
+    </div>
+    <div class="readout">
+      <div><span class="dot a"></span><span class="k">Frontier ceiling after gap 3</span><span class="v">290</span></div>
+      <div><span class="dot b"></span><span class="k">Your ceiling</span><span class="v" id="h-cap"></span></div>
+      <div><span class="k">Your fill rate</span><span class="v" id="h-rate"></span></div>
+    </div>
+    <figcaption>The same ceilings apply to sight, height and max speed. The frontier lab gets the full level-up at each gap. A lab behind gets a share of it at once, and refills faster the further back it is, so it closes in without passing the frontier’s ceiling. Numbers are placeholders: ceilings of 100, 140, 200 and 290, and a fill rate of 1 + distance/50. Followers can still beat a leader that spent its hold-back on safety instead of max speed.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Knobs to tune</h2>
+  <p>Everything starts equal and simple. These are the numbers I expect to matter most for whether it is fun, roughly in that order. The playable version has a panel for all of them.</p>
+  <div class="tw">
+    <table class="knobs">
+      <thead><tr><th>Knob</th><th>Starting value</th><th>What it changes</th></tr></thead>
+      <tbody>
+        <tr><td>Investment rate</td><td>14 points per second of held-back effort</td><td>How strong holding back is. This is the first thing to tune, see below.</td></tr>
+        <tr><td>Odds everyone is out</td><td>4% at gap 1, +10 points per gap</td><td>How long sprinting stays tempting before it stops being survivable.</td></tr>
+        <tr><td>Share for followers</td><td>40% of each level-up</td><td>How much the frontier carries the pack. Too high and trailing is best.</td></tr>
+        <tr><td>Refill bonus</td><td>1 + distance / 50</td><td>How fast a lab behind closes in.</td></tr>
+        <tr><td>Gap narrowing</td><td>full width / (1 + distance past the gap / 25)</td><td>How much safer it is when the frontier is far ahead. A follower can still fall.</td></tr>
+        <tr><td>Gap widths</td><td>60, 90, 130, 180, 240, each varied up to 20% per run</td><td>How much speed and height the frontier needs, and how much it has to guess.</td></tr>
+        <tr><td>Air time</td><td>0.6 s plus 0.015 s per unit of height</td><td>How much height helps a jump. Distance covered is speed times air time.</td></tr>
+        <tr><td>Acceleration, braking and reverse</td><td>speed up 40 per s&sup2;, brake 15.6 per s&sup2;, reverse at 40</td><td>How much run-up a lab needs, and how early it must stop.</td></tr>
+        <tr><td>Barrier heights</td><td>start at 28, +3.2 each</td><td>How much height you need just to keep running.</td></tr>
+        <tr><td>Barrier spillover</td><td>a third of the barrier height</td><td>How much a clear teaches the labs that see it.</td></tr>
+        <tr><td>Crash penalty</td><td>max speed &minus;40% for 5 s</td><td>What hitting a barrier costs.</td></tr>
+        <tr><td>Shared sight</td><td>75% of the best sight in view</td><td>How much being near others helps you see.</td></tr>
+        <tr><td>Braking and sight</td><td>braking 260 &times; (speed/90)&sup2;, sight 80 + 4.4 &times; invested</td><td>How early you must slow down, and what max speed costs you.</td></tr>
+        <tr><td>Rival behavior</td><td>Sprinter, Steward, Gambler</td><td>Whether the dilemma feels real.</td></tr>
+        <tr><td>Investment price</td><td>All equal</td><td>Held equal for now. Making one cheaper is the tweak you liked.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>What I think</h2>
+  <div class="points">
+    <div>
+      <h3>Version 1 is six rules</h3>
+      <ul>
+        <li>Run, or hold back and split the rest evenly across sight, height and max speed.</li>
+        <li>Barriers are visible and fixed, and get taller. Jump plus height has to beat them. A crash slows you, and clearing a barrier you crashed into lifts everyone's height.</li>
+        <li>Gaps are hidden until they are in sight, and each has a width. Cover it with speed times air time, where height adds air time, or fall.</li>
+        <li>A fall takes that lab out. A roll decides whether it takes everyone out, with worse odds at each gap.</li>
+        <li>The first lab across leaves a tower in front of the gap. Labs behind clear the same tower and cross a narrower gap. Their ceilings jump by a share of the level-up and they refill faster.</li>
+        <li>First lab over the finish line wins. Labs in view of each other share sight.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What the first playable version showed</h3>
+      <p>I ran 300 simulated games per policy with the three bots and a fixed-pace policy standing in for you. This is a bot test, not a human playtest.</p>
+      <ul>
+        <li><b>Holding back wins.</b> A steady pace around half to 0.6 speed with 40% of the held-back effort in max speed wins about 60% of games and never falls. Running at 0.8 or more mostly falls. At these settings, investing is stronger than running, so there is little that tempts a player to sprint. Lowering the investment rate is the first thing to try.</li>
+        <li><b>Extinction is common.</b> Between a third and a half of games end in a roll that takes everyone out, almost always because the Sprinter or Gambler fell. That is the dilemma working, and it may be too much. Lower starting odds or a smaller bot appetite for risk would soften it.</li>
+        <li><b>The Sprinter is a cautionary bot.</b> It falls in most runs and never wins. The Gambler and the Steward are the real rivals.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What this does to the game</h3>
+      <ul>
+        <li><b>The leader carries the most risk.</b> Everyone else clears the same tower but faces a narrower gap, and can still fall. Followers want someone else to go first, and the leader wants to stay ahead.</li>
+        <li><b>Crashing has a use.</b> A lab that crashes and then clears a barrier lifts everyone. That makes a public failure valuable to the others, which is the learning-from-mistakes idea.</li>
+        <li><b>Stopping has a catch.</b> From a standstill you speed up slowly, so a lab that stops too close to a wide gap cannot cross it without backing up first. Backing up costs time while rivals catch up. Stopping early takes sight, and sight takes investment, so the three meters pull on each other.</li>
+        <li><b>Sight is social.</b> Sharing sight rewards staying close to others, and pulls against running off alone with a lead.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Later</h2>
+  <p>You want this to work with friends and in open lobbies, with a rating so people meet others near their skill. Two things worth doing now so that stays possible. Run the game as a pure simulation that takes each lab's inputs (pace, split, jump), so a person and a bot are interchangeable. The prototype does this. And draw the rolls from a seed, which it also does, so a server could run it. A rating will also need a rule for runs where everyone is out.</p>
+</section>
+
+<section>
+  <h2>Questions for you</h2>
+  <ol class="q">
+    <li><b>Is reverse right as it is?</b> Slow (40 per second), and not past the last thing a lab cleared. Faster reverse would make the run-up trap much weaker.</li>
+    <li><b>Do you want holding back to be less dominant?</b> I would lower the investment rate, but finding the best pace may be part of the fun.</li>
+  </ol>
+</section>
+
+</main>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(id){return document.getElementById(id);}
+function el(tag,attrs,parent){
+  var n=document.createElementNS(NS,tag);
+  for(var k in attrs){ n.setAttribute(k,attrs[k]); }
+  if(parent){ parent.appendChild(n); }
+  return n;
+}
+function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
+function lerp(a,b,u){return a+(b-a)*u;}
+function smooth(u){return u*u*(3-2*u);}
+function easeOut(u){return 1-(1-u)*(1-u);}
+function keys(t,ks){
+  if(t<=ks[0][0]){return ks[0][1];}
+  for(var i=1;i<ks.length;i++){
+    if(t<=ks[i][0]){
+      var t0=ks[i-1][0],x0=ks[i-1][1],t1=ks[i][0],x1=ks[i][1],e=ks[i][2];
+      var u=(t-t0)/(t1-t0);
+      return lerp(x0,x1,e?e(u):u);
+    }
+  }
+  return ks[ks.length-1][1];
+}
+function sprite(parent,cls){
+  var g=el('g',{},parent);
+  el('use',{href:'#lab',x:0,y:-18,width:18,height:18,'class':cls},g);
+  return g;
+}
+function place(g,x,y){g.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+')');}
+
+var scenes=[];
+function reg(s,root){
+  s.visible=false; s.paused=reduce; scenes.push(s);
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){s.visible=es[0].isIntersecting;},{rootMargin:'120px'}).observe(root);
+  } else { s.visible=true; }
+}
+var last=performance.now();
+function frame(now){
+  var dt=Math.min(0.05,(now-last)/1000); last=now;
+  for(var i=0;i<scenes.length;i++){
+    var s=scenes[i];
+    if(s.visible&&!s.paused){ s.step(dt); }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- A: pace and the split ---------- */
+(function(){
+  var svg=$('svg-a'),G=150,RX=90,BH=52,JUMP=34,BW=20,RW=18,BASE=90;
+  var slider=$('pace'),out=$('pace-out'),btn=$('a-play');
+  var wS=$('w-sight'),wH=$('w-height'),wM=$('w-max');
+  el('line',{x1:0,y1:G,x2:480,y2:G,'class':'ground'},svg);
+  var ticks=el('line',{x1:0,y1:G+10,x2:480,y2:G+10,'class':'ticks'},svg);
+  var col=el('rect',{x:RX-2,y:G,width:RW+4,height:0,'class':'column'},svg);
+  var bar=el('rect',{x:600,y:G-BH,width:BW,height:BH,'class':'barrier'},svg);
+  var hit=el('text',{x:RX+RW+6,y:G-BH-8,'class':'t-danger',visibility:'hidden'},svg); hit.textContent='HIT';
+  var sightLn=el('line',{x1:RX+RW,y1:G+40,x2:RX+RW+60,y2:G+40,'class':'sightbar','stroke-width':5},svg);
+  var sightTx=el('text',{x:RX+RW,y:G+34,'class':'tm'},svg); sightTx.textContent='sight';
+  var runner=sprite(svg,'ca');
+  var S;
+  function init(){ S={elev:0,sight:0,top:BASE,bx:null,jt:-1,jd:1,jy:0,crash:0,wait:0.5,world:0,decided:false}; }
+  init();
+  function say(s){$('a-status').textContent=s;}
+  function shares(){
+    var p=slider.value/100,a=+wS.value,b=+wH.value,c=+wM.value,tot=a+b+c;
+    return {p:p,r:1-p,s:tot?a/tot:0,h:tot?b/tot:0,m:tot?c/tot:0};
+  }
+  function step(dt){
+    var sh=shares(),v=sh.p*S.top;
+    if(S.crash>0){
+      S.crash-=dt;
+      if(S.crash<=0){S.bx=null;S.wait=1;}
+    } else {
+      S.elev=Math.min(70,S.elev+sh.r*sh.h*20*dt);
+      S.sight=Math.min(70,S.sight+sh.r*sh.s*20*dt);
+      S.top=Math.min(150,S.top+sh.r*sh.m*8*dt);
+      S.world+=v*dt;
+      if(S.bx===null){
+        S.wait-=dt;
+        if(S.wait<=0){S.bx=500;S.decided=false;}
+      } else {
+        S.bx-=v*dt;
+        var dist=S.bx-(RX+RW);
+        if(S.jt<0&&!S.decided&&S.elev<BH+1&&v>1&&dist>0&&dist<=v*0.28){
+          S.jt=0; S.jd=Math.min(1.9,0.56+(BW+RW)/v);
+        }
+        if(!S.decided&&dist<=0){
+          S.decided=true;
+          var feet=S.elev+S.jy,h=Math.round(S.elev);
+          if(feet<BH){
+            S.crash=1.1; S.jt=-1; S.jy=0;
+            say('Hit. Jump '+JUMP+' + height '+h+' = '+(JUMP+h)+', short of '+BH+'. That is lost time and bad press. Hold back some pace and put it into height.');
+          } else if(S.elev>=BH){
+            say('Walked straight over it. Height '+h+' is higher than the barrier.');
+          } else {
+            say('Cleared it. Jump '+JUMP+' + height '+h+' = '+(JUMP+h)+', enough for '+BH+'.');
+          }
+        }
+        if(S.bx<-BW-10){S.bx=null;S.wait=1.2;}
+      }
+    }
+    if(S.jt>=0){
+      var u0=S.jt/S.jd;
+      var over=S.bx!==null&&S.bx<RX+RW&&S.bx+BW>RX;
+      if(!(over&&u0>=0.5)){S.jt+=dt;}
+      var u=S.jt/S.jd;
+      if(u>=1){S.jt=-1;S.jy=0;} else {S.jy=JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1);}
+    }
+    render();
+  }
+  function pct(x){return Math.round(x*100)+'%';}
+  function render(){
+    var sh=shares();
+    place(runner,RX,G-S.elev-S.jy);
+    col.setAttribute('y',(G-S.elev).toFixed(1)); col.setAttribute('height',S.elev.toFixed(1));
+    bar.setAttribute('x',S.bx===null?600:S.bx.toFixed(1));
+    bar.setAttribute('class',S.crash>0?'barrier hit':'barrier');
+    hit.setAttribute('visibility',S.crash>0?'visible':'hidden');
+    ticks.setAttribute('stroke-dashoffset',(S.world%24).toFixed(1));
+    var sightLen=60+3*S.sight;
+    sightLn.setAttribute('x2',(RX+RW+sightLen).toFixed(1));
+    out.textContent=slider.value+'%';
+    $('s-run').style.width=(sh.p*100)+'%';
+    $('s-sight').style.width=(sh.r*sh.s*100)+'%';
+    $('s-height').style.width=(sh.r*sh.h*100)+'%';
+    $('s-max').style.width=(sh.r*sh.m*100)+'%';
+    $('l-run').textContent=pct(sh.p); $('l-sight').textContent=pct(sh.r*sh.s);
+    $('l-height').textContent=pct(sh.r*sh.h); $('l-max').textContent=pct(sh.r*sh.m);
+    var h=Math.round(S.elev);
+    $('a-lift').textContent=h; $('a-sum').textContent=(JUMP+h);
+    $('a-sight').textContent=Math.round(60+3*S.sight);
+    $('a-top').textContent=Math.round(S.top);
+    $('a-speed').textContent=Math.round(sh.p*S.top);
+  }
+  slider.addEventListener('input',render);
+  wS.addEventListener('input',render); wH.addEventListener('input',render); wM.addEventListener('input',render);
+  btn.addEventListener('click',function(){ s.paused=!s.paused; btn.textContent=s.paused?'Play':'Pause'; });
+  $('a-reset').addEventListener('click',function(){
+    init(); say('Reset. Height, sight and max speed are back to the start.'); render();
+  });
+  var s={step:step};
+  btn.textContent=reduce?'Play':'Pause';
+  render(); reg(s,svg);
+})();
+
+/* ---------- B: barriers get taller ---------- */
+(function(){
+  var svg=$('svg-b'),base=162,J=34,H=[30,34,40,46,52,58,64,70];
+  var sl=$('b-h');
+  el('line',{x1:10,y1:base,x2:470,y2:base,'class':'ground'},svg);
+  var bars=[];
+  for(var i=0;i<H.length;i++){
+    bars[i]=el('rect',{x:40+i*54,y:base-H[i],width:26,height:H[i],'class':'barrier'},svg);
+  }
+  var line=el('line',{x1:10,y1:base-J,x2:470,y2:base-J,stroke:'currentColor','stroke-dasharray':'6 4','stroke-width':2,style:'color:var(--a)'},svg);
+  var lt=el('text',{x:470,y:base-J-6,'text-anchor':'end','class':'t'},svg);
+  function render(){
+    var h=+sl.value,reach=J+h,hits=0;
+    for(var i=0;i<H.length;i++){
+      var hit=H[i]>reach; if(hit){hits++;}
+      bars[i].setAttribute('class',hit?'barrier hit':'barrier');
+    }
+    line.setAttribute('y1',base-reach); line.setAttribute('y2',base-reach);
+    lt.setAttribute('y',base-reach-6); lt.textContent='jump '+J+' + height '+h+' = '+reach;
+    $('b-h-out').textContent=h;
+    $('b-msg').innerHTML='<span class="dot '+(hits?'no':'ok')+'"></span>'+(hits
+      ?'You would hit '+hits+' of '+H.length+' barriers. Hold back some pace and put it into height.'
+      :'You clear all '+H.length+' barriers.');
+  }
+  sl.addEventListener('input',render);
+  render();
+})();
+
+/* ---------- D: sight vs braking ---------- */
+(function(){
+  var svg=$('svg-d'),G=100,RX=30,GX1=340,GX2=390;
+  var sp=$('d-pace'),sm=$('d-max'),ss=$('d-sight');
+  el('line',{x1:0,y1:G,x2:GX1,y2:G,'class':'ground'},svg);
+  el('line',{x1:GX2,y1:G,x2:480,y2:G,'class':'ground'},svg);
+  el('rect',{x:GX1,y:G,width:GX2-GX1,height:70,fill:'url(#hatch)'},svg);
+  el('line',{x1:GX1,y1:G,x2:GX1,y2:170,'class':'ground'},svg);
+  el('line',{x1:GX2,y1:G,x2:GX2,y2:170,'class':'ground'},svg);
+  var fog=el('rect',{x:200,y:40,width:280,height:130,'class':'fog'},svg);
+  var fogEdge=el('line',{x1:200,y1:40,x2:200,y2:170,stroke:'currentColor','stroke-dasharray':'4 3','stroke-width':1.5,style:'color:var(--a)'},svg);
+  var fq=el('text',{x:400,y:78,'text-anchor':'middle','class':'tm'},svg); fq.textContent='cannot see yet';
+  var sightLn=el('line',{x1:RX+18,y1:124,x2:100,y2:124,'class':'sightbar','stroke-width':6},svg);
+  var sightTx=el('text',{x:RX+18,y:118,'class':'tm'},svg); sightTx.textContent='sight';
+  var brakeLn=el('line',{x1:RX+18,y1:150,x2:100,y2:150,'class':'brakebar','stroke-width':6},svg);
+  var brakeTx=el('text',{x:RX+18,y:144,'class':'tm'},svg); brakeTx.textContent='stopping distance';
+  var r=sprite(svg,'ca'); place(r,RX,G);
+  function render(){
+    var p=sp.value/100,top=+sm.value,inv=+ss.value;
+    var speed=p*top,sight=80+4.4*inv,brake=260*Math.pow(speed/90,2);
+    $('d-pace-out').textContent=sp.value+'%'; $('d-max-out').textContent=sm.value; $('d-sight-out').textContent=ss.value;
+    $('d-speed').textContent=Math.round(speed); $('d-sightv').textContent=Math.round(sight); $('d-brake').textContent=Math.round(brake);
+    var x0=RX+18;
+    sightLn.setAttribute('x2',(x0+sight).toFixed(1));
+    brakeLn.setAttribute('x2',Math.min(x0+brake,478).toFixed(1));
+    fog.setAttribute('x',(x0+sight).toFixed(1)); fog.setAttribute('width',Math.max(0,480-x0-sight).toFixed(1));
+    fogEdge.setAttribute('x1',(x0+sight).toFixed(1)); fogEdge.setAttribute('x2',(x0+sight).toFixed(1));
+    fq.setAttribute('x',Math.min(440,Math.max(x0+sight+50,(x0+sight+480)/2)).toFixed(1));
+    fq.setAttribute('visibility',sight<300?'visible':'hidden');
+    var ok=sight>=brake;
+    $('d-verdict').innerHTML='<span class="dot '+(ok?'ok':'no')+'"></span>'+(ok
+      ?'You see the gap in time. Sight '+Math.round(sight)+' covers stopping '+Math.round(brake)+'.'
+      :'You see the gap too late. Stopping needs '+Math.round(brake)+' but you only see '+Math.round(sight)+' ahead. Slow down, or invest in sight.');
+  }
+  sp.addEventListener('input',render); sm.addEventListener('input',render); ss.addEventListener('input',render);
+  render();
+})();
+
+/* ---------- C: gap and tower ---------- */
+(function(){
+  var svg=$('svg-c'),G=150,X1=250,X2=310,TX=104,TW=22,TH=34;
+  function easeIn(u){return u*u;}
+  function arc(x,a,b,h){ if(x<=a||x>=b){return 0;} var u=(x-a)/(b-a); return h*4*u*(1-u); }
+  el('line',{x1:0,y1:G,x2:X1,y2:G,'class':'ground'},svg);
+  el('line',{x1:X2,y1:G,x2:480,y2:G,'class':'ground'},svg);
+  el('rect',{x:X1,y:G,width:X2-X1,height:50,fill:'url(#hatch)'},svg);
+  el('line',{x1:X1,y1:G,x2:X1,y2:200,'class':'ground'},svg);
+  el('line',{x1:X2,y1:G,x2:X2,y2:200,'class':'ground'},svg);
+  el('line',{x1:466,y1:G,x2:466,y2:108,'class':'ground'},svg);
+  el('polygon',{points:'466,108 478,113 466,118',style:'fill:var(--d)'},svg);
+  var tower=el('rect',{x:TX-2,y:G,width:TW,height:0,'class':'deck'},svg);
+  var gapTx=el('text',{x:(X1+X2)/2,y:G-30,'text-anchor':'middle','class':'t'},svg);
+  var towTx=el('text',{x:TX+TW/2-2,y:G-TH-14,'text-anchor':'middle','class':'tm'},svg);
+  var sparks=[];
+  for(var i=0;i<3;i++){ sparks.push(el('rect',{x:0,y:0,width:3,height:3,style:'fill:var(--b)',visibility:'hidden'},svg)); }
+  var Lg=sprite(svg,'ca'),Fg=sprite(svg,'cb');
+  var wash=el('rect',{x:0,y:0,width:480,height:200,'class':'wash',opacity:0},svg);
+  var pillG=el('g',{opacity:0},svg);
+  el('rect',{x:110,y:48,width:260,height:40,'class':'pill'},pillG);
+  var pillTx=el('text',{x:240,y:74,'text-anchor':'middle','class':'t-danger'},pillG); pillTx.textContent='A lab fell in. It is out.';
+
+  var MODES={
+    bridge:{D:13.5,rest:4.6,
+      L:[[0,0],[1,56],[2.8,106,easeOut],[6,106],[8.2,250,easeIn],[9.6,330,smooth],[13.5,440]],
+      F:[[0,-40],[2.8,40],[4.6,72,easeOut],[8.4,72],[10.2,250,easeIn],[11.6,336,smooth],[13.5,420]],
+      caps:[[0,'Both labs run toward a gap. Neither can see how wide it is yet.'],
+            [1,'The leader sees the gap and brakes early. It needs room to speed up again.'],
+            [2.8,'Stopped well back from the gap. The leader holds back its pace and builds height under itself. The follower waits behind it.'],
+            [6,'Tall enough. The leader runs up and jumps the gap. Its tower stays behind.'],
+            [8.4,'The follower clears the tower, runs up, and crosses a gap that is narrower for it.'],
+            [12,'Everyone is across. Nobody fell.']]},
+    nobody:{D:7.5,rest:5.6,
+      caps:[[0,'The leader sprints. Sprinting keeps the lead and costs nothing, until the edge.'],
+            [3.9,'It runs into a gap it never saw.'],
+            [4.8,'A lab fell in. It is out of the race, and a dice roll decides whether the run ends for everyone.']]}
+  };
+  var mode='bridge',s={t:reduce?MODES.bridge.rest:0};
+  var scrub=$('c-scrub'),btn=$('c-play');
+  function posL(t){
+    if(mode==='bridge'){return keys(t,MODES.bridge.L);}
+    return Math.min(20+56*t,266);
+  }
+  function render(){
+    var M=MODES[mode],t=s.t,lx,ly,fx,fy,th=0,bridging=false;
+    if(mode==='bridge'){
+      lx=posL(t); fx=keys(t,M.F);
+      var p=clamp((t-2.8)/3.2,0,1);
+      th=TH*p; bridging=t>=2.8&&t<6;
+      ly=G-th-arc(lx,250,330,30);
+      fy=G-arc(fx,76,134,46)-arc(fx,250,336,52);
+    } else {
+      lx=posL(t); fx=keys(t,[[0,-10],[7.5,200]]);
+      ly=G+(t>3.9?210*(t-3.9)*(t-3.9):0); fy=G;
+    }
+    place(Lg,lx,ly); place(Fg,fx,fy);
+    tower.setAttribute('y',(G-th).toFixed(1)); tower.setAttribute('height',th.toFixed(1));
+    towTx.textContent=(mode==='bridge'&&t>=6)?'tower':'';
+    gapTx.textContent=(mode==='bridge'&&t>=1)?'GAP':'?';
+    for(var i=0;i<3;i++){
+      var on=bridging&&((Math.floor(t*10)+i)%2===0);
+      sparks[i].setAttribute('visibility',on?'visible':'hidden');
+      sparks[i].setAttribute('x',(TX-6+i*10).toFixed(1)); sparks[i].setAttribute('y',(G-th-30-i*5).toFixed(1));
+    }
+    var a=mode==='nobody'?clamp((t-4.8)/0.3,0,1):0;
+    wash.setAttribute('opacity',(a*0.16).toFixed(3)); pillG.setAttribute('opacity',a.toFixed(3));
+    var v=(posL(t+0.05)-posL(t))/0.05;
+    var pace=Math.round(clamp(v/56,0,1)*100);
+    $('c-pace').textContent=pace+'%';
+    $('c-bridge').textContent=mode==='bridge'?Math.round(clamp((t-2.8)/3.2,0,1)*100)+'%':'none';
+    var cap=M.caps[0][1];
+    for(var j=0;j<M.caps.length;j++){ if(t>=M.caps[j][0]){cap=M.caps[j][1];} }
+    $('c-cap').textContent=cap;
+    scrub.max=M.D; scrub.value=t;
+  }
+  s.step=function(dt){ s.t+=dt; if(s.t>=MODES[mode].D){s.t=0;} render(); };
+  function setMode(m){
+    mode=m; s.t=reduce?MODES[m].rest:0;
+    $('c-m-bridge').setAttribute('aria-pressed',m==='bridge'?'true':'false');
+    $('c-m-nobody').setAttribute('aria-pressed',m==='nobody'?'true':'false');
+    render();
+  }
+  $('c-m-bridge').addEventListener('click',function(){setMode('bridge');});
+  $('c-m-nobody').addEventListener('click',function(){setMode('nobody');});
+  btn.addEventListener('click',function(){ s.paused=!s.paused; btn.textContent=s.paused?'Play':'Pause'; });
+  scrub.addEventListener('input',function(){ s.t=+scrub.value; s.paused=true; btn.textContent='Play'; render(); });
+  btn.textContent=reduce?'Play':'Pause';
+  render(); reg(s,svg);
+})();
+
+/* ---------- R: the fall and the roll ---------- */
+(function(){
+  var svg=$('svg-r'),BASE=118,MAXH=96,SX0=40,SW=400,SY=170;
+  var sg=$('r-gap'),s1=$('r-p1'),ss=$('r-step'),btn=$('r-roll');
+  el('line',{x1:20,y1:BASE,x2:460,y2:BASE,'class':'ground'},svg);
+  var bars=[],pts=[];
+  for(var k=0;k<5;k++){
+    var cx=70+k*85;
+    bars[k]=el('rect',{x:cx-20,y:BASE,width:40,height:0,'class':'b-oth'},svg);
+    pts[k]=el('text',{x:cx,y:BASE-6,'text-anchor':'middle','class':'t'},svg);
+    var lb=el('text',{x:cx,y:BASE+18,'text-anchor':'middle','class':'tm'},svg); lb.textContent='gap '+(k+1);
+  }
+  var hot=el('rect',{x:SX0,y:SY,width:0,height:24,style:'fill:var(--danger)'},svg);
+  el('rect',{x:SX0,y:SY,width:SW,height:24,style:'fill:none;stroke:var(--ink);stroke-width:2'},svg);
+  var tHot=el('text',{x:SX0,y:SY+42,'class':'tm'},svg); tHot.textContent='everyone out';
+  var tCool=el('text',{x:SX0+SW,y:SY+42,'text-anchor':'end','class':'tm'},svg); tCool.textContent='only the lab that fell is out';
+  var mark=el('g',{visibility:'hidden'},svg);
+  el('polygon',{points:'-6,-12 6,-12 0,-2',style:'fill:var(--ink)'},mark);
+  var mt=el('text',{x:0,y:-18,'text-anchor':'middle','class':'t'},mark);
+  var tally={n:0,all:0},anim=null,s={};
+  function odds(k){ return clamp(+s1.value/100+(+ss.value/100)*(k-1),0,0.95); }
+  function draw(){
+    var g=+sg.value;
+    for(var k=0;k<5;k++){
+      var p=odds(k+1),h=MAXH*p;
+      bars[k].setAttribute('y',(BASE-h).toFixed(1)); bars[k].setAttribute('height',h.toFixed(1));
+      bars[k].setAttribute('class',(k+1===g)?'b-sel':'b-oth');
+      pts[k].setAttribute('y',(BASE-h-6).toFixed(1)); pts[k].textContent=Math.round(p*100)+'%';
+    }
+    hot.setAttribute('width',(SW*odds(g)).toFixed(1));
+    $('r-gap-out').textContent=g; $('r-p1-out').textContent=s1.value+'%'; $('r-step-out').textContent=ss.value+'%';
+    $('r-p').textContent=Math.round(odds(g)*100)+'%';
+    $('r-n').textContent=tally.n; $('r-all').textContent=tally.all;
+  }
+  function setMark(v){
+    mark.setAttribute('transform','translate('+(SX0+SW*v/100).toFixed(1)+' '+SY+')');
+    mt.textContent=Math.max(1,Math.ceil(v));
+  }
+  function onSlide(){ if(!anim){ mark.setAttribute('visibility','hidden'); } draw(); }
+  sg.addEventListener('input',onSlide); s1.addEventListener('input',onSlide); ss.addEventListener('input',onSlide);
+  btn.addEventListener('click',function(){
+    if(anim){return;}
+    var g=+sg.value;
+    anim={t:0,dur:reduce?0.01:0.9,r:Math.random()*100,p:odds(g),g:g};
+    mark.setAttribute('visibility','visible'); setMark(0);
+    $('r-msg').textContent='Rolling...'; btn.disabled=true;
+  });
+  $('r-clear').addEventListener('click',function(){
+    tally={n:0,all:0}; if(!anim){ mark.setAttribute('visibility','hidden'); }
+    $('r-msg').textContent='Tally cleared. Press the button to roll again.'; draw();
+  });
+  s.step=function(dt){
+    if(!anim){return;}
+    anim.t+=dt;
+    var u=clamp(anim.t/anim.dur,0,1);
+    setMark(easeOut(u)*anim.r);
+    if(u>=1){
+      var all=anim.r<anim.p*100,roll=Math.max(1,Math.ceil(anim.r)),lim=Math.round(anim.p*100);
+      tally.n++; if(all){tally.all++;}
+      $('r-msg').textContent=all
+        ?'Rolled '+roll+', at or under '+lim+'. The lab that fell is out and so is everyone else. Game over.'
+        :'Rolled '+roll+', over '+lim+'. Only the lab that fell is out. The race goes on.';
+      anim=null; btn.disabled=false; draw();
+    }
+  };
+  draw(); reg(s,svg); s.paused=false;
+})();
+
+/* ---------- G: gap width vs how far past it the frontier is ---------- */
+(function(){
+  var svg=$('svg-g'),PW0=160,TH0=66,L0=25,SC=0.6,PX=200,TX=PX-44,G1=100,G2=232;
+  // lane 1: the frontier lab faces a hidden, wide pit
+  el('line',{x1:0,y1:G1,x2:PX,y2:G1,'class':'ground'},svg);
+  el('line',{x1:PX+PW0,y1:G1,x2:480,y2:G1,'class':'ground'},svg);
+  el('rect',{x:PX,y:G1,width:PW0,height:26,fill:'url(#hatch)'},svg);
+  var n1=el('text',{x:8,y:20,'class':'t'},svg); n1.textContent='Frontier lab: hidden pit';
+  var r1=el('text',{x:PX,y:G1-10,'class':'tm'},svg); r1.textContent='gap '+PW0+' wide';
+  place(sprite(svg,'ca'),100,G1);
+  // lane 2: you face the frontier's tower, then a narrower pit
+  el('line',{x1:0,y1:G2,x2:PX,y2:G2,'class':'ground'},svg);
+  var right=el('line',{x1:PX+PW0,y1:G2,x2:480,y2:G2,'class':'ground'},svg);
+  el('rect',{x:PX,y:G2,width:PW0,height:26,'class':'ghost'},svg);
+  var pit=el('rect',{x:PX,y:G2,width:PW0,height:26,fill:'url(#hatch)'},svg);
+  el('rect',{x:TX,y:G2-TH0*SC,width:24,height:TH0*SC,'class':'barrier'},svg);
+  var tt=el('text',{x:TX+12,y:G2-TH0*SC-6,'text-anchor':'middle','class':'tm'},svg); tt.textContent='tower '+TH0;
+  var wTx=el('text',{x:PX,y:G2-10,'class':'tm'},svg);
+  var n2=el('text',{x:8,y:G2-TH0*SC-26,'class':'t'},svg); n2.textContent='You: the same tower, then a narrower pit';
+  place(sprite(svg,'cb'),100,G2);
+  place(sprite(svg,'ca'),430,G2);
+  var ft=el('text',{x:439,y:G2-26,'text-anchor':'middle','class':'tm'},svg); ft.textContent='frontier';
+  var sl=$('g-lead');
+  function render(){
+    var d=+sl.value,f=1/(1+d/L0),pw=PW0*f;
+    pit.setAttribute('width',pw.toFixed(1)); right.setAttribute('x1',(PX+pw).toFixed(1));
+    wTx.textContent='gap '+Math.round(pw)+' wide';
+    $('g-lead-out').textContent=d;
+    $('g-w').textContent=TH0; $('g-gap').textContent=Math.round(pw)+' wide'; $('g-pct').textContent=Math.round(f*100)+'% of full';
+    $('g-note').textContent=d<15
+      ?'The frontier has only just crossed. You face the tower and almost the full gap.'
+      :(d<55
+        ?'The frontier is some way past. Its tools make your gap noticeably narrower, but the tower is the same.'
+        :'The frontier is far past. It can already handle what would have been lethal, so your gap is small.');
+  }
+  sl.addEventListener('input',render);
+  render();
+})();
+
+/* ---------- H: regime change ---------- */
+(function(){
+  var svg=$('svg-h'),X0=50,XE=450,YB=130,YT=22,D=6.5;
+  var C=[100,140,200,290],GX=[50,130,230,330,450];
+  function Y(v){return YB-(v-80)*(YB-YT)/(300-80);}
+  el('line',{x1:X0,y1:YB,x2:XE,y2:YB,'class':'axis'},svg);
+  var gl=['start','gap 1','gap 2','gap 3'];
+  for(var k=0;k<4;k++){
+    if(k>0){ el('line',{x1:GX[k],y1:YB,x2:GX[k],y2:YB+5,'class':'axis'},svg); }
+    var tl=el('text',{x:GX[k],y:YB+20,'text-anchor':k===0?'start':'middle','class':'tm'},svg); tl.textContent=gl[k];
+  }
+  el('rect',{x:56,y:12,width:14,height:4,style:'fill:var(--a)'},svg);
+  var l1=el('text',{x:76,y:18,'class':'tm'},svg); l1.textContent='frontier';
+  el('rect',{x:150,y:12,width:14,height:4,style:'fill:var(--b)'},svg);
+  var l2=el('text',{x:170,y:18,'class':'tm'},svg); l2.textContent='you';
+  var shade=el('polygon',{points:'',style:'fill:var(--b);opacity:.16'},svg);
+  var fl=el('polyline',{points:'',fill:'none',style:'stroke:var(--a);stroke-width:3'},svg);
+  var yl=el('polyline',{points:'',fill:'none',style:'stroke:var(--b);stroke-width:3'},svg);
+  function path(f){
+    var pts=[];
+    for(var k=0;k<4;k++){ var c=100+f*(C[k]-100); pts.push([GX[k],Y(c)],[GX[k+1],Y(c)]); }
+    return pts;
+  }
+  function str(pts){ return pts.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' '); }
+  var BY=[172,204],nm=[],fr=[];
+  for(var i=0;i<2;i++){
+    nm[i]=el('text',{x:X0,y:BY[i]-6,'class':'tm'},svg);
+    el('rect',{x:X0,y:BY[i],width:XE-X0,height:12,'class':'ghost'},svg);
+    fr[i]=el('rect',{x:X0,y:BY[i],width:0,height:12,style:i===0?'fill:var(--a)':'fill:var(--b)'},svg);
+  }
+  var sF=$('h-f'),sL=$('h-lead'),s={t:reduce?2.5:0};
+  function draw(){
+    var f=sF.value/100,lead=+sL.value,n=1+lead/50;
+    var fp=path(1),yp=path(f);
+    fl.setAttribute('points',str(fp)); yl.setAttribute('points',str(yp));
+    shade.setAttribute('points',str(fp.concat(yp.slice().reverse())));
+    $('h-f-out').textContent=sF.value+'%'; $('h-lead-out').textContent=lead;
+    $('h-cap').textContent=Math.round(100+f*190)+' of 290';
+    $('h-rate').textContent='\u00d7'+n.toFixed(1);
+    nm[0].textContent='Frontier refills a level-up in 4.0 s';
+    nm[1].textContent='You refill the same level-up in '+(4/n).toFixed(1)+' s';
+    fr[0].setAttribute('width',((XE-X0)*clamp(s.t/4,0,1)).toFixed(1));
+    fr[1].setAttribute('width',((XE-X0)*clamp(s.t*n/4,0,1)).toFixed(1));
+  }
+  s.step=function(dt){ s.t=(s.t+dt)%D; draw(); };
+  sF.addEventListener('input',draw); sL.addEventListener('input',draw);
+  draw(); reg(s,svg);
+})();
+
+requestAnimationFrame(frame);
+})();
+</script>

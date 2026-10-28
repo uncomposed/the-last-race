@@ -1,2 +1,0 @@
-baseline {'forms': 32, 'mean_dur': 3.44, 'med_dur': 2.0, 'ends': {'break': 24, 'expire': 7, 'open_at_end': 1}, 'cat_given_pact': (0.531, 32), 'cat_given_nopact': (0.343, 268)}
-v2 {'forms': 21, 'mean_dur': 3.52, 'med_dur': 3, 'ends': {'break': 17, 'expire': 4, 'open_at_end': 0}, 'cat_given_pact': (0.571, 21), 'cat_given_nopact': (0.355, 279)}
