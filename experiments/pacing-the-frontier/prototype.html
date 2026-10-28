@@ -47,7 +47,7 @@ p{margin:0}
 .snd-mini .x{display:none}.snd-mini.off .w{display:none}.snd-mini.off .x{display:inline}
 @media (max-width:600px),(orientation:landscape) and (max-height:540px){ .snd-mini{display:flex} }
 canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
-.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
+.ov{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
 /* first-run hints: one small toast at a time over the track, never over the controls; tap to dismiss */
 .hint{position:absolute;left:50%;top:76px;width:max-content;max-width:min(440px,calc(100% - 24px));transform:translate(-50%,0);margin:0;
@@ -2540,12 +2540,22 @@ function draw(){
       bl.d<1e8?'Next known obstacle '+Math.round(bl.d)+' ahead':'No obstacle known ahead',
       'Reaction '+K.reaction+' s covers '+Math.round(bl.react)+'; braking needs '+Math.round(bl.brake),
       bl.capped?'Capped: slow enough to act':(bl.d<bl.react+bl.brake?'Too fast to act: the auto-jump decides':'Time to act, but not for long')];
+    /* phones: one short line, right-aligned under the sound button, so the box never covers the labs on the left */
+    if(CM){
+      var st1=(bl.capped?'Capped: you can act':(bl.d<bl.react+bl.brake?'Too fast: auto-jump decides':'Time to act, briefly'))+(bl.d<1e8?' \u00b7 next '+Math.round(bl.d):'');
+      ctx.font='10px "IBM Plex Mono",monospace';
+      var cw1=ctx.measureText(st1).width+12,cx1=Math.max(4,W-cw1-6),cy1=106;  /* right-aligned under the 44px sound button (top 58) */
+      ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(cx1,cy1,cw1,16); ctx.globalAlpha=1;
+      ctx.strokeStyle=COL.d; ctx.lineWidth=1; ctx.strokeRect(cx1+0.5,cy1+0.5,cw1-1,15);
+      ctx.fillStyle=COL.d; ctx.fillText(st1,cx1+6,cy1+12);
+    } else {
     ctx.font='11px "IBM Plex Mono",monospace';
     var bw=0,bi2; for(bi2=0;bi2<lines.length;bi2++){ bw=Math.max(bw,ctx.measureText(lines[bi2]).width); } bw+=14;
     var by0=CM?HUDH:80;
     ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,by0,bw,62); ctx.globalAlpha=1;
     ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,by0+0.5,bw-1,61);
     for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,by0+15+bi2*14); }
+    }
   }
   // minimap
   var mx0=24,mw=W-48,my=CM?12:18;
