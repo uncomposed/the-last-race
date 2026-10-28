@@ -283,3 +283,54 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 - **Go/reverse chatter.** Two careful bots sit at the edge of the run-up they need, and their plans flip between go and reverse every step (seed 62, Steward alone).
 - **Capped below the jump speed.** A capped bot needs more top speed than it has. The forced split sends nothing to max speed, and the cap ends past the gap (seed 16, Steward alone).
 - **A Steward moving back and forth inside the stretch** (seed 2647, full field).
+
+Traced and fixed later; see "Waiting that cannot help".
+
+## Waiting that cannot help
+
+28 October 2026. Prototype 0.3 with the fixes of "Two bot deadlocks", seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Replication: `PF.run(seed,'custom')`. "Steward alone" means `PF.newGame(seed,'custom')`, then `out=true` on labs 1 and 3, then stepping until `G.over`. The 15/75/10 runs set `PF.POL.custom.w`. All numbers came out of the simulation code loaded in node, which reproduced the "Two bot deadlocks" numbers exactly before the change. Three seeds were checked on the page in Chromium and matched.
+
+**What was wrong.** The three kinds left under "Not fixed" are two causes. In each a careful bot waits for something that cannot happen.
+
+- **The reverse stopped 2 short of the run-up.** A bot backs up while `gd` is less than `dNeed`, but the go test passes at `dNeed` minus 2. While backing up its negative speed also counts as run-up speed in that test, so the test passes a little sooner still. The bot turned to go there, rolled forward a fraction, failed the test, and backed up again, every few steps until the time limit. Example: seed 62, Steward alone, both bots near x 1380 before the gap at 1488 (W 186). The jump needs 84.8, so the go test passes at `gd` 107.9 and `dNeed` is 109.9. Seed 2647 is the same case, not something inside the stretch: the Steward is the only lab left (the other three fell into gap 3) and chatters at x 1900, before gap 4 at 2105.
+- **A capped bot stood still with nothing left to gain.** Seed 16, Steward alone: Custom hit a barrier, cleared it, and is capped until 984. It sees the gap at 982 (W 158) from x 774. It needs 86. Its raw top speed is 70, and its sight and height are at the ceiling of 90, so waiting cannot help it: under the cap the forced split sends nothing to max speed. Only another lab crossing first could help, by narrowing the gap. The Steward stood 24 behind Custom, blind: a careful bot closes on a slower lab only until 25 behind it, and Custom, at the same height, hides everything past it. So the Steward never saw the gap and never crossed. With the commit below in place, this case was 121 of the 124 Steward-alone time-outs at the default split. In 112 the Steward stood behind the capped Custom. In 9 Custom was the only lab left. The other 3 (seeds 1232, 1858, 2069) were a Steward alone at the singularity gap with its back to the tower. In 2069 it is 128 from the edge and `dNeed` is 136, with `room` 0. It cannot back up, and the 1.06 speed margin and 0.9 acceleration margin say the run-up is too short.
+
+**Changes**
+
+- **A careful bot that starts backing up for a run-up keeps backing up until `gd` reaches `dNeed`.** The hold applies only while the bot is not rolling forward (speed below 1). A bot that chose reverse while still moving forward is not held. Holding it in one trial stopped a Steward from taking a go that opened up as the gap narrowed, and it fell. The hold covers careful bots only. The Gambler has its 10 s limit on backing up, so it cannot chatter forever, and holding it too changed 21 games.
+- **A careful bot may pull level with a lab that has stood still for 2 s.** A lab standing still is on solid ground, and once the bot is level with it, its shadow ends. A moving slower lab is still kept 25 ahead.
+- **A last resort for a bot that cannot get better.** A bot that has stood still for 20 s before a gap goes for the jump if three things hold: its sight and height are full, its max speed is full or it is capped, and no other lab is still racing. It does not back up again for that gap.
+
+Not done: clamping the run-up speed at 0 while backing up. With the hold in place it is not needed for the time-outs, and it changes 15 more games. In all 15 the Gambler is the first lab to play differently. Also not done: the last resort without the "no other lab" and max speed conditions. Steward alone at 15/75/10 it fired 103 times in 91 games, against 6 with them, and 51 of those bots fell (26 games ended in the roll). Most of those waits would have ended without it: without the last resort, stops with sight and height full that ended on their own lasted up to 35 s at the default split and up to 77 s at 15/75/10.
+
+**Time-outs, seeds 1 to 3000**
+
+| | Full field, 25/50/25 | Full field, 15/75/10 | Steward alone, 25/50/25 | Steward alone, 15/75/10 |
+|---|---|---|---|---|
+| Before | 1 | 3 | 144 | 32 |
+| Hold only | 0 | 3 | 124 | 17 |
+| Pull level only | 1 | 2 | 24 | 16 |
+| Last resort only | 1 | 2 | 132 | 20 |
+| All but the hold | 1 | 1 | 14 | 11 |
+| All but pull level | 0 | 1 | 112 | 4 |
+| All but the last resort | 0 | 2 | 11 | 6 |
+| All three | 0 | 0 | 0 | 0 |
+
+- **Each change is needed.** Taking any one out leaves time-outs.
+- **The last resort is rare.** In the four sweeps it fired 0, 2, 13 and 6 times (21 in all). That is close to the time-outs left without it. 17 of the 21 bots were capped and 4 were not. 7 cleared the gap, 12 scraped across and 2 fell (both Custom alone at 15/75/10; neither game ended in the roll).
+- **Seed 16 now plays on.** The Steward pulls level with the stopped Custom at 23.9 s. It is first across gap 2 at 34.4 s, and Custom crosses at 39.0 s on the narrowed gap. The game ends with nobody left: Custom is dissolved on its third strike past the singularity, and the Steward falls into the singularity gap and rolls over the odds. Seeds 62 and 2647 end in wins.
+
+**Results, seeds 5000 to 5499.** Wins are Custom / Gambler / Steward / Sprinter.
+
+| | Wins | Games ended by the roll | Nobody left | Time-outs | Games changed |
+|---|---|---|---|---|---|
+| Before | 154 / 136 / 97 / 64 | 48 | 1 | 0 | |
+| Hold only | 155 / 135 / 97 / 64 | 48 | 1 | 0 | 6 |
+| Pull level only | 150 / 135 / 102 / 64 | 48 | 1 | 0 | 8 |
+| Last resort only | 154 / 136 / 97 / 64 | 48 | 1 | 0 | 0 |
+| All three | 150 / 135 / 102 / 64 | 48 | 1 | 0 | 13 |
+
+- **The baseline wins change**, from 154 / 136 / 97 / 64 to 150 / 135 / 102 / 64, with 48 roll endings as before. No game in this range timed out before, so the changes come from how the bots play ordinary games.
+- **Pulling level moves 5 wins to the Steward.** In 6 of its 8 games the lab the Steward pulls level with stands still past the singularity with a locked pace of 0 (Custom in 5, the Gambler in 1). That is the stop the lock fix of "Two bot deadlocks" brought in. Before, the Steward waited 25 behind it until the 15 s release. Seeds 5127, 5307 and 5446, the three that the lock fix moved from the Steward to Custom, go back to the Steward. In 5118 and 5258 the Steward only closed in on a stopped lab. Careful bots pulled level with or passed a still lab 62 times, against 42 before.
+- **The hold changes 6 games.** In 5003, 5212, 5353 and 5496, Custom backing up at 16 to 29 used to turn to go about 2 short of `dNeed`. Now it backs up the whole way. In 5447 the Steward chattered for 2.2 s, then went. 5118 changes with either change and was not traced.
+- **The last resort never fires in these 500 games.** The longest stop by a lab still in the race is 18.3 s (seed 5491, the Steward), as before.
