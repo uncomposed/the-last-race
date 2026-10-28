@@ -4,7 +4,7 @@ import { assertFinite, canonical, hash, integer, interpolate, sum } from './nume
 const actors: Array<Omit<Actor, 'belief'>> = [
   { id: 'deepcent', name: 'DeepCent', cash: 90, compute: 4, capability: 2, product: 1, safety: 1, revenue: 8, influence: 1, receptivity: 0.4, switchingCost: 0.8, intelligence: 0.55, weights: { revenue: 1, capability: 1.2, safety: 1, mission: 1 }, lastRoutine: 'product' },
   { id: 'openbrain', name: 'OpenBrain', cash: 90, compute: 4, capability: 3, product: 1, safety: 1, revenue: 8, influence: 1, receptivity: 0.35, switchingCost: 0.6, intelligence: 0.5, weights: { revenue: 1, capability: 1.7, safety: 0.6, mission: 0.7 }, lastRoutine: 'lease' },
-  { id: 'antropic', name: 'Antropic', cash: 80, compute: 4, capability: 2, product: 1, safety: 2, revenue: 8, influence: 1, receptivity: 0.75, switchingCost: 0.7, intelligence: 0.5, weights: { revenue: 1, capability: 1, safety: 1.6, mission: 1.3 }, lastRoutine: 'safety' }
+  { id: 'antropic', name: 'Reasonance', cash: 80, compute: 4, capability: 2, product: 1, safety: 2, revenue: 8, influence: 1, receptivity: 0.75, switchingCost: 0.7, intelligence: 0.5, weights: { revenue: 1, capability: 1, safety: 1.6, mission: 1.3 }, lastRoutine: 'safety' }
 ];
 const fixture: Scenario = {
   id: 'core-12', version: 'synthetic-v1', modelVariant: 'independent-control-v1', title: 'The Last Race — core loop', horizon: 12,
