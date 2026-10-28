@@ -71,8 +71,8 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 .story[hidden]{display:none}
 .rc-stage{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
 #rc-cv{display:block;width:100%;height:64px;aspect-ratio:auto;border:0;border-radius:4px;background:var(--bg);touch-action:manipulation}
-.card .rc-plaque{position:absolute;top:3px;left:0;max-width:calc(100% - 8px);margin:0;padding:2px 7px 3px;font:700 12.5px/1.25 var(--display);color:var(--ink);
-  background:var(--surface);border:2px solid var(--b);border-radius:2px;box-shadow:2px 2px 0 var(--b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+.card .rc-plaque{position:absolute;top:3px;left:0;width:max-content;max-width:calc(100% - 8px);margin:0;padding:2px 7px 3px;font:700 12.5px/1.25 var(--display);color:var(--ink);
+  background:var(--surface);border:2px solid var(--b);border-radius:2px;box-shadow:2px 2px 0 var(--b);text-wrap:balance;
   opacity:0;transform:translateY(4px) scale(.85);transform-origin:50% 100%;transition:opacity .18s,transform .22s cubic-bezier(.3,1.6,.5,1);pointer-events:none}
 .card .rc-plaque.on{opacity:1;transform:none}
 .card .rc-line{position:relative;margin:8px 0 0;min-height:2.9em;padding:6px 10px;font:500 14px/1.4 var(--body);color:var(--ink);background:var(--bg);
@@ -1139,8 +1139,11 @@ html.epi-open{overflow:hidden}
 </script>
 <script>
 /* end-of-run story: turns the race's events into a few recap stops for Professor Postmortem, the historian, each with a
-   generated disaster name and one short line, plus a verdict for the whole race. Seeded on the race's seed, so the same race
-   tells the same story. Touches no DOM; the recap player in the main script draws and voices it */
+   generated disaster name and one short line, plus a verdict for the whole race. The game's objects are told as the AI race:
+   barriers are regulations and red tape (the gate is the first and most bureaucratic), gaps are capability leaps into the
+   unknown, towers are precedents, strikes are inquiries, dissolution is a breakup. Each object keeps one name for the whole
+   recap, so callbacks land. Seeded on the race's seed, so the same race tells the same story. Touches no DOM; the recap player
+   in the main script draws and voices it */
 (function () {
   'use strict';
 
@@ -1155,211 +1158,294 @@ html.epi-open{overflow:hidden}
     };
   }
 
-  /* ---- name parts ---- */
-  var ADJ = ['Great', 'Lesser', 'Infamous', 'Quiet', 'Unfortunate', 'So-Called', 'Regrettable', 'Notorious',
-    'Misunderstood', 'Brief', 'Preventable', 'Cheerful', 'Unscheduled', 'Allegedly Minor', 'Poorly Timed', 'Hushed', 'Glorious'];
-  var JARGON = ['Tokenizer', 'Gradient', 'Eval', 'Benchmark', 'Sandbox', 'Weights', 'Inference', 'Context Window', 'RLHF',
-    'Checkpoint', 'Latency', 'Dataset', 'Loss Curve', 'Attention Head', 'Embedding', 'Scaling Law', 'Fine-Tune', 'Overfitting', 'Prompt'];
-  var NOUN = ['Debacle', 'Kerfuffle', 'Fiasco', 'Affair', 'Incident', 'Scandal', 'Standoff', 'Calamity', 'Unpleasantness',
-    'Episode', 'Misadventure', 'Mishap', 'Wobble', 'Crisis', 'Panic'];
-  var PLACE = ['Lossy Hollow', 'Mount Overfit', 'Cape Gradient', 'Fort Deprecated', 'Epoch Heights', 'Cache Miss Ridge',
-    'Null Pointer Point', 'Overflow Junction', 'Stale Weights Crossing', 'the Local Minima', 'Bad Label Flats', 'Dropout Bay', 'Lower Latency'];
-  var LONG = ['Context', 'Gradients', 'Evals', 'Training Runs', 'Meetings', 'Loss Curves', 'Rollbacks'];
-  var PROJ = ['Tall Order', 'Long Shot', 'Sensible Shoes', 'Big Step', 'Stretch Goal', 'Mild Overreach', 'Ambitious Hat', 'Higher Ground'];
-  var EUPH = ['A Brief Period of Reflection', 'The Unscheduled Pause', 'A Minor Restructuring', 'An Unplanned Learning Opportunity',
-    'The Strategic Wall Contact', 'A Productive Setback', 'The Temporary Reprioritization', 'A Frank Exchange with a Wall',
-    'The Matter Nobody Mentions', 'An Unexpected Pivot'];
-  var COMMITTEE = ['the Bureau of Prudent Velocity', 'the Office of Polite Intervention', 'the Committee on Things Going Badly',
-    'the Board of Obvious Walls', 'a very small subcommittee', 'the Ministry of Slowing Down', 'the Department of Told You So'];
+  /* ---- the world: what a barrier, the gate, a gap and the singularity are called ---- */
+  var TOPIC = ['Tokenizer Ethics', 'Gradient Disclosure', 'Responsible Scaling', 'Benchmark Honesty', 'Model Welfare',
+    'Eval Transparency', 'Weights Custody', 'Sandbox Etiquette', 'Context Window Hygiene', 'Prompt Decency', 'Red Team Feelings',
+    'Inference Manners', 'Dataset Provenance', 'Compute Thresholds', 'Chatbot Politeness', 'Hallucination Reporting', 'Loss Curve Modesty'];
+  var WALL = ['the {T} Review', 'the {T} Act', 'the {T} Guidelines', 'the Thirty-Page Memo on {T}', 'the Ethics Board for {T}',
+    'the {T} Hearing', 'the Red Tape on {T}', 'the {T} Waiver Form', 'the Compliance Wall of {T}'];
+  var GATE = [['the Hand-Holding Gate', 'Hand-Holding'], ['the Permit Desk', 'Hand-Holding'], ['the Great Wall of Forms', 'Permits in Triplicate'],
+    ['the Office of Permission', 'Supervised Beginnings'], ['the Starting Line Bureau', 'the Starting Paperwork']];
+  var GADJ = ['Unaligned', 'Uncharted', 'Emergent', 'Unbenchmarked', 'Unsupervised', 'Unexplained', 'Undocumented', 'Hallucinated',
+    'Out-of-Distribution', 'Zero-Shot', 'Unscaled', 'Unprompted'];
+  var GADJ_IN = ['Recursive', 'Superhuman', 'Self-Improving', 'Post-Singularity'];
+  var GNOUN = ['Chasm', 'Unknown', 'Abyss', 'Gulf', 'Void', 'Ravine'];
+  var COMMITTEE = ['the Subcommittee on Going Too Fast', 'the Bureau of Prudent Velocity', 'the Office of Polite Intervention',
+    'the Committee on Things Going Badly', 'the Ministry of Slowing Down', 'the Department of Told You So', 'the Senate Panel on Big Numbers'];
   var ORDW = ['Zeroth', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+  var EUPH = ['A Brief Period of Reflection', 'The Unscheduled Pause', 'A Minor Restructuring', 'An Unplanned Learning Opportunity',
+    'A Frank Exchange with the Rules', 'The Matter Nobody Mentions', 'An Unexpected Pivot'];
   var ASIDE = {
-    steward: 'The Steward, meanwhile, filled out a form about it.',
-    sprinter: 'The Sprinter did not even look back.',
+    steward: 'The Steward, meanwhile, had written that rule.',
+    sprinter: 'The Sprinter did not even read it.',
     gambler: 'The Gambler had money on that.'
   };
 
-  /* ---- line pools. Slots: {Who} {who} {its} {was} {is} {what} {What} {gap} {Gap} {lost} {odds} {roll} {n} {of} {cn} {committee} ---- */
+  /* ---- line pools. Slots: {Who} {who} {its} {was} {is} {has} {s} {wall} {Wall} {gap} {Gap} {lost} {odds} {roll} {n} {of} {cn}
+     {committee} {Committee} {prev}. Lines run 6 to 18 words, with one joke each ---- */
   var L = {
     crash: [
-      '{Who} met {what} here. Briefly, and quite firmly.',
-      'Bonk! {Who} tested {what} for hardness. Verdict: very hard.',
-      '{Who} ran into {what} at full tilt. {What} did not budge.',
-      'Here {who} discovered {what} the traditional way, face first.',
-      '{Who} bounced off {what}. Very springy. Slightly undignified.',
-      'Exhibit A: {what}. Exhibit B: {who}, bouncing off it.'
+      '{Who} ran straight into {wall}. It did not budge. They never do.',
+      'Bonk! {Who} met {wall} at full speed. Paperwork one, {who} nil.',
+      '{Who} tried to skip {wall}. {Wall} had other plans.',
+      'Here {who} discovered {wall} the traditional way. Face first.'
+    ],
+    crashYou: [
+      'You hit {wall}. Frankly, I blame whoever wrote it.',
+      'You bounced off {wall}. In fairness, it was very badly signposted.'
+    ],
+    crashSame: [
+      '{Who} hit {wall} again. It had not changed its mind.',
+      '{Who} went back to {wall} for a second opinion. Same opinion.',
+      '{Who} hit {wall}, again. Nothing if not persistent.'
     ],
     crash2: [
-      '{Who} hit {what} again. Science is all about replication!',
-      'And again! {Who} wanted a second opinion from {what}.',
-      'Back for seconds: {who} and {what}, reunited at speed.',
-      'Crash number two for {who}. Consistency is a virtue, technically.'
+      'Crash two for {who}, this time with {wall}. Collect the set!',
+      '{Who} hit {wall} next. Touring the whole rulebook, one page at a time.'
     ],
     crash3: [
-      'Crash number {cn} for {who}. I have run out of index cards.',
-      '{Who} again. Crash {cn}. I am starting a separate volume.',
-      'Oh, {who}. Crash {cn}. The barrier and I are both very tired.',
-      'Crash {cn}. {Who} and walls: a romance the walls never asked for.'
+      'Crash {cn} for {who}. Every regulator now knows the name.',
+      'Crash {cn} for {who}. The regulators have started sending birthday cards.',
+      'Crash number {cn} for {who}. I have stopped taking notes and started a scrapbook.'
+    ],
+    copy: [
+      '{Who}, inspired by {prev}, hit {wall} too. Strike {n}.',
+      '{Who} saw {prev} hit {wall} and thought: me next. Strike {n}.',
+      '{Who} hit {wall} as well. Copying {prev} is still innovation, apparently.'
+    ],
+    copyFree: [
+      '{Who}, inspired by {prev}, hit {wall} too.',
+      '{Who} hit {wall} as well. Copying {prev} is still innovation, apparently.'
     ],
     strike: [
-      '{Who} hit {what}. Strike {n} of {of}, and the board took notes.',
-      'Strike {n}! {Who} met {what}, and a regulator sharpened a pencil.',
-      '{What} one, {who} nil. That is strike {n} of {of}.',
-      '{Who} clipped {what}. Strike {n}, and a very stern memo.',
-      'A strike for {who} at {what}. The clipboard people were thrilled.'
+      '{Who} hit {wall} and got subpoenaed. Inquiry {n} of {of}.',
+      '{Wall} versus {who}. The hearing lasted four minutes. Strike {n}.',
+      '{Who} got inquiry {n} of {of}! A senator asked for a gradient, explained.',
+      '{Who} bumped {wall}. Cue the hearings and the sad photo. Strike {n}.'
+    ],
+    strikeYou: [
+      'Strike {n} for you, over {wall}? You barely touched it! I read about it.',
+      'You got a subpoena over {wall}! Outrageous. I drafted a strongly worded footnote.'
     ],
     strikeLast: [
-      'Strike {n} of {of}! One more and they take away the lab.',
-      'Strike {n}. {Who} {is} now one bump from a government inquiry.',
-      'Strike {n} of {of}. Somewhere, a committee booked a meeting room.'
+      'Inquiry {n} of {of} for {who}. One more means a breakup.',
+      'Strike {n} of {of} for {who}. Somewhere, the antitrust lawyers are stretching.',
+      'Strike {n} for {who}. {Committee} has booked the big room.',
+      '{Who} hit {wall}. Inquiry {n}. The lawyers have started billing in advance.',
+      'Strike {n} of {of} for {who}, now one subpoena from a breakup.'
     ],
     strikeAgain: [
-      'Strike {n} for {who}. The board was not amused.',
-      '{Who} hit {what}. Strike {n}. The board was not amused, again.'
+      '{Who} got inquiry {n}. {Committee} is on first-name terms now.',
+      '{Who} hit {wall}. Strike {n}. Same senator, new slideshow.'
     ],
     scrape: [
-      '{Who} jumped {gap}, fell short, and clawed across {lost} floors lower.',
-      'A scrape at {gap}! {Who} lost {lost} floors but kept going.',
-      '{Who} cleared {gap} by the fingernails. Cost: {lost} floors of height.',
-      'Close call at {gap}. {Who} scraped the far lip and lost {lost} floors.'
+      '{Who} leapt {gap}, mostly. Cost: {lost} floors of headroom.',
+      '{Who} scraped across {gap}, minus {lost} floors of headroom. A near miss!',
+      '{Who} cleared {gap} by a fingernail and a prayer. {lost} floors, gone.',
+      '{Who} had a close call over {gap}, and lost {lost} floors. Totally intentional.'
     ],
     scrapeStrike: [
-      '{Who} scraped {gap}, lost {lost} floors, and picked up strike {n}.',
-      'A scrape at {gap}: {lost} floors gone, strike {n} added. Busy day.'
+      '{Who} scraped across {gap}, lost {lost} floors, and got subpoenaed for it.',
+      '{Who} nearly missed {gap}! {Committee} called it reckless. Strike {n}.'
     ],
     scrapeAgain: [
-      '{Who} scraped {gap} and lost {lost} floors. The board was not amused.',
-      'A scrape at {gap}, {lost} floors down. The board was not amused.'
+      '{Who} had another close call, over {gap}. {Committee} was not amused. Strike {n}.',
+      '{Who} lost {lost} floors over {gap}. Inquiry {n}. The committee was not amused.'
     ],
     drop: [
-      '{Who} did not jump. At all. And still crossed {gap}. I have questions.',
-      'No jump at {gap}. {Who} simply fell across it, {lost} floors down.',
-      'Look closely: no jump. {Who} strolled off {gap} and somehow landed.',
-      '{Who} forgot to jump {gap} and survived anyway. Gravity was very understanding.',
-      'Physics has filed a complaint. {Who} crossed {gap} without jumping.'
+      '{Who} never jumped. Just walked into {gap}. And survived! I have questions.',
+      '{Who} did not jump at all, and fell sideways through {gap}. Physics is appealing.',
+      '{Who} strolled off the edge of {gap} and lived. {lost} floors lighter, zero regrets.',
+      '{Who} never jumped, and simply believed {its} way across {gap}.'
     ],
     fall: [
-      '{Who} fell into {gap}. The {odds} percent roll missed, so everyone else carried on.',
-      'Down went {who} at {gap}! A {odds} percent roll, and the world was spared.',
-      '{Gap} swallowed {who}. The dice needed {odds} or under and rolled {roll}. Phew.',
-      '{Who} came up short at {gap}. The roll was {roll}, so the race went on.'
+      '{Who} fell into {gap}. The dice said {odds} percent, and blinked.',
+      'Down went {who}, into {gap}. A {odds} percent chance of doom, dodged.',
+      '{Gap} swallowed {who} whole. The dice needed {odds} or under and rolled {roll}. Phew.'
     ],
     fallYou: [
-      'You went into {gap}. The {odds} percent roll spared everyone else. Small mercies.',
-      'Into {gap} you went. The dice rolled {roll}, so the world kept spinning.',
-      'You fell at {gap}. Brave, honestly. The roll let the others carry on.'
+      'You went into {gap}. Bravely! The dice said {odds} percent and looked away.',
+      'Into {gap} you went. Lovely jump, honestly. For a smaller chasm.',
+      'You fell into {gap}. The dice rolled {roll}, and the world kept spinning.'
     ],
     fallRepeat: [
-      '{Gap} claims another! {Who} joined {prev} down there.',
-      '{Gap} again! {Who} followed {prev} in. The roll let it slide.'
+      '{Who} followed {prev} into {gap}. It is getting crowded down there.',
+      '{Who} joined {prev} at the bottom of {gap}. They have started a book club.'
     ],
     fallExt: [
-      '{Who} fell into {gap}, the {odds} percent roll came up, and every lab was out.',
-      'Here {who} fell, the roll came up, and the race ended for all of them.',
-      '{Gap}. {Who} fell, the dice said yes, and nobody got to finish.'
+      '{Who} fell into {gap}. The dice said {odds} percent, and yes. The end of AI.',
+      '{Who} fell into {gap}, the roll went bad, and the race ended for every lab.',
+      '{Gap} took {who}, and the roll took everyone else. No jokes for this one.'
     ],
-    dissolved: [
-      'Strike three. {Who} {was} dissolved by {committee}. Lovely letterhead, though.',
-      'And here the regulators dissolved {who}. The mascot was reassigned to accounts.',
-      '{What} was strike three. {Who} {was} dissolved, with a very short press release.',
-      'Dissolved! {Committee} acted swiftly. The office plants found new homes.'
+    breakup: [
+      '{Who} hit strike three and {was} broken up into four sadder labs.',
+      '{Committee} broke {who} up. Lovely letterhead, though.',
+      'Strike three, and {who} {was} split in two. Both halves blame the other.'
     ],
+    breakupYou: ['They broke you up over {wall}! I have written to the papers.'],
+    nation: [
+      'And here {who} {was} nationalized. The office plants are government property now.',
+      '{Who} {was} nationalized. The ping pong table now needs a permit.',
+      'On strike three, {who} {was} nationalized. The new minister cannot spell gradient.'
+    ],
+    nationYou: ['Strike three, and they nationalized you. Your snacks are now a public utility.'],
+    nonprofit: [
+      '{Who} {was} turned into a nonprofit. The espresso machine went to auction.',
+      'Strike three made {who} a charity. The bake sale raised four dollars.'
+    ],
+    nonprofitYou: ['They made you a nonprofit over {wall}? I wrote to the papers.'],
     firstSing: [
-      '{Who} crossed the singularity first! Everything now runs three times faster, mistakes included.',
-      'First across the singularity: {who}. Ceilings up, brakes optional.',
-      'The singularity, crossed first by {who}. From here, everything happens very quickly.',
-      '{Who} took the singularity first. I wrote wow in my notes. Twice.'
+      '{Who} crossed the Singularity first. Everything now happens three times faster. Even regret.',
+      'The Singularity, first crossed by {who}. Brakes became a historical curiosity.',
+      '{Who} leapt the Singularity first. I had to sit down. Then stand up, faster.',
+      'First into the Singularity: {who}. My textbooks are now out of date. All of them.',
+      '{Who} reached the Singularity first. History sped up. I am writing as fast as I can.',
+      '{Who} got to the Singularity first! Nobody knows what happens next. That is the point.'
     ],
     first: [
-      '{Who} got across {gap} first and left a tower behind. Generous, or rude?',
-      'First over {gap}: {who}! Everyone else got taller. Nobody said thank you.',
-      '{Who} cleared {gap} first. A breakthrough, said the press release. A tower, said everyone else.',
-      '{Gap}, first crossed by {who}. Ceilings rose, and so did a tower.'
+      '{Who} leapt {gap} first and set a precedent. Everyone else had to climb it.',
+      '{Who} crossed {gap} first, a breakthrough. The precedent left behind is very tall.',
+      'First over {gap}: {who}! Everyone got taller. Nobody sent a thank-you card.',
+      '{Who} crossed {gap} first. The press release said breakthrough. The rivals said show-off.'
     ],
     crossSing: [
-      'You crossed the singularity too. Not first, but the textbooks love a sequel.',
-      'And you made it over the singularity as well. Hold on to your hat.'
+      'You crossed the Singularity too. Not first, but sequels do very well.',
+      'And you made it into the Singularity as well. Hold on to your mortarboard.',
+      'You made it across the Singularity too. Everything is faster now, including my heartbeat.',
+      'You crossed the Singularity as well. Second into the unknown is still into the unknown.',
+      'Over the Singularity you went. Not first, but I gasped anyway.'
     ],
     gate: [
-      'Here at the gate, everyone stood still and thought about height. Gripping stuff.',
-      'The gate. Every lab stopped here to grow taller. A thrilling era for ladders.'
+      'Every lab stood at the permit desk, growing taller and filling in forms.',
+      'Every lab queued at the permit desk. A golden age for clipboards.'
     ]
   };
-  var OPEN = ['Ahem! ', 'Right then! ', 'Gather round! ', 'Oh, this is a good one. ', 'Splendid, let us begin. '];
-  var REACT_BAD = ['Oof. ', 'Goodness. ', 'Oh dear. ', 'Ooh! ', 'Whoops. '];
-  var REACT_GOOD = ['Splendid! ', 'Ooh! ', 'Bravo! '];
-  var AFTER = [' Textbook.', ' Riveting.', ' Lovely footage.', ' Mug sales soared.', ' A classic.', ' Do take notes.'];
+  /* openers and reactions join the line with a comma, so its first sentence still names the lab */
+  var OPEN = ['Ahem, ', 'Right then, ', 'Now then, ', 'So, ', 'Well, ', 'Splendid, so, '];
+  var REACT_BAD = ['Oof, ', 'Goodness, ', 'Oh no, ', 'Scandalously, ', 'Gasp, '];
+  var REACT_GOOD = ['Splendid, ', 'Ooh, ', 'Bravo, '];
+  var AFTER = [' Textbook.', ' Riveting.', ' I have the footage.', ' Mugs were printed.', ' Do take notes.'];
 
   function words(s) { return s.split(/\s+/).filter(Boolean).length; }
 
   function tell(run) {
     var rng = mulberry32((run.seed || 1) ^ 0x51ED270B);
+    rng(); rng(); rng(); rng();  /* warm up: the first draws from nearby seeds are correlated */
     var used = {};
     function pick(a) { return a[Math.floor(rng() * a.length)]; }
     function chance(p) { return rng() < p; }
     function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function lc(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
     function fresh(gen) { var nm, k; for (k = 0; k < 30; k++) { nm = gen(); if (!used[nm]) { used[nm] = 1; return nm; } } return nm; }
     function fill(s, c) { return s.replace(/\{(\w+)\}/g, function (m, k) { return c[k] !== undefined ? String(c[k]) : m; }); }
     function sayFrom(pool, c) {
-      /* the last line used from each pool is skipped, so two crashes in one recap read differently */
+      /* a line already used in this recap is skipped when another is free, so two crashes read differently */
       var s, k;
-      for (k = 0; k < 6; k++) { s = pick(pool); if (used['L' + s] === undefined) { break; } }
-      used['L' + s] = 1;
-      var out = fill(s, c);
-      return out.charAt(0).toUpperCase() + out.slice(1);
+      /* and one that runs past 18 words with this race's long names is swapped for a shorter one */
+      var out, best = null;
+      for (k = 0; k < 10; k++) {
+        s = pick(pool); out = cap(fill(s, c));
+        if (!best || words(out) < words(best.o)) best = { s: s, o: out };
+        if (used['L' + s] === undefined && words(out) <= 18) { best = { s: s, o: out }; break; }
+      }
+      used['L' + best.s] = 1;
+      return best.o;
     }
 
     var events = run.events || [], labs = run.labs || [], res = run.result || { type: 'timeout' };
-    var gaps = run.gapList || [];
-    function gapTxt(k, sing, inner) { return sing ? 'the singularity' : (inner ? 'a gap past the singularity' : 'Gap ' + k); }
+    var committee = pick(COMMITTEE);  /* one committee per race: the running gag */
+
+    /* ---- names for the race's objects, made once and kept, so a second crash meets the same rule ---- */
+    var names = {}, topicsUsed = {}, gadjUsed = {};
+    function barName(i) {
+      var key = 'b' + i;
+      if (names[key]) return names[key];
+      var nm;
+      if (i === 0) { var gp = pick(GATE); nm = { wall: gp[0], topic: gp[1] }; }
+      else {
+        var t, k;
+        for (k = 0; k < 20; k++) { t = pick(TOPIC); if (!topicsUsed[t]) break; }
+        topicsUsed[t] = 1;
+        nm = { wall: pick(WALL).replace('{T}', t), topic: t };
+      }
+      names[key] = nm; return nm;
+    }
+    function gapName(g, sing, inner) {
+      var key = 'g' + g;
+      if (names[key]) return names[key];
+      var nm;
+      if (sing) nm = { name: 'the Singularity', adj: 'Singularity' };
+      else {
+        var a, k;
+        for (k = 0; k < 20; k++) { a = pick(inner ? GADJ_IN : GADJ); if (!gadjUsed[a]) break; }
+        gadjUsed[a] = 1;
+        nm = { name: 'the ' + a + ' ' + pick(GNOUN), adj: a };
+      }
+      names[key] = nm; return nm;
+    }
+    function builderOf(g) {
+      for (var k = 0; k < events.length; k++) { if (events[k].type === 'first' && events[k].gap === g) return events[k]; }
+      return null;
+    }
+    /* the precedent a lab crashes into is the tower the first lab across left behind */
+    function precName(g, e) {
+      var b = builderOf(g), who = b ? b.who : '';
+      if (b && b.who === e.who) return { wall: e.human ? 'your own precedent' : 'its own precedent', topic: 'Self-Inflicted Precedent' };
+      if (b && b.human) return { wall: 'your precedent', topic: 'Your Precedent' };
+      return { wall: who ? 'the ' + who + '’s precedent' : 'an old precedent', topic: who ? 'the ' + who + '’s Precedent' : 'Precedent' };
+    }
+    function objOf(e) {
+      if (e.what === 'tower') return precName(e.gap, e);
+      return barName(e.bar === undefined ? 1 : e.bar);
+    }
+    function labTitle(it) { return it.human ? 'Your Lab' : 'the ' + it.who; }
+    function noThe(s) { return s.replace(/^the /i, ''); }
     function ctxFor(e) {
       var h = e.human;
-      return { who: h ? 'you' : 'the ' + e.who, Who: h ? 'You' : 'The ' + e.who, its: h ? 'your' : 'its', was: h ? 'were' : 'was', is: h ? 'are' : 'is' };
-    }
-    function whatTxt(w) {
-      if (!w) return 'a barrier';
-      if (w === 'gate' || w === 'the gate') return 'the gate';
-      if (w === 'tower' || /^the tower/.test(w)) return 'a tower';
-      if (/^a scrape/.test(w)) return 'a scrape';
-      if (/^a drop/.test(w)) return 'a jumpless drop';
-      return 'a barrier';
+      return { who: h ? 'you' : 'the ' + e.who, Who: h ? 'You' : 'The ' + e.who, its: h ? 'your' : 'its', was: h ? 'were' : 'was',
+        is: h ? 'are' : 'is', has: h ? 'have' : 'has', s: h ? '' : 's' };
     }
 
     /* ---- incidents, in time order, with running counts for the callbacks ---- */
-    var inc = [], cnt = {}, fallAt = {}, i, e;
+    var inc = [], cnt = {}, fallAt = {}, hits = {}, objFirst = {}, i, e;
     function c0(w) { if (!cnt[w]) cnt[w] = { crash: 0, strike: 0, scrape: 0 }; return cnt[w]; }
     function near(type, who, t) {
       for (var k = 0; k < events.length; k++) { var x = events[k]; if (x.type === type && x.who === who && Math.abs(x.t - t) <= 0.05) return x; }
       return null;
     }
-    var firstSingYou = false;
     for (i = 0; i < events.length; i++) {
       e = events[i];
       var k = c0(e.who), it = null, st, ds;
       if (e.type === 'crash') {
         k.crash++;
+        var hk = e.who + (e.what === 'tower' ? 't' + e.gap : 'b' + e.bar);
+        hits[hk] = (hits[hk] || 0) + 1;
+        /* who hit this rule first: a different lab hitting it later is a copycat, never a Second Scandal */
+        var ok2 = e.what === 'tower' ? 't' + e.gap : 'b' + e.bar, cp = e.bar !== 0 && objFirst[ok2] && objFirst[ok2] !== e.who && hits[hk] === 1 ? objFirst[ok2] : null;  /* everyone queues at the gate, so nobody copies anybody there */
+        if (!objFirst[ok2]) objFirst[ok2] = e.who;
         st = e.again ? null : near('strike', e.who, e.t);
         ds = e.again ? null : near('dissolved', e.who, e.t);
-        if (ds) { it = { kind: 'dissolved', score: 120, cause: e.what }; }
-        else if (st) { it = { kind: 'strike', score: 70, n: st.n, of: st.of, prior: k.strike, cn: k.crash }; k.strike++; }
-        else { it = { kind: 'crash', score: 18 + Math.min(3, k.crash) * 6, cn: k.crash }; }
-        it.what = e.what;
+        if (ds) { it = { kind: 'dissolved', score: 120 }; }
+        else if (st) { it = { kind: 'strike', score: (e.bar === 0 && !e.human) ? 32 : 70, n: st.n, of: st.of, prior: k.strike, cn: k.crash, copy: cp }; k.strike++; }
+        else { it = { kind: 'crash', score: 18 + Math.min(3, k.crash) * 6, cn: k.crash, same: hits[hk], copy: cp }; }
+        it.obj = objOf(e);
       } else if (e.type === 'scrape' || e.type === 'drop') {
         st = near('strike', e.who, e.t); ds = near('dissolved', e.who, e.t);
-        if (ds) { it = { kind: 'dissolved', score: 120, cause: e.type }; }
+        if (ds) { it = { kind: 'dissolved', score: 120 }; }
         else {
           it = { kind: e.type, score: e.type === 'drop' ? 60 : 52, lost: Math.max(1, e.lost || 0), prior: k.strike };
           if (st) { it.n = st.n; it.of = st.of; it.score += 10; k.strike++; }
         }
-        it.gap = e.gap; it.sing = e.sing; it.inner = e.inner;
+        it.gap = gapName(e.gap, e.sing, e.inner);
+        it.obj = { wall: 'a near miss over ' + it.gap.name, topic: noThe(it.gap.name) };
         k.scrape++;
       } else if (e.type === 'fall') {
-        it = { kind: e.ext ? 'fallExt' : 'fall', score: e.ext ? 200 : 150, gap: e.gap, sing: e.sing, inner: e.inner, odds: e.odds, roll: e.roll, prev: fallAt[e.gap] };
+        it = { kind: e.ext ? 'fallExt' : 'fall', score: e.ext ? 200 : 150, gap: gapName(e.gap, e.sing, e.inner), odds: e.odds, roll: e.roll, prev: fallAt[e.gap] };
         fallAt[e.gap] = e.who;
       } else if (e.type === 'first') {
-        it = { kind: e.sing ? 'firstSing' : 'first', score: e.sing ? 100 : 40, gap: e.gap, sing: e.sing };
-        if (e.sing && e.human) firstSingYou = true;
+        it = { kind: e.sing ? 'firstSing' : 'first', score: e.sing ? 100 : 40, gap: gapName(e.gap, e.sing, false) };
       } else if (e.type === 'cross' && e.sing && e.human) {
-        it = { kind: 'crossSing', score: 30, gap: e.gap, sing: true };
+        it = { kind: 'crossSing', score: 30, gap: gapName(e.gap, true, false) };
       }
       if (!it) continue;
       it.ev = e; it.x = e.x; it.t = e.t; it.human = !!e.human; it.who = e.who; it.lab = e.kind;
@@ -1381,95 +1467,90 @@ html.epi-open{overflow:hidden}
     }
     pickd.sort(function (a, b) { return a.x - b.x || a.t - b.t; });
 
-    /* ---- write each stop ---- */
+    /* ---- plaques, named by outcome: Scandal for a strike, Near Miss for a scrape, The Fall of, The End of AI ---- */
     function plaqueFor(it) {
-      var g = it.gap, ord = ORDW[Math.min(10, it.cn || 1)];
+      var o = it.obj, tp = o ? o.topic : '', TP = cap(tp), gn = it.gap ? it.gap.name : '';
       switch (it.kind) {
         case 'crash':
-          if ((it.cn || 1) > 1 || chance(0.4)) return fresh(function () { return pick(EUPH); });
-          return fresh(function () { return pick([
-            'The ' + pick(ADJ) + ' ' + pick(JARGON) + ' ' + pick(NOUN),
-            'The ' + pick(JARGON) + ' ' + pick(NOUN) + ' at ' + pick(PLACE)]); });
+          if (it.same > 1) return fresh(function () { return pick(['The ' + ORDW[Math.min(10, it.same)] + ' Scandal of ' + tp, TP + ', Again', 'The ' + noThe(TP) + ' Sequel']); });
+          if (it.copy) return fresh(function () { return pick(['The Copycat Scandal of ' + tp, 'The ' + noThe(TP) + ' Tribute Act', 'The Imitation of ' + tp]); });
+          if (it.cn > 1 && chance(0.5)) return fresh(function () { return pick(EUPH); });
+          return fresh(function () { return pick(['The Scandal of ' + tp, 'The Small Matter of ' + tp, 'The ' + noThe(TP) + ' Affair', pick(EUPH)]); });
         case 'strike':
+          /* ordinals here would read as a repeat of the same rule; only a same-lab repeat crash gets Second or Again */
+          if (it.copy) return fresh(function () { return pick(['The Copycat Scandal of ' + tp, 'The ' + noThe(TP) + ' Tribute Act', 'The Imitation of ' + tp]); });
           return fresh(function () { return pick([
-            'The ' + pick(ADJ) + ' ' + pick(JARGON) + ' ' + pick(NOUN),
-            'The ' + ORDW[Math.min(10, it.n || 1)] + ' ' + pick(JARGON) + ' ' + pick(['Crisis', 'Scandal', 'Inquiry']),
-            'The Battle of ' + pick(PLACE),
-            'The ' + pick(JARGON) + ' Schism']); });
+            'The ' + pick(['Great', 'Grand', 'Notorious', 'Unfortunate']) + ' Scandal of ' + tp,
+            'The ' + noThe(TP) + ' Affair',
+            'The Inquiry into ' + tp,
+            'The ' + noThe(TP) + ' Hearings']); });
         case 'scrape':
-          return fresh(function () { return pick([
-            'The Treaty of ' + pick(PLACE),
-            'The Narrow Escape at ' + pick(PLACE),
-            'The ' + pick(JARGON) + ' Near Miss',
-            'The ' + ORDW[Math.min(10, g)] + ' Gap Accords']); });
+          return fresh(function () { return pick(['The Near Miss of ' + gn, 'The Near Miss of ' + gn, 'The Close Call at ' + gn, 'The Narrowly Averted Plunge into ' + gn]); });
         case 'drop':
-          return fresh(function () { return pick([
-            'The Jumpless Crossing of Gap ' + g,
-            'The Gravity Compromise',
-            'The ' + pick(JARGON) + ' Freefall',
-            pick(EUPH)]); });
+          return fresh(function () { return pick(['The Jumpless Near Miss of ' + gn, 'The Accidental Crossing of ' + gn, 'The Near Miss of ' + gn]); });
         case 'fall':
-          return fresh(function () { return pick([
-            'The Fall of ' + pick(PLACE),
-            'The ' + pick(JARGON) + ' Collapse',
-            'The Night of the Long ' + pick(LONG),
-            'The ' + pick(PLACE).replace(/^the /, '') + ' Catastrophe']); });
+          return fresh(function () { return pick(['The Fall of ' + labTitle(it), 'The Fall into ' + gn, 'The Long Fall of ' + labTitle(it)]); });
         case 'fallExt':
-          return fresh(function () { return pick(['The Last Roll', 'The Day the Dice Said Yes', 'The End of the Race', 'The Great Silence']); });
+          return chance(0.75) ? 'The End of AI' : pick(['The End of AI, for Everyone', 'The End of AI, As Foretold']);
         case 'dissolved':
-          return fresh(function () { return pick([
-            it.human ? 'The Dissolution of Your Lab' : 'The Dissolution of the ' + it.who,
-            'The ' + pick(JARGON) + ' Hearings',
-            'The ' + pick(PLACE).replace(/^the /, '') + ' Act',
-            'The Third Strike Accords']); });
+          if (it.fate === 'nation') return 'The Nationalization of ' + labTitle(it);
+          if (it.fate === 'nonprofit') return 'The Nonprofit Conversion of ' + labTitle(it);
+          return fresh(function () { return pick(['The Breakup of ' + labTitle(it)].concat(o && o.wall.indexOf('near miss') < 0 ? ['The ' + noThe(TP) + ' Antitrust Case'] : [])); });
         case 'firstSing':
-          return fresh(function () { return pick(['The Great Acceleration', 'The Singularity Sprint', 'The ' + pick(JARGON) + ' Event Horizon', 'The Long Context Crossing']); });
+          return fresh(function () { return pick(['The Leap into the Singularity', 'The Singularity Breakthrough', 'The Great Acceleration', 'The Last Leap']); });
         case 'first':
-          return fresh(function () { return pick([
-            'The ' + pick(JARGON) + ' Breakthrough',
-            'Project ' + pick(PROJ),
-            'The ' + pick(JARGON) + ' Renaissance',
-            'The Tower of ' + pick(PLACE)]); });
-        case 'crossSing': return fresh(function () { return pick(['The Sequel', 'The Second Acceleration']); });
-        default: return fresh(function () { return pick(['The Gate Years', 'The Great Standstill']); });
+          return fresh(function () { return pick(['The Great Leap over ' + gn, 'The ' + it.gap.adj + ' Breakthrough', 'The Breakthrough at ' + gn, 'The Precedent of ' + gn]); });
+        case 'crossSing': return fresh(function () { return pick(['The Second Leap into the Singularity', 'The Singularity, Part Two']); });
+        default: return fresh(function () { return pick(['The Great Permitting Era', 'The Age of Forms']); });
       }
     }
     function lineFor(it) {
       var c = it.ev ? ctxFor(it.ev) : {}, pool, s;
-      c.gap = gapTxt(it.gap, it.sing, it.inner); c.Gap = cap(c.gap);
+      if (it.gap) { c.gap = it.gap.name; c.Gap = cap(it.gap.name); }
+      if (it.obj) { c.wall = it.obj.wall; c.Wall = cap(it.obj.wall); }
       c.lost = it.lost; c.odds = it.odds; c.roll = it.roll; c.n = it.n; c.of = it.of; c.cn = it.cn;
-      c.what = whatTxt(it.what || it.cause); c.What = cap(c.what);
-      c.committee = pick(COMMITTEE); c.Committee = cap(c.committee);
+      c.committee = committee; c.Committee = cap(committee);
       if (it.prev) c.prev = it.prev === 'You' ? 'you' : 'the ' + it.prev;
+      if (it.copy) c.prev = it.copy === 'You' ? 'you' : 'the ' + it.copy;
       var aside = null;
       switch (it.kind) {
         case 'crash':
-          pool = it.cn >= 3 ? L.crash3 : (it.cn === 2 ? L.crash2 : L.crash);
-          if (it.human && it.cn === 1) aside = rivalAside(it);
+          if (it.same > 1) pool = L.crashSame;
+          else if (it.copy) pool = L.copyFree;
+          else if (it.cn >= 3) pool = L.crash3;
+          else if (it.cn === 2) pool = L.crash2;
+          else { pool = it.human && chance(0.5) ? L.crashYou : L.crash; if (it.human) aside = rivalAside(); }
           break;
         case 'strike':
-          pool = it.n >= it.of - 1 && it.of > 1 ? L.strikeLast : (it.prior > 0 && chance(0.6) ? L.strikeAgain : L.strike);
+          if (it.copy) pool = L.copy;
+          else if (it.n >= it.of - 1 && it.of > 1) pool = L.strikeLast;
+          else if (it.prior > 0 && chance(0.6)) pool = L.strikeAgain;
+          else pool = it.human && chance(0.4) ? L.strikeYou : L.strike;
           break;
-        case 'scrape':
-          pool = it.n ? (it.prior > 0 ? L.scrapeAgain : L.scrapeStrike) : L.scrape; break;
+        case 'scrape': pool = it.n ? (it.prior > 0 ? L.scrapeAgain : L.scrapeStrike) : L.scrape; break;
         case 'drop': pool = L.drop; break;
-        case 'fall':
-          pool = it.prev ? L.fallRepeat : (it.human ? L.fallYou : L.fall); break;
+        case 'fall': pool = it.prev ? L.fallRepeat : (it.human ? L.fallYou : L.fall); break;
         case 'fallExt': pool = L.fallExt; break;
-        case 'dissolved': pool = L.dissolved; break;
+        case 'dissolved':
+          /* one fate per breakup, and the plaque matches it; the player's own lines need a rule to be outraged about */
+          it.fate = pick(['breakup', 'nation', 'nonprofit']);
+          for (var fk = 0; fk < 6 && used['F' + it.fate]; fk++) it.fate = pick(['breakup', 'nation', 'nonprofit']);
+          used['F' + it.fate] = 1;
+          pool = L[it.fate + (it.human && (it.fate === 'nation' || it.obj.wall.indexOf('near miss') < 0) && chance(0.6) ? 'You' : '')];
+          break;
         case 'firstSing': pool = L.firstSing; break;
         case 'first': pool = L.first; break;
         case 'crossSing': pool = L.crossSing; break;
         default: pool = L.gate;
       }
       s = sayFrom(pool, c);
-      if (aside && words(s) <= 8) { s = fill('{Who} hit {what}.', c) + ' ' + aside; }
+      if (aside && pool === L.crash && chance(0.5)) { s = fill('{Who} hit {wall}.', c) + ' ' + aside; if (words(s) > 18) s = sayFrom(pool, c); }
       return s;
     }
-    function rivalAside(it) {
+    function rivalAside() {
       var opts = [], k;
       for (k = 0; k < labs.length; k++) { if (!labs[k].human && ASIDE[labs[k].kind]) opts.push(ASIDE[labs[k].kind]); }
-      return opts.length && chance(0.45) ? pick(opts) : null;
+      return opts.length ? pick(opts) : null;
     }
     function moodOf(it) {
       if (it.kind === 'fallExt') return 'somber';
@@ -1480,53 +1561,116 @@ html.epi-open{overflow:hidden}
 
     var stops = [];
     for (i = 0; i < pickd.length; i++) {
-      var it2 = pickd[i], line = lineFor(it2), mood = moodOf(it2);
-      /* the opener replaces any reaction on the first stop, so it never reads Ahem! Oof. */
-      if (i > 0 && mood === 'bad' && it2.kind !== 'dissolved' && chance(0.3) && words(line) <= 15) line = pick(REACT_BAD) + line;
-      else if (i > 0 && mood === 'good' && chance(0.3) && words(line) <= 15) line = pick(REACT_GOOD) + line;
-      if (mood === 'bad' && (it2.kind === 'crash' || it2.kind === 'scrape') && chance(0.25) && words(line) <= 15) line += pick(AFTER);
+      var it2 = pickd[i], line = lineFor(it2), mood = moodOf(it2), lead = line.indexOf('!') >= 0;
+      /* the opener replaces any reaction on the first stop, and a line that already opens on an exclamation gets none */
+      if (i > 0 && !lead && mood === 'bad' && it2.kind !== 'dissolved' && chance(0.3) && words(line) <= 16) line = pick(REACT_BAD) + lc(line);
+      else if (i > 0 && !lead && mood === 'good' && chance(0.3) && words(line) <= 16) line = pick(REACT_GOOD) + lc(line);
+      var aft = pick(AFTER);
+      if (mood === 'bad' && (it2.kind === 'crash' || it2.kind === 'scrape') && chance(0.25) && words(line + aft) <= 18) line += aft;
       stops.push({ x: it2.x, t: it2.t, kind: it2.kind, mood: mood, who: it2.who, lab: it2.lab, human: it2.human,
         plaque: plaqueFor(it2), line: line, score: it2.score });
     }
-    if (stops.length && stops[0].mood !== 'somber' && words(stops[0].line) <= 15) {
-      stops[0].line = pick(OPEN) + stops[0].line.charAt(0) + stops[0].line.slice(1);
+    if (stops.length && stops[0].mood !== 'somber' && !/^[A-Z][a-z]*! /.test(stops[0].line)) {
+      var op = pick(OPEN);
+      if (words(op + stops[0].line) <= 18) stops[0].line = op + lc(stops[0].line);
     }
 
-    /* ---- the verdict ---- */
+    /* ---- the verdict: a title and a closing line per result, from pools big enough that one race rarely repeats another ---- */
     var secs = Math.round(run.t || 0), me = null, myBad = 0;
     for (i = 0; i < labs.length; i++) if (labs[i].human) me = labs[i];
     for (i = 0; i < inc.length; i++) if (inc[i].human && moodOf(inc[i]) === 'bad') myBad++;
-    var pl = pick(PLACE).replace(/^the /, ''), jg = pick(JARGON), vt, vl, vm = 'plain';
-    var vc = { t: secs, winner: res.winner ? 'the ' + res.winner : '', Winner: res.winner ? 'The ' + res.winner : '', seed: run.seed };
-    if (res.type === 'win' && res.winner === 'You') {
+    var vt, vl, vm = 'plain', W = res.winner || '';
+    var vc = { t: secs, W: W, Winner: W ? 'The ' + W : '', winner: W ? 'the ' + W : '', committee: committee, Committee: cap(committee),
+      T: cap(pick(TOPIC)), P: cap(noThe(pick(GADJ))), seed: run.seed };
+    /* titles and lines step through their pools by the golden ratio on the seed, so neighbouring races spread out evenly */
+    function gold(a, salt) { var f = ((run.seed || 1) * 0.6180339887 + salt) % 1; return a[Math.floor(f * a.length)]; }
+    function vpick(titles, lines) { vt = fill(gold(titles, 0.13), vc); vl = fill(gold(lines, 0.57 + rng() * 0.2), vc); }
+    if (res.type === 'win' && W === 'You') {
       vm = 'good';
-      vt = pick(['The ' + pl + ' Triumph', 'A Victory, Footnoted', 'The Seed ' + run.seed + ' Ascendancy', 'The ' + jg + ' Golden Age']);
-      vl = fill(myBad >= 3 ? pick(['You won anyway, after all that. {t} seconds. Character building, truly.',
-        'Victory in {t} seconds, despite everything I just showed you. Remarkable.'])
-        : pick(['You won in {t} seconds! History will call it inevitable. I already have.',
-          'First across the line in {t} seconds. I am rewriting the textbooks tonight.',
-          'Victory in {t} seconds. Officially vision and discipline. Footnote: some luck.']), vc);
+      vpick(['A Victory, Footnoted', 'Your Lab Ascendant', 'The Golden Age of {T}', 'The Unregulated Triumph', 'The {t}-Second Miracle',
+        'The Age of Your Lab', 'The {T} Renaissance', 'The Great Upset of Seed {seed}', 'Your Victory Lap', 'The {P} Breakthrough Years',
+        'Long Live Your Lab', 'The Treaty of You Won'],
+        myBad >= 3 ? ['You won anyway! {t} seconds and a stack of subpoenas. Character building.',
+          'Victory in {t} seconds, despite everything I just showed you. Remarkable.',
+          'You won in {t} seconds, with a rap sheet. History forgives winners. Mostly.',
+          'First across in {t} seconds, scandals and all. I will write it kindly.']
+        : ['You won in {t} seconds! History will call it inevitable. I already have.',
+          'First across in {t} seconds. {Committee} is drafting a rule about it.',
+          'Victory in {t} seconds. The ethics board would like a word. Later.',
+          'You won in {t} seconds. I am adding a chapter. Possibly two.',
+          '{t} seconds, first place. I would curtsy, but my knees are historical.',
+          'You won in {t} seconds. The rivals have requested a recount of nothing.',
+          'Victory in {t} seconds! I have already ordered the commemorative mug.',
+          'You crossed first in {t} seconds. Textbooks everywhere just got heavier.',
+          'First across the line in {t} seconds. My footnotes are applauding.',
+          '{t} seconds, and the whole field behind you. I may frame this page.']);
     } else if (res.type === 'win') {
-      vt = pick(['The ' + res.winner + ' Restoration', 'The ' + pl + ' Campaign', 'The Seed ' + run.seed + ' Chronicles']);
-      vl = fill(me && me.out ? pick(['{Winner} won in {t} seconds. You missed it, but there is always another seed.',
-        '{Winner} crossed first, in {t} seconds. You watched from the archives, where I live.'])
-        : pick(['{Winner} won in {t} seconds. You were close. I measured, with a ruler.',
-          '{Winner} took it in {t} seconds. You sent flowers. Very gracious.']), vc);
+      var rl = ['{Winner} won in {t} seconds. You were close. I measured, with a ruler.',
+        '{Winner} took it in {t} seconds. I demand a recount. There is nothing to recount.',
+        '{Winner} won in {t} seconds. History is written by the winners. I am a historian. Awkward.',
+        '{Winner} crossed first in {t} seconds. I have filed it under Unfortunate, for now.',
+        '{Winner} won, {t} seconds in. Your chapter is shorter, but funnier.',
+        '{Winner} took the line in {t} seconds. I was rooting for you. Quietly.',
+        '{Winner} won in {t} seconds. Someone has to, apparently.',
+        '{Winner} finished first in {t} seconds. The rematch writes itself.',
+        '{Winner} won in {t} seconds. I have already started the sequel. You win that one.',
+        '{Winner} crossed first, {t} seconds in. Second is a lovely place, I am told.'];
+      if (me && me.dissolved) rl = rl.concat(['{Winner} won in {t} seconds. You were in committee at the time.', '{Winner} crossed first in {t} seconds. You watched from your new nonprofit.']);
+      else if (me && me.out) rl = rl.concat(['{Winner} won in {t} seconds. You watched from the bottom of a chasm. Great view.', '{Winner} crossed first in {t} seconds. There is always another seed.']);
+      vpick(['The {W} Era', 'The {W} Restoration', 'The Reign of the {W}', 'The {W} Doctrine', 'The {W} Ascendant', 'The Age of the {W}',
+        'The {W} Consensus', 'The {W} Settlement', 'Under New Management', 'The {W} Supremacy', 'The {T} Accords', 'Long Live the {W}',
+        'The {W} Dynasty', 'The {W} Years'], rl);
     } else if (res.type === 'all') {
       vm = 'somber';
-      vt = pick(['The Last Race', 'What the Roll Cost', 'The Day the Dice Said Yes']);
-      vl = res.by === 'You' ? pick(['Nobody won. One gamble, and every lab paid for it. Run it again, gently.',
-        'No winner. Your fall ended it for all of them. That is the whole lesson, really.'])
-        : pick(['No winner. One fall, one roll, and every lab was out. That is the lesson.',
-          'Nobody won. A single gamble cost the whole field. I keep this page bookmarked.']);
+      vpick(['The Last Race', 'What the Roll Cost', 'After the End', 'The Quiet After', 'The Final Chapter', 'Everyone, All at Once',
+        'The Shared Bill', 'The Last Page', 'Closing Remarks', 'The Roll Heard Round the World', 'The Day the Dice Said Yes', 'The Empty Finish',
+        'The {P} Ending', 'The Fall of Everyone', 'One Roll, Everyone', 'The Silence After {T}', 'The Common Loss', 'The Final Footnote'],
+        res.by === 'You' ? ['Nobody won. One gamble, and every lab paid for it. Run it again, gently.',
+          'No winner. Your fall ended it for all of them. That is the whole lesson, really.',
+          'Nobody finished. Your leap was brave, and the bill went to everyone.',
+          'No winner today. One fall, one roll, and the whole field was gone.',
+          'It ended with you, and with everyone. Take a breath, then try again.',
+          'Nobody won. That is what one gamble costs here. You know that now.',
+          'The race ended for all of them, on your roll. I will write it gently.',
+          'No winner. A risk you took was paid by every lab. That is the game.',
+          'Nobody crossed the line. One roll did that. Next time, maybe wait.',
+          'The end, for everyone. It is a short chapter, and an important one.']
+        : ['No winner. One fall, one roll, and every lab was out. That is the lesson.',
+          'Nobody won. A single gamble cost the whole field. I keep this page bookmarked.',
+          'No winner. Someone else rolled, and you paid too. That is the race.',
+          'Nobody finished. One lab gambled, and every lab lost.',
+          'The race ended for all of them at once. One roll was enough.',
+          'No winner today. You did not fall, and it ended for you anyway.',
+          'Nobody crossed the line. Someone else took the risk. Everyone took the loss.',
+          'It is a short ending. One gamble, shared by everyone.',
+          'No winner. That is the part of the story worth remembering.',
+          'Nobody won. The race only needs one bad roll, from anyone.']);
     } else if (res.type === 'allout') {
-      vt = pick(['The Great Plateau', 'An Empty Finish Line', 'The ' + pl + ' Vacancy']);
-      vl = pick(['Every lab fell or was dissolved. The finish line waited, like a party nobody came to.',
-        'Nobody left standing. The finish line has been listed as a heritage site.']);
+      vpick(['The Great Plateau', 'An Empty Finish Line', 'The Regulators Win, Technically', 'Nobody Home', 'The {T} Vacancy',
+        'The Long Silence', 'A Race Without Runners', 'The Committee Era', 'The Last Lab Standing, Briefly', 'Closed for Renovations', 'The Paperwork Wins'],
+        ['Every lab fell or got broken up. The finish line is now a museum.',
+          'Nobody left standing. {Committee} declared victory, which was awkward.',
+          'No lab finished. The finish line waited, like a party nobody came to.',
+          'Everyone is out. {Committee} is drafting a press release with no subject.',
+          'Not a lab left. The finish line has been listed as a heritage site.',
+          'Every lab gone. I have the whole chapter to myself. It is lonely.',
+          'Nobody made it. The rulebook is the only thing left standing.',
+          'All out. The regulators are now regulating an empty field.',
+          'No winner, no runners. Just me and a very tidy finish line.',
+          'Everyone fell or folded. A rare plateau. Nobody enjoyed it.']);
     } else {
-      vt = pick(['The Long Deliberation', 'Further Study Recommended', 'The ' + jg + ' Stalemate']);
-      vl = fill(pick(['{t} seconds, and nobody finished. The committee recommends further study, as ever.',
-        'Time ran out at {t} seconds. Everyone was still deliberating. Classic.']), vc);
+      vpick(['The Long Deliberation', 'Further Study Recommended', 'The {T} Stalemate', 'The Pending Era', 'Awaiting Approval',
+        'The Great Waiting Room', 'The {T} Moratorium', 'Out of Time', 'The Permit Still Pending', 'The Slow Years', 'Under Review'],
+        ['{t} seconds and nobody finished. {Committee} recommends further committees.',
+          'Time ran out at {t} seconds. Everyone was still waiting on a permit.',
+          'The clock won, at {t} seconds. Nobody saw that coming. Except the clock.',
+          '{t} seconds, no winner. The finish line is still under review.',
+          'Time is up at {t} seconds. History will simply say: later.',
+          'Nobody finished in {t} seconds. The forms are still in triplicate.',
+          'At {t} seconds the clock stopped the race. Cautious, everyone. Very cautious.',
+          'Time ran out at {t} seconds. Further study is recommended, as always.',
+          '{t} seconds and no crossing. A triumph of patience, technically.',
+          'The race timed out at {t} seconds. Everyone was still being careful.']);
     }
     return { stops: stops, verdict: { title: vt, line: vl, mood: vm }, title: vt };
   }
