@@ -11,6 +11,7 @@
   --bg:#EDF0F4; --surface:#F8F9FB; --ink:#11161D; --muted:#566170; --line:#C9D1DB;
   --a:#0F8B8D; --b:#C9731C; --c:#7A5AC8; --d:#D6456B;
   --danger:#D23B2E; --good:#2E8B57;
+  --run:#2F5277; --run-ink:#F4F7FB;
   --display:'Pixelify Sans','Courier New',monospace;
   --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
@@ -19,12 +20,14 @@
   :root:not([data-theme="light"]){
     --bg:#0E1218; --surface:#161C25; --ink:#E8ECF2; --muted:#93A0B2; --line:#2B3442;
     --a:#3CC3C5; --b:#F0A04B; --c:#A58BEE; --d:#F2708F; --danger:#FF6B5B; --good:#4FC987;
+    --run:#3C6592; --run-ink:#F2F6FB;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0E1218; --surface:#161C25; --ink:#E8ECF2; --muted:#93A0B2; --line:#2B3442;
   --a:#3CC3C5; --b:#F0A04B; --c:#A58BEE; --d:#F2708F; --danger:#FF6B5B; --good:#4FC987;
+    --run:#3C6592; --run-ink:#F2F6FB;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -55,15 +58,26 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
   border-radius:6px;box-shadow:0 2px 10px color-mix(in srgb,var(--ink) 18%,transparent);cursor:pointer;opacity:1;transition:opacity .25s,transform .25s}
 .hint[hidden]{display:block;visibility:hidden;opacity:0;transform:translate(-50%,-6px);pointer-events:none;transition:opacity .25s,transform .25s,visibility 0s .25s}
 .hint b{font-weight:600}
+.hint-x{margin-left:10px;color:var(--muted);font-weight:600}
 .hint-how{align-self:flex-start;min-height:32px;padding:4px 0;background:none;border:0;color:var(--a);text-decoration:underline;font-size:13px}
 .hint-note{font-size:12.5px;color:var(--muted)}
-@media (max-width:600px),(orientation:landscape) and (max-height:540px){.hint{top:52px;padding:6px 10px;font-size:12.5px;max-width:calc(100% - 16px)}}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){.hint{top:52px;left:calc(50% - 26px);padding:6px 10px;font-size:12.5px;max-width:calc(100% - 68px)}}  /* phones: clear of the sound button on the right */
 @media (prefers-reduced-motion:reduce){.hint,.hint[hidden]{transition:none;transform:translate(-50%,0)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .card h2{font-size:22px}
 .card button.primary{position:sticky;bottom:0;flex:none}
-@media (max-width:600px){.ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}.sing-n{font-size:18px}}
+@media (max-width:600px){.ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}.sing-n{font-size:18px}.ov-lead{font-size:14px;gap:6px}}
 .card p{font-size:15px}
+/* the start card: three short lines, the full rules behind a quiet toggle */
+.ov-lead{list-style:none;margin:2px 0 4px;padding:0;display:flex;flex-direction:column;gap:8px;font:500 16px/1.35 var(--body)}
+.ov-lead[hidden],#ov-how[hidden]{display:none}
+.ov-lead li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:center}
+.ov-lead i{display:block;width:22px;height:22px;border-radius:4px;font:700 13px/22px var(--display);font-style:normal;text-align:center;color:var(--run-ink);background:var(--run)}
+.ov-lead li:nth-child(2) i{background:linear-gradient(90deg,var(--a) 0 33.3%,var(--c) 0 66.6%,var(--b) 0)}
+.ov-lead li:nth-child(3) i{background:var(--surface) repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 5px);border:1px solid var(--muted)}
+#ov-how{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
+#ov-how:hover{color:var(--ink)}
+#ov-msg[hidden]{display:none}
 /* end-of-run story: set apart from the result line, in the body face, a little quieter */
 /* the recap: Professor Postmortem walks a miniature of the track just raced and stops at its disasters. The plaque pops up over
    the spot, the line sits in a speech bubble under the strip. Tap the strip to skip ahead; it never blocks the buttons */
@@ -117,13 +131,44 @@ output{font-variant-numeric:tabular-nums}
 .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .btns label{font:400 13px var(--mono);display:flex;gap:6px;align-items:center}
 #btn-jump{flex:1 1 160px;font-size:16px;min-height:52px}
-.split{display:flex;height:18px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--bg)}
-.split span{display:block;height:100%;min-width:0}
-.s-run{background:var(--ink)} .s-sight{background:var(--a)} .s-height{background:var(--c)} .s-max{background:var(--b)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font:400 12px var(--mono)}
-.legend span{display:flex;gap:6px;align-items:center}
-.dot{display:inline-block;width:10px;height:10px}
-.dot.ink{background:var(--ink)} .dot.a{background:var(--a)} .dot.c{background:var(--c)} .dot.b{background:var(--b)}
+/* Run / Build: one bar. Run fills from the left, Build takes the rest (hatched, with the split as a thin strip along its foot).
+   The #pace range input lies on top, invisible, so keys, touch and screen readers work as before. Its thumb is as wide as
+   --tw, so the drawn handle sits exactly where the thumb is: left = tw/2 + (100% - tw) * p */
+.rb{--p:.7;--tw:24px;--hx:calc(var(--tw) / 2 + (100% - var(--tw)) * var(--p));position:relative;height:42px;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background:var(--bg) repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 16%,transparent) 6px 8px)}
+.rb-run{position:absolute;left:0;top:0;bottom:0;width:var(--hx);background:var(--run)}
+.rb-split{position:absolute;right:0;bottom:0;height:4px;left:var(--hx);display:flex}
+.rb-split i,.th-split i{display:block;flex:1 1 0;min-width:0;min-height:0}
+.rb-split i:nth-child(1),.th-split i:nth-child(1){background:var(--a)} .rb-split i:nth-child(2),.th-split i:nth-child(2){background:var(--c)} .rb-split i:nth-child(3),.th-split i:nth-child(3){background:var(--b)}
+.rb-lbl{position:absolute;top:50%;transform:translateY(-50%);font:500 12px var(--mono);white-space:nowrap;pointer-events:none;color:var(--ink)}
+.rb-lbl b{font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+#rb-lr{left:10px;color:var(--run-ink)} #rb-lb{right:10px;margin-top:-2px}
+.rb-lbl.num .w,.rb-lbl.none{display:none}
+.rb-h{position:absolute;top:4px;bottom:4px;left:var(--hx);width:12px;margin-left:-6px;border-radius:4px;pointer-events:none;
+  background:var(--surface);border:1.5px solid var(--ink);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 35%,transparent)}
+.rb-h::before{content:'';position:absolute;left:2.5px;right:2.5px;top:50%;height:10px;transform:translateY(-50%);background:repeating-linear-gradient(180deg,var(--muted) 0 1.5px,transparent 1.5px 4px)}
+.rb input[type=range]{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:ew-resize;-webkit-appearance:none;appearance:none;background:none}
+.rb input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:44px}
+.rb input[type=range]::-moz-range-thumb{width:24px;height:44px;border:0}
+.rb:has(input:focus-visible){outline:2px solid var(--a);outline-offset:2px}
+.rb-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.rb-head .tk{font:400 12px var(--mono);color:var(--muted)}
+/* first-race cue: an arrow beside the handle points the way to more Build, and the bar's outline pulses */
+.rb-cue,.th-cue{display:none;position:absolute;width:0;height:0;pointer-events:none}
+.rb-cue{top:50%;left:var(--hx);margin:-7px 0 0 -26px;border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:10px solid var(--run-ink)}
+body.cue-build .rb-cue,body.cue-build .th-cue{display:block}
+body.cue-build .rb,body.cue-build .th-track{box-shadow:0 0 0 2px var(--ink)}
+@media (prefers-reduced-motion:no-preference){
+  body.cue-build .rb-cue{animation:cue-x .9s ease-in-out infinite}
+  body.cue-build .th-cue{animation:cue-y .9s ease-in-out infinite}
+  body.cue-build .rb,body.cue-build .th-track{animation:cue-ring 1.2s ease-in-out infinite}
+}
+@keyframes cue-x{0%,100%{transform:translateX(2px)}50%{transform:translateX(-5px)}}
+@keyframes cue-y{0%,100%{transform:translateY(2px)}50%{transform:translateY(-5px)}}
+@keyframes cue-ring{0%,100%{box-shadow:0 0 0 1px var(--ink)}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--ink) 40%,transparent)}}
+/* the investment flow: one fixed layer above everything but the cards, never catching a touch */
+#flow{position:fixed;left:0;top:0;width:100vw;height:100vh;aspect-ratio:auto;pointer-events:none;z-index:6;background:none;border:0;border-radius:0}
+.meter.recv .mbar{box-shadow:0 0 0 2px var(--ink)}
 .meters{display:flex;flex-direction:column;gap:8px}
 .meter{display:grid;grid-template-columns:78px 1fr 84px;gap:10px;align-items:center;font:400 13px var(--mono)}
 .mbar{position:relative;height:14px;background:var(--bg);border:1px solid var(--line);border-radius:3px}
@@ -150,6 +195,11 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .tri .tk{font:400 12px/1.4 var(--mono);color:var(--muted)}
 .t-tri{fill:var(--bg);stroke:var(--muted);stroke-width:1.5}
 .t-lbl{font:500 12px var(--mono);fill:var(--ink)}
+.t-lbl .kn{fill:var(--muted);font-size:10px}
+.t-lbl .pc{font-weight:600;font-variant-numeric:tabular-nums}
+.t-cue{fill:none;stroke:var(--ink);stroke-width:2.5;pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.t-cue{transform-box:fill-box;transform-origin:center;animation:cue-pulse 1.1s ease-in-out infinite}}
+@keyframes cue-pulse{0%,100%{transform:scale(.8);opacity:1}50%{transform:scale(1.15);opacity:.45}}
 .t-key{font:500 10px var(--mono);fill:var(--muted)}
 .t-mk{fill:var(--surface);stroke:var(--line);stroke-width:1}
 .t-pt{fill:var(--ink);stroke:var(--surface);stroke-width:2.5;transition:opacity .15s}
@@ -161,12 +211,17 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .card.small{max-width:300px}
 /* left-thumb throttle and Jump, shown only on a landscape phone */
 .lcol{display:none}
-.throttle{flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:ns-resize}
-.th-lbl,.throttle output{font:500 11px var(--mono);color:var(--muted);text-align:center}
-.throttle output{color:var(--ink);font-size:13px}
-.th-track{position:relative;flex:1;border-radius:4px;background:var(--bg);overflow:hidden}
-.th-fill{position:absolute;left:0;right:0;bottom:0;background:var(--a);opacity:.35}
-.th-knob{position:absolute;left:0;right:0;height:6px;margin-bottom:-3px;background:var(--ink);border-radius:3px}
+.throttle{--p:.7;flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:ns-resize}
+/* Run on top, Build below: dragging up grows Build, like stacking blocks; the ends snap */
+.th-lbl{display:flex;flex-direction:column;align-items:center;font:500 11px/1.2 var(--mono);color:var(--muted)}
+.th-lbl output{font:600 14px/1.2 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.th-track{position:relative;flex:1;min-height:0;border-radius:4px;border:1px solid var(--line);
+  background:var(--bg) repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 16%,transparent) 6px 8px)}
+.th-run{position:absolute;left:0;right:0;top:0;height:calc(var(--p) * 100%);background:var(--run);border-radius:3px 3px 0 0}
+.th-split{position:absolute;right:0;bottom:0;width:4px;top:calc(var(--p) * 100%);display:flex;flex-direction:column}
+.th-knob{position:absolute;left:5px;right:5px;top:calc(var(--p) * 100%);height:12px;margin-top:-6px;border-radius:4px;background:var(--surface);border:1.5px solid var(--ink);box-shadow:0 1px 3px color-mix(in srgb,var(--ink) 35%,transparent)}
+.th-knob::before{content:'';position:absolute;top:2.5px;bottom:2.5px;left:50%;width:14px;transform:translateX(-50%);background:repeating-linear-gradient(90deg,var(--muted) 0 1.5px,transparent 1.5px 4px)}
+.th-cue{left:50%;top:calc(var(--p) * 100%);margin:-26px 0 0 -7px;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:10px solid var(--run-ink)}
 /* controls never select text or open the callout; while a run is playing, touches on the controls and track neither scroll nor zoom */
 .panel.pace,.lcol,.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .panel.pace,.lcol,.stage,button{touch-action:manipulation}
@@ -177,7 +232,7 @@ body.playing .panel.pace,body.playing .lcol,body.playing .stage{touch-action:non
 #auto:checked{background:var(--a)} #auto:checked::after{left:19px}
 body.chill #btn-jump{display:none}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
-/* portrait phones: the controls sit under the track as a compact deck. Pace (label beside the slider) on top, then Back up, Jump and
+/* portrait phones: the controls sit under the track as a compact deck. The Run / Build bar (its words inside it) on top, then Back up, Jump and
    Floor it in one row (Jump hides in chill mode), the split triangle below, Pause, New run and Chill mode at the bottom.
    Every control is at least 44px tall */
 @media (orientation:portrait) and (max-width:600px){
@@ -188,11 +243,10 @@ body.chill #btn-jump{display:none}
     grid-template-areas:"pace pace pace pace pace pace" "back back jump jump fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
   body.chill .panel.pace{grid-template-areas:"pace pace pace pace pace pace" "back back back fwd fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
   .pace .cols,.pace .tri,.pace .btns{display:contents}
-  .pace .cols>.lab:first-child{grid-area:pace;display:grid;grid-template-columns:6.2em minmax(0,1fr);align-items:center;gap:8px}
-  .pace .cols>.lab:first-child .row{flex-direction:column;gap:0;line-height:1.25}
-  #pace-out{font-size:11px}
-  .pace .cols>.lab:nth-child(2),.pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
-  .pace input[type=range]{height:44px;margin:0}
+  .pace .rb-lab{grid-area:pace}
+  .pace .rb-head{display:none}
+  .pace .rb{height:44px}
+  .pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
   .pace .lab{font-size:12px;gap:0}
   #tri{grid-area:tri;justify-self:center;width:auto;height:min(22vh,170px);height:min(22dvh,170px);max-width:100%}
   #btn-back{grid-area:back}#btn-jump{grid-area:jump}#btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:new}
@@ -203,7 +257,7 @@ body.chill #btn-jump{display:none}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
 @media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:5/4} }
-/* landscape phone: the track fills the height. Left thumb: a pace throttle with Jump under it. Right thumb: the split triangle,
+/* landscape phone: the track fills the height. Left thumb: a Run / Build throttle with Jump under it. Right thumb: the split triangle,
    then Back up and Floor it side by side, then Pause and New run at the bottom, set apart so they are not hit by mistake */
 @media (orientation:landscape) and (max-height:540px){
   body{padding:6px max(8px,env(safe-area-inset-right,0px)) 24px max(8px,env(safe-area-inset-left,0px))}
@@ -330,15 +384,15 @@ html.epi-open{overflow:hidden}
   <header>
     <p class="eyebrow">Prototype 0.3</p>
     <h1>Pacing the Frontier</h1>
-    <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
+    <p class="sub">Race three rival labs to the finish. Move the bar from Run toward Build to grow sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
     <p class="world" id="world"></p>
   </header>
 
   <div class="lcol" id="lcol">
-    <div class="throttle" id="throttle" role="slider" aria-label="Pace" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
-      <span class="th-lbl">Pace</span>
-      <div class="th-track" id="th-track"><div class="th-fill" id="th-fill"></div><div class="th-knob" id="th-knob"></div></div>
-      <output id="th-out">70%</output>
+    <div class="throttle" id="throttle" role="slider" aria-label="Run or Build" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="Run 70 percent, Build 30 percent">
+      <span class="th-lbl">Run<output id="th-rv">70%</output></span>
+      <div class="th-track" id="th-track"><div class="th-run"></div><div class="th-split" id="th-build"><i id="th-s0"></i><i id="th-s1"></i><i id="th-s2"></i></div><div class="th-knob"></div><div class="th-cue"></div></div>
+      <span class="th-lbl"><output id="th-bv">30%</output>Build</span>
     </div>
   </div>
 
@@ -349,7 +403,13 @@ html.epi-open{overflow:hidden}
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
-        <p id="ov-msg">The start is slow. A gate near the start is too tall to jump from a standstill, so lower Pace or hold Back to stand still and build height. Pace is your cruise; the rest goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down set Pace, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
+        <ul class="ov-lead" id="ov-lead">
+          <li><i aria-hidden="true">&raquo;</i>Race three rival labs to the finish.</li>
+          <li><i aria-hidden="true"></i>Slow down to build sight, height and speed.</li>
+          <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
+        </ul>
+        <button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button>
+        <p id="ov-msg" hidden>The start is slow. A gate near the start is too tall to jump from a standstill, so move the bar toward Build or hold Back to stand still and build height. Run is your cruise; Build is the rest, and it goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down move the bar toward Run or Build, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
         <div class="story" id="ov-story" hidden>
           <div class="rc-stage" id="rc-stage" title="Tap to skip to the next stop">
             <canvas id="rc-cv" aria-hidden="true"></canvas>
@@ -393,11 +453,16 @@ html.epi-open{overflow:hidden}
 
   <div class="panel pace">
     <div class="cols">
-      <label class="lab" for="pace"><span class="row"><span>Pace</span><output id="pace-out">70%</output></span><input type="range" id="pace" min="0" max="100" value="70"></label>
-      <div class="lab">
-        <span>Where the rest goes</span>
-        <div class="split" aria-hidden="true"><span class="s-run" id="s-run"></span><span class="s-sight" id="s-sight"></span><span class="s-height" id="s-height"></span><span class="s-max" id="s-max"></span></div>
-        <div class="legend"><span><i class="dot ink"></i>Run <b id="l-run"></b></span><span><i class="dot a"></i>Sight <b id="l-sight"></b></span><span><i class="dot c"></i>Height <b id="l-height"></b></span><span><i class="dot b"></i>Max speed <b id="l-max"></b></span></div>
+      <div class="lab rb-lab">
+        <span class="rb-head"><label for="pace">Run or Build</label><span class="tk">Run moves you. Build grows your meters. Up and Down keys.</span></span>
+        <div class="rb" id="rb">
+          <div class="rb-run"></div>
+          <div class="rb-split" id="rb-build"><i id="rb-s0"></i><i id="rb-s1"></i><i id="rb-s2"></i></div>
+          <span class="rb-lbl" id="rb-lr" aria-hidden="true"><span class="w">Run </span><b id="rb-rv">70%</b></span>
+          <span class="rb-lbl" id="rb-lb" aria-hidden="true"><span class="w">Build </span><b id="rb-bv">30%</b></span>
+          <div class="rb-h"></div><div class="rb-cue"></div>
+          <input type="range" id="pace" min="0" max="100" value="70" aria-label="Run or Build" aria-valuetext="Run 70 percent, Build 30 percent">
+        </div>
       </div>
     </div>
     <div class="tri">
@@ -411,17 +476,18 @@ html.epi-open{overflow:hidden}
         <polygon class="t-tri" points="46,176 130,30 214,176"/>
         <g clip-path="url(#tri-clip)"><circle cx="46" cy="176" r="120" fill="url(#g-s)"/><circle cx="130" cy="30" r="120" fill="url(#g-h)"/><circle cx="214" cy="176" r="120" fill="url(#g-m)"/></g>
         <polygon points="46,176 130,30 214,176" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
-        <text class="t-lbl" x="130" y="16" text-anchor="middle">2 Height</text>
-        <text class="t-lbl" x="46" y="199" text-anchor="middle">1 Sight</text>
-        <text class="t-lbl" x="214" y="199" text-anchor="middle">3 Max speed</text>
+        <text class="t-lbl" x="130" y="16" text-anchor="middle"><tspan class="kn">2 </tspan>Height <tspan class="pc" id="tp1" style="fill:var(--c)">50%</tspan></text>
+        <text class="t-lbl" x="4" y="199" text-anchor="start"><tspan class="kn">1 </tspan>Sight <tspan class="pc" id="tp0" style="fill:var(--a)">25%</tspan></text>
+        <text class="t-lbl" x="257" y="199" text-anchor="end"><tspan class="kn">3 </tspan>Max speed <tspan class="pc" id="tp2" style="fill:var(--b)">25%</tspan></text>
         <g id="tri-mk" pointer-events="none"></g>
         <text class="t-key" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>
+        <circle class="t-cue" id="tri-cue" r="15" visibility="hidden"/>
         <circle class="t-ghost" id="tri-ghost" r="9" visibility="hidden"/>
         <circle class="t-pt" id="tri-pt" r="9"/>
         <text class="t-forced" id="tri-forced" text-anchor="middle" visibility="hidden">Forced while capped</text>
       </svg>
       <div class="tbody">
-        <span class="tl">Split of what you hold back</span>
+        <span class="tl">Split of your Build</span>
         <span id="tri-read"></span>
         <span class="tk" id="tri-note">1 Sight, 2 Height, 3 Max speed, 4 centre, 5 Sight+Height, 6 Height+Max speed, 7 Max speed+Sight. Drag the point (on a touch screen, swipe anywhere in the box and the point follows like a trackpad cursor, or tap to place it), or focus the triangle and use the arrow keys.</span>
       </div>
@@ -2317,6 +2383,7 @@ function readColors(){
 
 var running=false,paused=false,acc=0,last=performance.now(),lastHud=0;
 var ui={pace:70,w:[25,50,25],auto:true,rev:false,fwd:false},singShown=false;
+var flowHi=[0,0,0];  /* reduced motion: until when each meter is highlighted as receiving Build (set by the flow layer) */
 function leaderLab(){
   var best=null;
   for(var i=0;i<G.labs.length;i++){ var l=G.labs[i]; if(!l.out&&(!best||l.x>best.x)){best=l;} }
@@ -2478,9 +2545,9 @@ function draw(){
   // the gate: a label for the human until the gate is cleared
   var gb0=G.barriers[0];
   if(gb0&&gb0.gate&&human.human&&human.bi===0&&!human.out&&tgt===human){
-    var gl='Gate: lower Pace or hold Back to build height',gtw;
+    var gl='Gate: more Build to grow height',gtw;
     ctx.font=FW; gtw=ctx.measureText(gl).width+14;
-    if(CM){ gl='Gate: lower Pace or hold Back'; gtw=ctx.measureText(gl).width+14*U; }
+    if(CM){ gl='Gate: more Build'; gtw=ctx.measureText(gl).width+14*U; }
     var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4*U,VW-gtw-4*U),gly=GY-gb0.h-34*U;
     ctx.fillStyle=COL.surface; ctx.globalAlpha=0.92; ctx.fillRect(glx,gly,gtw,20*U); ctx.globalAlpha=1;
     ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1; ctx.strokeRect(glx+0.5*U,gly+0.5*U,gtw-U,19*U);
@@ -2599,19 +2666,15 @@ function drawMeters(l){
     ctx.fillStyle=cols[i]; ctx.fillRect(x,y,cw*clamp(l.pts[i]/G.maxcap,0,1),5);
     ctx.fillStyle=COL.ink; ctx.fillRect(x+cw*clamp(l.cap/G.maxcap,0,1)-1,y-2,2,9);
     ctx.fillStyle=COL.muted; ctx.fillText(nm,x,y-4); ctx.textAlign='right'; ctx.fillStyle=COL.ink; ctx.fillText(v,x+cw,y-4); ctx.textAlign='left';
+    if(flowHi[i]>performance.now()){ ctx.strokeStyle=COL.ink; ctx.lineWidth=1.5; ctx.strokeRect(x-2.5,y-2.5,cw+5,10); }  /* reduced motion: this meter is receiving Build */
   }
   if(capped(l)&&!l.out){ ctx.fillStyle=COL.danger; ctx.fillText('capped at '+Math.round(top)+' for '+Math.round(l.capUntil-l.x),x0,y+18); }
 }
 function pct(x){return Math.round(x*100)+'%';}
 function hud(){
-  var l=G.labs[0],p=(ui.fwd&&!ui.rev)?1:ui.pace/100,r=1-p,forced=triForced(),ew=forced?[50,50,0]:ui.w,tot=ew[0]+ew[1]+ew[2];
-  var s=tot?ew[0]/tot:0,h=tot?ew[1]/tot:0,m=tot?ew[2]/tot:0;
-  $('pace-out').textContent=ui.pace+'%'+((ui.fwd&&!ui.rev)?' (floored)':'');
-  showThrottle(); showPlaying();
+  var l=G.labs[0];
+  showBar(); showPlaying();
   drawTri();
-  $('s-run').style.width=(p*100)+'%'; $('s-sight').style.width=(r*s*100)+'%';
-  $('s-height').style.width=(r*h*100)+'%'; $('s-max').style.width=(r*m*100)+'%';
-  $('l-run').textContent=pct(p); $('l-sight').textContent=pct(r*s); $('l-height').textContent=pct(r*h); $('l-max').textContent=pct(r*m);
   for(var i=0;i<3;i++){
     $('f'+i).style.width=(l.pts[i]/G.maxcap*100)+'%';
     $('c'+i).style.left='calc('+(l.cap/G.maxcap*100)+'% - 1px)';
@@ -2687,7 +2750,9 @@ function drawTri(){
   pt.setAttribute('cx',xy[0]); pt.setAttribute('cy',xy[1]); pt.style.opacity=forced?0.35:1;
   gh.setAttribute('cx',px[0]); gh.setAttribute('cy',px[1]); gh.setAttribute('visibility',forced?'visible':'hidden');
   fl.setAttribute('x',xy[0]); fl.setAttribute('y',xy[1]-16); fl.setAttribute('visibility',forced?'visible':'hidden');
-  var tot=ui.w[0]+ui.w[1]+ui.w[2]||1;
+  var tot=ui.w[0]+ui.w[1]+ui.w[2]||1,ew=forced?[50,50,0]:ui.w,et=ew[0]+ew[1]+ew[2]||1,ep=[0,1,2].map(function(i){return Math.round(ew[i]/et*100);});
+  for(var ci=0;ci<3;ci++){ $('tp'+ci).textContent=ep[ci]+'%'; }  /* live percentages beside the corner labels */
+  $('rb-s0').style.flexGrow=$('th-s0').style.flexGrow=ew[0]; $('rb-s1').style.flexGrow=$('th-s1').style.flexGrow=ew[1]; $('rb-s2').style.flexGrow=$('th-s2').style.flexGrow=ew[2];
   $('tri-read').innerHTML='<b style="color:var(--a)">Sight '+Math.round(ui.w[0]/tot*100)+'%</b> <b style="color:var(--c)">Height '+Math.round(ui.w[1]/tot*100)+'%</b> <b style="color:var(--b)">Max speed '+Math.round(ui.w[2]/tot*100)+'%</b>'+(forced?'<br>Forced while capped: half Sight, half Height. Your point comes back after.':'');
 }
 function setSplit(w){ ui.w=w; syncInput(); drawTri(); }
@@ -2934,7 +2999,10 @@ function cardPrimary(){
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
+  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
 }
+/* the start card: three short lines; "How to play" shows and hides the full rules */
+$('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
@@ -2963,7 +3031,7 @@ function start(seed,camp){
   newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:undefined);
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
-  $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set your pace, split and chill mode, then go.';
+  $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set Run or Build, your split and chill mode, then go.';
   $('ready').hidden=false; cardAt=performance.now(); showSeed();
   campReady();
 }
@@ -3050,18 +3118,28 @@ showMute();
 
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
-bindRange('pace',function(v){ui.pace=v;});
-/* left-thumb throttle: drag anywhere on it, top is 100%, bottom is 0%; the ends snap */
-function showThrottle(){
-  var v=(ui.fwd&&!ui.rev)?100:ui.pace;
-  $('th-fill').style.height=v+'%'; $('th-knob').style.bottom=v+'%';
-  $('th-out').textContent=ui.pace+'%'; $('throttle').setAttribute('aria-valuenow',ui.pace);
+bindRange('pace',function(v){ui.pace=v;showBar();});
+/* the Run / Build bar (and the landscape throttle): the number is still pace; Build is 100 minus it. Floor it shows Run 100% while held.
+   A label that no longer fits its part drops its word, then hides; the screen reader text always has both */
+function rbFit(el,seg){
+  el.classList.remove('num','none'); if(el.offsetWidth+16<=seg){return;}
+  el.classList.add('num'); if(el.offsetWidth+14>seg){ el.classList.add('none'); }
 }
+function showBar(){
+  var fl=ui.fwd&&!ui.rev,run=fl?100:ui.pace,bld=100-run,vt='Run '+run+' percent, Build '+bld+' percent'+(fl?', floored':'');
+  var rb=$('rb'),th=$('throttle');
+  rb.style.setProperty('--p',run/100); th.style.setProperty('--p',run/100);
+  $('rb-rv').textContent=$('th-rv').textContent=run+'%'; $('rb-bv').textContent=$('th-bv').textContent=bld+'%';
+  $('pace').setAttribute('aria-valuetext',vt); th.setAttribute('aria-valuenow',ui.pace); th.setAttribute('aria-valuetext',vt);
+  var bw=rb.clientWidth;
+  if(bw){ var hx=12+(bw-24)*run/100; rbFit($('rb-lr'),hx-6); rbFit($('rb-lb'),bw-hx-6); }
+}
+/* left-thumb throttle: Run on top, Build below. Drag anywhere on it: up grows Build, down grows Run; the ends snap */
 (function(){
   var th=$('throttle'),on=false;
   function set(e){
-    var r=$('th-track').getBoundingClientRect(),v=clamp((r.bottom-e.clientY)/r.height*100,0,100);
-    v=v<4?0:(v>96?100:Math.round(v)); ui.pace=v; $('pace').value=v; showThrottle();
+    var r=$('th-track').getBoundingClientRect(),v=clamp((e.clientY-r.top)/r.height*100,0,100);
+    v=v<4?0:(v>96?100:Math.round(v)); ui.pace=v; $('pace').value=v; showBar();
   }
   th.addEventListener('pointerdown',function(e){e.preventDefault();on=true;th.setPointerCapture(e.pointerId);set(e);});
   th.addEventListener('pointermove',function(e){if(on){set(e);}});
@@ -3088,8 +3166,8 @@ function holdBtn(id,set){
   b.addEventListener('pointerdown',function(e){e.preventDefault();set(true);});
   ['pointerup','pointerleave','pointercancel'].forEach(function(ev){ b.addEventListener(ev,function(){set(false);}); });
 }
-function setRev(v){ ui.rev=v; syncInput(); $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
-function setFwd(v){ ui.fwd=v; syncInput(); $('btn-fwd').style.background=v?'var(--ink)':''; $('btn-fwd').style.color=v?'var(--bg)':''; }
+function setRev(v){ ui.rev=v; syncInput(); showBar(); $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
+function setFwd(v){ ui.fwd=v; syncInput(); showBar(); $('btn-fwd').style.background=v?'var(--ink)':''; $('btn-fwd').style.color=v?'var(--bg)':''; }
 holdBtn('btn-back',setRev); holdBtn('btn-fwd',setFwd);
 function setPaused(v){ if(!running){return;} paused=v; $('btn-pause').textContent=paused?'Resume':'Pause'; if(!paused){$('sing').hidden=true;} }
 $('btn-pause').addEventListener('click',function(){ setPaused(!paused); });
@@ -3115,8 +3193,8 @@ document.addEventListener('keydown',function(e){
     if(pb){ e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>700){pb.click();} return; }
   }
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
-  else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
-  else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
+  else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;showBar();}
+  else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;showBar();}
   else if(e.code==='KeyP'&&t!=='INPUT'){$('btn-pause').click();}
   else if(e.code==='KeyM'&&!txt){toggleMute();}
   else if((e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA')&&(t!=='INPUT'||(e.code!=='ArrowLeft'&&!txt))){e.preventDefault();setRev(true);}
@@ -3131,31 +3209,60 @@ document.addEventListener('keydown',function(e){
   var TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
   try{ seen=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ seen={}; }
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(seen)); }catch(e){} }
+  /* each tip is under 12 words. While "tall" or a split nudge is up (and in that race until the player acts on it) a cue
+     pulses on the Run / Build bar or on the triangle corner that needs more */
+  var PRI={tall:0,strike:1,gap:2,splitH:3,splitM:3,invest:4,grew:5},MN=['Sight','Height','Max speed'],grew=[0,0,0],gPrev=null,cueB=false,cueT=-1;
   var TXT={
-    invest:function(){ return TOUCH?'<b>Slow down to invest.</b> The pace you hold back buys sight, height or speed. Swipe in the triangle box to move the dot and steer the split.'
-      :'<b>Slow down to invest.</b> The pace you hold back buys sight, height or speed. Steer the split with the triangle (drag the dot, or keys 1 to 7); Up and Down set Pace.'; },
-    tall:function(){ return TOUCH?'<b>Too tall?</b> Back up, or put more into Height.':'<b>Too tall?</b> Back up (hold ←), or put more into Height.'; },
-    gap:function(){ return '<b>Gap ahead.</b> '+(K.chill?'':(TOUCH?'Tap Jump at the edge. ':'Jump with Space at the edge. '))+'A fall rolls the dice for everyone.'; },
-    strike:function(){ var sm=strikesOf(G.labs[0]); return '<b>Strike '+G.labs[0].strikes+' of '+sm+'.</b> Each new barrier you crash into is a strike. At '+sm+' your lab is dissolved.'; }
+    invest:function(){ return '<b>Run</b> moves you. <b>Build</b> grows sight, height and speed.'; },
+    tall:function(){ return '<b>Too tall.</b> More Build grows your height.'; },
+    grew:function(){ var i=grew[1]>=grew[0]&&grew[1]>=grew[2]?1:(grew[0]>=grew[2]?0:2); return 'Your Build went through the triangle into <b>'+MN[i]+'</b>.'; },
+    splitH:function(){ return (TOUCH?'Swipe':'Drag')+' the dot toward <b>Height</b> to grow taller.'; },
+    splitM:function(){ return 'This gap needs speed. Move the dot toward <b>Max speed</b>.'; },
+    gap:function(){ return '<b>Gap ahead.</b> '+(K.chill?'A fall can end the race for everyone.':'Jump at the edge. Don\'t fall in.'); },
+    strike:function(){ var sm=strikesOf(G.labs[0]); return '<b>Strike '+G.labs[0].strikes+' of '+sm+'.</b> At '+sm+', your lab is out.'; }
   };
   function want(id){ if(!seen[id]&&id!==cur&&q.indexOf(id)<0){ q.push(id); } }
   function hide(){ cur=null; el.hidden=true; }
-  function show(id){ cur=id; seen[id]=1; save(); el.innerHTML=TXT[id](); el.hidden=false; left=5; shownT=0; }
+  function show(id){ cur=id; seen[id]=1; save(); el.innerHTML=TXT[id]()+'<span class="hint-x" aria-hidden="true">\u00d7</span>'; el.hidden=false; left=5; shownT=0;
+    if(id==='tall'){ cueB=true; } if(id==='splitH'){ cueT=1; } if(id==='splitM'){ cueT=2; } }
+  function cue(b,t){
+    document.body.classList.toggle('cue-build',b);
+    var c=$('tri-cue');
+    if(t>=0){ c.setAttribute('cx',TV[t][0]); c.setAttribute('cy',TV[t][1]); c.style.stroke=['var(--a)','var(--c)','var(--b)'][t]; }
+    c.setAttribute('visibility',t>=0?'visible':'hidden');
+  }
   el.addEventListener('pointerdown',function(e){ e.preventDefault(); hide(); });
   function tick(now){
     var dt=Math.min(0.1,(now-prev)/1000); prev=now;
-    if(G!==hG){ hG=G; began=false; q=[]; hide(); }
+    if(G!==hG){ hG=G; began=false; q=[]; hide(); grew=[0,0,0]; gPrev=null; cueB=false; cueT=-1; }
     var l=G.labs[0],live=running&&!paused&&!G.over&&l.human&&!l.out&&!l.done;
     if(running&&!began){ began=true; note.hidden=true; if(l.human){ want('invest'); } }
-    if(!live){ if(G.over||!running||!l.human||l.out||l.done){ q=[]; hide(); } else { el.hidden=true; } requestAnimationFrame(tick); return; }
+    if(!live){ if(G.over||!running||!l.human||l.out||l.done){ q=[]; hide(); cueB=false; cueT=-1; } else { el.hidden=true; } cue(false,-1); requestAnimationFrame(tick); return; }
     if(cur){ el.hidden=false; }
-    for(var i=l.bi;i<G.barriers.length&&G.barriers[i].x-l.x<=sightRange(l);i++){
-      if(G.barriers[i].h>heightOf(l)+C.JUMP&&knowsBar(l,i)){ want('tall'); break; }
+    var tall=false,i;
+    for(i=l.bi;i<G.barriers.length&&G.barriers[i].x-l.x<=sightRange(l);i++){
+      if(G.barriers[i].h>heightOf(l)+C.JUMP&&knowsBar(l,i)){ want('tall'); tall=true; break; }
     }
-    var g=G.gaps[l.gi]; if(g&&g.x-l.x<=sightRange(l)&&knowsGap(l,l.gi)){ want('gap'); }
+    /* the first time a meter visibly grows from Build (not from a bump off another lab's barrier) */
+    if(gPrev&&(l.ivr||0)>0.03){ for(i=0;i<3;i++){ var dg=l.pts[i]-gPrev[i]; if(dg>0&&dg<3){ grew[i]+=dg; } } }
+    gPrev=l.pts.slice();
+    if(seen.invest&&(grew[0]>=8||grew[1]>=8||grew[2]>=8)){ want('grew'); }
+    /* the split points away from what the moment needs: height for a wall, max speed for a gap you cannot reach the speed for */
+    var ew=capped(l)?[50,50,0]:ui.w,et=ew[0]+ew[1]+ew[2]||1,building=ui.pace<=60||ui.rev,g=G.gaps[l.gi];
+    var needM=!tall&&g&&g.x-l.x<=sightRange(l)&&knowsGap(l,l.gi)&&needSpeed(l,g)>topSpeed(l,true)&&l.pts[2]<l.cap-0.01;
+    var lopH=tall&&building&&ew[1]/et<0.25&&l.pts[1]<l.cap-0.01,lopM=needM&&building&&ew[2]/et<0.2;
+    if(lopH&&seen.tall){ want('splitH'); }
+    if(lopM){ want('splitM'); }
+    if(!tall||ui.pace<=40||ui.rev){ cueB=false; }
+    if((cueT===1&&!lopH)||(cueT===2&&!lopM)){ cueT=-1; }
+    cue(cueB&&tall&&ui.pace>40&&!ui.rev,cueT);
+    if(g&&g.x-l.x<=sightRange(l)&&knowsGap(l,l.gi)){ want('gap'); }
     if(strikesOf(l)&&l.strikes>0){ want('strike'); }
     if(cur){ left-=dt; shownT+=dt; if(left<=0||(q.length&&shownT>=2.5)){ hide(); } }
-    if(!cur&&q.length){ show(q.shift()); }
+    if(!cur&&q.length){  /* the most urgent first: a wall in the way beats a note about what just grew */
+      var bi=0; for(i=1;i<q.length;i++){ if((PRI[q[i]]||0)<(PRI[q[bi]]||0)){ bi=i; } }
+      show(q.splice(bi,1)[0]);
+    }
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -3165,6 +3272,89 @@ document.addEventListener('keydown',function(e){
   how.addEventListener('keydown',function(e){ if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); } });
   how.addEventListener('click',function(){ seen={}; save(); try{ localStorage.removeItem(KEY); }catch(e){} note.hidden=false; });
   $('ready-btn').parentNode.insertBefore(how,$('ready-btn')); $('ready-btn').parentNode.insertBefore(note,$('ready-btn'));
+})();
+
+/* investment flow: while your lab is investing (the sim's l.ivr and l.ivw, read only), small dots leave the Build part of the bar,
+   go into the triangle's point, and come out in a meter's colour, bending past that meter's corner, to land on the meter itself
+   (the panel meters when they are on screen, else the ones drawn along the top of the track). Rate and size follow ivr; which meter
+   follows the split. A meter that is full gets none. One fixed canvas, pointer-events none, drawn only while there is something to draw.
+   With reduced motion there are no dots: the receiving meter is outlined for a moment instead (flowHi, read by drawMeters too) */
+(function(){
+  var fc=document.createElement('canvas'),fx=fc.getContext('2d'),RM=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+  var dots=[],rings=[],due=0,prev=performance.now(),fw=0,fh=0,fd=1,drawn=false,was=[false,false,false];
+  fc.id='flow'; fc.setAttribute('aria-hidden','true'); document.body.appendChild(fc);
+  function size(){ fd=Math.min(2,window.devicePixelRatio||1); fw=window.innerWidth; fh=window.innerHeight; fc.width=Math.round(fw*fd); fc.height=Math.round(fh*fd); drawn=true; }
+  size(); window.addEventListener('resize',size);
+  function shown(r){ return r.width>0&&r.height>0&&r.bottom>0&&r.top<fh; }
+  function ease(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function quad(a,c,b,t){ var u=1-t; return {x:u*u*a.x+2*u*t*c.x+t*t*b.x,y:u*u*a.y+2*u*t*c.y+t*t*b.y}; }
+  /* where things are on screen this frame */
+  function where(l){
+    var th=$('lcol').offsetParent!==null,src=(th?$('th-build'):$('rb-build')).getBoundingClientRect(),run=(th?$('th-track'):$('rb')).getBoundingClientRect();
+    var svg=$('tri'),m=svg.getScreenCTM(); if(!m||!shown(svg.getBoundingClientRect())){ return null; }
+    function tp(p){ return {x:m.a*p[0]+m.c*p[1]+m.e,y:m.b*p[0]+m.d*p[1]+m.f}; }
+    var forced=capped(l),pt=tp(triPos(forced?[50,50,0]:ui.w)),cn=[tp(TV[0]),tp(TV[1]),tp(TV[2])],mt=null,i,f;
+    var mp=$('meters').getBoundingClientRect();
+    if(mp.height>0&&mp.top>=0&&mp.bottom<=fh){
+      mt=[]; for(i=0;i<3;i++){ var br=$('f'+i).parentNode.getBoundingClientRect(); f=clamp(l.pts[i]/G.maxcap,0,1); mt.push({x:br.left+br.width*f,y:br.top+br.height/2}); }
+    } else {
+      var cr=cv.getBoundingClientRect(),my=CM?37:56,kx=cr.width/W,ky=cr.height/H,cw=(W-68)/3;
+      if(cr.top+my*ky>0&&cr.top+my*ky<fh){ mt=[]; for(i=0;i<3;i++){ f=clamp(l.pts[i]/G.maxcap,0,1); mt.push({x:cr.left+(24+i*(cw+10)+cw*f)*kx,y:cr.top+(my+2.5)*ky}); } }
+    }
+    return {src:src,vert:th,pt:pt,cn:cn,mt:mt,box:run};
+  }
+  function clear(){ if(drawn){ fx.setTransform(1,0,0,1,0,0); fx.clearRect(0,0,fc.width,fc.height); drawn=false; } }
+  function tick(now){
+    var dt=Math.min(0.1,(now-prev)/1000); prev=now;
+    var l=G&&G.labs[0],live=!!l&&running&&!paused&&!G.over&&l.human&&!l.out&&!l.done;
+    var r=live?(l.ivr||0):0,w=live?(capped(l)?[50,50,0]:(l.ivw||ui.w)):[0,0,0],tot=w[0]+w[1]+w[2],i;
+    var recv=[false,false,false];
+    if(r>0.03&&tot>0){ for(i=0;i<3;i++){ recv[i]=w[i]/tot>0.15&&l.pts[i]<l.cap-0.01; } }
+    if(!live){ dots=[]; rings=[]; due=0; }
+    /* reduced motion: outline a meter for 1.5 s when it starts receiving */
+    if(RM&&RM.matches){
+      dots=[]; rings=[];
+      for(i=0;i<3;i++){ if(recv[i]&&!was[i]){ flowHi[i]=now+1500; } was[i]=recv[i]; $('f'+i).parentNode.parentNode.classList.toggle('recv',flowHi[i]>now); }
+      clear(); requestAnimationFrame(tick); return;
+    }
+    if(!dots.length&&!rings.length&&!(recv[0]||recv[1]||recv[2])){ clear(); requestAnimationFrame(tick); return; }
+    var at=where(l);
+    if(!at){ dots=[]; rings=[]; clear(); requestAnimationFrame(tick); return; }
+    /* spawn: up to 12 a second at full investment, each bound for a meter picked by the split among those still filling */
+    var open=0; for(i=0;i<3;i++){ if(recv[i]){ open+=w[i]; } }
+    if(open>0){
+      due+=dt*12*r;
+      while(due>=1&&dots.length<60){
+        due-=1;
+        var pick=Math.random()*open,k=0; for(i=0;i<3;i++){ if(recv[i]){ k=i; if(pick<w[i]){ break; } pick-=w[i]; } }
+        var s=at.src,bx=at.box,sx=at.vert?bx.left+bx.width*(0.25+0.5*Math.random()):s.left+s.width*Math.random(),sy=at.vert?s.top+s.height*(0.15+0.7*Math.random()):bx.top+bx.height/2;
+        dots.push({ph:1,t:0,a:{x:sx,y:sy},m:k,r:1.6+1.6*r,sh:w[k]/tot});
+      }
+    } else { due=0; }
+    fx.setTransform(fd,0,0,fd,0,0); fx.clearRect(0,0,fw,fh); drawn=true;
+    var cols=[COL.a,COL.c,COL.b];
+    for(var d=dots.length-1;d>=0;d--){
+      var o=dots[d],p,c;
+      o.t+=dt/(o.ph===1?0.55:0.8);
+      if(o.ph===1){
+        if(o.t>=1){ o.ph=2; o.t=0; o.a={x:at.pt.x,y:at.pt.y}; }
+        else { c={x:(o.a.x+at.pt.x)/2,y:Math.max(6,Math.min(o.a.y,at.pt.y)-40)}; p=quad(o.a,c,at.pt,ease(o.t));
+          fx.globalAlpha=0.6; fx.fillStyle=COL.ink; fx.beginPath(); fx.arc(p.x,p.y,o.r*0.85,0,6.2832); fx.fill(); continue; }
+      }
+      if(!at.mt){ fx.globalAlpha=0.9*(1-o.t); fx.fillStyle=cols[o.m]; fx.beginPath(); fx.arc(at.pt.x,at.pt.y,o.r*(1+o.t*1.5),0,6.2832); fx.fill(); if(o.t>=1){ dots.splice(d,1); } continue; }
+      var tg=at.mt[o.m];
+      if(o.t>=1){ rings.push({x:tg.x,y:tg.y,m:o.m,t:0}); dots.splice(d,1); continue; }
+      p=quad(o.a,at.cn[o.m],tg,ease(o.t));
+      fx.globalAlpha=0.9; fx.fillStyle=cols[o.m]; fx.beginPath(); fx.arc(p.x,p.y,o.r*(0.75+0.6*o.sh),0,6.2832); fx.fill();
+    }
+    for(var q=rings.length-1;q>=0;q--){
+      var g=rings[q]; g.t+=dt/0.35; if(g.t>=1){ rings.splice(q,1); continue; }
+      fx.globalAlpha=0.7*(1-g.t); fx.strokeStyle=cols[g.m]; fx.lineWidth=1.5; fx.beginPath(); fx.arc(g.x,g.y,3+g.t*7,0,6.2832); fx.stroke();
+    }
+    fx.globalAlpha=1;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 })();
 
 /* knobs */
@@ -3422,7 +3612,7 @@ function campReady(){
   if(!CAMP){ $('ready-h').textContent='Ready'; $('ready-camp').textContent='Campaign'; dz.hidden=true; return; }
   var c=CAMPAIGN[CAMP.i];
   $('ready-h').textContent=(CAMP.i+1)+'. '+c.name;
-  $('ready-msg').innerHTML=tierStar(CAMP.i,CAMP.tier)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set your pace, split and chill mode, then go.</span>';
+  $('ready-msg').innerHTML=tierStar(CAMP.i,CAMP.tier)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set Run or Build, your split and chill mode, then go.</span>';
   $('ready-camp').textContent='Map list';
   campDiffUI();
 }
