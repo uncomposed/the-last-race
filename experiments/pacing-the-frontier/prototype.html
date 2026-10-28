@@ -124,28 +124,32 @@ body.playing .panel.pace,body.playing .lcol,body.playing .stage{touch-action:non
 #auto:checked{background:var(--a)} #auto:checked::after{left:19px}
 body.chill #btn-jump{display:none}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
-/* phones: the controls sit under the track as a deck. Pace on top, then Back up, Jump and Floor it in one row (Jump hides in chill mode),
-   the split triangle below, Pause, New run and Chill mode at the bottom. In landscape the deck is one short band under the track */
+/* portrait phones: the controls sit under the track as a compact deck. Pace (label beside the slider) on top, then Back up, Jump and
+   Floor it in one row (Jump hides in chill mode), the split triangle below, Pause, New run and Chill mode at the bottom.
+   Every control is at least 44px tall */
 @media (orientation:portrait) and (max-width:600px){
-  .wrap{gap:8px}
+  body{padding-top:8px;padding-bottom:24px}
+  .wrap{gap:6px}
   .wrap>header{display:none}
-  .panel.pace{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:8px;
+  .panel.pace{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 10px;padding:6px 8px;
     grid-template-areas:"pace pace pace pace pace pace" "back back jump jump fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
   body.chill .panel.pace{grid-template-areas:"pace pace pace pace pace pace" "back back back fwd fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
   .pace .cols,.pace .tri,.pace .btns{display:contents}
-  .pace .cols>.lab:first-child{grid-area:pace}
+  .pace .cols>.lab:first-child{grid-area:pace;display:grid;grid-template-columns:6.2em minmax(0,1fr);align-items:center;gap:8px}
+  .pace .cols>.lab:first-child .row{flex-direction:column;gap:0;line-height:1.25}
+  #pace-out{font-size:11px}
   .pace .cols>.lab:nth-child(2),.pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
-  .pace input[type=range]{height:28px}
+  .pace input[type=range]{height:44px;margin:0}
   .pace .lab{font-size:12px;gap:0}
-  #tri{grid-area:tri;justify-self:center;width:auto;height:min(26vh,220px);height:min(26dvh,220px);max-width:100%}
+  #tri{grid-area:tri;justify-self:center;width:auto;height:min(22vh,170px);height:min(22dvh,170px);max-width:100%}
   #btn-back{grid-area:back}#btn-jump{grid-area:jump}#btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:new}
-  #btn-back,#btn-jump,#btn-fwd{min-height:54px;min-width:0;padding:4px;font-size:15px}
-  #btn-pause,#btn-restart{min-height:38px;min-width:0;padding:2px 4px;font-size:13px}
-  .pace .btns label[for=auto]{grid-area:chill;justify-content:center;font-size:12px}
+  #btn-back,#btn-jump,#btn-fwd{min-height:52px;min-width:0;padding:4px;font-size:15px}
+  #btn-pause,#btn-restart{min-height:44px;min-width:0;padding:2px 4px;font-size:13px}
+  .pace .btns label[for=auto]{grid-area:chill;justify-content:center;font-size:12px;min-height:44px}
   .kh{display:none}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
-@media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:3/2} }
+@media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:5/4} }
 /* landscape phone: the track fills the height. Left thumb: a pace throttle with Jump under it. Right thumb: the split triangle,
    then Back up and Floor it side by side, then Pause and New run at the bottom, set apart so they are not hit by mistake */
 @media (orientation:landscape) and (max-height:540px){
@@ -166,7 +170,7 @@ body.chill #btn-jump{display:none}
   #tri{grid-area:tri;align-self:end;justify-self:center;width:100%;height:auto;max-height:100%}
   #btn-back{grid-area:back}#btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:new}
   #btn-back,#btn-fwd{min-width:0;padding:4px;font-size:14px}
-  #btn-pause,#btn-restart{min-height:34px;min-width:0;padding:2px 4px;font-size:12px}
+  #btn-pause,#btn-restart{min-height:44px;min-width:0;padding:2px 4px;font-size:12px}
   .pace .btns label[for=auto]{grid-area:chill;font-size:12px}
   .kh{display:none}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
@@ -870,11 +874,15 @@ function run(seed,kind){
 window.PF={HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
 
 /* ---------- UI ---------- */
-/* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge */
+/* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge.
+   On phones (CM, the same media query as the control deck) the band and the HUD are compact, the camera frames the lab's sight
+   (zooming in past 1 when sight is short) and the track past sight is fogged */
 var cv=$('cv'),ctx=cv.getContext('2d'),W=720,H=360,GY=264,Z=1;
 var dpr=Math.min(2,window.devicePixelRatio||1);
+var CMQ=window.matchMedia?window.matchMedia('(max-width:600px),(orientation:landscape) and (max-height:540px)'):null,CM=false,HUDH=80;
 function fitCanvas(){
-  W=Math.max(240,cv.clientWidth||720); H=Math.max(150,cv.clientHeight||360); GY=H-96;
+  CM=!!(CMQ&&CMQ.matches); HUDH=CM?48:80;
+  W=Math.max(240,cv.clientWidth||720); H=Math.max(150,cv.clientHeight||360); GY=H-(CM?30:96);
   dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
 }
@@ -988,37 +996,40 @@ function drawLab(l,cam,VW,FW,isHuman,idx){
   var h=heightOf(l),dip=0;
   if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
   var y=GY-h-(l.jt>=0?l.jy:0)+dip-C.RW;
-  if(l.out){ if(!l.dissolved){y=GY+26;} ctx.globalAlpha=0.4; }
+  if(l.out){ if(!l.dissolved){y=GY+(CM?6/Z:26);} ctx.globalAlpha=0.4; }
   if(h>1&&(!l.out||l.dissolved)){
     ctx.setLineDash([3,3]); ctx.strokeStyle=COL.muted; ctx.lineWidth=(1/Z)*1;
     ctx.strokeRect(sx+0.5,GY-h+0.5,C.RW,h); ctx.setLineDash([]);
   }
   drawCritter(l,sx,y,h);
   ctx.fillStyle=COL.ink; ctx.font=FW;
-  var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name);
-  ctx.fillText(lt,sx-2,ly);
+  var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name),lx=CM?Math.max(sx-2,4/Z):sx-2;  /* phones: names stay on screen */
+  ctx.fillText(lt,lx,ly);
   /* strike pips beside the name: filled for each strike, hollow for those left */
   if(K.strikes){
-    var pw=5/Z,px0=sx-2+ctx.measureText(lt).width+4/Z;
+    var pw=5/Z,px0=lx+ctx.measureText(lt).width+4/Z;
     for(var si=0;si<K.strikes;si++){
       var pxs=px0+si*(pw+2/Z),pys=ly-pw-1/Z;
       if(si<l.strikes){ ctx.fillStyle=COL.danger; ctx.fillRect(pxs,pys,pw,pw); }
       else { ctx.strokeStyle=COL.muted; ctx.lineWidth=1/Z; ctx.strokeRect(pxs+0.5/Z,pys+0.5/Z,pw-1/Z,pw-1/Z); }
     }
   }
-  if(l.flash){ ctx.fillStyle=l.flash.bad?COL.danger:COL.good; ctx.fillText(l.flash.txt,sx-2,ly-13-(1.4-l.flash.t)*10); }
+  if(l.flash){ ctx.fillStyle=l.flash.bad?COL.danger:COL.good; ctx.fillText(l.flash.txt,lx,ly-13-(1.4-l.flash.t)*10); }
   ctx.globalAlpha=1;
 }
 function draw(){
   if(!COL.ink||colAge++>45){readColors();colAge=0;}
   var human=G.labs[0],tgt=(human.out||human.done)?leaderLab():human;  /* tgt is the viewer: only what it knows is drawn */
   /* zoom out so every lab, barrier and tower in view fits between the HUD band and the ground */
-  var VW0=W/Z,cam0=Math.max(-70,tgt.x-0.26*VW0),need=C.JUMP+C.RW+40,zi;
+  var LEAD=CM?0.2:0.26,U=CM?1/Z:1;  /* LEAD: where the lab sits across the view; U: one screen pixel in world units on phones */
+  var VW0=W/Z,cam0=Math.max(-70,tgt.x-LEAD*VW0),need=C.JUMP+C.RW+40,zi;
   for(zi=0;zi<G.labs.length;zi++){ var zl=G.labs[zi]; if(!zl.out&&zl.x>cam0-40&&zl.x<cam0+VW0+40){ need=Math.max(need,heightOf(zl)+C.JUMP+C.RW+30); } }
   for(zi=0;zi<G.barriers.length;zi++){ var zb=G.barriers[zi]; if(zb.x>cam0-30&&zb.x<cam0+VW0+30&&knowsBar(tgt,zi)){ need=Math.max(need,zb.h+(zb.gate?60:20)); } }
   for(zi=0;zi<G.gaps.length;zi++){ var zg=G.gaps[zi]; if(zg.crossedBy>=0&&zg.x-C.STEPD>cam0-30&&zg.x-C.STEPD<cam0+VW0+30){ need=Math.max(need,zg.stepH+20); } }
-  var zT=clamp((GY-80)/need,0.3,1); Z+=(zT-Z)*(zT<Z?0.25:0.06);
-  var VW=W/Z,cam=Math.max(-70,tgt.x-0.26*VW),FW=(11/Z).toFixed(2)+'px "IBM Plex Mono",monospace';
+  var zT=clamp((GY-HUDH)/need,0.3,1);
+  if(CM){ zT=Math.min(clamp((GY-HUDH)/need,0.3,2),Math.max(0.6,(0.94-LEAD)*W/(sightRange(tgt)+16))); }  /* phones: frame the sight range, heights still fit */
+  Z+=(zT-Z)*(zT<Z?0.25:0.06); U=CM?1/Z:1;
+  var VW=W/Z,cam=Math.max(-70,tgt.x-LEAD*VW),FW=(11/Z).toFixed(2)+'px "IBM Plex Mono",monospace';
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle=COL.surface; ctx.fillRect(0,0,W,H);
   ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */
@@ -1031,15 +1042,20 @@ function draw(){
   ctx.lineWidth=(1/Z)*2; ctx.strokeStyle=COL.ink;
   ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(VW,GY); ctx.stroke();
   ctx.strokeStyle=COL.line; ctx.setLineDash([12,12]); ctx.lineDashOffset=cam%24;
-  ctx.beginPath(); ctx.moveTo(0,GY+10); ctx.lineTo(VW,GY+10); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,GY+(CM?4*U:10)); ctx.lineTo(VW,GY+(CM?4*U:10)); ctx.stroke();
   ctx.setLineDash([]); ctx.lineDashOffset=0;
+  if(CM&&tgt===human){  /* phones: fog the track past your sight; what you know of it is drawn on top */
+    var fx0=tgt.x-cam+sightRange(tgt),fg=ctx.createLinearGradient(fx0,0,fx0+48*U,0),fc=parseInt(COL.surface.slice(1),16),frgb=(fc>>16)+','+(fc>>8&255)+','+(fc&255);
+    fg.addColorStop(0,'rgba('+frgb+',0)'); fg.addColorStop(1,'rgba('+frgb+',0.7)');
+    ctx.fillStyle=fg; ctx.fillRect(fx0,GY-GY/Z,48*U,H/Z); ctx.fillStyle='rgba('+frgb+',0.7)'; ctx.fillRect(fx0+48*U,GY-GY/Z,VW,H/Z);
+  }
   // reach line for the lab being watched
   var reach=heightOf(tgt)+C.JUMP;
   ctx.strokeStyle=COL.a; ctx.globalAlpha=0.55; ctx.lineWidth=(1/Z)*1.5; ctx.setLineDash([2,5]);
   ctx.beginPath(); ctx.moveTo(0,GY-reach); ctx.lineTo(VW,GY-reach); ctx.stroke();
   ctx.setLineDash([]); ctx.globalAlpha=1;
   ctx.fillStyle=COL.a; ctx.font=FW; ctx.textAlign='right';
-  ctx.fillText('reach '+Math.round(reach),VW-6,GY-reach-4); ctx.textAlign='left';
+  if(!CM){ ctx.fillText('reach '+Math.round(reach),VW-6,GY-reach-4); } ctx.textAlign='left';  /* phones: drawn over the labs and barriers below */
   // barriers
   ctx.fillStyle=COL.ink;
   for(var i=0;i<G.barriers.length;i++){
@@ -1051,11 +1067,12 @@ function draw(){
   if(gb0&&gb0.gate&&human.human&&human.bi===0&&!human.out&&tgt===human){
     var gl='Gate: lower Pace or hold Back to build height',gtw;
     ctx.font=FW; gtw=ctx.measureText(gl).width+14;
-    var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4,VW-gtw-4),gly=GY-gb0.h-34;
-    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.92; ctx.fillRect(glx,gly,gtw,20); ctx.globalAlpha=1;
-    ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1; ctx.strokeRect(glx+0.5,gly+0.5,gtw-1,19);
-    ctx.fillStyle=COL.ink; ctx.fillText(gl,glx+7,gly+14);
-    ctx.beginPath(); ctx.moveTo(gb0.x-cam+C.BW/2,gly+20); ctx.lineTo(gb0.x-cam+C.BW/2,GY-gb0.h-3); ctx.stroke();
+    if(CM){ gl='Gate: lower Pace or hold Back'; gtw=ctx.measureText(gl).width+14*U; }
+    var glx=clamp(gb0.x-cam+C.BW/2-gtw/2,4*U,VW-gtw-4*U),gly=GY-gb0.h-34*U;
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.92; ctx.fillRect(glx,gly,gtw,20*U); ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1; ctx.strokeRect(glx+0.5*U,gly+0.5*U,gtw-U,19*U);
+    ctx.fillStyle=COL.ink; ctx.fillText(gl,glx+7*U,gly+14*U);
+    ctx.beginPath(); ctx.moveTo(gb0.x-cam+C.BW/2,gly+20*U); ctx.lineTo(gb0.x-cam+C.BW/2,GY-gb0.h-3*U); ctx.stroke();
   }
   // gaps and towers
   for(var k=0;k<G.gaps.length;k++){
@@ -1069,25 +1086,27 @@ function draw(){
     }
     if(knowsGap(tgt,k)){
       var pw=gapWidth(tgt,g),cover=tgt.v*airT(tgt);
-      ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,60);
-      ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY,pw,60);
+      var gd=CM?26*U:60;  /* pit depth; on phones the readouts below it move above the ground */
+      ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,gd);
+      ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY,pw,gd);
       ctx.fillStyle=COL.ink; ctx.font=FW;
-      ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4,GY-8);
+      ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4*U,GY-8*U);
       if(g.sing){ ctx.fillStyle=COL.d; ctx.fillRect(gx,GY-30,3,30); }
       ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=(1/Z)*4;
-      ctx.beginPath(); ctx.moveTo(gx,GY+70); ctx.lineTo(gx+cover,GY+70); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx,GY+(CM?20*U:70)); ctx.lineTo(gx+cover,GY+(CM?20*U:70)); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
-      ctx.fillText('your jump now '+Math.round(cover),gx,GY+86);
+      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?GY-21*U:GY+86);
     }
   }
   // sight bracket
   if(tgt===human){
     var sr=sightRange(tgt),sh=shadows(tgt);
-    ctx.strokeStyle=COL.a; ctx.lineWidth=(1/Z)*5; ctx.beginPath();
-    ctx.moveTo(tgt.x-cam,GY+36); ctx.lineTo(tgt.x-cam+sr,GY+36); ctx.stroke();
+    var sby=GY+(CM?11*U:36);
+    ctx.strokeStyle=COL.a; ctx.lineWidth=(1/Z)*(CM?4:5); ctx.beginPath();
+    ctx.moveTo(tgt.x-cam,sby); ctx.lineTo(tgt.x-cam+sr,sby); ctx.stroke();
     ctx.strokeStyle=COL.line;
-    for(var si=0;si<sh.length;si++){ ctx.beginPath(); ctx.moveTo(tgt.x-cam+sh[si].a,GY+36); ctx.lineTo(tgt.x-cam+sh[si].b,GY+36); ctx.stroke(); }
-    ctx.fillStyle=COL.a; ctx.font=FW; ctx.fillText('sight '+Math.round(sr)+(sh.length?', shadowed by '+sh.map(function(q){return q.by.name;}).join(', '):''),tgt.x-cam,GY+52);
+    for(var si=0;si<sh.length;si++){ ctx.beginPath(); ctx.moveTo(tgt.x-cam+sh[si].a,sby); ctx.lineTo(tgt.x-cam+sh[si].b,sby); ctx.stroke(); }
+    ctx.fillStyle=COL.a; ctx.font=FW; ctx.fillText('sight '+Math.round(sr)+(sh.length?', shadowed by '+sh.map(function(q){return q.by.name;}).join(', '):''),tgt.x-cam,GY+(CM?25*U:52));
   }
   // finish
   var fx=G.finish-cam;
@@ -1097,6 +1116,9 @@ function draw(){
   }
   // labs
   for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,VW,FW,n===0,n); }
+  if(CM){ var rt='reach '+Math.round(reach),rw=ctx.measureText(rt).width;
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.85; ctx.fillRect(VW-rw-9*U,GY-reach-15*U,rw+6*U,14*U); ctx.globalAlpha=1;
+    ctx.fillStyle=COL.a; ctx.font=FW; ctx.fillText(rt,VW-rw-6*U,GY-reach-4*U); }
   ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */
   drawMeters(tgt);
   // beyond your loop: only once the watched lab is past the singularity gap
@@ -1107,12 +1129,13 @@ function draw(){
       bl.capped?'Capped: slow enough to act':(bl.d<bl.react+bl.brake?'Too fast to act: the auto-jump decides':'Time to act, but not for long')];
     ctx.font='11px "IBM Plex Mono",monospace';
     var bw=0,bi2; for(bi2=0;bi2<lines.length;bi2++){ bw=Math.max(bw,ctx.measureText(lines[bi2]).width); } bw+=14;
-    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,80,bw,62); ctx.globalAlpha=1;
-    ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,80.5,bw-1,61);
-    for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,95+bi2*14); }
+    var by0=CM?HUDH:80;
+    ctx.fillStyle=COL.surface; ctx.globalAlpha=0.9; ctx.fillRect(W-bw-6,by0,bw,62); ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.d; ctx.lineWidth=1.5; ctx.strokeRect(W-bw-5.5,by0+0.5,bw-1,61);
+    for(bi2=0;bi2<lines.length;bi2++){ ctx.fillStyle=bi2===0||bi2===3?COL.d:COL.ink; ctx.fillText(lines[bi2],W-bw+1,by0+15+bi2*14); }
   }
   // minimap
-  var mx0=24,mw=W-48,my=18;
+  var mx0=24,mw=W-48,my=CM?12:18;
   function mmx(x){return mx0+clamp(x,0,G.finish)/G.finish*mw;}
   ctx.strokeStyle=COL.muted; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(mx0,my); ctx.lineTo(mx0+mw,my); ctx.stroke();
   for(var q=0;q<G.barriers.length;q++){
@@ -1127,7 +1150,7 @@ function draw(){
     if(gg.crossedBy>=0){ ctx.fillStyle=COL.ink; ctx.fillRect(mmx(gg.x-C.STEPD)-1,my-8,2,8); }
     if(!knowsGap(tgt,q2)){continue;}
     ctx.fillStyle=gg.sing?COL.d:(gg.crossedBy>=0?COL.muted:COL.danger); ctx.fillRect(mmx(gg.x)-3,my+1,6,gg.sing?10:7);
-    if(gg.sing){ ctx.font='10px "IBM Plex Mono",monospace'; ctx.fillText('singularity',Math.min(mmx(gg.x)-18,mx0+mw-62),my+22); }
+    if(gg.sing){ ctx.font='10px "IBM Plex Mono",monospace'; if(CM){ ctx.fillText('singularity',Math.min(mmx(gg.x)+6,mx0+mw-66),my+11); } else { ctx.fillText('singularity',Math.min(mmx(gg.x)-18,mx0+mw-62),my+22); } }
     if(gg.pub){ ctx.strokeStyle=COL.a; ctx.lineWidth=1.5; ctx.strokeRect(mmx(gg.x)-4.5,my-0.5,9,10); }
   }
   ctx.fillStyle=COL.d; ctx.fillRect(mmx(G.finish)-1,my-9,2,18);
@@ -1142,7 +1165,7 @@ function draw(){
 
 /* sight, height and max speed meters along the top of the canvas, under the minimap */
 function drawMeters(l){
-  var names=['Sight','Height','Max speed'],cols=[COL.a,COL.c,COL.b],gap=10,x0=24,cw=(W-48-2*gap)/3,y=56,top=topSpeed(l);
+  var names=['Sight','Height','Max speed'],cols=[COL.a,COL.c,COL.b],gap=10,x0=24,cw=(W-48-2*gap)/3,y=CM?37:56,top=topSpeed(l);
   ctx.font='10px "IBM Plex Mono",monospace';
   for(var i=0;i<3;i++){
     var x=x0+i*(cw+gap),v=Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];
