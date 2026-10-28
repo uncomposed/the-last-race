@@ -473,7 +473,8 @@ function applyLevel(k,by){
 }
 function crossGap(l,g,k){
   if(g.inner){ log(l.name+' crossed gap '+(k+1)+' inside the singularity stretch.'); return; }
-  if(g.sing){ l.lock=l.lastInp; }
+  /* a bot that crosses while backing up for a run-up must not lock reverse: at its back limit its speed flips between -0.5 and 0, so it never counts as still */
+  if(g.sing){ l.lock=l.lastInp&&l.lastInp.rev?Object.assign({},l.lastInp,{rev:false}):l.lastInp; }
   if(g.crossedBy<0){
     g.crossedBy=l.id; g.stepH=Math.max(8,Math.round(heightOf(l))); G.level=Math.max(G.level,k+1); applyLevel(k,l);
     if(K.revealOnCross){g.pub=true;}
@@ -581,8 +582,11 @@ function botPlan(l){
     }
     if(!tower&&knowsGap(l,l.gi)){
       var vreq=needSpeed(l,g)*1.06,capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
-      var v0=capped(l)?Math.min(l.v,capSpeed(l)):l.v;
-      var runUp=2*acc*Math.max(gd-8-capRem,0)*0.9;
+      var cs=capped(l)?capSpeed(l):Infinity,capOK=vreq<=cs;
+      var v0=Math.min(l.v,cs);
+      /* a crash or scrape cap only shortens the run-up when the jump needs more than the capped speed; otherwise the whole distance counts
+         (counting the cap as dead run-up stopped a capped bot whose cap ran past the gap's edge, and the cap only ends if it moves) */
+      var runUp=2*acc*Math.max(gd-8-(capOK?0:capRem),0)*0.9;
       var dNeed=vreq*vreq/(2*acc*0.9)+10,room=l.x-backLimit(l);
       if(g.sing&&pol.safe&&!l.swGo){
         /* careful bots stop before the singularity gap and fill sight and height, height first, until both meters reach the ceiling
@@ -597,7 +601,7 @@ function botPlan(l){
         }
       }
       if(wait){}
-      else if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/top); }
+      else if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/(capOK?Math.min(top,cs):top)); }
       else if(vreq<=top&&gd<dNeed&&room>6&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
         rev=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
       }
