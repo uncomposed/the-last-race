@@ -25,12 +25,22 @@ A small side-scrolling pacing game about racing, stopping and building height, m
 - **Regimes.** Each gap crossed first lifts the ceilings. The frontier lab gets the full level-up, every other lab gets a share at once, and labs further behind refill faster.
 - **The singularity.** The last gap on every track is the singularity: the widest gap on the track (still crossable at its ceiling with its run-up), and a fall there rolls `singOdds` (30) points higher than the base odds, capped at 95. The first lab across gets the full level-up to a final ceiling (the last regime plus `C.SINGUP`, 40); others get the usual share. A lead is time to rebalance, and the careful bots (Steward, Custom) stop before the gap and fill sight and height, height first, until both meters reach the ceiling or the next lab behind is within a sight length. The Sprinter and Gambler go without stopping. When the gap first becomes known to the human's lab the game pauses once on a card (not in Watch bots mode).
 - **Beyond the singularity.** After that gap comes a stretch of 800 to 1500 to the finish: barriers and sometimes one or two gaps (none or one in most tracks), whose heights and widths continue the same hidden difficulty curve past the last gap, with the same per-seed noise, so the map you crossed is the clue. Gap widths in the stretch are scaled to the faster speed but never exceed 0.9 of the singularity's width. Inside, top speed and acceleration are multiplied by `singSpeed` (3). Crash and scrape caps are not. Human inputs (pace, split, jump, floor it, back) arrive `reaction` (0.25) seconds late unless the lab is capped, which slows it enough to act. Bots keep the pace and split they crossed with, and auto-jump, unless capped, when they use their normal policy. Entering first does not mean finishing first: labs can still crash into barriers and scrape or fall into gaps inside. The canvas is tinted past the gap, the gap is labelled "Singularity", and a "Beyond your loop" readout compares the distance to the next known obstacle with what the reaction time and braking cover.
-- **Chill mode and bot hands (experiment).** The "Chill: auto-jump for all" checkbox (`K.chill`, on by default, `?chill=0` turns it off) gives everyone auto-jump. Auto-jump also counts a full jump at a barrier or tower whatever the arc is doing. With chill off you jump by hand, and so do the bots. The bots' technical skill is separate from their strategy. The knob is `skill`, 0 to 100, with `?skill=rookie|pro|machine` or a number; the presets are Rookie 30, Pro 70 and Machine 100. 100 is the old perfect bot and the default. Lower skill adds three kinds of noise:
+- **Chill mode and bot hands (experiment).** The "Chill mode" checkbox (`K.chill`, on by default, `?chill=0` turns it off) gives everyone auto-jump. Auto-jump also counts a full jump at a barrier or tower whatever the arc is doing. With chill off you jump by hand, and so do the bots. The bots' technical skill is separate from their strategy. The knob is `skill`, 0 to 100, with `?skill=rookie|pro|machine` or a number; the presets are Rookie 30, Pro 70 and Machine 100. 100 is the old perfect bot and the default. Lower skill adds three kinds of noise:
   - **Reaction lag.** The plan reaches the bot's controls late, by a lag redrawn every half second.
   - **Misjudgment.** Each obstacle gets a fixed misjudgment of its distance and of the speed a gap needs. It fades while the bot stands still.
   - **Jump timing error.** With chill off, a bot presses jump at half a jump's duration before the obstacle plus an error drawn for each attempt.
 
   `HANDS` holds the amplitudes at skill 0, and they scale to nothing at 100. `SKILL[kind]` overrides the skill for one kind. Hands noise is keyed by seed, lab, purpose and index, so it never moves the track, gamble or roll streams. Results are in `DESIGN-NOTES.md` ("Bot hands").
+- **The labs are little pixel creatures.** Their pose shows what each lab is doing:
+  - a forward lean and speed lines at top speed;
+  - facing backwards while reversing;
+  - binoculars when it invests mostly in sight, a ladder for height, a wrench for max speed;
+  - arms up in a jump, stars after a crash;
+  - a sweat drop while capped or on its last strike;
+  - a grey slump when dissolved, and happy eyes for the winner.
+
+  Hats tell the kinds apart: a headband for the Sprinter, a hard hat for the Steward, a top hat for the Gambler and an antenna for you. Strike pips beside each name show strikes taken (filled) and strikes left (hollow). Drawing only; the simulation is unchanged.
+- **Last strike.** The `wary` knob is now 0, 1 or 2. At 2, a bot on its last strike also slows to what it can see. The default stays 1. Results are in `DESIGN-NOTES.md` ("Last strike").
 - First lab over the finish line wins. Pace starts at 70%. The HUD shows how far you are behind the frontier ("Behind"). "Watch bots" makes lab 0 the Custom bot so a seed can be watched without playing.
 
 ## Status
@@ -40,3 +50,7 @@ Prototype 0.3. Adds, on top of 0.2 (seeded track profile, line of sight, one vis
 **Screens.** The page works on phones. In landscape the track fills the screen height and the pace slider, triangle and Jump, Floor it, Back up, Pause and New run buttons sit in a column beside it (tested at 844×390, 667×375, 740×340 and 915×412). In portrait a hint suggests turning the phone. The canvas follows its on-screen size, zooms out so every lab, barrier and tower in view stays on screen, and draws the sight, height and max speed meters along its top under the minimap.
 
 Open design items are listed at the end of `spec.html` (which still describes version 1) and in `DESIGN-NOTES.md`.
+
+## Publishing
+
+`.github/workflows/pages.yml` publishes `prototype.html` as `index.html`, with `spec.html` beside it, on GitHub Pages. It runs on pushes to `main` that touch this folder, or by hand. The repository must be public (or on a plan with private Pages), with Settings > Pages > Source set to "GitHub Actions".

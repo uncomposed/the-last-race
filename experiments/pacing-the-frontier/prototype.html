@@ -88,7 +88,7 @@ ul.log li{color:var(--muted)} ul.log li:first-child{color:var(--ink)}
 details summary{cursor:pointer;font:700 18px var(--display)}
 .knobs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 18px;margin-top:12px}
 .note{font-size:13px;color:var(--muted)}
-.foot{font:400 12px var(--mono);color:var(--muted)}
+.foot{font:400 12px var(--mono);color:var(--muted)} .foot a{color:var(--a)}
 .world{font:500 14px var(--mono);margin-top:6px}
 .tri{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
 .tri svg{display:block;width:min(100%,270px);height:auto;touch-action:none;cursor:crosshair;border-radius:6px;user-select:none;-webkit-user-select:none}
@@ -201,7 +201,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     </div>
     <div class="btns">
       <button id="btn-jump" type="button">Jump (space)</button>
-      <label for="auto" title="Auto-jump for everyone. Off: you jump by hand, and the bots jump with their own timing error."><input type="checkbox" id="auto" checked>Chill: auto-jump for all</label>
+      <label for="auto" title="Auto-jump for everyone. Off: you jump by hand, and the bots jump with their own timing error."><input type="checkbox" id="auto" checked>Chill mode</label>
       <button id="btn-fwd" type="button">Floor it (hold &rarr;)</button>
       <button id="btn-back" type="button">Back up (hold &larr;)</button>
       <button id="btn-pause" type="button">Pause</button>
@@ -237,6 +237,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
   </div>
 
   <p class="foot" id="seed"></p>
+  <p class="foot">A game about racing and pacing at the AI frontier, made for intuition, not prediction. Source: <a href="https://github.com/uncomposed/the-last-race">github.com/uncomposed/the-last-race</a> (Apache-2.0). Background reading: <a href="https://ai-2027.com/">AI 2027</a> and <a href="https://80000hours.org/problem-profiles/artificial-intelligence/">80,000 Hours on risks from AI</a>.</p>
 </main>
 
 <script>
@@ -648,7 +649,9 @@ function botPlan(l){
     }
   }
   var pace=l.basePace;
-  if(pol.safe&&!stop){
+  /* wary 2: on its last strike a bot also caps its speed to what it can see, as the careful bots always do */
+  var lastStrike=K.wary===2&&K.strikes&&l.strikes>=K.strikes-1;
+  if((pol.safe||lastStrike)&&!stop){
     var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l)),sh=shadows(l);
     /* do not pass a slower lab blind: close on it no faster than it can stop behind it */
     for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(sh[si].a-25,0))); } }
@@ -680,6 +683,7 @@ function stepLab(l,dt,inp){
   }
   /* while capped after a crash or scrape, held-back effort goes half to sight, half to height */
   var w=capped(l)?[50,50,0]:inp.w,tot=w[0]+w[1]+w[2],r=fwd?0:clamp(1-Math.abs(l.v)/top,0,1);
+  l.ivr=r; l.ivw=w;  /* for drawing only: how much of the lab's effort goes to investment, and where */
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
@@ -836,24 +840,104 @@ function loopInfo(l){
   for(i=l.gi;i<G.gaps.length;i++){ if(knowsGap(l,i)){ d=Math.min(d,G.gaps[i].x-l.x); break; } }
   return {d:d,react:v*K.reaction,brake:v*v/(2*C.DEC),capped:capped(l)};
 }
+/* the labs are little pixel creatures on a 12 x 12 grid (one cell is C.RW/12), feet on the bottom row. Their pose shows what the
+   lab is doing: sprinting at top speed, walking backwards when reversing, binoculars when investing mostly in sight, a ladder for
+   height, a wrench for max speed, a leap in the air, stars after a crash, a sweat drop when capped or on the last strike.
+   Legs step with distance travelled, so a slow lab shuffles and a fast one blurs. Hats tell the kinds apart. */
+var EYE='#1d1a22',HAT={steward:'#F2C14E'};
+function drawCritter(l,sx,y,h){
+  var u=C.RW/12,top=topSpeed(l),air=l.jt>=0&&!l.out,dir=l.v<-0.5?-1:1;
+  var dizzy=(l.crash>0||l.bounce)&&!l.out,dead=l.out,won=l.done;
+  var r=l.ivr||0,w=l.ivw||[0,0,0],tot=w[0]+w[1]+w[2]||1,act=null;
+  if(!dead&&!dizzy&&!air&&r>=0.5){ var iv=[w[0]/tot,w[1]/tot,w[2]/tot]; act=iv[0]>=iv[1]&&iv[0]>=iv[2]?'sight':(iv[1]>=iv[2]?'height':'max'); }
+  var sprint=!dead&&!air&&!dizzy&&l.v>1&&l.v>=0.97*top;
+  var nervous=!dead&&(capped(l)||(K.strikes>0&&l.strikes===K.strikes-1));
+  var step=Math.floor(Math.abs(l.x)/(sprint?3:5))%2,tk=Math.floor(G.t*6+l.id)%2;
+  var blink=!dead&&!dizzy&&((G.t+l.id*0.7)%3.2)<0.12;
+  var bob=won?-Math.abs(Math.sin(G.t*8))*5:0;
+  /* the ladder stands in world space behind the lab, from the ground to its feet */
+  if(act==='height'){
+    var lx=dir>0?sx-6:sx+C.RW+1,lt=Math.max(h,8);
+    ctx.fillStyle=COL.c; ctx.fillRect(lx,GY-lt,1.2,lt); ctx.fillRect(lx+4,GY-lt,1.2,lt);
+    for(var ry=GY-3;ry>GY-lt;ry-=5){ ctx.fillRect(lx,ry,5.2,1.2); }
+  }
+  ctx.save();
+  ctx.translate(dir>0?sx:sx+C.RW,y+C.RW+bob); ctx.scale(dir,1);
+  if(sprint){ ctx.transform(1,0,-0.22,1,0,0); }  /* lean into it */
+  function P(gx,gy,gw,gh,c){ ctx.fillStyle=c; ctx.fillRect(gx*u,(gy-12)*u,gw*u+0.02,gh*u+0.02); }
+  var body=l.dissolved?COL.muted:COL[l.col];
+  /* speed lines and the sprinter's headband tails trail behind */
+  if(sprint){ for(var sl=0;sl<3;sl++){ P(-3-((sl+tk)%2)*2-sl,3+sl*2,2+((sl+tk)%2)*2,0.6,COL.muted); } }
+  /* legs: two pairs that alternate; tucked in the air, splayed when out */
+  var legs=[2,4,7,9];
+  for(var li=0;li<4;li++){
+    var lift=air?2:(dead||dizzy||won?0:((li%2)===step&&Math.abs(l.v)>0.5?1:0));
+    P(legs[li],9,1,3-lift,body);
+  }
+  /* body with rounded corners */
+  P(2,1,8,1,body); P(1,2,10,6,body); P(2,8,8,1,body);
+  /* arms: up in the air, at a win and when out; reaching for the ladder or holding a tool otherwise */
+  var armsUp=air||won||(dead&&!l.dissolved);  /* a dissolved lab slumps where it stopped */
+  if(armsUp){ P(0,1,1,2,body); P(11,1,1,2,body); }
+  else if(act==='height'){ P(0,tk?2:4,1,2,body); P(11,5,1,2,body); }
+  else if(act==='sight'){ P(0,5,1,2,body); P(10,4,2,1,body); }
+  else if(act==='max'){ P(0,5,1,2,body); P(11,tk?4:6,1,1,body); }
+  else { P(0,5+(sprint?step:0),1,2,body); P(11,5+(sprint?1-step:0),1,2,body); }
+  /* eyes, looking the way it goes */
+  var ex=[6,9];
+  if(dead||dizzy||l.dissolved){
+    for(var e=0;e<2;e++){ var c=ex[e],rr=3; P(c-1,rr,1,1,EYE); P(c+1,rr,1,1,EYE); P(c,rr+1,1,1,EYE); P(c-1,rr+2,1,1,EYE); P(c+1,rr+2,1,1,EYE); }
+  } else if(won){
+    for(var e2=0;e2<2;e2++){ P(ex[e2]-1,4,1,1,EYE); P(ex[e2],3,1,1,EYE); P(ex[e2]+1,4,1,1,EYE); }
+  } else {
+    for(var e3=0;e3<(act==='sight'?1:2);e3++){ if(blink){ P(ex[e3],4,1,1,EYE); } else { P(ex[e3],air?2:3,1,air?3:2,EYE); } }
+  }
+  /* hats: a headband for the Sprinter, a hard hat for the Steward, a top hat for the Gambler, an antenna for you */
+  if(l.kind==='sprinter'){ P(1,2,10,1,COL.surface); P(-1,2+tk,2,1,COL.surface); P(-2,3-tk,1,1,COL.surface); }
+  else if(l.kind==='steward'){ P(3,-1,6,1,HAT.steward); P(2,0,8,1,HAT.steward); P(1,1,11,1,HAT.steward); }
+  else if(l.kind==='gambler'){ P(3,-4,6,4,COL.ink); P(3,-1,6,1,COL.d); P(1,0,10,1,COL.ink); }
+  else { P(6,-2,1,3,COL.ink); P(5.5,-3.5,2,2,(G.t%1)<0.5?COL.good:COL.a); }
+  /* props */
+  if(act==='sight'){
+    P(8,2,5,3,COL.ink); P(13,2,1,3,COL.a); P(13,tk?2:4,1,1,COL.surface);  /* binoculars to the front eye, a glint at the lens */
+  } else if(act==='max'){
+    var wy=tk?3:5; P(12,wy,1,1,COL.muted); P(13,wy-1,1,1,COL.muted); P(14,wy-2,1,1,COL.muted); P(14,wy-3,2,1,COL.muted); P(15,wy-2,1,1,COL.muted);
+    if(tk){ P(16,wy-4,1,1,COL.b); P(15,wy-6,1,1,COL.b); P(17,wy-3,1,1,COL.b); } else { P(16,wy-1,1,1,COL.b); P(17,wy-5,1,1,COL.b); }  /* wrench and sparks */
+  }
+  if(nervous&&!dizzy&&!won){ P(0,-1,1,1,COL.a); P(-0.5,0,2,2,COL.a); }  /* sweat drop */
+  ctx.restore();
+  /* crash stars orbit the head */
+  if(dizzy){
+    for(var st=0;st<3;st++){
+      var an=G.t*7+st*2.1,cx=sx+C.RW/2+Math.cos(an)*11,cy=y-5+Math.sin(an)*3;
+      ctx.fillStyle=HAT.steward; ctx.fillRect(cx-1.5*u,cy-0.5*u,3*u,u); ctx.fillRect(cx-0.5*u,cy-1.5*u,u,3*u);
+    }
+  }
+}
 function drawLab(l,cam,VW,FW,isHuman,idx){
   var sx=l.x-cam-C.RW;
   if(sx<-40||sx>VW+40){return;}
   var h=heightOf(l),dip=0;
   if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
   var y=GY-h-(l.jt>=0?l.jy:0)+dip-C.RW;
-  if(l.out){ y=GY+26; ctx.globalAlpha=0.4; }
-  if(h>1&&!l.out){
+  if(l.out){ if(!l.dissolved){y=GY+26;} ctx.globalAlpha=0.4; }
+  if(h>1&&(!l.out||l.dissolved)){
     ctx.setLineDash([3,3]); ctx.strokeStyle=COL.muted; ctx.lineWidth=(1/Z)*1;
     ctx.strokeRect(sx+0.5,GY-h+0.5,C.RW,h); ctx.setLineDash([]);
   }
-  ctx.fillStyle=COL[l.col]; ctx.fillRect(sx,y,C.RW,C.RW);
-  ctx.fillStyle=COL.surface; ctx.fillRect(sx+4,y+5,3,4); ctx.fillRect(sx+11,y+5,3,4);
-  if(l.crash>0||l.sag){ ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(sx-1,y-1,C.RW+2,C.RW+2); }
-  if(isHuman){ ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*1.5; ctx.strokeRect(sx-2.5,y-2.5,C.RW+5,C.RW+5); }
+  drawCritter(l,sx,y,h);
   ctx.fillStyle=COL.ink; ctx.font=FW;
-  var ly=y-7-(idx%2)*12;
-  ctx.fillText(l.dissolved?'dissolved':(l.out?'out':l.name),sx-2,ly);
+  var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name);
+  ctx.fillText(lt,sx-2,ly);
+  /* strike pips beside the name: filled for each strike, hollow for those left */
+  if(K.strikes){
+    var pw=5/Z,px0=sx-2+ctx.measureText(lt).width+4/Z;
+    for(var si=0;si<K.strikes;si++){
+      var pxs=px0+si*(pw+2/Z),pys=ly-pw-1/Z;
+      if(si<l.strikes){ ctx.fillStyle=COL.danger; ctx.fillRect(pxs,pys,pw,pw); }
+      else { ctx.strokeStyle=COL.muted; ctx.lineWidth=1/Z; ctx.strokeRect(pxs+0.5/Z,pys+0.5/Z,pw-1/Z,pw-1/Z); }
+    }
+  }
   if(l.flash){ ctx.fillStyle=l.flash.bad?COL.danger:COL.good; ctx.fillText(l.flash.txt,sx-2,ly-13-(1.4-l.flash.t)*10); }
   ctx.globalAlpha=1;
 }
@@ -1210,7 +1294,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool']
+  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
   var box=$('knobs');

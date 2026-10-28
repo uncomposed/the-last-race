@@ -285,7 +285,7 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 - **A Steward moving back and forth inside the stretch** (seed 2647, full field).
 ## Bot hands (skill) and chill mode
 
-28 October 2026. Prototype 0.3 plus the `chill` and `skill` knobs (see `README.md`), with default knobs otherwise (`strikes` 3, `barScale` 140). Seeds 5000 to 5499. Lab 0 is the `custom` bot. Bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. With `chill` 1 and `skill` 100 (the defaults), all 500 games are identical field by field to the "Three strikes" baseline (148/136/93/62 wins, 56 extinctions, 5 time-outs).
+28 October 2026. Prototype 0.3 plus the `chill` and `skill` knobs (see `README.md`) and the two deadlock fixes above, with default knobs otherwise (`strikes` 3, `barScale` 140). Seeds 5000 to 5499. Lab 0 is the `custom` bot. Bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. With `chill` 1 and `skill` 100 (the defaults), all 500 games are identical field by field to the code with only the deadlock fixes (154/136/97/64 wins, 48 extinctions, 1 nobody-left).
 
 **Amplitudes at skill 0** (`HANDS`), which scale linearly to nothing at 100. These are guesses, not measured from people:
 - reaction lag: mean 0.40 s, SD 0.15 s;
@@ -298,34 +298,52 @@ The aim point is half a jump's duration before the obstacle. A jump lasts 0.5 to
 
 | Chill | Skill | Custom | Gambler | Steward | Sprinter | Extinct | Time-out | Crashes/game | Falls/game | Dissolved |
 |---|---|---|---|---|---|---|---|---|---|---|
-| on | 0 | 134 | 130 | 91 | 69 | 69 | 4 | 0.79/1.45/0.15/1.43 | 0.04/0.25/0.05/0.17 | 8/32/1/44 |
-| on | 30 | 141 | 144 | 88 | 74 | 51 | 1 | 0.81/1.49/0.14/1.46 | 0.04/0.23/0.02/0.10 | 5/24/1/47 |
-| on | 70 | 139 | 152 | 87 | 71 | 50 | 0 | 0.78/1.56/0.11/1.57 | 0.05/0.24/0.01/0.08 | 7/29/0/64 |
-| on | 100 | 148 | 136 | 93 | 62 | 56 | 5 | 0.70/1.56/0.09/1.61 | 0.07/0.27/0.01/0.09 | 8/33/0/71 |
-| off | 0 | 162 | 106 | 76 | 44 | 95 | 9 | 1.00/1.79/0.64/1.79 | 0.07/0.30/0.06/0.19 | 25/109/15/131 |
-| off | 30 | 161 | 107 | 95 | 63 | 70 | 1 | 1.06/1.75/0.43/1.79 | 0.07/0.25/0.02/0.11 | 19/90/3/110 |
-| off | 70 | 125 | 136 | 105 | 56 | 69 | 4 | 1.02/1.74/0.31/1.81 | 0.09/0.27/0.02/0.09 | 21/78/4/111 |
-| off | 100 | 141 | 119 | 93 | 59 | 77 | 8 | 0.94/1.77/0.26/1.87 | 0.11/0.28/0.03/0.09 | 14/85/1/123 |
+| on | 0 | 142 | 133 | 87 | 73 | 61 | 1 | 0.81/1.44/0.16/1.43 | 0.03/0.25/0.04/0.16 | 13/29/2/45 |
+| on | 30 | 140 | 142 | 92 | 80 | 44 | 0 | 0.84/1.49/0.13/1.48 | 0.02/0.23/0.02/0.10 | 8/21/2/50 |
+| on | 70 | 145 | 158 | 86 | 66 | 44 | 0 | 0.80/1.57/0.10/1.59 | 0.04/0.24/0.01/0.08 | 10/30/0/67 |
+| on | 100 | 154 | 136 | 97 | 64 | 48 | 0 | 0.73/1.57/0.09/1.63 | 0.05/0.27/0.01/0.08 | 12/36/1/75 |
+| off | 0 | 189 | 105 | 72 | 42 | 78 | 2 | 1.08/1.81/0.66/1.81 | 0.04/0.29/0.06/0.18 | 43/117/20/140 |
+| off | 30 | 179 | 111 | 97 | 61 | 46 | 0 | 1.13/1.78/0.47/1.82 | 0.02/0.24/0.02/0.10 | 32/100/6/123 |
+| off | 70 | 138 | 138 | 115 | 60 | 45 | 0 | 1.07/1.75/0.33/1.87 | 0.04/0.26/0.01/0.07 | 31/82/4/126 |
+| off | 100 | 157 | 127 | 110 | 54 | 49 | 1 | 1.03/1.80/0.29/1.93 | 0.05/0.27/0.02/0.07 | 29/90/2/139 |
 
 **One component at a time** (chill off, rivals at skill 0, lab 0 perfect):
 
 | Case | Custom | Gambler | Steward | Sprinter | Extinct | Time-out | Rival crashes/game | Rival falls/game |
 |---|---|---|---|---|---|---|---|---|
-| no noise | 141 | 119 | 93 | 59 | 77 | 8 | 3.90 | 0.40 |
-| lag only | 119 | 119 | 123 | 55 | 76 | 4 | 4.00 | 0.36 |
-| misjudgment only | 129 | 122 | 77 | 59 | 95 | 12 | 3.55 | 0.55 |
-| jump timing only | 163 | 116 | 88 | 44 | 79 | 7 | 4.44 | 0.44 |
-| all three | 162 | 106 | 76 | 44 | 95 | 9 | 4.21 | 0.56 |
-| all three, amplitudes doubled | 202 | 35 | 43 | 16 | 138 | 33 | 5.11 | 1.02 |
+| no noise | 157 | 127 | 110 | 54 | 49 | 1 | 4.01 | 0.37 |
+| lag only | 135 | 120 | 128 | 61 | 53 | 0 | 4.07 | 0.34 |
+| misjudgment only | 136 | 127 | 91 | 66 | 69 | 4 | 3.61 | 0.52 |
+| jump timing only | 186 | 117 | 94 | 45 | 54 | 1 | 4.55 | 0.41 |
+| all three | 189 | 105 | 72 | 42 | 78 | 2 | 4.29 | 0.53 |
+| all three, amplitudes doubled | 250 | 35 | 42 | 17 | 117 | 7 | 5.32 | 1.01 |
 
 **Findings**
 
-- **With chill on, the presets barely change who wins.** Custom wins 134 to 150 at every skill, within the spread of 500 seeds (about ±10 games). Rivals crash, scrape and fall a little more at low skill. Crashes are cheap and work as pit stops, so most of that does not cost them the race.
-- **Jump timing is the component that behaves like a handicap.** On its own it cuts the Sprinter from 59 to 44 wins and lifts Custom from 141 to 163, with extinction about flat (77 to 79). Since chill mode removes jump timing, the presets mean much more with chill off.
-- **Lag on its own is not a handicap.** It lifts the Steward from 93 to 123 wins. The Steward's caution is reactive: it brakes to what it can see and holds back behind slower labs, so a late reaction makes it bolder. Not traced further.
-- **Misjudgment mostly raises extinction** (77 to 95) through more falls. Every lab pays for a rival's fall through the shared roll, so sloppy rivals endanger the player more than they slow themselves.
-- **Chill off is harder even with perfect hands.** At skill 100 the Steward crashes 0.26 times per game with chill off against 0.09 with it on, and extinction is 77 against 56. Auto-jump counts a full jump at every barrier, even in the middle of an earlier jump, so obstacles close together cost nothing with chill on. A human jumping by hand faces the same thing.
-- **Doubling the amplitudes** makes the rivals collapse (Gambler 35 wins), but extinction rises to 138 and time-outs to 33. That is not a usable easy mode.
+- **With chill on, the presets barely change who wins.** Custom wins 140 to 154 at every skill. With 500 seeds, differences of about ±10 games are noise. Rivals crash, scrape and fall a little more at low skill. Crashes are cheap and work as pit stops, so most of that does not cost them the race.
+- **With chill off, Rookie rivals are clearly weaker.** Custom wins 179 against Rookie rivals and 157 against Machine. Pro (138) is not easier than Machine. That comes from lag (see below), and its effect on the Steward is not traced.
+- **Jump timing is the component that behaves like a handicap.** On its own it lifts Custom from 157 to 186 wins and cuts the Sprinter from 54 to 45, with extinction about flat (49 to 54). Chill mode removes jump timing, so the presets mean much more with chill off.
+- **Lag on its own is not a handicap.** It lifts the Steward from 110 to 128 wins. The Steward's caution is reactive: it brakes to what it can see and holds back behind slower labs, so a late reaction makes it bolder. Not traced further.
+- **Misjudgment mostly raises extinction** (49 to 69) through more falls. Every lab pays for a rival's fall through the shared roll, so sloppy rivals endanger the player more than they slow themselves.
+- **Chill off is harder even with perfect hands.** At skill 100 the Steward crashes 0.29 times per game with chill off against 0.09 with it on. Auto-jump counts a full jump at every barrier, even in the middle of an earlier jump, so obstacles close together cost nothing with chill on. A human jumping by hand faces the same thing.
+- **Doubling the amplitudes** makes the rivals collapse (Gambler 35 wins), but extinction more than doubles, to 117. That is not a usable easy mode.
 - **Not tested.** Human play. Calibrating the amplitudes against a person's measured reaction time and jump timing. A setting that weights jump timing over lag and misjudgment.
 
-Replication: in the page, set `PF.K.chill`, `PF.K.skill`, `PF.SKILL.custom=100` and, for the ablation, `PF.HANDS`, then call `PF.run(seed,'custom')` for seeds 5000 to 5499.
+## Last strike
+
+28 October 2026, same setup (skill 100). The question was whether bots should behave differently on their last strike. `wary` 1 (the default) makes a bot on its last strike stop for every blockade it knows it cannot clear. `wary` 2 also caps its speed to what it can stop within its sight, as the Steward and Custom always do.
+
+| Chill | Wary | Custom | Gambler | Steward | Sprinter | Extinct | Time-out | Dissolved C/Sp/St/G |
+|---|---|---|---|---|---|---|---|---|
+| on | 0 | 155 | 135 | 97 | 63 | 48 | 0 | 13/39/1/78 |
+| on | 1 | 154 | 136 | 97 | 64 | 48 | 0 | 12/36/1/75 |
+| on | 2 | 149 | 141 | 97 | 65 | 47 | 0 | 14/32/1/50 |
+| off | 0 | 160 | 124 | 110 | 54 | 49 | 1 | 26/96/3/142 |
+| off | 1 | 157 | 127 | 110 | 54 | 49 | 1 | 29/90/2/139 |
+| off | 2 | 158 | 114 | 124 | 57 | 44 | 1 | 27/89/3/126 |
+
+- **`wary` 1 does almost nothing** (Gambler dissolutions 78 to 75). It acts only on blockades the bot already knows about. A plausible reading, not traced: most third strikes come from barriers the bot reaches before it sees them.
+- **`wary` 2 cuts Gambler dissolutions by a third with chill on** (75 to 50), and its wins rise slightly (136 to 141). With chill off the cut is smaller (139 to 126), and its wins fall (127 to 114). The Sprinter changes little: its strikes come mostly from the gate and from towers.
+- The default stays at 1, so earlier results are unchanged.
+
+Replication: in the page, set `PF.K.chill`, `PF.K.skill`, `PF.K.wary`, `PF.SKILL.custom=100` and, for the ablation, `PF.HANDS`, then call `PF.run(seed,'custom')` for seeds 5000 to 5499.
