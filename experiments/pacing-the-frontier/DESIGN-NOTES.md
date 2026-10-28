@@ -248,9 +248,41 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 - **The gate is a free strike for reckless labs.** The Sprinter hits it in 493 of 500 games, so for the Sprinter 3 strikes behaves like 2. The Gambler hits it in 215. Not tested: exempting the gate.
 - **Dissolution falls on the labs that already crash most** (Gambler, then Sprinter). The careful Custom and Steward almost never reach it.
 - **Bots do not react until their last strike** (and only if `wary` is on). A human who counts strikes can change how they play, so these rates describe the bots and not a human. Not tested: human play.
-- **Time-outs.** At barrier scale 120 and above, 2 to 7 games in 500 time out, whether or not the rule is on (5 at the new default). At 140 the five stuck games (seeds 5149, 5245, 5278, 5422, 5491) were inspected but not traced through the bot logic. In three a careful bot stood still for 220 to 250 s with full sight and height, two of those under a crash cap, where the forced split gives max speed nothing. In two a bot stood in the stretch past the singularity with its frozen input. The causes are not established. They also occur with the rule off, so they are not caused by it. They only end a game when no lab that could finish is moving.
+- **Time-outs.** At barrier scale 120 and above, 2 to 7 games in 500 time out, whether or not the rule is on (5 at the new default). At 140 the five stuck games (seeds 5149, 5245, 5278, 5422, 5491) were inspected but not traced through the bot logic. In three a careful bot stood still for 220 to 250 s with full sight and height, two of those under a crash cap, where the forced split gives max speed nothing. In two a bot stood in the stretch past the singularity with its frozen input. The causes are not established. They also occur with the rule off, so they are not caused by it. They only end a game when no lab that could finish is moving. Traced and fixed later; see "Two bot deadlocks".
 - **A deadlock this exposed.** A careful bot that brakes for the singularity gap can slide over the edge at pace 0, and the frozen input kept it still to the time limit. It needs few live labs to show, and 3 of 500 games hit it at 2 strikes. A bot that has stood still for 15 s past the gap now drops its frozen input. The longest stop with the input frozen in version 3 was 12.1 s, and the baseline numbers did not change.
 
+## Two bot deadlocks
+
+28 October 2026. Prototype 0.3 with the `strikes` defaults above, seeds 5000 to 5499, lab 0 driven by the `custom` bot, bot play only. Replication: `PF.run(seed,'custom')`. The same numbers came out of the simulation code loaded in node, which reproduced the "Three strikes" baseline exactly before the change.
+
+**What was wrong.** A seed sweep found two ways for a careful bot (Steward or Custom) to stand still until the time limit. They explain all five time-outs listed under "Three strikes".
+
+- **A crash cap that runs past a gap.** `botPlan` took the whole distance left under a crash or scrape cap off the run-up, even when the capped speed was more than the jump needs. A bot whose cap ended beyond the gap's edge decided it could not reach the speed and stopped. The cap only ends when the lab moves, so it never ended. A careful lab behind it would not pass it blind, so it stopped too. Example: seed 210, Custom against the Steward alone, a barrier 197 before the singularity gap and `capDist` 200. The jump needs about 93 and the capped top speed is about 195. Seeds 5149, 5245 and 5278 were this case: in 5149 the capped Steward stood alone, in 5245 the Steward stood behind a capped Custom, and in 5278 the capped Steward stood before a gap inside the stretch.
+- **A reverse input locked past the singularity.** A bot that crosses the singularity gap while its plan says to back up for a run-up locked that reverse input. At its back limit its speed flipped between -0.52 and 0 every step. Each flip reset its stillness timer, so the 15 s release never fired. Example: seed 1784, Custom against the Steward alone; the Steward is the one stuck. Seeds 5422 and 5491 were this case.
+
+**Changes**
+
+- **The cap shortens the run-up only when the jump needs more than the capped speed.** Otherwise the whole distance to the edge counts, and the pace for the jump is set against the capped top speed.
+- **A locked input never reverses.** The bot keeps the pace and split it crossed with, with reverse cleared. A bot that crossed while backing up has a locked pace of 0. It stops, then the existing 15 s release hands it back to its plan. Not tested: locking at the bot's base pace instead, which changed 18 more outcomes in a trial run.
+
+**Results** (500 games). Wins are Custom / Gambler / Steward / Sprinter.
+
+| | Wins | Games ended by the roll | Nobody left | Time-outs |
+|---|---|---|---|---|
+| Before | 148 / 136 / 93 / 62 | 56 | 0 | 5 |
+| Run-up fix only | 151 / 136 / 98 / 64 | 48 | 1 | 2 (5422, 5491) |
+| Lock fix only | 151 / 136 / 92 / 62 | 56 | 0 | 3 (5149, 5245, 5278) |
+| Both | 154 / 136 / 97 / 64 | 48 | 1 | 0 |
+
+- **Time-outs** fell from 5 to 0. The longest stop by a lab still in the race fell from 251 s to 18.3 s (seed 5491, the Steward, which includes its 15 s stop past the gap).
+- **The run-up fix changes far more than the time-outs.** It changes the result of 36 games. The cause is not only the deadlock: before the fix, careful bots also stopped for 2 to 8 s under a cap before ordinary gaps, then went on. Time spent stopped under a cap that runs past the next gap's edge, by careful bots: 28 stops, 594 s in total, before (two of them the 240 to 250 s time-outs); 30 stops, 17 s in total and none longer than 3.6 s, after. The shorter stops move wins to Custom, the Steward and the Sprinter and cut the games the roll ends from 56 to 48 (9 games no longer end in the roll and 1 newly does). That mechanism was not traced game by game. Seed 5149 now ends with nobody left instead of a time-out.
+- **The lock fix changes 5 games.** It ends two time-outs, and in 5127, 5307 and 5446 the Steward now stops for 15 s past the gap, and Custom wins instead of the Steward. In 500 games 45 locked inputs had reverse set before the fix.
+
+**Not fixed.** A wider sweep (seeds 1 to 3000) cut time-outs a lot but did not end them. With the full field, time-outs fell from 14 to 1 at the default split and from 20 to 3 at a 15/75/10 split. With Custom against the Steward alone, they fell from 469 to 144 and from 274 to 32. Three remaining kinds were seen, and each also timed out before the change:
+
+- **Go/reverse chatter.** Two careful bots sit at the edge of the run-up they need, and their plans flip between go and reverse every step (seed 62, Steward alone).
+- **Capped below the jump speed.** A capped bot needs more top speed than it has. The forced split sends nothing to max speed, and the cap ends past the gap (seed 16, Steward alone).
+- **A Steward moving back and forth inside the stretch** (seed 2647, full field).
 ## Bot hands (skill) and chill mode
 
 28 October 2026. Prototype 0.3 plus the `chill` and `skill` knobs (see `README.md`), with default knobs otherwise (`strikes` 3, `barScale` 140). Seeds 5000 to 5499. Lab 0 is the `custom` bot. Bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. With `chill` 1 and `skill` 100 (the defaults), all 500 games are identical field by field to the "Three strikes" baseline (148/136/93/62 wins, 56 extinctions, 5 time-outs).
