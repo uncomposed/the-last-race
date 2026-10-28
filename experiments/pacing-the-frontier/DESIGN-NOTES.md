@@ -250,3 +250,50 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 - **Bots do not react until their last strike** (and only if `wary` is on). A human who counts strikes can change how they play, so these rates describe the bots and not a human. Not tested: human play.
 - **Time-outs.** At barrier scale 120 and above, 2 to 7 games in 500 time out, whether or not the rule is on (5 at the new default). At 140 the five stuck games (seeds 5149, 5245, 5278, 5422, 5491) were inspected but not traced through the bot logic. In three a careful bot stood still for 220 to 250 s with full sight and height, two of those under a crash cap, where the forced split gives max speed nothing. In two a bot stood in the stretch past the singularity with its frozen input. The causes are not established. They also occur with the rule off, so they are not caused by it. They only end a game when no lab that could finish is moving.
 - **A deadlock this exposed.** A careful bot that brakes for the singularity gap can slide over the edge at pace 0, and the frozen input kept it still to the time limit. It needs few live labs to show, and 3 of 500 games hit it at 2 strikes. A bot that has stood still for 15 s past the gap now drops its frozen input. The longest stop with the input frozen in version 3 was 12.1 s, and the baseline numbers did not change.
+
+## Bot hands (skill) and chill mode
+
+28 October 2026. Prototype 0.3 plus the `chill` and `skill` knobs (see `README.md`), with default knobs otherwise (`strikes` 3, `barScale` 140). Seeds 5000 to 5499. Lab 0 is the `custom` bot. Bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. With `chill` 1 and `skill` 100 (the defaults), all 500 games are identical field by field to the "Three strikes" baseline (148/136/93/62 wins, 56 extinctions, 5 time-outs).
+
+**Amplitudes at skill 0** (`HANDS`), which scale linearly to nothing at 100. These are guesses, not measured from people:
+- reaction lag: mean 0.40 s, SD 0.15 s;
+- jump timing: SD 0.25 s;
+- misjudgment: SD 20% of distance and of required speed.
+
+The aim point is half a jump's duration before the obstacle. A jump lasts 0.5 to 1.6 s, so a barrier is cleared if the press lands within about ±0.35 of a jump's duration of that point (±0.17 s at the fastest).
+
+**Rival skill, lab 0 kept perfect** (`SKILL.custom` 100). Wins are game counts out of 500. The per-game columns are Custom / Sprinter / Steward / Gambler.
+
+| Chill | Skill | Custom | Gambler | Steward | Sprinter | Extinct | Time-out | Crashes/game | Falls/game | Dissolved |
+|---|---|---|---|---|---|---|---|---|---|---|
+| on | 0 | 134 | 130 | 91 | 69 | 69 | 4 | 0.79/1.45/0.15/1.43 | 0.04/0.25/0.05/0.17 | 8/32/1/44 |
+| on | 30 | 141 | 144 | 88 | 74 | 51 | 1 | 0.81/1.49/0.14/1.46 | 0.04/0.23/0.02/0.10 | 5/24/1/47 |
+| on | 70 | 139 | 152 | 87 | 71 | 50 | 0 | 0.78/1.56/0.11/1.57 | 0.05/0.24/0.01/0.08 | 7/29/0/64 |
+| on | 100 | 148 | 136 | 93 | 62 | 56 | 5 | 0.70/1.56/0.09/1.61 | 0.07/0.27/0.01/0.09 | 8/33/0/71 |
+| off | 0 | 162 | 106 | 76 | 44 | 95 | 9 | 1.00/1.79/0.64/1.79 | 0.07/0.30/0.06/0.19 | 25/109/15/131 |
+| off | 30 | 161 | 107 | 95 | 63 | 70 | 1 | 1.06/1.75/0.43/1.79 | 0.07/0.25/0.02/0.11 | 19/90/3/110 |
+| off | 70 | 125 | 136 | 105 | 56 | 69 | 4 | 1.02/1.74/0.31/1.81 | 0.09/0.27/0.02/0.09 | 21/78/4/111 |
+| off | 100 | 141 | 119 | 93 | 59 | 77 | 8 | 0.94/1.77/0.26/1.87 | 0.11/0.28/0.03/0.09 | 14/85/1/123 |
+
+**One component at a time** (chill off, rivals at skill 0, lab 0 perfect):
+
+| Case | Custom | Gambler | Steward | Sprinter | Extinct | Time-out | Rival crashes/game | Rival falls/game |
+|---|---|---|---|---|---|---|---|---|
+| no noise | 141 | 119 | 93 | 59 | 77 | 8 | 3.90 | 0.40 |
+| lag only | 119 | 119 | 123 | 55 | 76 | 4 | 4.00 | 0.36 |
+| misjudgment only | 129 | 122 | 77 | 59 | 95 | 12 | 3.55 | 0.55 |
+| jump timing only | 163 | 116 | 88 | 44 | 79 | 7 | 4.44 | 0.44 |
+| all three | 162 | 106 | 76 | 44 | 95 | 9 | 4.21 | 0.56 |
+| all three, amplitudes doubled | 202 | 35 | 43 | 16 | 138 | 33 | 5.11 | 1.02 |
+
+**Findings**
+
+- **With chill on, the presets barely change who wins.** Custom wins 134 to 150 at every skill, within the spread of 500 seeds (about ±10 games). Rivals crash, scrape and fall a little more at low skill. Crashes are cheap and work as pit stops, so most of that does not cost them the race.
+- **Jump timing is the component that behaves like a handicap.** On its own it cuts the Sprinter from 59 to 44 wins and lifts Custom from 141 to 163, with extinction about flat (77 to 79). Since chill mode removes jump timing, the presets mean much more with chill off.
+- **Lag on its own is not a handicap.** It lifts the Steward from 93 to 123 wins. The Steward's caution is reactive: it brakes to what it can see and holds back behind slower labs, so a late reaction makes it bolder. Not traced further.
+- **Misjudgment mostly raises extinction** (77 to 95) through more falls. Every lab pays for a rival's fall through the shared roll, so sloppy rivals endanger the player more than they slow themselves.
+- **Chill off is harder even with perfect hands.** At skill 100 the Steward crashes 0.26 times per game with chill off against 0.09 with it on, and extinction is 77 against 56. Auto-jump counts a full jump at every barrier, even in the middle of an earlier jump, so obstacles close together cost nothing with chill on. A human jumping by hand faces the same thing.
+- **Doubling the amplitudes** makes the rivals collapse (Gambler 35 wins), but extinction rises to 138 and time-outs to 33. That is not a usable easy mode.
+- **Not tested.** Human play. Calibrating the amplitudes against a person's measured reaction time and jump timing. A setting that weights jump timing over lag and misjudgment.
+
+Replication: in the page, set `PF.K.chill`, `PF.K.skill`, `PF.SKILL.custom=100` and, for the ablation, `PF.HANDS`, then call `PF.run(seed,'custom')` for seeds 5000 to 5499.

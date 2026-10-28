@@ -201,7 +201,7 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     </div>
     <div class="btns">
       <button id="btn-jump" type="button">Jump (space)</button>
-      <label for="auto"><input type="checkbox" id="auto" checked>Auto-jump</label>
+      <label for="auto" title="Auto-jump for everyone. Off: you jump by hand, and the bots jump with their own timing error."><input type="checkbox" id="auto" checked>Chill: auto-jump for all</label>
       <button id="btn-fwd" type="button">Floor it (hold &rarr;)</button>
       <button id="btn-back" type="button">Back up (hold &larr;)</button>
       <button id="btn-pause" type="button">Pause</button>
@@ -248,7 +248,7 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,wary:1,chill:1,skill:100};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -264,6 +264,12 @@ var POL={
   gambler:{pace:0.70,jit:0,pit:0.6,pitPub:0.6,bar:0.5,safe:false},
   custom:{pace:0.75,jit:0,pit:1,pitPub:1,bar:1,safe:true,w:[25,50,25]}
 };
+/* bot hands: technical skill, separate from policy. 100 is the old perfect bot; lower skill adds reaction lag, misjudged distances and
+   required speeds, and (with chill off) jump timing error. HANDS gives each at skill 0; it scales linearly to nothing at 100.
+   SKILL overrides K.skill for one kind (e.g. SKILL.custom=100 keeps a probe perfect while its rivals fumble). */
+var HANDS={lag:0.40,lagSD:0.15,jumpSD:0.25,judge:0.20};
+var PRESETS={Rookie:30,Pro:70,Machine:100};
+var SKILL={};
 var SHAPES=['Steady climb','Early wall','Staircase','Late cliff'];
 
 /* ---------- simulation (no DOM below this banner until UI) ---------- */
@@ -427,8 +433,18 @@ function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,bounce:false,capUntil:-1e9,sag:null,
     out:false,dissolved:false,strikes:0,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
-    st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false};
+    st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false,ibuf:[],jkey:null,jerr:0,jn:0};
 }
+/* hands noise is stateless: each draw is keyed by seed, lab, purpose and an index, so no lab's actions move another lab's noise,
+   and the track, gamble and roll streams are untouched */
+function handsN(l,tag,idx){
+  var r=rngMaker((G.seed^Math.imul(l.id+1,0x9E3779B1)^Math.imul(tag,0x85EBCA77)^Math.imul(idx+1,0xC2B2AE3D))>>>0);
+  r(); var u=Math.max(r(),1e-9),v=r();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function sloppy(l){ if(l.human){return 0;} var s=SKILL[l.kind]!==undefined?SKILL[l.kind]:K.skill; return clamp(1-s/100,0,1); }
+/* a misjudgment fixed per obstacle, which fades while the lab stands still and takes a closer look */
+function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*Math.exp(-l.still/2):1; }
 function newGame(seed,humanKind){
   seed=seed>>>0;
   var rt=rngMaker(seed),rb=rngMaker((seed^0x9E3779B9)>>>0),rr=rngMaker((seed^0x85EBCA6B)>>>0);
@@ -452,9 +468,16 @@ function newGame(seed,humanKind){
   return G;
 }
 
+function jumpDur(v){ return clamp(0.56+38/Math.max(v,20),0.5,1.6); }
+/* a bot without assist presses jump when the time to the obstacle falls to half a jump, plus a timing error drawn once per attempt */
+function botPress(l,d,key){
+  if(l.jt>=0||l.v<=1||d<=0){return;}
+  if(l.jkey!==key){ l.jkey=key; l.jerr=sloppy(l)*HANDS.jumpSD*handsN(l,4,l.jn++); }
+  if(d/l.v<=0.5*jumpDur(l.v)+l.jerr){startJump(l);}
+}
 function startJump(l){
   if(l.jt>=0){return;}
-  l.jt=0; l.jd=clamp(0.56+38/Math.max(l.v,20),0.5,1.6);
+  l.jt=0; l.jd=jumpDur(l.v); l.jkey=null;
 }
 function updateJump(l,dt){
   if(l.jt<0){l.jy=0;return;}
@@ -526,7 +549,7 @@ function strike(l,what){
 function crashLab(l,x,bx){
   var vi=Math.max(0,l.v);
   l.x=x; l.v=-K.bounce*vi; l.bounce=l.v<0; l.crash=0.5;
-  l.jt=-1; l.jy=0; l.capUntil=Math.max(l.capUntil,bx+K.capDist);
+  l.jt=-1; l.jy=0; l.jkey=null; l.capUntil=Math.max(l.capUntil,bx+K.capDist);
   return vi;
 }
 function spill(l,b,bi){
@@ -557,7 +580,17 @@ function botInput(l){
      (the longest stop seen with the lock in 500 seeds is 12.1 s, so games that never stalled are unchanged) */
   if(l.lock&&l.still>15){ l.lock=null; }
   if(inSing(l)&&!capped(l)&&l.lock){ return l.lock; }
-  var inp=botPlan(l); l.lastInp=inp; return inp;
+  var inp=botLag(l,botPlan(l)); l.lastInp=inp; return inp;
+}
+/* the bot's plan reaches its controls after a lag redrawn every half second; the delivered plan is the newest one at least that old */
+function botLag(l,inp){
+  var f=sloppy(l); if(!f){return inp;}
+  var lag=Math.max(0,f*(HANDS.lag+HANDS.lagSD*handsN(l,1,Math.floor(G.t*2))));
+  l.ibuf.push({t:G.t,inp:inp});
+  var out=null;
+  while(l.ibuf.length&&l.ibuf[0].t<=G.t-lag+1e-9){ out=l.ibuf.shift().inp; }
+  if(out){ l.ibuf.unshift({t:-1e9,inp:out}); }
+  return out||l.lastInp||{pace:0,w:[33,33,34],jump:false,auto:true,rev:false};
 }
 function botPlan(l){
   var g=G.gaps[l.gi],b=G.barriers[l.bi],bd=G.bd[l.id];
@@ -566,12 +599,12 @@ function botPlan(l){
   var stop=false,gapGo=0,rev=false,wait=false;
   /* on its last strike a wary bot stops for every blockade it cannot clear */
   var barP=(K.wary&&K.strikes&&l.strikes>=K.strikes-1)?1:pol.bar;
-  if(b&&knowsBar(l,l.bi)&&b.x-l.x<brake&&reach<b.h+2){
+  if(b&&knowsBar(l,l.bi)&&(b.x-l.x)*judged(l,2,l.bi)<brake&&reach<b.h+2){
     if(l.crashedOn[l.bi]){stop=true;}
     else if(bd.b[l.bi]<barP){stop=true;}
   }
   if(g){
-    var gd=g.x-l.x,tower=g.crossedBy>=0&&!l.stepDone[l.gi];
+    var gd=(g.x-l.x)*judged(l,3,l.gi),tower=g.crossedBy>=0&&!l.stepDone[l.gi];
     if(tower){
       var S=g.stepH,sd=g.x-C.STEPD-l.x,key='s'+l.gi;
       if(sd<brake&&reach<S+2){
@@ -580,7 +613,7 @@ function botPlan(l){
       }
     }
     if(!tower&&knowsGap(l,l.gi)){
-      var vreq=needSpeed(l,g)*1.06,capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
+      var vreq=needSpeed(l,g)*1.06*judged(l,5,l.gi),capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
       var v0=capped(l)?Math.min(l.v,capSpeed(l)):l.v;
       var runUp=2*acc*Math.max(gd-8-capRem,0)*0.9;
       var dNeed=vreq*vreq/(2*acc*0.9)+10,room=l.x-backLimit(l);
@@ -629,7 +662,8 @@ function stepLab(l,dt,inp){
   if(l.flash){l.flash.t-=dt; if(l.flash.t<=0){l.flash=null;}}
   if(l.crash>0){l.crash=Math.max(0,l.crash-dt);}
   if(l.sag){l.sag.t+=dt; if(l.sag.t>=l.sag.dur){l.sag=null;}}
-  var top=topSpeed(l),assist=l.human?inp.auto:true;
+  /* chill mode: auto-jump for everyone; off, the human jumps by hand and bots press with their own timing error */
+  var top=topSpeed(l),assist=!!K.chill;
   /* floor it: pace is effectively 100% and nothing is invested; reverse wins if both are held */
   var fwd=!!inp.fwd&&!inp.rev;
   l.pace=fwd?1:clamp(inp.pace,0,1);
@@ -654,6 +688,7 @@ function stepLab(l,dt,inp){
   if(b){
     var bd=b.x-l.x;
     if(assist&&l.jt<0&&l.v>1&&h<b.h&&bd>0&&bd<=Math.max(l.v*0.3,6)){startJump(l);}
+    if(!assist&&!l.human&&h<b.h){botPress(l,bd,'b'+l.bi);}
     if(nx>=b.x){
       var bf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
       if(bf>=b.h){ spill(l,b,l.bi); l.bi++; }
@@ -672,6 +707,7 @@ function stepLab(l,dt,inp){
     if(hasStep){
       var S=g.stepH,sx=g.x-C.STEPD,sd=sx-l.x;
       if(assist&&l.jt<0&&l.v>1&&h<S&&sd>0&&sd<=Math.max(l.v*0.3,6)){startJump(l);}
+      if(!assist&&!l.human&&h<S){botPress(l,sd,'s'+l.gi);}
       if(nx>=sx){
         var sf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
         if(sf>=S){ spill(l,{h:S},'s'+l.gi); l.stepDone[l.gi]=true; }
@@ -687,6 +723,7 @@ function stepLab(l,dt,inp){
     if(!hit&&!(g.crossedBy>=0&&!l.stepDone[l.gi])){
       var gd=g.x-l.x,gw=gapWidth(l,g);
       if(assist&&l.jt<0&&l.v>1&&gd>0&&gd<=Math.max(l.v*0.3,6)){startJump(l);}
+      if(!assist&&!l.human){botPress(l,gd,'g'+l.gi);}
       if(nx>=g.x){
         var jumped=assist||l.jt>=0,cov=l.v*airT(l),dT=K.dropH/1000*h;
         if(jumped&&cov>=gw){ crossGap(l,g,l.gi); l.gi++; }
@@ -754,7 +791,7 @@ function run(seed,kind){
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
 }
-window.PF={C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
+window.PF={HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
 
 /* ---------- UI ---------- */
 /* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge */
@@ -1123,7 +1160,7 @@ function frame(now){
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
 bindRange('pace',function(v){ui.pace=v;});
-$('auto').addEventListener('change',function(){ui.auto=this.checked;});
+$('auto').addEventListener('change',function(){ui.auto=this.checked;K.chill=this.checked?1:0;});
 function doJump(){ if(running&&!paused){G.input.jump=true;} }
 $('btn-jump').addEventListener('pointerdown',function(e){e.preventDefault();doJump();});
 function holdBtn(id,set){
@@ -1169,7 +1206,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool']
+  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['wary','Bots stop for every blockade on their last strike',0,1,1,'bool']
 ];
 (function(){
   var box=$('knobs');
@@ -1197,6 +1234,10 @@ var KNOBS=[
   });
 })();
 
+var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
+if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
+var qc=/[?&]chill=(0|1)/.exec(location.search);
+if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; }
 var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
