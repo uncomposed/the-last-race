@@ -598,7 +598,7 @@ function botPlan(l){
   var g=G.gaps[l.gi],b=G.barriers[l.bi],bd=G.bd[l.id];
   var pol=POL[l.kind],reach=heightOf(l)+C.JUMP,top=topSpeed(l,true);
   var brake=l.v*l.v/(2*C.DEC)+40;
-  var stop=false,gapGo=0,rev=false,wait=false;
+  var stop=false,gapGo=0,rev=false,wait=false,commit=false;
   /* on its last strike a wary bot stops for every blockade it cannot clear */
   var barP=(K.wary&&K.strikes&&l.strikes>=K.strikes-1)?1:pol.bar;
   if(b&&knowsBar(l,l.bi)&&(b.x-l.x)*judged(l,2,l.bi)<brake&&reach<b.h+2){
@@ -614,6 +614,7 @@ function botPlan(l){
         else if(bd.s[l.gi]<(K.strikeTower?barP:pol.bar)){stop=true;}
       }
     }
+    var preStop=stop;
     if(!tower&&knowsGap(l,l.gi)){
       var vreq=needSpeed(l,g)*1.06*judged(l,5,l.gi),capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
       var cs=capped(l)?capSpeed(l):Infinity,capOK=vreq<=cs;
@@ -646,6 +647,8 @@ function botPlan(l){
           stop=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
         } else { gapGo=1; }
       }
+      /* it cannot stop before the edge, and it was stopping, backing up or waiting for this gap */
+      commit=gd>0&&l.v*l.v/(2*C.DEC)>gd+l.v*0.05&&(rev||wait||stop&&!preStop);
     }
   }
   var pace=l.basePace;
@@ -658,6 +661,10 @@ function botPlan(l){
     pace=Math.min(pace,vs/top);
   }
   if(gapGo>0){pace=Math.max(pace,gapGo);}
+  /* past the point of no return it goes over the edge whatever it planned, and braking only shortens the jump: a bot that meant to stop, back up
+     or wait for this gap floors it and hopes. Before this a bot could brake for a run-up, slide across the singularity anyway and lock the brake
+     for the whole stretch. A stop for a blockade (a barrier past the gap it cannot clear) still stands. */
+  if(commit){ stop=preStop; rev=false; wait=false; pace=1; }
   if(stop||rev){pace=0;}
   var w=KINDS[l.kind].w;
   if(wait){ return {pace:pace,w:[35,65,0],jump:false,auto:true,rev:rev}; }

@@ -263,7 +263,10 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 **Changes**
 
 - **The cap shortens the run-up only when the jump needs more than the capped speed.** Otherwise the whole distance to the edge counts, and the pace for the jump is set against the capped top speed.
-- **A locked input never reverses.** The bot keeps the pace and split it crossed with, with reverse cleared. A bot that crossed while backing up has a locked pace of 0. It stops, then the existing 15 s release hands it back to its plan. Not tested: locking at the bot's base pace instead, which changed 18 more outcomes in a trial run.
+- **A bot past the point of no return floors it.** A bot that cannot stop before a known gap's edge goes over whatever it plans, and braking only shortens its jump. So a bot that meant to stop, back up or wait for that gap runs at full pace instead. The check is braking distance against the distance to the edge, with one step of slack. Its input then holds full pace, and so does what it locks at the singularity. A stop for a blockade still stands: a bot braking for a barrier past the gap that it cannot clear crosses at pace 0 and locks that, which is what it would choose anyway.
+- **A locked input never reverses.** Reverse is cleared when the input is stored. Since the previous change no bot crosses the singularity with reverse set, so this is now only a guard.
+
+**How often the new rule fires** (500 games, counting each approach once). The Steward, 166 times at the singularity: it arrives too fast to stop where it wanted to wait and fill its meters. Before, it braked anyway and slid over at low speed. Then it locked the brake for the stretch, where braking is not sped up, so it crawled and stood. Custom, 181 times at ordinary gaps and 44 at the singularity: it had been braking to back up for a longer run-up and sliding over anyway, often too slowly to clear the gap. The Gambler fires it 41 times, the Sprinter 3.
 
 **Results** (500 games). Wins are Custom / Gambler / Steward / Sprinter.
 
@@ -271,18 +274,34 @@ Track length ranged 2508 to 6380. The distance from the singularity gap's far ed
 |---|---|---|---|---|
 | Before | 148 / 136 / 93 / 62 | 56 | 0 | 5 |
 | Run-up fix only | 151 / 136 / 98 / 64 | 48 | 1 | 2 (5422, 5491) |
-| Lock fix only | 151 / 136 / 92 / 62 | 56 | 0 | 3 (5149, 5245, 5278) |
+| Reverse-lock fix only | 151 / 136 / 92 / 62 | 56 | 0 | 3 (5149, 5245, 5278) |
 | Both | 154 / 136 / 97 / 64 | 48 | 1 | 0 |
+| **Both, plus flooring it past the point of no return (default)** | 154 / 124 / 132 / 50 | 40 | 0 | 0 |
 
-- **Time-outs** fell from 5 to 0. The longest stop by a lab still in the race fell from 251 s to 18.3 s (seed 5491, the Steward, which includes its 15 s stop past the gap).
-- **The run-up fix changes far more than the time-outs.** It changes the result of 36 games. The cause is not only the deadlock: before the fix, careful bots also stopped for 2 to 8 s under a cap before ordinary gaps, then went on. Time spent stopped under a cap that runs past the next gap's edge, by careful bots: 28 stops, 594 s in total, before (two of them the 240 to 250 s time-outs); 30 stops, 17 s in total and none longer than 3.6 s, after. The shorter stops move wins to Custom, the Steward and the Sprinter and cut the games the roll ends from 56 to 48 (9 games no longer end in the roll and 1 newly does). That mechanism was not traced game by game. Seed 5149 now ends with nobody left instead of a time-out.
-- **The lock fix changes 5 games.** It ends two time-outs, and in 5127, 5307 and 5446 the Steward now stops for 15 s past the gap, and Custom wins instead of the Steward. In 500 games 45 locked inputs had reverse set before the fix.
+Per lab, 500 games, before flooring it and after (both deadlock fixes in place):
 
-**Not fixed.** A wider sweep (seeds 1 to 3000) cut time-outs a lot but did not end them. With the full field, time-outs fell from 14 to 1 at the default split and from 20 to 3 at a 15/75/10 split. With Custom against the Steward alone, they fell from 469 to 144 and from 274 to 32. Three remaining kinds were seen, and each also timed out before the change:
+| | Custom | Sprinter | Steward | Gambler |
+|---|---|---|---|---|
+| Falls | 25 → 2 | 135 → 134 | 3 → 0 | 42 → 33 |
+| Falls into the singularity gap | 5 → 1 | 27 → 27 | 3 → 0 | 23 → 21 |
+| Scrapes | 100 → 102 | 94 → 93 | 7 → 1 | 176 → 176 |
+| Barrier crashes, whole track | 367 → 392 | 785 → 781 | 44 → 77 | 814 → 825 |
+| Barrier crashes inside the stretch | 210 → 226 | 83 → 80 | 33 → 69 | 202 → 206 |
+| Dissolved | 12 → 14 | 36 → 35 | 1 → 0 | 75 → 77 |
+
+- **Time-outs** fell from 5 to 0 with the two deadlock fixes. The longest stop by a lab still in the race fell from 251 s to 17.8 s (seed 5149, the Steward).
+- **The run-up fix changes far more than the time-outs.** It changes the result of 36 games. Before the fix, careful bots also stopped for 2 to 8 s under a cap before ordinary gaps, then went on. Careful bots' time stopped under a cap running past the next gap's edge: 28 stops, 594 s in total, before (two of them the 240 to 250 s time-outs); 30 stops, 17 s in total and none longer than 3.6 s, after. Those shorter stops moved wins to Custom, the Steward and the Sprinter. They also cut the games the roll ends from 56 to 48 (9 games no longer end in the roll and 1 newly does). That mechanism was not traced game by game.
+- **The reverse-lock fix alone** changes 5 games: it ends two time-outs, and in 5127, 5307 and 5446 the Steward stops for 15 s past the gap and Custom wins instead. Flooring it replaces that 15 s stop, since the bot no longer crosses while backing up.
+- **Flooring it changes 64 more games.** 45 move to the Steward and 10 away from it. The Steward stops losing time at the singularity: it is first across about as often as before (14 games against 18) but wins 132 games against 97. Careful bots nearly stop falling and the games the roll ends fall from 48 to 40. The cost is more barrier crashes past the gap, mostly in the stretch, where a bot that floored it keeps full pace. The singularity's first lab across won 137 of 462 games, against 147 of 455 before.
+- **Locked pace 0 remains** for 103 crossings, all braking for a barrier past the gap that they cannot clear. The 15 s release fired in 6 games.
+- **Tried and dropped.** (1) Locking a bot that crossed backing up at its base pace: 18 more results changed, but it treated those bots differently from bots that slid over while braking. (2) Flooring it whenever a committed bot would slow down, including for a barrier past the gap: 225 results changed (151 / 136 / 124 / 51, 36 games ended by the roll). It also drove careful bots into barriers they could not clear: Custom's barrier crashes 367 to 619 and dissolutions 12 to 38, the Steward's crashes 44 to 114.
+
+**Not fixed.** A wider sweep (seeds 1 to 3000) cut time-outs a lot but did not end them. With the full field, time-outs fell from 14 to 0 at the default split and from 20 to 3 at a 15/75/10 split. With Custom against the Steward alone, they fell from 469 to 135 and from 274 to 14. Two remaining kinds were seen, and both also timed out before the change:
 
 - **Go/reverse chatter.** Two careful bots sit at the edge of the run-up they need, and their plans flip between go and reverse every step (seed 62, Steward alone).
 - **Capped below the jump speed.** A capped bot needs more top speed than it has. The forced split sends nothing to max speed, and the cap ends past the gap (seed 16, Steward alone).
-- **A Steward moving back and forth inside the stretch** (seed 2647, full field).
+
+A Steward moving back and forth inside the stretch (seed 2647, full field) timed out after the two deadlock fixes; flooring it ends that one.
 ## Bot hands (skill) and chill mode
 
 28 October 2026. Prototype 0.3 plus the `chill` and `skill` knobs (see `README.md`) and the two deadlock fixes above, with default knobs otherwise (`strikes` 3, `barScale` 140). Seeds 5000 to 5499. Lab 0 is the `custom` bot. Bot play only. Ensemble shares are outcomes of this sampling of seeds, not calibrated probabilities. With `chill` 1 and `skill` 100 (the defaults), all 500 games are identical field by field to the code with only the deadlock fixes (154/136/97/64 wins, 48 extinctions, 1 nobody-left).
