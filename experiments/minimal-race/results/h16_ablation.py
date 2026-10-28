@@ -16,7 +16,7 @@ import statistics as st
 from collections import Counter
 from types import SimpleNamespace
 
-ROOT = "/Users/colemiller/Documents/ChatGPT/the-last-race/experiments/minimal-race"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 os.chdir(ROOT)
 
