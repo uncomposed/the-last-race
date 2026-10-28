@@ -2748,9 +2748,21 @@ function rcProf(cx,px,gy,u,o){
 }
 $('rc-stage').addEventListener('click',rcSkip);
 $('rc-replay').addEventListener('click',function(){ if(RC.geo&&!$('ov-story').hidden){ rcPlay(); } });
+/* Enter and Space press the highlighted (primary) button of the start, end or singularity card when no other control has focus.
+   For a moment after a card opens they do nothing, so a player still mashing Space to jump does not skip it */
+var cardAt=-1e9;
+function cardPrimary(){
+  var cards=['sing','ov'],i,b,bs;
+  for(i=0;i<cards.length;i++){
+    if($(cards[i]).hidden){continue;}
+    bs=$(cards[i]).querySelectorAll('button.primary');
+    for(b=0;b<bs.length;b++){ if(!bs[b].hidden&&bs[b].offsetParent!==null){return bs[b];} }
+  }
+  return null;
+}
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
-  $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false;
+  $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
 }
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
@@ -2781,7 +2793,7 @@ function start(seed,camp){
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set your pace, split and chill mode, then go.';
-  $('ready').hidden=false; showSeed();
+  $('ready').hidden=false; cardAt=performance.now(); showSeed();
   campReady();
 }
 function go(){
@@ -2798,7 +2810,7 @@ function showSing(l){
   var g=G.gaps[G.sing];
   $('sing-w').innerHTML='<span class="sing-n">'+Math.round(gapWidth(l,g))+'</span> wide, the widest gap on this track. A fall here rolls '+Math.round(gapOdds(G.sing))+'%.';
   $('sing-msg').textContent='Past it your top speed is \u00d7'+K.singSpeed+', your controls lag '+K.reaction+' s and the jumps are automatic. Barriers and gaps continue the curve you have crossed. Set your balance.';
-  $('sing').hidden=false; setPaused(true);
+  $('sing').hidden=false; cardAt=performance.now(); setPaused(true);
 }
 function frame(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
@@ -2922,7 +2934,11 @@ document.addEventListener('keydown',function(e){
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
   if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
-  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault();go();return;}
+  if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>400){go();} return;}
+  if((e.code==='Enter'||e.code==='Space')&&t!=='BUTTON'&&t!=='INPUT'&&t!=='SELECT'&&t!=='TEXTAREA'){
+    var pb=cardPrimary();
+    if(pb){ e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>700){pb.click();} return; }
+  }
   if(e.code==='Space'&&t!=='BUTTON'&&t!=='INPUT'){e.preventDefault();doJump();}
   else if(e.code==='ArrowUp'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.min(100,ui.pace+5);$('pace').value=ui.pace;}
   else if(e.code==='ArrowDown'&&t!=='INPUT'){e.preventDefault();ui.pace=Math.max(0,ui.pace-5);$('pace').value=ui.pace;}
