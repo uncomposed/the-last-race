@@ -44,6 +44,16 @@ p{margin:0}
 canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);border-radius:6px;background:var(--surface);touch-action:manipulation}
 .ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:color-mix(in srgb,var(--bg) 82%,transparent);border-radius:6px}
 .ov[hidden]{display:none}
+/* first-run hints: one small toast at a time over the track, never over the controls; tap to dismiss */
+.hint{position:absolute;left:50%;top:76px;width:max-content;max-width:min(440px,calc(100% - 24px));transform:translate(-50%,0);margin:0;
+  padding:8px 12px;font:500 14px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--a);
+  border-radius:6px;box-shadow:0 2px 10px color-mix(in srgb,var(--ink) 18%,transparent);cursor:pointer;opacity:1;transition:opacity .25s,transform .25s}
+.hint[hidden]{display:block;visibility:hidden;opacity:0;transform:translate(-50%,-6px);pointer-events:none;transition:opacity .25s,transform .25s,visibility 0s .25s}
+.hint b{font-weight:600}
+.hint-how{align-self:flex-start;min-height:32px;padding:4px 0;background:none;border:0;color:var(--a);text-decoration:underline;font-size:13px}
+.hint-note{font-size:12.5px;color:var(--muted)}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){.hint{top:52px;padding:6px 10px;font-size:12.5px;max-width:calc(100% - 16px)}}
+@media (prefers-reduced-motion:reduce){.hint,.hint[hidden]{transition:none;transform:translate(-50%,0)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
 .card h2{font-size:22px}
 .card button.primary{position:sticky;bottom:0;flex:none}
@@ -195,6 +205,7 @@ body.chill #btn-jump{display:none}
 
   <div class="stage">
     <canvas id="cv" width="720" height="360" role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."></canvas>
+    <p class="hint" id="hint" role="status" aria-live="polite" hidden></p>
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
@@ -1429,6 +1440,50 @@ document.addEventListener('keydown',function(e){
   else if((e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA')&&(t!=='INPUT'||(e.code!=='ArrowLeft'&&!txt))){e.preventDefault();setRev(true);}
   else if((e.code==='ArrowRight'||e.code==='KeyD')&&(t!=='INPUT'||(e.code!=='ArrowRight'&&!txt))){e.preventDefault();setFwd(true);}
 });
+
+/* first-run hints: shown once each, at the moment they matter, while the human plays. They read the game state and never write it.
+   Seen flags live in localStorage when it works and in memory when it throws; "How to play" on the Ready card clears them. */
+(function(){
+  var how=document.createElement('button'),note=document.createElement('p');
+  var KEY='pf-hints-seen',seen={},q=[],cur=null,left=0,shownT=0,hG=null,began=false,prev=performance.now(),el=$('hint');
+  var TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
+  try{ seen=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ seen={}; }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(seen)); }catch(e){} }
+  var TXT={
+    invest:function(){ return TOUCH?'<b>Slow down to invest.</b> The pace you hold back buys sight, height or speed. Swipe in the triangle box to move the dot and steer the split.'
+      :'<b>Slow down to invest.</b> The pace you hold back buys sight, height or speed. Steer the split with the triangle (drag the dot, or keys 1 to 7); Up and Down set Pace.'; },
+    tall:function(){ return TOUCH?'<b>Too tall?</b> Back up, or put more into Height.':'<b>Too tall?</b> Back up (hold ←), or put more into Height.'; },
+    gap:function(){ return '<b>Gap ahead.</b> '+(K.chill?'':(TOUCH?'Tap Jump at the edge. ':'Jump with Space at the edge. '))+'A fall rolls the dice for everyone.'; },
+    strike:function(){ return '<b>Strike '+G.labs[0].strikes+' of '+K.strikes+'.</b> Each new barrier you crash into is a strike. At '+K.strikes+' your lab is dissolved.'; }
+  };
+  function want(id){ if(!seen[id]&&id!==cur&&q.indexOf(id)<0){ q.push(id); } }
+  function hide(){ cur=null; el.hidden=true; }
+  function show(id){ cur=id; seen[id]=1; save(); el.innerHTML=TXT[id](); el.hidden=false; left=5; shownT=0; }
+  el.addEventListener('pointerdown',function(e){ e.preventDefault(); hide(); });
+  function tick(now){
+    var dt=Math.min(0.1,(now-prev)/1000); prev=now;
+    if(G!==hG){ hG=G; began=false; q=[]; hide(); }
+    var l=G.labs[0],live=running&&!paused&&!G.over&&l.human&&!l.out&&!l.done;
+    if(running&&!began){ began=true; note.hidden=true; if(l.human){ want('invest'); } }
+    if(!live){ if(G.over||!running||!l.human||l.out||l.done){ q=[]; hide(); } else { el.hidden=true; } requestAnimationFrame(tick); return; }
+    if(cur){ el.hidden=false; }
+    for(var i=l.bi;i<G.barriers.length&&G.barriers[i].x-l.x<=sightRange(l);i++){
+      if(G.barriers[i].h>heightOf(l)+C.JUMP&&knowsBar(l,i)){ want('tall'); break; }
+    }
+    var g=G.gaps[l.gi]; if(g&&g.x-l.x<=sightRange(l)&&knowsGap(l,l.gi)){ want('gap'); }
+    if(K.strikes&&l.strikes>0){ want('strike'); }
+    if(cur){ left-=dt; shownT+=dt; if(left<=0||(q.length&&shownT>=2.5)){ hide(); } }
+    if(!cur&&q.length){ show(q.shift()); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  /* "How to play" on the Ready card: forget the seen hints so they come back during the next race */
+  how.type='button'; how.className='hint-how'; how.textContent='How to play';
+  note.className='hint-note'; note.hidden=true; note.textContent='Hints are back on: they show during this race as each thing comes up.';
+  how.addEventListener('keydown',function(e){ if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); } });
+  how.addEventListener('click',function(){ seen={}; save(); try{ localStorage.removeItem(KEY); }catch(e){} note.hidden=false; });
+  $('ready-btn').parentNode.insertBefore(how,$('ready-btn')); $('ready-btn').parentNode.insertBefore(note,$('ready-btn'));
+})();
 
 /* knobs */
 var KNOBS=[
