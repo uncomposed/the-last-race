@@ -105,20 +105,32 @@ details summary{cursor:pointer;font:700 18px var(--display)}
 .sing-n{font:500 22px var(--display);color:var(--d)}
 .seedbox{display:flex;gap:6px;align-items:center}
 .card.small{max-width:300px}
+/* left-thumb throttle and Jump, shown only on a landscape phone */
+.lcol{display:none}
+.throttle{flex-direction:column;align-items:stretch;gap:4px;padding:6px 4px;background:var(--surface);border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:ns-resize}
+.th-lbl,.throttle output{font:500 11px var(--mono);color:var(--muted);text-align:center}
+.throttle output{color:var(--ink);font-size:13px}
+.th-track{position:relative;flex:1;border-radius:4px;background:var(--bg);overflow:hidden}
+.th-fill{position:absolute;left:0;right:0;bottom:0;background:var(--a);opacity:.35}
+.th-knob{position:absolute;left:0;right:0;height:6px;margin-bottom:-3px;background:var(--ink);border-radius:3px}
+/* controls never select text or open the callout; while a run is playing, touches on the controls and track neither scroll nor zoom */
+.panel.pace,.lcol,.stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.panel.pace,.lcol,.stage,button{touch-action:manipulation}
+body.playing .panel.pace,body.playing .lcol,body.playing .stage{touch-action:none}
 /* chill mode is a switch; with it on nobody needs the Jump button */
 #auto{appearance:none;-webkit-appearance:none;width:38px;height:22px;margin:0;flex:none;border-radius:11px;background:var(--line);position:relative;cursor:pointer;transition:background .15s}
 #auto::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:left .15s}
 #auto:checked{background:var(--a)} #auto:checked::after{left:19px}
-.pace.chill #btn-jump{display:none}
+body.chill #btn-jump{display:none}
 .seedbox input{font:400 13px var(--mono);width:11ch;min-height:40px;padding:6px 8px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
 /* phones: the controls sit under the track as a deck. Pace on top, then Back up, Jump and Floor it in one row (Jump hides in chill mode),
    the split triangle below, Pause, New run and Chill mode at the bottom. In landscape the deck is one short band under the track */
-@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+@media (orientation:portrait) and (max-width:600px){
   .wrap{gap:8px}
   .wrap>header{display:none}
   .panel.pace{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:8px;
     grid-template-areas:"pace pace pace pace pace pace" "back back jump jump fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
-  .panel.pace.chill{grid-template-areas:"pace pace pace pace pace pace" "back back back fwd fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
+  body.chill .panel.pace{grid-template-areas:"pace pace pace pace pace pace" "back back back fwd fwd fwd" "tri tri tri tri tri tri" "pause pause new new chill chill"}
   .pace .cols,.pace .tri,.pace .btns{display:contents}
   .pace .cols>.lab:first-child{grid-area:pace}
   .pace .cols>.lab:nth-child(2),.pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
@@ -133,16 +145,30 @@ details summary{cursor:pointer;font:700 18px var(--display)}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
 @media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:3/2} }
+/* landscape phone: the track fills the height. Left thumb: a pace throttle with Jump under it. Right thumb: the split triangle,
+   then Back up and Floor it side by side, then Pause and New run at the bottom, set apart so they are not hit by mistake */
 @media (orientation:landscape) and (max-height:540px){
   body{padding:6px max(8px,env(safe-area-inset-right,0px)) 24px max(8px,env(safe-area-inset-left,0px))}
-  .wrap{max-width:none}
-  canvas{aspect-ratio:auto;height:calc(100vh - 150px);height:calc(100dvh - 150px)}
-  .panel.pace{grid-template-columns:repeat(6,minmax(0,1fr)) auto minmax(84px,.9fr);
-    grid-template-areas:"pace pace pace pace pace pace tri pause" "back back jump jump fwd fwd tri new" "back back jump jump fwd fwd tri chill"}
-  .panel.pace.chill{grid-template-areas:"pace pace pace pace pace pace tri pause" "back back back fwd fwd fwd tri new" "back back back fwd fwd fwd tri chill"}
-  #tri{height:112px}
-  #btn-back,#btn-jump,#btn-fwd{min-height:0;height:100%}
-  #btn-pause,#btn-restart{min-height:30px}
+  .wrap{max-width:none;display:grid;grid-template-columns:84px minmax(0,1fr) 220px;gap:8px;align-items:start}
+  .wrap>header{display:none}
+  .lcol{display:flex;flex-direction:column;gap:8px;grid-column:1;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  .throttle{display:flex;flex:1;min-height:0}
+  .lcol #btn-jump{flex:none;min-height:96px;min-width:0;padding:4px;font-size:15px}
+  .stage{grid-column:2;grid-row:1}
+  canvas{aspect-ratio:auto;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  .panel.pace{grid-column:3;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px);padding:8px;display:grid;gap:8px;
+    grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) 60px 14px auto auto;
+    grid-template-areas:"tri tri" "back fwd" ". ." "pause new" "chill chill"}
+  .wrap>.panel:not(.pace),.wrap>.foot{grid-column:1/-1}
+  .pace .cols,.pace .tri,.pace .btns{display:contents}
+  .pace .cols>.lab,.pace .tri .tbody,.pace .btns label[for=watch],.pace .btns .seedbox,#btn-seed{display:none}
+  #tri{grid-area:tri;align-self:end;justify-self:center;width:100%;height:auto;max-height:100%}
+  #btn-back{grid-area:back}#btn-fwd{grid-area:fwd}#btn-pause{grid-area:pause}#btn-restart{grid-area:new}
+  #btn-back,#btn-fwd{min-width:0;padding:4px;font-size:14px}
+  #btn-pause,#btn-restart{min-height:34px;min-width:0;padding:2px 4px;font-size:12px}
+  .pace .btns label[for=auto]{grid-area:chill;font-size:12px}
+  .kh{display:none}
+  .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
 </style>
 
@@ -153,6 +179,14 @@ details summary{cursor:pointer;font:700 18px var(--display)}
     <p class="sub">Race three rival labs to the finish. Hold back pace to invest in sight, height and max speed. The seed sets the track. You only see what your sight reaches or what is public, and a fall can end the run for everyone. The last gap is the singularity.</p>
     <p class="world" id="world"></p>
   </header>
+
+  <div class="lcol" id="lcol">
+    <div class="throttle" id="throttle" role="slider" aria-label="Pace" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+      <span class="th-lbl">Pace</span>
+      <div class="th-track" id="th-track"><div class="th-fill" id="th-fill"></div><div class="th-knob" id="th-knob"></div></div>
+      <output id="th-out">70%</output>
+    </div>
+  </div>
 
   <div class="stage">
     <canvas id="cv" width="720" height="360" role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."></canvas>
@@ -1126,6 +1160,7 @@ function hud(){
   var l=G.labs[0],p=(ui.fwd&&!ui.rev)?1:ui.pace/100,r=1-p,forced=triForced(),ew=forced?[50,50,0]:ui.w,tot=ew[0]+ew[1]+ew[2];
   var s=tot?ew[0]/tot:0,h=tot?ew[1]/tot:0,m=tot?ew[2]/tot:0;
   $('pace-out').textContent=ui.pace+'%'+((ui.fwd&&!ui.rev)?' (floored)':'');
+  showThrottle(); showPlaying();
   drawTri();
   $('s-run').style.width=(p*100)+'%'; $('s-sight').style.width=(r*s*100)+'%';
   $('s-height').style.width=(r*h*100)+'%'; $('s-max').style.width=(r*m*100)+'%';
@@ -1288,8 +1323,34 @@ function frame(now){
 /* controls */
 function bindRange(id,fn){ $(id).addEventListener('input',function(){fn(+this.value);}); }
 bindRange('pace',function(v){ui.pace=v;});
+/* left-thumb throttle: drag anywhere on it, top is 100%, bottom is 0%; the ends snap */
+function showThrottle(){
+  var v=(ui.fwd&&!ui.rev)?100:ui.pace;
+  $('th-fill').style.height=v+'%'; $('th-knob').style.bottom=v+'%';
+  $('th-out').textContent=ui.pace+'%'; $('throttle').setAttribute('aria-valuenow',ui.pace);
+}
+(function(){
+  var th=$('throttle'),on=false;
+  function set(e){
+    var r=$('th-track').getBoundingClientRect(),v=clamp((r.bottom-e.clientY)/r.height*100,0,100);
+    v=v<4?0:(v>96?100:Math.round(v)); ui.pace=v; $('pace').value=v; showThrottle();
+  }
+  th.addEventListener('pointerdown',function(e){e.preventDefault();on=true;th.setPointerCapture(e.pointerId);set(e);});
+  th.addEventListener('pointermove',function(e){if(on){set(e);}});
+  ['pointerup','pointercancel'].forEach(function(ev){th.addEventListener(ev,function(){on=false;});});
+})();
+/* on a landscape phone Jump moves under the throttle, and back again otherwise */
+(function(){
+  var mq=window.matchMedia('(orientation:landscape) and (max-height:540px)'),bt=document.querySelector('.pace .btns');
+  function place(){ if(mq.matches){ $('lcol').appendChild($('btn-jump')); } else { bt.insertBefore($('btn-jump'),bt.firstChild); } }
+  if(mq.addEventListener){mq.addEventListener('change',place);} else if(mq.addListener){mq.addListener(place);}
+  place();
+})();
+/* iOS Safari ignores user-scalable=no; its gesture events still let a page refuse pinch zoom while a run is playing */
+document.addEventListener('gesturestart',function(e){ if(document.body.classList.contains('playing')){e.preventDefault();} },{passive:false});
+function showPlaying(){ document.body.classList.toggle('playing',running&&!paused&&!G.over); }
 
-function showChill(){ document.querySelector('.panel.pace').classList.toggle('chill',!!K.chill); }
+function showChill(){ document.body.classList.toggle('chill',!!K.chill); }
 $('auto').addEventListener('change',function(){ui.auto=this.checked;K.chill=this.checked?1:0;showChill();});
 showChill();
 function doJump(){ if(running&&!paused){G.input.jump=true;} }
