@@ -434,7 +434,7 @@ function makeLab(id,kind,human,x){
   return {id:id,kind:kind,human:human,name:human?'You':KINDS[kind].name,col:KINDS[kind].col,
     x:x,v:0,pace:0,pts:[0,0,0],cap:C.CAPS[0],jt:-1,jd:0.7,jy:0,crash:0,bounce:false,capUntil:-1e9,sag:null,
     out:false,dissolved:false,strikes:0,done:false,bi:0,gi:0,basePace:0.7,crashedOn:{},stepDone:{},seenB:{},seenG:{},flash:null,
-    st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false,ibuf:[],jkey:null,jerr:0,jn:0};
+    st:{bc:0,tc:0,sc:0,fl:0,ib:0,is:0,sg:0,sf:0},still:0,maxStill:0,lock:null,lastInp:null,sw:0,swGo:false,revGi:-1,goGi:-1,ibuf:[],jkey:null,jerr:0,jn:0};
 }
 /* hands noise is stateless: each draw is keyed by seed, lab, purpose and an index, so no lab's actions move another lab's noise,
    and the track, gamble and roll streams are untouched */
@@ -635,15 +635,24 @@ function botPlan(l){
           if(l.sw){ if(gd<dn&&room>6&&l.v<1){rev=true;} else {stop=true;} }
         }
       }
+      /* a bot backing up for a run-up keeps backing up until it has the whole run-up: the go test passes 2 short of dNeed,
+         so without this a careful bot flipped between go and reverse every step at that point and never left. A bot still rolling forward is not held */
+      var revOn=pol.safe&&l.revGi===l.gi&&l.v<1&&vreq<=top&&gd<dNeed&&room>6;
+      if(!revOn){ l.revGi=-1; }
       if(wait){}
+      else if(revOn){ rev=true; }
       else if(vreq<=top&&vreq*vreq-v0*v0<=runUp){ gapGo=Math.max(l.basePace,vreq/(capOK?Math.min(top,cs):top)); }
-      else if(vreq<=top&&gd<dNeed&&room>6&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
-        rev=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
+      else if(vreq<=top&&gd<dNeed&&room>6&&l.goGi!==l.gi&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
+        rev=true; l.revGi=l.gi; if(l.gapStopT===undefined){l.gapStopT=G.t;}
       }
       else{
         /* inside a crash or scrape cap nothing can go to max speed, so a lab that waits there never gets across: it keeps moving until the cap ends */
         var canStop=l.v*l.v/(2*C.DEC)<gd-6&&(!capped(l)||l.capUntil>g.x-6);
-        if(bd.g[l.gi]<(g.pub?pol.pitPub:pol.pit)&&canStop&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
+        /* a bot that has stood still for 20 s before the gap, with every meter full or (under a cap, where nothing goes to max speed) sight and height full,
+           cannot get better by waiting, and with no other lab left to cross first and narrow the gap it would stand to the time limit: it goes,
+           and does not back up again for this gap */
+        if(l.still>20&&l.pts[0]>=l.cap-0.01&&l.pts[1]>=l.cap-0.01&&(capped(l)||l.pts[2]>=l.cap-0.01)&&G.labs.every(function(o){return o===l||o.out||o.done;})){ l.goGi=l.gi; }
+        if(l.goGi!==l.gi&&bd.g[l.gi]<(g.pub?pol.pitPub:pol.pit)&&canStop&&(pol.safe||l.gapStopT===undefined||G.t-l.gapStopT<10)){
           stop=true; if(l.gapStopT===undefined){l.gapStopT=G.t;}
         } else { gapGo=1; }
       }
@@ -656,8 +665,9 @@ function botPlan(l){
   var lastStrike=K.wary===2&&K.strikes&&l.strikes>=K.strikes-1;
   if((pol.safe||lastStrike)&&!stop){
     var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l)),sh=shadows(l);
-    /* do not pass a slower lab blind: close on it no faster than it can stop behind it */
-    for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(sh[si].a-25,0))); } }
+    /* do not pass a slower lab blind: close on it no faster than it can stop behind it. A lab that has stood still for 2 s stands on solid ground,
+       so a careful bot may pull level with it, where its shadow ends (stopping 25 behind it, two careful bots could wait on each other to the time limit) */
+    for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(m.still>2?sh[si].a+2:sh[si].a-25,0))); } }
     pace=Math.min(pace,vs/top);
   }
   if(gapGo>0){pace=Math.max(pace,gapGo);}
