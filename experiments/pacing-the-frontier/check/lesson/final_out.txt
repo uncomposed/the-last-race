@@ -1,0 +1,8 @@
+114 -> 1823 Long Approach runup | C: L 200/300 foil scout 76/300 diff 41.3pp +-7.3 rank 1 (runner scout 76) | ladder easiest->hardest: S mean 18.5 (L 86) > SP mean 16.4 (L 66) > SG mean 16.3 (L 48)
+199 -> 2785 Sheer Face climber | C: L 144/300 foil balanced 5/300 diff 46.3pp +-5.8 rank 2 (runner scout 147) | ladder easiest->hardest: S mean 19.0 (L 60) > SP mean 15.3 (L 59) > ALL mean 14.5 (L 25)
+717 -> 717 Fog Line scout | C: L 169/300 foil climber 78/300 diff 30.3pp +-7.5 rank 2 (runner runup 206) | ladder easiest->hardest: S mean 24.9 (L 67) > SG mean 17.4 (L 50) > ALL mean 16.9 (L 52)
+1115 -> 1531 Open Throttle rush | C: L 173/300 foil scout 58/300 diff 38.3pp +-7.2 rank 1 (runner climber 127) | ladder easiest->hardest: SP mean 26.8 (L 65) > S mean 26.3 (L 65) > ALL mean 25.5 (L 43)
+1167 -> 676 Coin Toss gamble | C: L 245/300 foil climber 50/300 diff 65.0pp +-6.1 rank 1 (runner bold 88) | ladder easiest->hardest: SG mean 27.0 (L 87) > S mean 26.4 (L 96) > ALL mean 18.9 (L 62)
+1548 -> 698 Nerve bold | C: L 171/300 foil climber 66/300 diff 35.0pp +-7.3 rank 2 (runner gamble 210) | ladder easiest->hardest: SP mean 28.3 (L 62) > S mean 26.9 (L 66) > SG mean 18.0 (L 43)
+1784 -> 1784 The Long Climb climber | C: L 122/300 foil balanced 20/300 diff 34.0pp +-6.2 rank 2 (runner scout 143) | ladder easiest->hardest: S mean 22.9 (L 70) > SG mean 13.9 (L 35) > ALL mean 9.3 (L 17)
+2972 -> 2972 Even Keel balanced | C: L 176/300 foil scout 73/300 diff 34.3pp +-7.4 rank 2 (runner gamble 196) | ladder easiest->hardest: S mean 31.9 (L 51) > SG mean 29.9 (L 34) > SP mean 26.5 (L 91)
