@@ -448,11 +448,51 @@ The nine campaign maps were re-measured on the current code (chill on, skill 100
 
 **Lesson re-check, 28 October 2026 (bot play only).** After the gap strikes, forgiving gap drops and coyote time, each map's lesson was written as a contrast between probe strategies and re-measured: chill off, Medium (3 strikes), strikeGap on, skill 100. Pooled over the map's three rosters, a map passes if the lesson strategy beats the best foil by 15 points or more, ranks top 2 of 8 probes and wins at least 20% itself. Rival bot hands and rolls were varied through a seed hook in a scratch copy of the sim (the repo is untouched); the track is fixed. Old seeds were screened on one noise block and reported on another (60 draws a roster). Replacements came from seeds 1 to 3000: screened on noise 1 to 12, chosen on 101 to 140, reported on 201 to 300 (the n=300 column). A second check ran each seed with its shipped rival noise and 100 probe jitters per roster. Five swaps: 114, 1167, 1548, 1115 and 199 lost the lesson (for example 114: runup 17 of 180 against balanced 76) and were replaced; 1784, 717, 2972 and 322 kept it. Slipstream's lesson is a follower, not a drafter: a probe that puts 5% on sight and lets rivals' crashes and scrapes make obstacles public wins about half its games on 322 where rush and bold win almost none, and its self-scouting twin (same split, 50% sight) wins 59. The old drafter probe was fitted, not recovered, and wins nothing; the follower was chosen after a grid on 322 itself, then confirmed on fresh noise blocks. Tier orders follow the mean wins of all probes in the report block; several tiers differ by under 2 points, so treat them as ties (1531 is flat at 26.8, 26.3 and 25.5; 1823 at 18.5, 16.4 and 16.3). 2972's order was reversed before and is now S, SG, SP. Caveats: the probes are rebuilt, perfect-handed bots; the foil sets are my judgement; the ± on the gaps is about 6 to 8 points; the report block was also used to choose among top candidates; hints are plain descriptions of the generated tracks. Progress is keyed by seed, so the five swaps reset those maps' stars.
 
-S = Steward alone, SG = Steward and Gambler, SP = Sprinter and Steward, ALL = all three. Tiers are ordered by measured difficulty (mean wins over the probes), not by the number of rivals. Since the earlier sweep the pattern flipped: Steward alone is now usually the easiest, Sprinter with Steward most often the hardest, and on 199 and 322 the full field is the easiest. On several maps the best strategy changes with the roster (for example scout wins 1115 and 1548 against Steward alone), so a star ladder does not always repeat the map's one lesson.
+S = Steward alone, SG = Steward and Gambler, SP = Sprinter and Steward, ALL = all three. Tiers were ordered by the mean wins over the probes in the report block above, not by the number of rivals. The re-check below, on other noise, does not keep that order on most maps.
 
-Caveats. A map is a fixed seed, so its bots and rolls are fixed too; with 40 other bot and roll draws only 114, 717, 2972 and 1548 keep a clear winner, so the other tricks partly ride on that seed's luck. With chill off, 114, 322 and 199 favour a different strategy (hand-timed jumps hit more tall barriers and rivals strike out early). Time-outs: 6 in 92,160 games. Scripts and CSVs were kept out of the repo.
+Caveats. A map is a fixed seed, so its bots and rolls are fixed too; a player faces the shipped draws, and the held-out noise asks whether a trick survives other draws. Time-outs in the first sweep: 6 in 92,160 games. Scripts and CSVs were kept out of the repo.
+
+**Re-check on the current nine seeds (28 October 2026, after the review).** Bot play only. Ten probe strategies (the eight above, plus the follower and its self-scouting twin from map 8), chill off, default knobs, probe with perfect hands. Pooled over each map's three rosters. Two blocks: held-out rival noise 401 to 460 with probe jitter (60 races a roster, n=180 a probe), and the shipped noise with 100 probe jitters a roster (n=300 a probe). Rank is the hint strategy's place among the ten.
+
+| Map | Seed | Hint strategy | Held-out: wins / 180, rank, top | Shipped: wins / 300, rank, top |
+|---|---|---|---|---|
+| 1 | 1823 | runup | 122, 1st | 182, 1st |
+| 2 | 1784 | climber | 62, 2nd (scout 83) | 289, 1st |
+| 3 | 676 | gamble | 158, 1st | 273, 1st |
+| 4 | 717 | scout | 113, 4th (twin 163, runup 127, follower 120) | 226, 2nd (twin 252) |
+| 5 | 2972 | balanced | 106, 2nd (gamble 112) | 184, 2nd (gamble 213) |
+| 6 | 698 | bold | 110, 2nd (gamble 134) | 291, 1st |
+| 7 | 1531 | rush | 97, 2nd (follower 98) | 251, 1st |
+| 8 | 322 | follower | 91, 2nd (runup 137) | 148, 2nd (runup 193) |
+| 9 | 2785 | climber | 80, 2nd (scout 94) | 121, 3rd (scout 219, twin 131) |
+
+The hint strategy is top in both blocks only on maps 1 and 3, so the hints on maps 2 and 4 to 9 now say a strategy "works well" (or what matters) rather than giving one answer. It never ranks below 4th.
+
+**Tier difficulty and the strike ladder, current seeds.** Same held-out noise (401 to 460), all ten probes, chill off. Each cell is the mean wins over the ten probes for stars 1 · 2 · 3, out of 60 races.
+
+| Map | Seed | Rosters 1★ / 2★ / 3★ | Easy (4 strikes) | Medium (3) | Hard (2) | Hint strategy at Medium |
+|---|---|---|---|---|---|---|
+| 1 | 1823 | S / SP / SG | 14.6 · 14.9 · 19.3 | 9.1 · 9.8 · 12.0 | 7.3 · 7.1 · 5.2 | 53 · 37 · 32 |
+| 2 | 1784 | S / SG / ALL | 12.0 · 7.6 · 3.7 | 11.4 · 7.3 · 3.7 | 10.0 · 6.3 · 3.6 | 40 · 17 · 5 |
+| 3 | 676 | SG / S / ALL | 18.5 · 20.9 · 13.1 | 18.1 · 17.1 · 13.8 | 12.3 · 11.7 · 11.0 | 54 · 58 · 46 |
+| 4 | 717 | S / ALL / SG | 23.0 · 18.6 · 19.1 | 21.5 · 18.1 · 18.4 | 13.2 · 14.4 · 13.9 | 42 · 34 · 37 |
+| 5 | 2972 | S / SG / SP | 21.0 · 15.9 · 18.6 | 18.9 · 14.3 · 15.2 | 16.5 · 10.6 · 10.9 | 40 · 22 · 44 |
+| 6 | 698 | SP / S / SG | 16.5 · 17.9 · 12.7 | 16.4 · 14.4 · 12.4 | 13.4 · 9.3 · 10.9 | 45 · 37 · 28 |
+| 7 | 1531 | SP / S / ALL | 18.6 · 19.9 · 14.3 | 18.1 · 19.8 · 14.1 | 13.7 · 12.7 · 11.5 | 36 · 40 · 21 |
+| 8 | 322 | ALL / SG / SP | 13.3 · 11.5 · 17.3 | 12.2 · 10.8 · 14.8 | 8.7 · 7.5 · 5.3 | 29 · 32 · 30 |
+| 9 | 2785 | S / SP / ALL | 14.9 · 13.4 · 14.4 | 13.3 · 10.6 · 13.2 | 10.2 · 5.7 · 10.0 | 35 · 34 · 11 |
+| All 27 | | | 425.5 (26.3%) | 378.8 (23.4%) | 272.9 (16.8%) | |
+
+- **The strike ladder holds.** The mean falls or stays level from Easy to Medium to Hard in 26 of 27 cells (map 3, star 3, is 13.1 on Easy against 13.8 on Medium), and Hard is never above Easy.
+- **Star 3 is not always the hardest tier.** By the probe mean it is the hardest at Medium on 4 of 9 maps (2, 3, 6, 7). On maps 1 and 8 it is the easiest.
+- **Map 9 (2785):** for the hint strategy the full field is by far the hardest tier (climber wins 11 of 60, against 35 and 34). By the mean over all ten probes the Sprinter with Steward tier is a little harder (10.6 against 13.2).
+- **Hard can break a lesson:** on map 7 (1531) rush wins 0 of 180 at Hard, against 97 at Medium.
+- Tier orders were not changed; this block was not used to choose anything.
+
 
 ## Campaign difficulty
+
+**Historical: these tables use the old seeds (114, 1167, 1548, 1115, 199) and the old probe set.** The current seeds are measured in "Campaign maps", "Re-check on the current nine seeds".
 
 28 October 2026. Campaign medals exist only with chill mode off: Easy, Medium and Hard earn bronze, silver and gold; a chill win earns a separate chill star with no difficulty choice (see `README.md`, "Campaign"). The question was which levers make Easy, Medium and Hard a clear, monotone ladder with chill off, keep each map's strategy where it was, and leave Medium at the current defaults.
 
@@ -502,7 +542,7 @@ Caveats. The ladder is steeper downwards than upwards (Easy +3.7 points, Hard �
 
 **Free play, 600 bot races (seeds 1001 to 1600), strikeGap 0 against 1.** Dissolved labs a race 0.20 to 0.41 (chill on) and 0.47 to 0.75 (chill off). Extinction stayed at about 8 to 9%. With chill off, wins moved toward the Steward (27% to 34%) and away from the Gambler (27% to 21%). One seed block.
 
-**Campaign ladder, re-measured (chill off, 9 maps × 3 tiers × 8 probes × 40 runs, mode J).** The probe strategies behind "Campaign difficulty" were not kept, so they were rebuilt and fitted to that table. The fit is not an independent check: at strikeGap 0 the mean wins land within 1.8 points of the published row (24.1%, 21.7%, 16.5% against 24.1%, 20.4%, 14.7%), but the map strategies win about 12% less and are best in 10 cells rather than 13 or 14. The rule effect below is paired (same jitter, rule 0 against 1), which is the part to trust.
+**Campaign ladder, re-measured (historical: old seeds; chill off, 9 maps × 3 tiers × 8 probes × 40 runs, mode J).** The probe strategies behind "Campaign difficulty" were not kept, so they were rebuilt and fitted to that table. The fit is not an independent check: at strikeGap 0 the mean wins land within 1.8 points of the published row (24.1%, 21.7%, 16.5% against 24.1%, 20.4%, 14.7%), but the map strategies win about 12% less and are best in 10 cells rather than 13 or 14. The rule effect below is paired (same jitter, rule 0 against 1), which is the part to trust.
 
 | All 27 | Easy (4 strikes) | Medium (3) | Hard (2) |
 |---|---|---|---|
@@ -510,3 +550,36 @@ Caveats. The ladder is steeper downwards than upwards (Easy +3.7 points, Hard �
 | strikeGap 1 | 253 (23.4%) | 222 (20.5%) | 150 (13.9%) |
 
 At Medium the probe is dissolved in 23.0% of runs (was 17.5%); scrapes and drops are about 12% of its strikes. The ladder stays monotone in total; the mean rises from Easy to Hard in 4 of 27 cells by 1 or 2 games of 40 (114 2★, 1548 1★ to 3★), against 2 cells with the rebuilt probes under the old rule. The cost falls on the risky lessons: gamble on 1167 (Medium 31 to 21, Hard to 0 or 1) and rush on 1115 2★ (26 to 1 at Medium). Choice: keep Easy 4, Medium 3, Hard 2. Inference, not shown: 1167 and 1115 may now teach a different lesson than their names say; worth a hand playtest. Scripts and CSVs were kept out of the repo.
+
+## Daily twists
+
+28 October 2026. The question was whether each daily twist makes every tier harder. Setup: the custom bot as lab 0 (perfect hands), the default knobs plus the twist, `PSTRIKES` null as in the daily, the three daily rosters (solo, Steward, Sprinter and Steward), chill off and on. Seeds are daily seeds (`dailySeed` of a date), 200 a block: block A (from 2027-01-01) to tune, block B (from 2027-08-01) and block D (100 seeds from 2029-01-01, the block `check/content-check.mjs` uses) to check, block C (from 2028-03-01) to report. A twist ships only if it lowers wins in all six cells. Paired: the same seeds with and without the twist. Bot play only; shares are outcomes of this sampling, not calibrated probabilities.
+
+**Block C, wins out of 200 per cell, tiers 1 / 2 / 3 (solo / Steward / Sprinter and Steward).**
+
+| Twist | Overrides | Chill off | Chill on | All six lower? |
+|---|---|---|---|---|
+| none | | 104 / 45 / 48 | 129 / 57 / 49 | |
+| old Taller Barriers | barScale 150 | 88 / 38 / 40 | 118 / 60 / 50 | no |
+| old Wider Gaps | gapScale 115 | 87 / 48 / 38 | 106 / 53 / 35 | no |
+| old Rivals Copy You More | share 60 | 104 / 49 / 45 | 129 / 57 / 49 | no |
+| old Higher Extinction Odds | singOdds 45 | 104 / 45 / 48 | 129 / 57 / 49 | no |
+| old Faster Singularity | singSpeed 4 | 105 / 39 / 42 | 130 / 48 / 40 | no |
+| old Slower Investment | invest 12 | 94 / 67 / 48 | 117 / 69 / 52 | no |
+| Only 2 Strikes (kept) | strikes 2 | 35 / 26 / 26 | 42 / 30 / 28 | yes |
+| Hard Lessons | barScale 150, spill 0 | 81 / 23 / 25 | 110 / 37 / 46 | yes |
+| Wider Gaps | gapScale 125 | 87 / 38 / 26 | 104 / 43 / 32 | yes |
+| Rivals Copy You More | shareRiv 80, airH 12 | 59 / 29 / 30 | 73 / 31 / 33 | yes |
+| Wider Singularity | singGap 140 | 84 / 36 / 24 | 109 / 34 / 26 | yes |
+| (shareRiv 80 alone) | shareRiv 80 | 104 / 49 / 47 | 129 / 57 / 48 | no |
+| (spill 0 alone) | spill 0 | 101 / 27 / 34 | 125 / 37 / 38 | yes |
+| (investYou 12, dropped) | investYou 12 | 94 / 40 / 36 | 117 / 41 / 35 | yes, but not on block D |
+
+**Findings**
+
+- **Taller Barriers did little** because most walls already sit at their height cap (the ceiling plus the jump, less 6), and barScale's range stops at 150 (the default is 140). Hard Lessons adds `spill` 0: a lab that climbs a wall gives no height to the others. spill 0 alone lowers all six cells of block C, so it does most of the work against rivals; the taller walls add to it in solo.
+- **Copying more helps a trailing player.** A bigger share for everyone (the old twist) raised wins against the Steward. Giving the bigger share to the rivals only (`shareRiv`) still does not lower wins against the Steward, and solo has no rivals to copy you, so on its own it can never make tier 1 harder. Rivals Copy You More keeps the rivals' bigger share for the story, but the part that makes it harder is `airH` 12 (height adds less air time to a jump, for every lab).
+- **Slowing your own Build is not a reliable twist.** The old Slower Investment slowed the bots too, which made the versus tiers easier (Steward 45 to 67). Slowing only lab 0 (`investYou` 12) lowered all six cells of blocks A, B and C but raised the Steward tier on block D (22 to 27 wins, chill off), and slower settings (9, 8) raised it on block A (46 to 55 and 74). A lab held back gets more catch-up help, so it can end up closer to the Steward. It was dropped; its two briefings now use Hard Lessons and Only 2 Strikes. `airH` 13 alone was also tried and failed the Steward tier on block B.
+- **Extinction odds cannot touch solo:** your own fall loses the race whatever the roll. Faster Singularity changed solo by one game or none. Both were replaced by Wider Singularity: `singGap` widens the singularity gap, never past 0.95 of its ceiling coverage (the generator keeps it under 0.8 otherwise).
+- **Tuning.** Settings were picked on block A. On block B, Wider Singularity at 125 lowered the Steward tier by one game only, so it was raised to 140. Wider Gaps at 120 failed block A; 125 passed every block. The Steward tier is the fragile one: a twist that slows every lab can help you against the Steward.
+- **Not tested.** Human play. Twists that only a human feels (the control lag past the singularity) cannot be measured with bots.

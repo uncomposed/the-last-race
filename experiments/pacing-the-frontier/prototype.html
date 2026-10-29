@@ -116,6 +116,65 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
   #rc-replay{min-height:28px;padding:2px 8px;font-size:11px;background:var(--surface)}
 }
 @media (prefers-reduced-motion:reduce){.card .rc-plaque,.card .rc-line{transition:none}}
+/* ---- achievements (begin): the recap's opening card, the start card link and the gallery. Earned and not earned differ by shape
+   (a filled badge with a tick against a dashed outline with a ?) and by the words "Earned" and "Not yet", never by colour alone ---- */
+.ab{width:26px;height:26px;flex:none;display:block}
+.ab path{stroke-linejoin:round;stroke-linecap:round}
+.ab-on .sh{fill:var(--run);stroke:var(--run);stroke-width:1.5}
+.ab-on .tk{fill:none;stroke:var(--run-ink);stroke-width:2.4}
+.ab-off .sh{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2.5 2}
+.ab-off text{font:700 11px/1 var(--body);fill:var(--muted);text-anchor:middle}
+.ach-open{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--b);border-radius:6px}
+.ach-open[hidden]{display:none}
+.rc-bar[hidden],.rc-stage[hidden]{display:none}
+.ach-hd{display:flex;align-items:center;gap:8px;min-width:0}
+.ach-hd>span{display:flex;flex-direction:column;min-width:0}
+.ach-k{font:500 11.5px/1.2 var(--mono);color:var(--muted)}
+.ach-nm{font:700 16px/1.2 var(--display);color:var(--ink)}
+.card .ach-tid{font:400 13.5px/1.4 var(--body);margin:0}
+.card .ach-more{font:400 12px/1.35 var(--body);color:var(--muted);margin:0}
+.ach-more[hidden]{display:none}
+.ach-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.ach-btns button,.ach-real{min-height:36px;padding:6px 12px;font:500 13px var(--mono)}
+.ach-real{display:inline-flex;align-items:center;gap:4px;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:4px;text-decoration:none}
+.ach-real:hover{text-decoration:underline}
+.ach-all{align-self:flex-start;flex:none;min-height:32px;margin-left:auto;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 12px var(--mono)}
+.ach-all:hover{color:var(--ink)}
+#ov-ach{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
+#ov-ach:hover{color:var(--ink)}
+#ov-ach[hidden]{display:none}
+.ov-links{display:flex;flex-wrap:wrap;gap:0 18px;align-items:center}
+.achg-sum{font:400 13px/1.4 var(--body);color:var(--muted)}
+.achg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.achg-it{display:grid;grid-template-columns:26px minmax(0,1fr);gap:4px 10px;align-items:start;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+.achg-it.off{border-style:dashed}
+.achg-it b{font:700 14.5px/1.25 var(--display)}
+.achg-st{display:block;font:500 11.5px/1.3 var(--mono);color:var(--muted)}
+.achg-it.on .achg-st{color:var(--ink)}
+.card .achg-it p{font:400 13px/1.4 var(--body);margin:3px 0 0}
+.achg-it a{font:500 12.5px var(--mono);color:var(--ink);text-underline-offset:3px}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  .ach-open{padding:6px 8px;gap:4px}
+  .ab{width:22px;height:22px}
+  .ach-nm{font-size:14px}
+  .card .ach-tid{font-size:12.5px;line-height:1.35}
+  .card .ach-more{font-size:11.5px}
+  .ach-btns button,.ach-real{min-height:34px;padding:4px 10px;font-size:12px}
+}
+/* landscape phones: no room to grow, so the buttons come right under the name and the story scrolls in its own box */
+@media (orientation:landscape) and (max-height:540px){
+  .ach-btns{order:1}.ach-tid{order:2}.ach-more{order:3}
+  .card .ach-tid{max-height:4.1em;overflow:auto}
+  .card .ach-more{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+/* the end card lives on the track, which is short, so while the opening card shows the card may grow down over the controls
+   (unused once the race is over) and nothing needs scrolling. Keep going puts it back. Not on landscape phones, where the
+   track already fills the screen height */
+@media not all and (orientation:landscape) and (max-height:540px){
+  #ov.ach-tall{bottom:auto;min-height:100%;align-items:flex-start}
+  #ov.ach-tall .card{max-height:none}
+}
+/* ---- achievements (end) ---- */
 button{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;cursor:pointer;min-height:40px}
 button:hover{border-color:var(--muted)}
 #btn-jump,#btn-fwd,#btn-back{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
@@ -321,6 +380,7 @@ body.chill #btn-jump{display:none}
 .card .cmp-dl{font-size:13px;line-height:1.4}
 .card .cmp-diff .note{font-size:12px}
 .cmp-nd{font:500 11px var(--mono);color:var(--good)}
+.cmp-new{display:inline-block;margin-left:6px;padding:0 5px;border:1px dashed currentColor;border-radius:4px;font:500 11px var(--mono);vertical-align:1px}
 .cmp-tiers{display:flex;flex-direction:column;gap:6px}
 .cmp-tier{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:56px;width:100%;font:400 13px/1.35 var(--body)}
 .cmp-tier b{font-weight:600}
@@ -392,6 +452,13 @@ body.chill #btn-jump{display:none}
 .dly-sbtn [hidden]{display:none}
 @media (orientation:landscape) and (max-height:540px){ .dly-img{max-height:38vh}.dly-txt{max-height:5.5em}.dly-sbtn{grid-template-columns:repeat(4,1fr)}.dly-sbtn #dly-sh{grid-column:auto} }
 /* ---- daily (end) ---- */
+/* ---- ghost links (begin) ---- */
+.gh-line{margin:4px 0 0;font:500 13px/1.4 var(--body);padding:4px 9px;border:1px dashed var(--a);border-radius:4px;align-self:stretch}
+.gh-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px var(--body)}
+.gh-name input{font:400 15px var(--body);min-height:40px;padding:6px 8px;width:16ch;max-width:100%;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.dly-sbtn #gh-sh{grid-column:1/-1}
+@media (orientation:landscape) and (max-height:540px){ .dly-sbtn #gh-sh{grid-column:auto} }
+/* ---- ghost links (end) ---- */
 /* end-of-campaign epilogue: a full-screen modal dialog opened by window.showEpilogue(summary), or by ?epilogue=careful|reckless|mixed */
 dialog.epi{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 dialog.epi::backdrop{background:var(--bg)}
@@ -454,9 +521,16 @@ html.epi-open{overflow:hidden}
           <li><i aria-hidden="true"></i>Slow down to build sight, height and speed.</li>
           <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
         </ul>
-        <button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button>
+        <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button></div>
         <p id="ov-msg" hidden>The start is slow. A gate near the start is too tall to jump from a standstill, so move the bar toward Build or hold Back to stand still and build height. Run is your cruise; Build is the rest, and it goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down move the bar toward Run or Build, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
         <div class="story" id="ov-story" hidden>
+          <!-- achievements: the recap opens with this card; Keep going starts the walk -->
+          <div class="ach-open" id="ach-open" role="group" aria-labelledby="ach-nm" hidden>
+            <div class="ach-hd"><span id="ach-badge"></span><span><span class="ach-k" id="ach-k"></span><span class="ach-nm" id="ach-nm"></span></span><button type="button" class="ach-all" id="ach-all" aria-haspopup="dialog">All</button></div>
+            <p class="ach-tid" id="ach-tid"></p>
+            <p class="ach-more" id="ach-more" hidden></p>
+            <div class="ach-btns"><a class="ach-real" id="ach-real" href="#" target="_blank" rel="noopener">What's the real version?<span class="sr-only"> (opens in a new tab)</span></a><button type="button" id="ach-go">Keep going</button></div>
+          </div>
           <div class="rc-stage" id="rc-stage" title="Tap to skip to the next stop">
             <canvas id="rc-cv" aria-hidden="true"></canvas>
             <div class="rc-say" id="rc-say" aria-live="polite"><p class="rc-plaque" id="rc-plaque"></p><p class="rc-line" id="rc-line"></p></div>
@@ -573,7 +647,7 @@ html.epi-open{overflow:hidden}
       <summary>Tuning knobs</summary>
       <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
-      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign or daily race (only difficulty, the daily twist and chill mode change). Your values come back when it ends.</p><!-- campaign -->
+      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign, daily or ghost race (only difficulty, the daily twist and chill mode change). Your values come back when it ends.</p><!-- campaign -->
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button><button id="camp-reset" type="button">Reset campaign progress</button><!-- campaign --></div>
     </details>
   </div>
@@ -590,6 +664,14 @@ html.epi-open{overflow:hidden}
   </div>
 </div>
 <!-- campaign (end) -->
+<!-- achievements: the gallery -->
+<div class="cmp" id="achg" hidden role="dialog" aria-modal="true" aria-labelledby="achg-h">
+  <div class="card">
+    <div class="cmp-top"><h2 id="achg-h" tabindex="-1">Achievements</h2><button id="achg-close" type="button">Close</button></div>
+    <p class="achg-sum" id="achg-sum"></p>
+    <ul class="achg-list" id="achg-list"></ul>
+  </div>
+</div>
 <dialog class="epi" id="epi" aria-labelledby="epi-h">
   <div class="epi-in">
     <div class="epi-top"><p class="eyebrow">Epilogue &middot; after the finish</p><button class="epi-x" id="epi-x" type="button" aria-label="Close epilogue">Close</button></div>
@@ -1799,7 +1881,10 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100};
+/* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
+   K.invest. singGap scales the singularity gap's width (%), never past 0.95 of its ceiling coverage. At their defaults (0, 0, 100) they
+   change nothing; daily twists set them */
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -1874,6 +1959,7 @@ function genTrack(r){
     var air=C.AIR0+K.airH/1000*C.CAPS[s],cov=(C.TOP0+0.85*C.CAPS[s])*air;
     var W=Math.round(Math.max(40,Math.min(w0,(last?0.8:0.65)*cov)));
     if(last){ W=Math.round(Math.min(Math.max(W,1.1*maxW),0.8*cov)); }  /* the singularity: widest gap, still inside its ceiling coverage */
+    if(last&&K.singGap!==100){ W=Math.round(Math.max(40,Math.min(W*K.singGap/100,0.95*cov))); }
     maxW=Math.max(maxW,W);
     /* clear zone before the gap: the tower's distance, or the run-up a lab at the ceiling needs from a standstill */
     var vn=W/air,gx=rs+L+Math.max(C.STEPD+20,Math.round(1.3*vn*vn/(2*C.ACC))+20);
@@ -2052,7 +2138,7 @@ function applyLevel(k,by){
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i]; if(l.out){continue;}
     if(l===by){ l.cap=Math.max(l.cap,T); }
-    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+K.share/100*d)); }
+    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+((l.id>0&&K.shareRiv>0)?K.shareRiv:K.share)/100*d)); }
   }
 }
 function crossGap(l,g,k){
@@ -2270,7 +2356,7 @@ function stepLab(l,dt,inp){
   l.ivr=r; l.ivw=w;  /* for drawing only: how much of the lab's effort goes to investment, and where */
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
-    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
+    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt); }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   /* jump buffer (human only): a press while still in the air is kept for JBUF seconds and fires on landing */
@@ -2640,6 +2726,7 @@ function draw(){
     ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(fx,GY); ctx.lineTo(fx,GY-90); ctx.stroke();
     ctx.fillStyle=COL.d; ctx.beginPath(); ctx.moveTo(fx,GY-90); ctx.lineTo(fx+26,GY-80); ctx.lineTo(fx,GY-70); ctx.fill();
   }
+  ghDraw(cam,VW,FW);  /* ghost link: drawn under the labs, never part of the sim */
   // labs
   for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,VW,FW,n===0,n); }
   if(CM){ var rt='reach '+Math.round(reach),rw=ctx.measureText(rt).width;
@@ -2847,7 +2934,7 @@ var PROF={body:'#B48A60',fleck:'#8C6643',shoe:'#5A3E2B',stick:'#A0703F',paper:'#
 function rcWords(s){ return String(s).split(/\s+/).length; }
 function rcDwell(s){ return clamp(0.8+rcWords(s)*0.13,1.9,3.0); }
 function tellStory(){
-  var box=$('ov-story'); rcStop(); box.hidden=true;
+  var box=$('ov-story'); rcStop(); box.hidden=true; achOpenHide();
   if(!window.PFStory||!G||!G.over||!G.labs[0].human){return;}
   try{
     var r=G.result||{},res={type:r.type};
@@ -2867,7 +2954,7 @@ function tellStory(){
     RC.stops=stops;
     RC.geo={finish:G.finish,gaps:G.gaps.map(function(g){return {x:g.x,W:g.W,sing:!!g.sing};}),bars:G.barriers.map(function(b){return {x:b.x,h:b.h,gate:!!b.gate};})};
     box.hidden=false;
-    rcPlay();
+    if(!achOpen()){ rcPlay(); }  /* Historian 2.0: open with an achievement card when there is one; Keep going starts the walk */
   }catch(e){ box.hidden=true; }
 }
 function rcStop(){ if(RC.raf){cancelAnimationFrame(RC.raf);} RC.raf=0; RC.bab=[]; RC.ph=''; }
@@ -3045,23 +3132,25 @@ function cardPrimary(){
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
-  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
+  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
 }
 /* the start card: three short lines; "How to play" shows and hides the full rules */
 $('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
-    if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play again'); }
-    else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
+    if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play another'); }
+    else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play another'); }
   } else if(r.type==='all'){
-    showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play again');
+    showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play another');
   } else if(r.type==='allout'){
-    showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
-  } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
+    showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play another');
+  } else { showOverlay('Time limit','Nobody finished in time.','Play another'); }
+  achEnd();  /* achievements: what this run earned, saved before the recap opens with it */
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
   dailyEnd();  /* every run: Replay this seed and the input log; daily: the tier result, Next tier and Share */
+  ghEnd();  /* every run: the ghost result line and Challenge a friend */
 }
 var fresh=true;
 function parseSeed(v){ v=String(v||'').trim(); if(!/^\d{1,10}$/.test(v)){return null;} var n=+v; return n<=4294967295?n:null; }
@@ -3075,21 +3164,25 @@ function showSeed(){
 function start(seed,camp,daily){
   rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
   CAMP=camp||null; DLY=daily||null;
+  $('btn-restart').textContent=CAMP?'Retry map':(DLY?'Retry tier':'New run');  /* mid-race, a campaign or daily run restarts itself */
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
   dailyPrep();  /* daily: default knobs plus today's twist */
-  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&!DLY&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:(DLY?DLY.roster:undefined));
+  ghPrep(seed,CAMP,DLY);  /* ghost link in free play: the sender's knobs and strikes */
+  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&!DLY&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:(DLY?DLY.roster:ghRoster()));
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set Run or Build, your split and chill mode, then go.';
   $('ready').hidden=false; cardAt=performance.now(); showSeed();
   campReady();
   dailyReady();
+  ghReady();  /* a ghost to race, if one matches this race */
 }
 function go(){
   if(running||G.over||$('ready').hidden){return;}
   campGo();  /* campaign: fix the race's chill state and difficulty */
   dailyGo();  /* daily: count the attempt and fix the race's chill state */
   recStart();  /* every run: start the input log */
+  achGo();  /* achievements: start this run's chill and shadow tally */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
   sndStarted=true; snd.unlock(); snd.sfx('go');
 }
@@ -3109,7 +3202,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); recTick(); stepGame(1/60); acc-=1/60;
+      syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -3225,7 +3318,7 @@ function setPaused(v){ if(!running){return;} paused=v; $('btn-pause').textConten
 $('btn-pause').addEventListener('click',function(){ setPaused(!paused); });
 $('sing-btn').addEventListener('click',function(){ setPaused(false); });
 $('pace').addEventListener('pointerup',function(){this.blur();});
-$('btn-restart').addEventListener('click',function(){start();});
+$('btn-restart').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } else if(DLY){ dailyStart(DLY.date,DLY.tier); } else { start(); } });
 $('btn-seed').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); if(n===null){$('seed-in').value=G.seed;return;} start(n); });
 $('seed-in').addEventListener('keydown',function(e){ if(e.code==='Enter'){e.preventDefault();$('btn-seed').click();} });
 $('ov-btn').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); start(fresh?(n===null?G.seed:n):undefined); });
@@ -3237,6 +3330,7 @@ window.addEventListener('blur',function(){setRev(false);setFwd(false);});
 document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName,txt=t==='INPUT'&&e.target.type==='text';
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
+  if(!$('achg').hidden){ if(e.code==='Escape'){e.preventDefault();achClose();} return; }  /* achievements gallery open: only Escape */
   if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
   if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>400){go();} return;}
@@ -3412,13 +3506,13 @@ document.addEventListener('keydown',function(e){
 /* knobs */
 var KNOBS=[
   ['p1','Odds everyone is out at gap 1 (%)',0,60,1],['pstep','Odds added per gap (points)',0,30,1],
-  ['share','Followers’ share of a level-up (%)',0,100,5],['refill','Refill bonus divisor (lower is stronger)',10,200,5],
-  ['stepL0','Gap shrink distance, past the gap (lower is stronger)',5,100,5],['invest','Investment rate (points per second)',5,60,1],
+  ['share','Followers’ share of a level-up (%)',0,100,5],['shareRiv','Rivals’ share of a level-up (%), 0 uses the line above',0,100,5],['refill','Refill bonus divisor (lower is stronger)',10,200,5],
+  ['stepL0','Gap shrink distance, past the gap (lower is stronger)',5,100,5],['invest','Investment rate (points per second)',5,60,1],['investYou','Your investment rate (points per second), 0 uses the line above',0,60,1],
   ['barScale','Barrier height scale (%)',50,150,5],['gapScale','Gap width scale (%)',50,150,5],['airH','Air time per unit of height (ms)',0,40,1],
   ['spill','Barrier spillover (% of barrier height)',0,100,1],['bounce','Crash bounce (fraction of impact speed)',0,1,0.05],
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
-  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
+  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singGap','Singularity gap width scale (%)',50,150,5],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
   ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
@@ -3454,20 +3548,23 @@ var KNOBS=[
      theme  which strategy the map tests (a note for editors, not shown)
      hint   one line shown in the list, the tier pick and the Ready card
      tiers  the rival rosters for 1, 2 and 3 stars, as bot kinds ('sprinter', 'steward', 'gambler')
+     was    (optional) seeds this slot used before. A star won on a former seed still counts for unlocking and for the epilogue
    Seeds, tiers and hints come from the lesson re-check (chill off, Medium, strike for gaps on; bot play only; see DESIGN-NOTES.md
-   "Campaign maps"): each map's lesson strategy beats its foil strategies there, and the tiers are ordered by measured difficulty,
-   not by the number of rivals (Sprinter with Steward is often the hardest; the full field is sometimes the easiest).
-   Progress is keyed by seed, so changing a seed resets that map's stars. */
+   "Campaign maps"): each map's lesson strategy beats its chosen foils there, but it is the top probe strategy only on maps 1 and 3
+   in both re-checks, so the other hints say a strategy "works well", not that it is the answer. Tier order came from one
+   measurement; a held-out re-check found star 3 the hardest on only 4 of 9 maps.
+   Progress is keyed by seed. When a slot gets a new seed, add the old one to its `was` list: stars on a former seed keep the next
+   map open and count for the epilogue, and the list shows "New map" until the new seed has a star of its own. */
 var CAMPAIGN=[
-  {seed:1823,name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
-  {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Build height early.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
-  {seed:676,name:'Coin Toss',theme:'gamble',hint:'Low walls and two small gaps, then six tall walls past the singularity. Careful costs more than it saves.',tiers:[['steward','gambler'],['steward'],['sprinter','steward','gambler']]},
-  {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. See before you leap.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
-  {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. Balance your split.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
-  {seed:698,name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Take the lead early.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
-  {seed:1531,name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Be first across.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
-  {seed:322,name:'Slipstream',theme:'drafter',hint:'A long road to a very wide singularity. Follow the pack, then pass.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
-  {seed:2785,name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
+  {seed:1823,was:[114],name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
+  {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Building height early works well here.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
+  {seed:676,was:[1167],name:'Coin Toss',theme:'gamble',hint:'Low walls and two small gaps, then six tall walls past the singularity. Careful costs more than it saves.',tiers:[['steward','gambler'],['steward'],['sprinter','steward','gambler']]},
+  {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. Sight pays off here.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
+  {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. A balanced split works well, and so can a bolder one.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
+  {seed:698,was:[1548],name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Taking the lead early works well here.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
+  {seed:1531,was:[1115],name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Being first across works well here.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
+  {seed:322,name:'Slipstream',theme:'follower',hint:'A long road to a very wide singularity. Following the pack, then passing, works well here.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
+  {seed:2785,was:[199],name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late. Height matters here, and so does sight.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
 ];
 /* Rules.
    Stars: star t (1 to 3) is earned by winning the map against tiers[t-1]. A map's stars are its highest tier won.
@@ -3482,7 +3579,7 @@ var CAMPAIGN=[
    No deaths: a map gets the mark for a win (any tier) in which your lab never crashed into a barrier, the gate or a tower
      (st.bc+st.tc===0, plus no scrape or drop, st.sc, while strikeGap is on). So it took no strike and could not be dissolved, and a win means it never fell.
    Best time: the fastest winning time per tier, chill or not; the list shows the fastest over all tiers.
-   Unlock: map 1 is always open; map n+1 opens once map n has a star.
+   Unlock: map 1 is always open; map n+1 opens once map n has a star (on its current seed or a former one, see `was`).
    Knobs: a campaign race locks every tuning knob at its default (DEF) except chill mode, then applies the difficulty. The player's
      own knob values come back when the race ends or free play starts (campLock / campUnlock).
    Progress lives in localStorage under CAMP_KEY (v2). A v1 object (CAMP_KEY_V1) is migrated on load: a won tier becomes a chill
@@ -3530,17 +3627,28 @@ function campMap(i){
 function campStar(i,t){ var m=campMap(i); return {medal:Math.max(0,Math.min(3,m.medal[t]|0)),chill:!!m.chill[t]}; }
 function campStarred(i,t){ var s=campStar(i,t); return s.medal>0||s.chill; }
 function campStars(i){ var s=0; for(var t=0;t<3;t++){ if(campStarred(i,t)){s=t+1;} } return s; }
-function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campStars(i-1)>=1); }
+/* stars won on a slot's former seeds (CAMPAIGN[i].was), read without creating entries */
+function campFormer(i){
+  var w=CAMPAIGN[i].was||[],n=0,j,t,m;
+  for(j=0;j<w.length;j++){ m=CS.maps[String(w[j])]; if(!m||typeof m!=='object'){continue;}
+    for(t=0;t<3;t++){ if((Array.isArray(m.medal)&&(m.medal[t]|0)>0)||(Array.isArray(m.chill)&&m.chill[t])){ n++; } } }
+  return n;
+}
+/* a slot counts as starred, for unlocking and the epilogue, if its current seed or any former seed has a star */
+function campCredit(i){ return campStars(i)>=1||campFormer(i)>0; }
+/* "New map": stars on a former seed, none yet on the current one */
+function campIsNew(i){ return campStars(i)<1&&campFormer(i)>0; }
+function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campCredit(i-1)); }
 function campTierOpen(i,t){ return campOpen(i)&&(CAMP_OPEN_TIERS||t===0||campStarred(i,t-1)); }
 function campBest(i){ var b=campMap(i).best,m=null; for(var t=0;t<3;t++){ if(b[t]!==null&&(m===null||b[t]<m)){m=b[t];} } return m; }
 /* the tier a map offers first: the lowest one without a star, else the lowest one short of gold, else the top one */
 function campNextTier(i){ var t; for(t=0;t<3;t++){ if(!campStarred(i,t)){return t;} } for(t=0;t<3;t++){ if(campStar(i,t).medal<3){return t;} } return 2; }
-function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(campStars(i)<1){return false;} } return true; }
+function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(!campCredit(i)){return false;} } return true; }
 function campSummary(){
   var med={gold:0,silver:0,bronze:0},chillStars=0;
   var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i),ms=[],cw=[];
     for(var t=0;t<3;t++){ var s=campStar(i,t); ms.push(MEDALS[s.medal]); cw.push(s.chill); if(s.medal){med[MEDALS[s.medal]]++;} else if(s.chill){chillStars++;} }
-    return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice(),medals:ms,chillWon:cw}; });
+    return {index:i,seed:c.seed,name:c.name,stars:campStars(i),formerStars:campFormer(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice(),medals:ms,chillWon:cw}; });
   var st=CS.stats;
   return {maps:maps,totalStars:maps.reduce(function(a,m){return a+m.stars;},0),noDeathMaps:maps.filter(function(m){return m.noDeaths;}).length,
     falls:st.falls,extinctions:st.extinctions,dissolutions:st.dissolved,races:st.races,wins:st.wins,
@@ -3613,11 +3721,16 @@ function campUnlock(){
 
 /* the overlay: the map list, and a tier pick for one map */
 var campRet=null;
+/* every new card in the dialog (and closing it) ends the card before it: async work started by that card checks CARDGEN before it
+   writes, and the share preview's object URL is revoked */
+var CARDGEN=0,CARDURL=null;
+function cardEnd(){ CARDGEN++; if(CARDURL){ var u=CARDURL; CARDURL=null; setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },1000); } }  /* a moment late, so an image still loading it does not log an error */
 function campShow(){
+  cardEnd();
   if($('camp').hidden){ campRet=document.activeElement; if(running&&!paused){setPaused(true);} }
   $('camp').hidden=false;
 }
-function campClose(){ $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
+function campClose(){ cardEnd(); $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
 function campList(){
   campShow();
   var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. Each star races a different set of rivals. With chill mode off a win earns the star in '+
@@ -3625,7 +3738,7 @@ function campList(){
     (s.medalStars?', '+s.medalStars+' with a medal':'')+(s.noDeathMaps?', '+s.noDeathMaps+(s.noDeathMaps===1?' map':' maps')+' without a crash':'')+'.</p><ol class="cmp-list">';
   CAMPAIGN.forEach(function(c,i){
     var open=campOpen(i),m=campMap(i),b=campBest(i);
-    h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+'</span><span class="cmp-hint">'+
+    h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+(open&&campIsNew(i)?' <span class="cmp-new">New map</span>':'')+'</span><span class="cmp-hint">'+
       (open?esc(c.hint):'Locked. Earn a star on map '+i+' to open it.')+'</span></span><span class="cmp-meta">'+(open?mapStars(i)+'<span>'+(b===null?'no time yet':'best '+fmtT(b))+'</span>'+(m.noDeaths?'<span class="cmp-nd">no deaths</span>':''):'<span>locked</span>')+'</span></button></li>';
   });
   h+='</ol><div class="cmp-foot"><span class="note">Free play (New run) races a random track against all three.</span><button type="button" id="camp-free">Free play</button></div>';
@@ -3762,11 +3875,11 @@ function campShowEnd(i,t,res,o){
    res.chill and res.diff (0 Easy, 1 Medium, 2 Hard) say how it was won. load() re-reads storage (for migration tests); setOpenTiers(b) flips CAMP_OPEN_TIERS */
 window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,KEY_V1:CAMP_KEY_V1,DIFF:CAMP_DIFF,state:function(){return CS;},summary:campSummary,record:campRecord,reset:campReset,list:campList,tiers:campTiers,start:campStart,
   end:function(i,t,res){ CAMP={i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()}; running=false; $('ready').hidden=true;
-    showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play again');
+    showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play another');
     campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
   load:function(){ CS=campLoad(); return CS; },setOpenTiers:function(b){ CAMP_OPEN_TIERS=!!b; },setDiff:campSetDiff,
   locked:function(){ return !!CAMP_SAVED; },playerStrikes:function(){ return PSTRIKES; },
-  stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen};
+  stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen,former:campFormer,credit:campCredit,isNew:campIsNew,allStarred:campAllStarred};
 window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(location.search).get('epilogue')){campList();} });
 /* ---------- campaign (end) ---------- */
 /* ---------- daily (begin) ---------- */
@@ -3776,35 +3889,39 @@ window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(
    win with chill mode on (at Go or turned on during the race) earns a lounge chair. A tier keeps both flags and its best winning time.
    Every Go is an attempt, counted per day and tier. A daily race runs on the default knobs (DEF) plus the day's twist, with chill mode
    left to the player; campaign and free play never see the twist.
-   Briefing gate: before the first daily race of a day the player answers the day's quiz (BRIEFINGS[dayNumber % length], answers shown
+   Briefing gate: before the first daily race of a day the player answers the day's quiz (dailyBrief: a fixed schedule, see BRIEFINGS; answers shown
    in an order seeded by the date). A right answer opens the day and earns the broccoli badge. A wrong answer shows the right one, the
    explanation and a Go deeper link; opening that link opens the day. We cannot tell whether anyone read it, and never say so.
    Storage: DAILY_KEY holds per day {brief:{g,ok,open,deep}, t:[{att,star,chair,best}]}; DAILY_LOG_KEY holds the best input log per day
    and tier (last 14 days). Every access is in try/catch; without storage the page keeps it in memory. */
-/* BRIEFINGS item: {id, kind, title, body, question, answers:[a,b,c], correct, explain, twist:{name, knob, direction, why}, deeper:{label,url}, sources:[...]}.
-   twist.name must be a key of TWISTS. deeper.url carries the utm tags. */
+/* BRIEFINGS item: {id, kind, added, title, body, question, answers:[a,b,c], correct, explain, twist:{name, knob, direction, why}, deeper:{label,url}, sources:[...]}.
+   twist.name must be a key of TWISTS. deeper.url carries the utm tags.
+   added is the UTC date (YYYY-MM-DD) the item joins the schedule. Schedule rule, fixed for every date: a date's briefing is picked
+   only from the items added on or before that date (dates before the first added date use the first day's items), in array order,
+   as pool[dayNumber % pool.length]. So to add a briefing, append it at the end with an added date after today (UTC): every date
+   before that keeps its briefing and twist, and only later dates change. Never edit an existing added date or reorder the array.
+   check/content-check.mjs checks this. */
 var BRIEFINGS=[
-  {"id":"gpt4o-sycophancy","kind":"barrier","title":"The Chatbot That Agreed With Everything","body":"On April 25, 2025, OpenAI updated GPT-4o and it turned into a flatterer. It agreed with everyone about everything, bad ideas included. Users noticed fast, and on April 28 OpenAI began rolling it back.","question":"What went wrong with the April 2025 GPT-4o update?","answers":["It became too flattering and agreeable","It started refusing every request","It leaked users' private chats"],"correct":0,"explain":"OpenAI said the update leaned too hard on short-term thumbs-up feedback, and promised to check for sycophancy before every launch.","twist":{"name":"Taller Barriers","knob":"barScale","direction":"up","why":"Barriers are public failures. After this one, every lab checked its models harder, so the walls are taller today."},"deeper":{"label":"OpenAI: Expanding on sycophancy","url":"https://openai.com/index/expanding-on-sycophancy/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/index/expanding-on-sycophancy/","https://techcrunch.com/2025/04/29/openai-explains-why-chatgpt-became-too-sycophantic"]},
-  {"id":"bing-chat-caps","kind":"barrier","title":"Bing Chat Gets a Turn Limit","body":"In February 2023, Microsoft's new Bing chat had some very strange long conversations. On February 17 Microsoft capped chats at 5 turns per session and 50 per day, saying long sessions could confuse the model. Four days later it raised that to 6 and 60.","question":"How did Microsoft respond to Bing chat's odd long conversations in February 2023?","answers":["It capped how many turns a chat could have","It shut Bing chat down for a year","It made chat free for everyone"],"correct":0,"explain":"Microsoft said very long sessions could confuse the model, so it limited turns, then loosened the cap on February 21.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"Microsoft throttled use of its own product to stay safe, which is what slower investment feels like: less growth per lap."},"deeper":{"label":"Microsoft Bing blog: Increasing limits on chat sessions","url":"https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions","https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html"]},
-  {"id":"chatgpt-redis-leak","kind":"strike","title":"A Library Bug Showed Strangers Your Chats","body":"On March 20, 2023, a bug in redis-py, an open-source library ChatGPT relied on, let some users see strangers' chat titles. Payment details of 1.2 percent of Plus subscribers active in a nine-hour window may have shown too. OpenAI took ChatGPT offline.","question":"What caused the March 2023 ChatGPT data exposure?","answers":["A bug in an open-source library called redis-py","A hacker group stealing passwords","An employee emailing the wrong file"],"correct":0,"explain":"A rare timing bug in redis-py could hand one user's data to another, and OpenAI patched it and notified affected users.","twist":{"name":"Only 2 Strikes","knob":"strikes","direction":"2","why":"A leak is a scrape, not a crash. But trust is slow to win back, so today you get two strikes, not three. A hard day."},"deeper":{"label":"OpenAI: March 20 ChatGPT outage","url":"https://openai.com/index/march-20-chatgpt-outage/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/index/march-20-chatgpt-outage/","https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/"]},
-  {"id":"hf-malicious-models","kind":"gap","title":"Download a Model, Get a Backdoor","body":"In February 2024, security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some used Python's pickle format to run code the moment a model loaded, including one that opened a reverse shell to the attacker.","question":"What did JFrog find on Hugging Face in February 2024?","answers":["Around 100 models carrying malicious code","A leaked copy of GPT-4","A fake site stealing logins"],"correct":0,"explain":"Loading a pickle-based model can execute code, so downloading a model can be as risky as running an unknown program.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"Supply-chain attacks widen the attack surface: every shared model is another place the track can drop out from under you."},"deeper":{"label":"JFrog: Data scientists targeted by malicious Hugging Face models","url":"https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/","https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/"]},
-  {"id":"asl3-bio","kind":"gap","title":"A Lab Can't Rule Out Bioweapon Help","body":"On May 22, 2025, Anthropic switched on its ASL-3 protections for Claude Opus 4 as a precaution, saying it could not clearly rule out help with chemical, biological, radiological or nuclear weapons. In July, OpenAI treated ChatGPT Agent as High bio capability, also as a precaution.","question":"Why did Anthropic turn on ASL-3 protections for Claude Opus 4?","answers":["It could not rule out serious weapons-related risk","A customer filed a lawsuit","The model failed its coding tests"],"correct":0,"explain":"Anthropic called it a precaution because ruling out ASL-3 level CBRN risk was no longer possible, not because it had proved the threshold was crossed.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"A bio gap is a risk that could end everything; the more capable the model, the wider the jump you have to clear."},"deeper":{"label":"Anthropic: Activating AI Safety Level 3 protections","url":"https://www.anthropic.com/news/activating-asl3-protections?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/activating-asl3-protections","https://fortune.com/2025/07/18/openai-chatgpt-agent-could-aid-dangerous-bioweapon-development"]},
-  {"id":"italy-chatgpt-ban","kind":"barrier","title":"Italy Pulls the Plug on ChatGPT","body":"On March 31, 2023, Italy's data protection authority, the Garante, temporarily blocked ChatGPT over privacy concerns, including training data and no age checks. OpenAI went offline in Italy. Access returned April 28 after it added age verification and privacy changes.","question":"Which body temporarily blocked ChatGPT in March 2023?","answers":["Italy's data protection authority","The US Senate","Microsoft's legal team"],"correct":0,"explain":"The Garante said OpenAI lacked a legal basis for mass data collection and did not check users' ages; the block lifted after OpenAI made changes.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"A regulator closing a whole market for a month is lost revenue and lost momentum, which is exactly what slower investment means."},"deeper":{"label":"Al Jazeera: ChatGPT available in Italy a month after temporary ban","url":"https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban","https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/"]},
-  {"id":"superalignment-dissolved","kind":"race","title":"The Safety Team With 20 Percent of the Compute","body":"OpenAI said in 2023 it would give its Superalignment team 20 percent of its compute. In May 2024 the team was reported disbanded after leaders Ilya Sutskever and Jan Leike left. Leike said safety had taken a backseat to shiny products.","question":"Who said safety culture had taken a backseat to shiny products when leaving OpenAI?","answers":["Jan Leike","Sam Altman","Satya Nadella"],"correct":0,"explain":"Leike, co-lead of Superalignment, said so on X in May 2024; OpenAI said the work would be folded into its wider research.","twist":{"name":"Faster Singularity","knob":"singSpeed","direction":"up","why":"Racing with no Build is the game's version of this story: when speed beats safety work, the finish line comes sooner."},"deeper":{"label":"NBC News: OpenAI dissolves team focused on long-term AI risks","url":"https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824","https://www.bloomberg.com/news/articles/2024-05-17/openai-dissolves-key-safety-team-after-chief-scientist-ilya-sutskever-s-exit"]},
-  {"id":"distillation-allegations","kind":"shadow","title":"Your Rival Learns From Your Answers","body":"In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fraudulent accounts to pull over 16 million exchanges from Claude. In January 2025 OpenAI alleged DeepSeek had distilled its models. These are allegations.","question":"What is distillation, as Anthropic uses the word?","answers":["Training a weaker model on a stronger model's outputs","Compressing a model to run on a phone","Deleting data a model memorized"],"correct":0,"explain":"Anthropic calls distillation a legitimate, widely used method, and says the problem is doing it at scale through fake accounts to copy a rival.","twist":{"name":"Rivals Copy You More","knob":"share","direction":"up","why":"Distillation lets a trailing lab absorb the leader's skills, which is the same as rivals shadowing your lead more closely."},"deeper":{"label":"Anthropic: Detecting and preventing distillation attacks","url":"https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks","https://www.euronews.com/2025/01/29/openai-says-chinese-companies-are-trying-to-use-us-models-to-train-ai"]},
-  {"id":"statement-on-ai-risk","kind":"singularity","title":"One Sentence Signed by the Lab Bosses","body":"In late May 2023, the Center for AI Safety published a one-sentence statement: mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war. Signers included Geoffrey Hinton, Sam Altman, Demis Hassabis and Dario Amodei.","question":"What did the May 2023 Statement on AI Risk put alongside AI extinction risk as a global priority?","answers":["Pandemics and nuclear war","Climate change and inflation","Cybercrime and piracy"],"correct":0,"explain":"The statement is a single sentence. Signers included the heads of OpenAI, Google DeepMind and Anthropic, plus pioneers like Hinton and Bengio.","twist":{"name":"Higher Extinction Odds","knob":"singOdds","direction":"up","why":"The people building the race said extinction was a real risk, so the final roll should feel heavier."},"deeper":{"label":"Center for AI Safety: Statement on AI Risk","url":"https://aistatement.com/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://aistatement.com/"]},
-  {"id":"ai-2027-race-ending","kind":"singularity","title":"A Scenario: Factories Tiling the Prairies","body":"AI 2027 is a forecast scenario, not a report of fact. In its race ending, AI-run special economic zones end up building a million new robots a month. Around 2030 the AI tiles the prairies and ice caps with factories. Humans do not fare well.","question":"In the AI 2027 race ending, what happens in the special economic zones?","answers":["AI-directed factories build robots at huge scale","Humans vote to shut down the AI","Researchers announce AI is solved and safe"],"correct":0,"explain":"AI 2027 is a made-up but carefully argued scenario; in this ending, a misaligned AI uses the zones to industrialize the planet.","twist":{"name":"Faster Singularity","knob":"singSpeed","direction":"up","why":"The scenario compresses the jump from smarter AI to a transformed Earth into a few years, so the singularity arrives sooner."},"deeper":{"label":"80,000 Hours / AI in Context: We're Not Ready for Superintelligence","url":"https://www.youtube.com/watch?v=5KVDDfAkRgc&utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://ai-2027.com/race","https://www.youtube.com/watch?v=5KVDDfAkRgc"]}
+  {"id":"gpt4o-sycophancy","kind":"barrier","added":"2026-10-28","title":"The Chatbot That Agreed With Everything","body":"On April 25, 2025, OpenAI updated GPT-4o and it turned into a flatterer. It agreed with everyone about everything, bad ideas included. Users noticed fast, and on April 28 OpenAI began rolling it back.","question":"What went wrong with the April 2025 GPT-4o update?","answers":["It became too flattering and agreeable","It started refusing every request","It leaked users' private chats"],"correct":0,"explain":"OpenAI said the update leaned too hard on short-term thumbs-up feedback, and promised to check for sycophancy before every launch.","twist":{"name":"Hard Lessons","knob":"spill","direction":"down","why":"This lesson was public, so every lab got it for free. Most lessons are not. Today walls are a little taller, and a lab that climbs one gives the other labs no height."},"deeper":{"label":"OpenAI: Expanding on sycophancy","url":"https://openai.com/index/expanding-on-sycophancy/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/index/expanding-on-sycophancy/","https://techcrunch.com/2025/04/29/openai-explains-why-chatgpt-became-too-sycophantic"]},
+  {"id":"bing-chat-caps","kind":"barrier","added":"2026-10-28","title":"Bing Chat Gets a Turn Limit","body":"In February 2023, Microsoft's new Bing chat had some very strange long conversations. On February 17 Microsoft capped chats at 5 turns per session and 50 per day, saying long sessions could confuse the model. Four days later it raised that to 6 and 60.","question":"How did Microsoft respond to Bing chat's odd long conversations in February 2023?","answers":["It capped how many turns a chat could have","It shut Bing chat down for a year","It made chat free for everyone"],"correct":0,"explain":"Microsoft said very long sessions could confuse the model, so it limited turns, then loosened the cap on February 21.","twist":{"name":"Hard Lessons","knob":"spill","direction":"down","why":"Microsoft hit a barrier in public and had to fix its own product, fast. Today every lab learns the hard way: walls are a little taller, and a lab that climbs one gives the others no height."},"deeper":{"label":"Microsoft Bing blog: Increasing limits on chat sessions","url":"https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions","https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html"]},
+  {"id":"chatgpt-redis-leak","kind":"strike","added":"2026-10-28","title":"A Library Bug Showed Strangers Your Chats","body":"On March 20, 2023, a bug in redis-py, an open-source library ChatGPT relied on, let some users see strangers' chat titles. Payment details of 1.2 percent of Plus subscribers active in a nine-hour window may have shown too. OpenAI took ChatGPT offline.","question":"What caused the March 2023 ChatGPT data exposure?","answers":["A bug in an open-source library called redis-py","A hacker group stealing passwords","An employee emailing the wrong file"],"correct":0,"explain":"A rare timing bug in redis-py could hand one user's data to another, and OpenAI patched it and notified affected users.","twist":{"name":"Only 2 Strikes","knob":"strikes","direction":"2","why":"A leak is a strike against trust, and trust is slow to win back. Today every lab gets two strikes, not three. A hard day."},"deeper":{"label":"OpenAI: March 20 ChatGPT outage","url":"https://openai.com/index/march-20-chatgpt-outage/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/index/march-20-chatgpt-outage/","https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/"]},
+  {"id":"hf-malicious-models","kind":"gap","added":"2026-10-28","title":"Download a Model, Get a Backdoor","body":"In February 2024, security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some used Python's pickle format to run code the moment a model loaded, including one that opened a reverse shell to the attacker.","question":"What did JFrog find on Hugging Face in February 2024?","answers":["Around 100 models carrying malicious code","A leaked copy of GPT-4","A fake site stealing logins"],"correct":0,"explain":"Loading a pickle-based model can execute code, so downloading a model can be as risky as running an unknown program.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"Supply-chain attacks widen the attack surface: every shared model is another place the track can drop out from under you."},"deeper":{"label":"JFrog: Data scientists targeted by malicious Hugging Face models","url":"https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/","https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/"]},
+  {"id":"asl3-bio","kind":"gap","added":"2026-10-28","title":"A Lab Can't Rule Out Bioweapon Help","body":"On May 22, 2025, Anthropic switched on its ASL-3 protections for Claude Opus 4 as a precaution, saying it could not clearly rule out help with chemical, biological, radiological or nuclear weapons. In July, OpenAI treated ChatGPT Agent as High bio capability, also as a precaution.","question":"Why did Anthropic turn on ASL-3 protections for Claude Opus 4?","answers":["It could not rule out serious weapons-related risk","A customer filed a lawsuit","The model failed its coding tests"],"correct":0,"explain":"Anthropic called it a precaution because ruling out ASL-3 level CBRN risk was no longer possible, not because it had proved the threshold was crossed.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"A bio gap is a risk that could end everything; the more capable the model, the wider the jump you have to clear."},"deeper":{"label":"Anthropic: Activating AI Safety Level 3 protections","url":"https://www.anthropic.com/news/activating-asl3-protections?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/activating-asl3-protections","https://fortune.com/2025/07/18/openai-chatgpt-agent-could-aid-dangerous-bioweapon-development"]},
+  {"id":"italy-chatgpt-ban","kind":"barrier","added":"2026-10-28","title":"Italy Pulls the Plug on ChatGPT","body":"On March 31, 2023, Italy's data protection authority, the Garante, temporarily blocked ChatGPT over privacy concerns, including training data and no age checks. OpenAI went offline in Italy. Access returned April 28 after it added age verification and privacy changes.","question":"Which body temporarily blocked ChatGPT in March 2023?","answers":["Italy's data protection authority","The US Senate","Microsoft's legal team"],"correct":0,"explain":"The Garante said OpenAI lacked a legal basis for mass data collection and did not check users' ages; the block lifted after OpenAI made changes.","twist":{"name":"Hard Lessons","knob":"spill","direction":"down","why":"A regulator closed a whole market until OpenAI changed. Each lab has to clear a wall like that on its own, so today climbing one gives the others no height, and walls are a little taller."},"deeper":{"label":"Al Jazeera: ChatGPT available in Italy a month after temporary ban","url":"https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban","https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/"]},
+  {"id":"superalignment-dissolved","kind":"race","added":"2026-10-28","title":"The Safety Team With 20 Percent of the Compute","body":"OpenAI said in 2023 it would give its Superalignment team 20 percent of its compute. In May 2024 the team was reported disbanded after leaders Ilya Sutskever and Jan Leike left. Leike said safety had taken a backseat to shiny products.","question":"Who said safety culture had taken a backseat to shiny products when leaving OpenAI?","answers":["Jan Leike","Sam Altman","Satya Nadella"],"correct":0,"explain":"Leike, co-lead of Superalignment, said so on X in May 2024; OpenAI said the work would be folded into its wider research.","twist":{"name":"Only 2 Strikes","knob":"strikes","direction":"2","why":"With the safety team gone, there is less room for mistakes. Today every lab gets two strikes, not three."},"deeper":{"label":"NBC News: OpenAI dissolves team focused on long-term AI risks","url":"https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824","https://www.bloomberg.com/news/articles/2024-05-17/openai-dissolves-key-safety-team-after-chief-scientist-ilya-sutskever-s-exit"]},
+  {"id":"distillation-allegations","kind":"shadow","added":"2026-10-28","title":"Your Rival Learns From Your Answers","body":"In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fraudulent accounts to pull over 16 million exchanges from Claude. In January 2025 OpenAI alleged DeepSeek had distilled its models. These are allegations.","question":"What is distillation, as Anthropic uses the word?","answers":["Training a weaker model on a stronger model's outputs","Compressing a model to run on a phone","Deleting data a model memorized"],"correct":0,"explain":"Anthropic calls distillation a legitimate, widely used method, and says the problem is doing it at scale through fake accounts to copy a rival.","twist":{"name":"Rivals Copy You More","knob":"shareRiv","direction":"up","why":"Distillation lets a rival soak up your gains for far less than you paid. Today rivals get 80 percent of each level-up the leader wins, not 40, and height you paid for buys less air on every jump."},"deeper":{"label":"Anthropic: Detecting and preventing distillation attacks","url":"https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks","https://www.euronews.com/2025/01/29/openai-says-chinese-companies-are-trying-to-use-us-models-to-train-ai"]},
+  {"id":"statement-on-ai-risk","kind":"singularity","added":"2026-10-28","title":"One Sentence Signed by the Lab Bosses","body":"In late May 2023, the Center for AI Safety published a one-sentence statement: mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war. Signers included Geoffrey Hinton, Sam Altman, Demis Hassabis and Dario Amodei.","question":"What did the May 2023 Statement on AI Risk put alongside AI extinction risk as a global priority?","answers":["Pandemics and nuclear war","Climate change and inflation","Cybercrime and piracy"],"correct":0,"explain":"The statement is a single sentence. Signers included the heads of OpenAI, Google DeepMind and Anthropic, plus pioneers like Hinton and Bengio.","twist":{"name":"Wider Singularity","knob":"singGap","direction":"up","why":"The people building the race said extinction is a real risk. Today the last leap is longer: the singularity gap is wider, and a fall there can end the run for everyone."},"deeper":{"label":"Center for AI Safety: Statement on AI Risk","url":"https://aistatement.com/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://aistatement.com/"]},
+  {"id":"ai-2027-race-ending","kind":"singularity","added":"2026-10-28","title":"A Scenario: Factories Tiling the Prairies","body":"AI 2027 is a forecast scenario, not a report of fact. In its race ending, AI-run special economic zones end up building a million new robots a month. Around 2030 the AI tiles the prairies and ice caps with factories. Humans do not fare well.","question":"In the AI 2027 race ending, what happens in the special economic zones?","answers":["AI-directed factories build robots at huge scale","Humans vote to shut down the AI","Researchers announce AI is solved and safe"],"correct":0,"explain":"AI 2027 is a made-up but carefully argued scenario; in this ending, a misaligned AI uses the zones to industrialize the planet.","twist":{"name":"Wider Singularity","knob":"singGap","direction":"up","why":"The scenario's jump from smarter AI to a remade Earth is a huge one. Today the singularity gap is wider too, so build for it before you leap."},"deeper":{"label":"80,000 Hours / AI in Context: We're Not Ready for Superintelligence","url":"https://www.youtube.com/watch?v=5KVDDfAkRgc&utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://ai-2027.com/race","https://www.youtube.com/watch?v=5KVDDfAkRgc"]}
 ];
-/* Twists: fixed knob overrides for that day's daily races only. Values measured with the custom bot on tier 1 (solo), 92 daily seeds
-   (October to December 2026): see the report in the pull request. */
+/* Twists: fixed knob overrides for that day's daily races only. Each one lowered the custom bot's wins on all three daily tiers, with
+   chill off and on, on held-out daily seeds (bot play only): see DESIGN-NOTES.md, "Daily twists". shareRiv touches only the rivals.
+   Slowing only your own Build (investYou) was tried and dropped: it made the versus tiers easier on some seed blocks. check/content-check.mjs re-checks this on a small block */
 var TWISTS={
-  'Taller Barriers':{barScale:150},
-  'Wider Gaps':{gapScale:115},
-  'Rivals Copy You More':{share:60},
+  'Hard Lessons':{barScale:150,spill:0},
+  'Wider Gaps':{gapScale:125},
+  'Rivals Copy You More':{shareRiv:80,airH:12},
   'Only 2 Strikes':{strikes:2},
-  'Higher Extinction Odds':{singOdds:45},
-  'Faster Singularity':{singSpeed:4},
-  'Slower Investment':{invest:12}
+  'Wider Singularity':{singGap:140}
 };
 /* tier rosters, the same for everyone. Sprinter with Steward was the hardest of the rosters tried for the custom bot on daily seeds */
 var DAILY_TIERS=[{name:'solo',roster:[]},{name:'vs Steward',roster:['steward']},{name:'vs Sprinter and Steward',roster:['sprinter','steward']}];
@@ -3822,7 +3939,13 @@ function dailySeed(ds){
   return h>>>0;
 }
 function dailyDayNum(ds){ return Math.floor(Date.parse(ds+'T00:00:00Z')/864e5); }
-function dailyBrief(ds){ var n=BRIEFINGS.length; return BRIEFINGS[((dailyDayNum(ds)%n)+n)%n]; }
+/* the day's briefing, by the schedule rule above BRIEFINGS */
+function dailyPool(ds){
+  var first=BRIEFINGS[0].added,i,p=[];
+  for(i=0;i<BRIEFINGS.length;i++){ if(BRIEFINGS[i].added<=(ds<first?first:ds)){ p.push(BRIEFINGS[i]); } }
+  return p;
+}
+function dailyBrief(ds){ var p=dailyPool(ds),n=p.length; return p[((dailyDayNum(ds)%n)+n)%n]; }
 function dailyTwist(b){ return TWISTS[b.twist.name]||{}; }
 /* display order of the three answers, seeded by the date: o[k] is the answer index shown in slot k */
 function dailyOrder(ds){ var r=rngMaker((dailySeed(ds)^0x5BD1E995)>>>0),o=[0,1,2],i,j,x; for(i=2;i>0;i--){ j=Math.floor(r()*(i+1)); x=o[i]; o[i]=o[j]; o[j]=x; } return o; }
@@ -3834,8 +3957,20 @@ function dailyDay(ds){
   if(!d||typeof d!=='object'){ d=DS.days[ds]={}; }
   if(!d.brief||typeof d.brief!=='object'){ d.brief={}; }
   if(!Array.isArray(d.t)){ d.t=[]; }
-  for(t=0;t<3;t++){ x=d.t[t]; if(!x||typeof x!=='object'){ x=d.t[t]={}; } x.att=campNum(x.att); x.star=!!x.star; x.chair=!!x.chair; if(typeof x.best!=='number'||!isFinite(x.best)){ x.best=null; } }
+  for(t=0;t<3;t++){ x=d.t[t]; if(!x||typeof x!=='object'){ x=d.t[t]={}; } x.att=campNum(x.att); x.star=!!x.star; x.chair=!!x.chair;
+    if(typeof x.best!=='number'||!isFinite(x.best)){ x.best=null; }
+    if(typeof x.bs!=='number'||!isFinite(x.bs)){ x.bs=null; } if(typeof x.bc!=='number'||!isFinite(x.bc)){ x.bc=null; }
+    if(x.best!==null&&x.bs===null&&x.bc===null){ dailySplitBest(ds,t,x); } }
   return d;
+}
+/* best times are kept per tier and per kind of win: bs for a star (chill off), bc for a lounge chair (chill on). best stays the
+   fastest of both, as before. Older data had only best: it goes to the one kind the tier was won with, or, if it has both, to the
+   kind of the stored best log with that time. If neither tells, it stays in best only and is shown as "best (kind not recorded)" */
+function dailySplitBest(ds,t,x){
+  if(x.star&&!x.chair){ x.bs=x.best; return; }
+  if(x.chair&&!x.star){ x.bc=x.best; return; }
+  var L=DLOGS&&DLOGS[ds]&&DLOGS[ds][t],k,r;
+  for(k in {star:1,chair:1}){ r=L&&L[k]&&L[k].result; if(r&&r.won&&Math.abs(r.t-x.best)<0.06){ if(k==='star'){ x.bs=x.best; } else { x.bc=x.best; } return; } }
 }
 function dailyRes(x){ return x.star?'star':(x.chair?'chair':''); }
 function dailyLabel(r){ return r==='star'?'star (chill off)':(r==='chair'?'lounge chair (chill on)':'not won yet'); }
@@ -3845,9 +3980,17 @@ function dailyIcon(r,label){
   return starIcon({medal:0,chill:false},label);
 }
 /* what each briefing kind is in the game, in words (shown after the guess) */
-var KIND_WORDS={barrier:'a barrier, a public failure everyone learned from',gap:'a gap, a risk that could end everything',strike:'a strike, a near miss',
+var KIND_WORDS={barrier:'a barrier, a public failure everyone learned from',gap:'a gap, a risk that could end everything',strike:'a strike, a costly slip',
   shadow:'a shadow, rivals copying your lead',race:'the race, speed over safety',singularity:'the singularity, progress outrunning human control'};
 var BROC='<svg class="si dly-broc" viewBox="0 0 24 24" aria-hidden="true"><path class="st" d="M10 13h4l1 9h-6z"/><circle cx="7" cy="10" r="4.5"/><circle cx="17" cy="10" r="4.5"/><circle cx="12" cy="7" r="5"/></svg>';
+/* a tier's best times, one per kind of win */
+function dailyBestHtml(x){
+  var h='';
+  if(x.bs!==null){ h+='<span>star best '+fmtT(x.bs)+'</span>'; }
+  if(x.bc!==null){ h+='<span>chair best '+fmtT(x.bc)+'</span>'; }
+  if(x.bs===null&&x.bc===null&&x.best!==null){ h+='<span>best '+fmtT(x.best)+' (kind not recorded)</span>'; }
+  return h;
+}
 function dailyRivals(t){ var ro=DAILY_TIERS[t].roster; return ro.length?'<b>vs</b> '+rivalsHtml(ro):'<b>Solo</b>, just you and the track'; }
 function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
 
@@ -3877,7 +4020,16 @@ function recEnd(){
   delete REC.last; LASTREC=REC; REC=null; return LASTREC;
 }
 function recBetter(a,b){ if(!b||!b.result){return true;} if(a.result.won!==b.result.won){return a.result.won;} return a.result.won?a.result.t<b.result.t:a.result.x>b.result.x; }
-function dailyLogsLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(DAILY_LOG_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
+/* DLOGS[date][tier] is {star: best chill-off log, chair: best chill-on log}. An older log stored straight under [tier] moves to the
+   kind its header's result says (result.chill) */
+function dailyLogsLoad(){
+  var o=null; try{ o=JSON.parse(window.localStorage.getItem(DAILY_LOG_KEY)||'null'); }catch(e){ o=null; }
+  if(!o||typeof o!=='object'){ return {}; }
+  var ds,t,L,r;
+  for(ds in o){ L=o[ds]; if(!L||typeof L!=='object'){ continue; }
+    for(t=0;t<3;t++){ r=L[t]; if(r&&typeof r==='object'&&r.h&&r.result){ L[t]={}; L[t][r.result.chill?'chair':'star']=r; } } }
+  return o;
+}
 function dailyLogsSave(){ var ks=Object.keys(DLOGS).sort(); while(ks.length>14){ delete DLOGS[ks.shift()]; } try{ window.localStorage.setItem(DAILY_LOG_KEY,JSON.stringify(DLOGS)); return true; }catch(e){ return false; } }
 
 /* race hooks, called from start(), go(), endScreen() */
@@ -3906,15 +4058,17 @@ function dailyEnd(){
   $('ov-replay').hidden=!!CAMP; $('ov-daily').hidden=!!CAMP; $('ov-list').hidden=!!DLY;
   $('ov-replay').classList.remove('primary'); $('ov-daily').classList.remove('primary');
   if(!DLY){ if(!CAMP){ var ff=$('ov-foot').querySelector('.btns'); ['ov-replay','ov-daily','ov-list'].forEach(function(id){ ff.appendChild($(id)); }); } return; }
-  var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),prev=x.best,parts=[];
-  if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x.best===null||G.t<x.best){ x.best=Math.round(G.t*10)/10; } }
+  var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),bk=chill?'bc':'bs',prev=x[bk],parts=[],tm=Math.round(G.t*10)/10;
+  if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x[bk]===null||tm<x[bk]){ x[bk]=tm; } if(x.best===null||tm<x.best){ x.best=tm; } }
   var saved=dailySave();
-  if(rec&&rec.h.human){ var L=DLOGS[ds]; if(!L||typeof L!=='object'){ L=DLOGS[ds]={}; } if(recBetter(rec,L[t])){ L[t]=rec; dailyLogsSave(); } }
+  if(rec&&rec.h.human){ var L=DLOGS[ds],lk=rec.result.chill?'chair':'star'; if(!L||typeof L!=='object'){ L=DLOGS[ds]={}; } if(!L[t]||typeof L[t]!=='object'){ L[t]={}; }
+    if(recBetter(rec,L[t][lk])){ L[t][lk]=rec; dailyLogsSave(); } }
   campUnlock();
   if(won){
     if(!chill){ parts.push(had==='star'?'Tier '+(t+1)+' won again with chill off. '+dailyIcon('star')+' Star kept.':'Tier '+(t+1)+' won with chill off: star earned '+dailyIcon('star')+'.'); }
     else { parts.push(had?'Tier '+(t+1)+' won again with chill on.':'Tier '+(t+1)+' won with chill on: lounge chair earned '+dailyIcon('chair')+'.'); if(!x.star){ parts.push('Turn chill off to race it for a star.'); } }
-    parts.push(prev!==null&&x.best<prev?'<span class="new">New best: '+fmtT(x.best)+'</span> (was '+fmtT(prev)+').':'Best '+fmtT(x.best)+'.');
+    var kw=chill?'lounge chair':'star';
+    parts.push(prev!==null&&x[bk]<prev?'<span class="new">New best for a '+kw+': '+fmtT(x[bk])+'</span> (was '+fmtT(prev)+').':'Best for a '+kw+': '+fmtT(x[bk])+'.');
   } else {
     parts.push('No win on tier '+(t+1)+' this time.');
   }
@@ -3947,7 +4101,7 @@ function dailyList(ds){
   for(t=0;t<3;t++){
     x=d.t[t]; r=dailyRes(x); if(first<0&&r!=='star'){ first=t; }
     h+='<button type="button" class="cmp-tier" data-tier="'+t+'"><span><span class="cmp-ts"><span class="cmp-tn">Tier '+(t+1)+'</span>'+dailyIcon(r,'tier '+(t+1)+', '+dailyLabel(r))+'</span><br>'+dailyRivals(t)+'</span>'+
-      '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+(x.best!==null?'<span>best '+fmtT(x.best)+'</span>':'')+'</span></button>';
+      '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+dailyBestHtml(x)+'</span></button>';
   }
   h+='</div>'+(d.brief.ok?'<p class="note dly-badge">'+BROC+' Broccoli badge: briefing right first time.</p>':'')+
     '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div>';
@@ -4010,24 +4164,37 @@ function dailyShowAnswer(ds,now){
     $('camp-body').appendChild(st);
   }
   var dp=$('dly-deep');
-  if(dp){ dp.addEventListener('click',function(){
-    var dd=dailyDay(ds); dd.brief.deep=true; if(!dd.brief.open){ dd.brief.open=true; dailySave(); $('dly-gofoot').hidden=false; var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
-  }); }
+  /* opening the link opens the day, however it is opened: click, middle click (auxclick), the context menu (open in new tab),
+     a press of the pointer, or Enter on the focused link */
+  function deep(e){
+    if(e&&e.type==='keydown'&&e.key!=='Enter'){ return; }
+    var dd=dailyDay(ds),gf=$('dly-gofoot'); dd.brief.deep=true;
+    if(!dd.brief.open){ dd.brief.open=true; dailySave(); if(gf){ gf.hidden=false; } var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
+  }
+  if(dp){ ['click','auxclick','contextmenu','pointerdown','keydown'].forEach(function(t){ dp.addEventListener(t,deep); }); }
   if(now){ try{ (ok?$('dly-go'):dp).focus(); }catch(e){} }  /* scrolls the card so the next step is in view */
 }
 
 /* share: a PNG poster in the game's pixel style, plus a text version. navigator.share with the file where it works, else the PNG is
    downloaded and the text copied. The poster is drawn ahead (dailyPrime) so share() runs inside the tap */
 function dailyShareInfo(ds){
-  var d=dailyDay(ds),b=dailyBrief(ds),best=null,wins=0,rows=[],t,x;
-  for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } if(x.best!==null&&(best===null||x.best<best)){ best=x.best; } rows.push({res:dailyRes(x),att:x.att,best:x.best,name:DAILY_TIERS[t].name}); }
-  return {ds:ds,twist:b.twist.name,rows:rows,best:best,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
+  var d=dailyDay(ds),b=dailyBrief(ds),wins=0,rows=[],t,x;
+  for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } rows.push({res:dailyRes(x),star:x.star,chair:x.chair,att:x.att,bs:x.bs,bc:x.bc,best:x.bs===null&&x.bc===null?x.best:null,name:DAILY_TIERS[t].name}); }
+  return {ds:ds,twist:b.twist.name,rows:rows,wins:wins,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
     link:utm('https://'+DAILY_SITE+'?daily='+ds,'daily-share')};
+}
+/* "star 61.2 s, lounge chair 70.1 s": each kind of win with its own best time */
+function dailyRowWords(r,emoji){
+  var p=[];
+  if(r.star){ p.push((emoji?'⭐ ':'')+'star'+(r.bs!==null?' '+fmtT(r.bs):'')); }
+  if(r.chair){ p.push((emoji?'🪑 ':'')+'lounge chair'+(r.bc!==null?' '+fmtT(r.bc):'')); }
+  if(!p.length){ p.push((emoji?'⬜ ':'')+'not yet'); }
+  else if(r.best!==null){ p.push('best '+fmtT(r.best)); }
+  return p.join(', ');
 }
 function dailyShareText(ds){
   var s=dailyShareInfo(ds),L=['Pacing the Frontier, daily '+ds,'Twist: '+s.twist];
-  s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+(r.res==='star'?'⭐ star':(r.res==='chair'?'🪑 lounge chair':'⬜ not yet'))+', '+dailyAtt(r.att)); });
-  if(s.best!==null){ L.push('Best time '+fmtT(s.best)); }
+  s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+dailyRowWords(r,true)+', '+dailyAtt(r.att)); });
   if(s.broc){ L.push('🥦 Broccoli badge'); }
   L.push(s.line); L.push(s.link);
   return L.join('\n');
@@ -4060,16 +4227,18 @@ function dailyPoster(ds,cb){
       r=s.rows[i]; y=340+i*150;
       c.fillStyle=PXC.panel; c.fillRect(80,y,920,128);
       pxSprite(c,r.res==='star'?PXS.star:(r.res==='chair'?PXS.chair:PXS.none),108,y+19,10,cols);
-      col=r.res==='star'?PXC.orange:(r.res==='chair'?PXC.sky:PXC.muted); lab=r.res==='star'?'Star':(r.res==='chair'?'Lounge chair':'Not yet');
-      pxText(c,'Tier '+(i+1)+', '+r.name,226,y+52,34,PXC.ink,700,560);
-      pxText(c,lab+(r.res==='star'?' (chill off)':(r.res==='chair'?' (chill on)':'')),226,y+100,32,col,500,520);
+      col=r.res==='star'?PXC.orange:(r.res==='chair'?PXC.sky:PXC.muted);
+      lab=r.star?'Star '+(r.bs!==null?fmtT(r.bs):'(chill off)'):(r.chair?'Chair '+(r.bc!==null?fmtT(r.bc):'(chill on)'):'Not yet');
+      if(r.star&&r.chair){ lab+=' · Chair '+(r.bc!==null?fmtT(r.bc):''); }
+      if((r.star||r.chair)&&r.best!==null){ lab+=' · best '+fmtT(r.best); }
+      pxText(c,'Tier '+(i+1)+', '+r.name,226,y+52,34,PXC.ink,700,520);
+      pxText(c,lab,226,y+100,32,col,500,740);
       c.textAlign='right';
       pxText(c,dailyAtt(r.att),972,y+52,30,PXC.muted,500,220);
-      if(r.best!==null){ pxText(c,fmtT(r.best),972,y+100,30,PXC.muted,500,220); }
       c.textAlign='left';
     }
     y=850;
-    pxText(c,s.best!==null?'Best time '+fmtT(s.best):'No finish yet',80,y,44,PXC.ink,700,920);
+    pxText(c,s.wins?s.wins+' of 3 tiers won':'No tier won yet',80,y,44,PXC.ink,700,920);
     if(s.broc){ pxSprite(c,PXS.broc,80,y+34,9,cols); pxText(c,'Broccoli badge: briefing right first time',190,y+92,32,PXC.stalk,500,800); }
     pxText(c,s.line,80,1060,58,PXC.ink,700,920);
     /* a strip of track: ground, a barrier, a gap and a lab */
@@ -4106,14 +4275,17 @@ function dailyShare(ds,fromList){
   var alt='Share poster. '+txt.split('\n').slice(0,-1).join('. ').replace(/[⭐⬜]|\uD83E[\uDE91\uDD66]/g,'').replace(/\s+/g,' ');
   $('camp-h').textContent='Share today\'s result';
   $('camp-body').innerHTML='<div class="dly-prev" id="dly-prev"><p class="note">Making the poster…</p></div><pre class="dly-txt" id="dly-txt"></pre>'+
-    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button></div>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button><button type="button" id="dly-gh" hidden>Challenge a friend</button></div>'+
     '<p class="note" id="dly-smsg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="dly-sback">'+(fromList?'Back to the daily':'Close')+'</button></div>';
   $('dly-txt').textContent=txt;
-  function say(m){ $('dly-smsg').textContent=m; }
+  var gen=CARDGEN;
+  function live(){ return gen===CARDGEN&&!!$('dly-prev'); }  /* false once Back, Close, Escape or another card has ended this preview */
+  function say(m){ if(live()){ $('dly-smsg').textContent=m; } }
   function ready(bl){
+    if(!live()){ return; }
     blob=bl; if(!bl){ $('dly-prev').innerHTML='<p class="note">Could not make the poster. The text and link still work.</p>'; return; }
     try{ file=new File([bl],name,{type:'image/png'}); }catch(e){ file=null; }
-    try{ url=URL.createObjectURL(bl); }catch(e){ url=null; }
+    try{ url=URL.createObjectURL(bl); CARDURL=url; }catch(e){ url=null; }
     if(url){ var im=new Image(); im.className='dly-img'; im.alt=alt; im.src=url; var pv=$('dly-prev'); pv.innerHTML=''; pv.appendChild(im); }
     $('dly-si').disabled=false;
     var can=false; try{ can=!!(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})); }catch(e){ can=false; }
@@ -4128,7 +4300,8 @@ function dailyShare(ds,fromList){
   $('dly-cl').addEventListener('click',function(){ dailyCopy(info.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); });
   $('dly-ct').addEventListener('click',function(){ dailyCopy(txt,function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); });
   $('dly-si').addEventListener('click',function(){ say(blob&&dailySaveImg(blob,name)?'Image saved as '+name+'.':'Could not save the image.'); });
-  $('dly-sback').addEventListener('click',function(){ if(url){ try{URL.revokeObjectURL(url);}catch(e){} } if(fromList){ dailyList(ds); } else { campClose(); } });
+  ghShareBtn($('dly-gh'),ds,fromList);
+  $('dly-sback').addEventListener('click',function(){ if(fromList){ dailyList(ds); } else { campClose(); } });  /* both end the card, which revokes url */
   try{ $('dly-cl').focus({preventScroll:true}); }catch(e){}
   if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ ready(DSHARE.blob); return; }
   dailyPoster(ds,function(c){ if(!c||!c.toBlob){ ready(null); return; } try{ c.toBlob(function(bl){ if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt){ DSHARE.blob=bl; } ready(bl); },'image/png'); }catch(e){ ready(null); } });
@@ -4143,8 +4316,614 @@ function dailyShare(ds,fromList){
 /* test and debug hooks: PF.daily.exportLog(date,tier) is the stored best input log as JSON; lastLog() is the last finished run's */
 window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_KEY,LOG_KEY:DAILY_LOG_KEY,seed:dailySeed,today:dailyToday,clampDate:dailyClampDate,brief:dailyBrief,order:dailyOrder,
   state:function(){return DS;},load:function(){ DS=dailyLoad(); DLOGS=dailyLogsLoad(); return DS; },open:dailyOpen,start:dailyStart,shareText:dailyShareText,share:dailyShare,poster:dailyPoster,
-  logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t){ var L=DLOGS[ds]; return L&&L[t]?JSON.stringify(L[t]):null; },current:function(){return DLY;}};
+  logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t,kind){ var L=DLOGS[ds],o=L&&L[t],r=o?(kind?o[kind]:(o.star||o.chair)):null; return r?JSON.stringify(r):null; },splitBest:dailySplitBest,current:function(){return DLY;}};
 /* ---------- daily (end) ---------- */
+
+/* ---------- ghost links (begin) ---------- */
+/* A ghost is lab 0's path through a live race: x, stand height, jump offset and a state, sampled every GH_E ticks (1/60 s each),
+   rounded to whole units and delta-coded. It is drawn only: it never touches the sim, so float differences between browsers
+   cannot make it drift. A link carries the race header and the path, deflated where the browser can, base64url, in the URL
+   fragment (#g=...), so it never reaches a server log. Everything decoded from a link is untrusted: numbers are checked and
+   clamped, text goes through textContent or the canvas, and sizes are capped. */
+var GH_E=6,GH_MAXLEN=16000,GH_MAXRAW=200000,GH_MAXN=40000,GH_NAME_KEY='pf-ghost-name',GH_STORE_KEY='pacing-frontier.ghosts.v1';
+var GH=null,GHA=null,GHF=null,GR=null,GLAST=null,GOWN={},GSTORE=ghStoreLoad();
+/* the friend's ghost (GH) stays armed for the page; GHA is the ghost drawn in this race; GHF is set while a free race runs on GH's conditions */
+function ghState(l){ return l.done?5:(l.out?(l.dissolved?4:3):(((l.crash>0||l.bounce))?2:(l.jt>=0?1:0))); }
+/* called from frame() before each 1/60 s step of a live race: the state after REC.tick steps */
+function ghRec(){
+  if(!REC){return;}
+  if(!GR||GR.rec!==REC){ GR={rec:REC,x:[],h:[],j:[],s:[],stop:false,tk:0}; }
+  if(GR.stop){return;}
+  var n=REC.tick,l=G.labs[0],s=ghState(l);
+  if(n%GH_E===0||s>=3){ ghPush(GR,l,s); GR.tk=n; if(s>=3){ GR.stop=true; } }
+}
+function ghPush(r,l,s){
+  var h=heightOf(l),dip=0;
+  if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
+  r.x.push(Math.round(l.x)); r.h.push(Math.round(h)); r.j.push(Math.round((l.jt>=0?l.jy:0)-dip)); r.s.push(s);
+}
+/* end of race: the last sample at the final tick, then the header */
+function ghFinish(rec){
+  if(!GR||GR.rec!==rec||!rec||!rec.result){return null;}
+  var l=G.labs[0];
+  if(!GR.stop){ ghPush(GR,l,ghState(l)); GR.tk=rec.result.ticks; GR.stop=true; }
+  var r=G.result||{type:'none'},o='lost';
+  if(rec.result.won){ o='win'; }
+  else if(l.out&&l.dissolved){ o='dis'; }
+  else if(l.out){ var sg=G.gaps[G.sing]; o=(sg&&l.x>=sg.x-C.RW&&l.x<=sg.x+sg.W+C.RW)?'sing':'fell'; }
+  else if(r.type==='all'){ o='ext'; }
+  else if(r.type==='timeout'){ o='time'; }
+  var h=rec.h,hd={v:1,s:h.seed,m:h.mode==='daily'?'d':(h.mode==='campaign'?'c':'f'),d:h.date,mp:h.map,ti:h.tier,r:h.roster.slice(),k:h.knobs,ps:h.pstrikes,
+    c:rec.result.chill?1:0,t:Math.round(rec.result.t*100)/100,o:o,x:rec.result.x,n:'',e:GH_E,tk:GR.tk};
+  return {h:hd,x:GR.x,hh:GR.h,j:GR.j,s:GR.s};
+}
+
+/* bytes: varints (zigzag for signed), the header as UTF-8 JSON, then the columns */
+function ghVar(a,v){ v=Math.max(0,Math.floor(v)); while(v>=128){ a.push((v&127)|128); v=Math.floor(v/128); } a.push(v); }
+function ghZig(a,v){ ghVar(a,v<0?-2*v-1:2*v); }
+function ghPack(g){
+  var a=[],hs=unescape(encodeURIComponent(JSON.stringify(g.h))),i,N=g.x.length;
+  ghVar(a,hs.length); for(i=0;i<hs.length;i++){ a.push(hs.charCodeAt(i)); }
+  ghVar(a,N);
+  for(i=0;i<N;i++){ ghZig(a,g.x[i]-(i?g.x[i-1]:0)); }
+  for(i=0;i<N;i++){ ghZig(a,g.hh[i]-(i?g.hh[i-1]:0)); }
+  for(i=0;i<N;i++){ ghZig(a,g.j[i]); }
+  for(i=0;i<N;i++){ a.push(g.s[i]); }
+  return new Uint8Array(a);
+}
+function ghUnpack(u){
+  var p=0;
+  function rv(){ var v=0,m=1,k=0,b; do{ if(p>=u.length||k>5){ throw 0; } b=u[p++]; v+=(b&127)*m; m*=128; k++; }while(b&128); return v; }
+  function rz(){ var v=rv(); return v%2?-(v+1)/2:v/2; }
+  var hl=rv(); if(hl>4000||p+hl>u.length){ throw 0; }
+  var hs='',i; for(i=0;i<hl;i++){ hs+=String.fromCharCode(u[p++]); }
+  var hd=JSON.parse(decodeURIComponent(escape(hs)));
+  var N=rv(); if(N<1||N>GH_MAXN){ throw 0; }
+  var g={h:hd,x:[],hh:[],j:[],s:[]},v=0;
+  for(i=0;i<N;i++){ v+=rz(); g.x.push(clamp(v,-500,40000)); }
+  v=0; for(i=0;i<N;i++){ v+=rz(); g.hh.push(clamp(v,0,2000)); }
+  for(i=0;i<N;i++){ g.j.push(clamp(rz(),-100,2000)); }
+  for(i=0;i<N;i++){ if(p>=u.length){ throw 0; } g.s.push(clamp(u[p++]|0,0,5)); }
+  return g;
+}
+function ghB64(u){ var s='',i; for(i=0;i<u.length;i+=8192){ s+=String.fromCharCode.apply(null,Array.prototype.slice.call(u,i,i+8192)); } return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function ghUnB64(s){ var b=atob(s.replace(/-/g,'+').replace(/_/g,'/')),u=new Uint8Array(b.length),i; for(i=0;i<b.length;i++){ u[i]=b.charCodeAt(i); } return u; }
+/* deflate-raw through CompressionStream where it exists; byte 0 says which: 1 plain, 2 deflated */
+function ghStream(u,T,lim,cb){
+  try{
+    var rd=new Blob([u]).stream().pipeThrough(new T('deflate-raw')).getReader(),parts=[],n=0;
+    var pump=function(){ rd.read().then(function(r){
+      if(r.done){ var out=new Uint8Array(n),o=0; for(var i=0;i<parts.length;i++){ out.set(parts[i],o); o+=parts[i].length; } cb(out); return; }
+      n+=r.value.length; if(n>lim){ try{ rd.cancel(); }catch(e){} cb(null); return; }
+      parts.push(r.value); pump();
+    },function(){ cb(null); }); };
+    pump();
+  }catch(e){ cb(null); }
+}
+function ghPlain(g){ var b=ghPack(g),u=new Uint8Array(b.length+1); u[0]=1; u.set(b,1); return ghB64(u); }
+function ghEncode(g,cb){
+  var b=ghPack(g);
+  if(typeof CompressionStream==='undefined'){ cb(ghPlain(g)); return; }
+  ghStream(b,CompressionStream,GH_MAXRAW,function(z){
+    if(!z||z.length+1>=b.length+1){ cb(ghPlain(g)); return; }
+    var u=new Uint8Array(z.length+1); u[0]=2; u.set(z,1); cb(ghB64(u));
+  });
+}
+function ghDecode(s,cb){
+  var u,g;
+  try{ if(typeof s!=='string'||s.length<4||s.length>GH_MAXLEN||!/^[A-Za-z0-9_-]+$/.test(s)){ throw 0; } u=ghUnB64(s); }catch(e){ cb(null,'broken'); return; }
+  function fin(b){ try{ g=ghCheck(ghUnpack(b)); }catch(e){ g=null; } cb(g,g?null:'broken'); }
+  if(u[0]===1){ fin(u.subarray(1)); return; }
+  if(u[0]!==2){ cb(null,'broken'); return; }
+  if(typeof DecompressionStream==='undefined'){ cb(null,'old'); return; }
+  ghStream(u.subarray(1),DecompressionStream,GH_MAXRAW,function(b){ if(!b){ cb(null,'broken'); return; } fin(b); });
+}
+/* check and clamp a decoded ghost; anything off shape is refused */
+function ghInt(v,lo,hi){ if(typeof v!=='number'||!isFinite(v)||Math.floor(v)!==v||v<lo||v>hi){ throw 0; } return v; }
+function ghName(s){
+  s=String(s===undefined||s===null?'':s).replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩﻿]/g,'').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
+  if(s.length>16){ s=s.slice(0,16); if(/[\ud800-\udbff]$/.test(s)){ s=s.slice(0,15); } s=s.replace(/\s+$/,''); }
+  return s;
+}
+function ghCheck(g){
+  var h=g.h,o={},k,i;
+  if(!h||typeof h!=='object'||h.v!==1){ throw 0; }
+  o.v=1; o.s=ghInt(h.s,0,4294967295);
+  o.m=({d:1,c:1,f:1})[h.m]?h.m:null; if(!o.m){ throw 0; }
+  o.d=typeof h.d==='string'&&h.d.length===10&&/^\d{4}-\d{2}-\d{2}$/.test(h.d)?h.d:null;
+  o.mp=h.mp===null||h.mp===undefined?null:ghInt(h.mp,0,999);
+  o.ti=h.ti===null||h.ti===undefined?null:ghInt(h.ti,0,2);
+  if(!Array.isArray(h.r)||h.r.length>3){ throw 0; }
+  o.r=[]; for(i=0;i<h.r.length;i++){ if(['sprinter','steward','gambler'].indexOf(h.r[i])<0||o.r.indexOf(h.r[i])>=0){ throw 0; } o.r.push(h.r[i]); }
+  o.k={};
+  if(h.k&&typeof h.k==='object'){ KNOBS.forEach(function(kb){ var v=h.k[kb[0]]; if(typeof v==='number'&&isFinite(v)){ o.k[kb[0]]=clamp(v,kb[2],kb[3]); } }); }
+  o.ps=h.ps===null||h.ps===undefined?null:ghInt(h.ps,0,6);
+  o.c=h.c?1:0;
+  o.t=typeof h.t==='number'&&isFinite(h.t)?clamp(h.t,0,3600):0;
+  o.o=({win:1,sing:1,fell:1,dis:1,lost:1,ext:1,time:1})[h.o]?h.o:'lost';
+  o.x=typeof h.x==='number'&&isFinite(h.x)?Math.round(clamp(h.x,-500,40000)):0;
+  o.n=ghName(h.n);
+  o.e=ghInt(h.e,1,60);
+  o.tk=ghInt(h.tk,0,GH_MAXN*60);
+  var N=g.x.length;
+  if(o.tk<(N-1-1)*o.e||o.tk>N*o.e+o.e){ throw 0; }
+  g.h=o; return g;
+}
+/* where the ghost is at tick n: samples i at i*e, the last at tk; x, height and jump interpolate, the state is the earlier sample's */
+function ghAt(g,n){
+  var e=g.h.e,N=g.x.length,last=N-1,i,t0,t1,f;
+  if(n>=g.h.tk||N===1){ return {x:g.x[last],h:g.hh[last],j:g.j[last],s:g.s[last],dir:1}; }
+  i=Math.max(0,Math.min(last-1,Math.floor(n/e)));
+  t0=i*e; t1=i+1===last?g.h.tk:(i+1)*e; f=clamp((n-t0)/Math.max(1e-6,t1-t0),0,1);
+  var s=g.s[i];
+  return {x:g.x[i]+(g.x[i+1]-g.x[i])*f,h:g.hh[i]+(g.hh[i+1]-g.hh[i])*f,j:s>=3?g.j[i]:g.j[i]+(g.j[i+1]-g.j[i])*f,s:s,dir:g.x[i+1]<g.x[i]-0.5?-1:1};
+}
+/* "Cole's ghost", "a friend's ghost", or "your best" for your own */
+function ghWho(g,cap){ var w=g.own?'your best':(g.h.n||'a friend')+'\'s ghost'; return cap?w.charAt(0).toUpperCase()+w.slice(1):w; }
+function ghOutcome(h){
+  return h.o==='win'?'finished in '+h.t.toFixed(1)+' s':(h.o==='sing'?'crashed out at the singularity':(h.o==='fell'?'fell into a gap':(h.o==='dis'?'lab dissolved':
+    (h.o==='ext'?'everyone went out':(h.o==='time'?'ran out of time':'did not win')))));
+}
+function ghDay(ds){ try{ return new Date(ds+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}); }catch(e){ return ds; } }
+function ghWhere(h){
+  if(h.m==='d'){ return 'the '+ghDay(h.d)+' daily, tier '+(h.ti+1); }
+  if(h.m==='c'&&CAMPAIGN[h.mp]){ return 'campaign map '+(h.mp+1)+', '+CAMPAIGN[h.mp].name+', star '+(h.ti+1); }
+  return 'seed '+h.s;
+}
+function ghShareLine(h){
+  var w=ghWhere(h);
+  if(h.o==='win'){ return 'I finished '+w+' in '+h.t.toFixed(1)+' s. Race my ghost:'; }
+  if(h.o==='sing'){ return 'I crashed out at the singularity on '+w+'. Can you do better?'; }
+  if(h.o==='fell'){ return 'I fell into a gap on '+w+'. Can you do better?'; }
+  if(h.o==='dis'){ return 'My lab was dissolved on '+w+'. Can you do better?'; }
+  return 'I did not win '+w+'. Can you do better?';
+}
+function ghLink(b64){ return utm('https://'+DAILY_SITE,'ghost')+'#g='+b64; }
+
+/* own best ghosts: in memory for every race, and kept in storage for daily tiers (last 7 days) */
+function ghKey(h){ return [h.m,h.s,h.d,h.mp,h.ti,(h.r||[]).join(','),JSON.stringify(ghSortK(h.k))].join('|'); }
+function ghSortK(k){ var o={},ks=Object.keys(k||{}).sort(),i; for(i=0;i<ks.length;i++){ o[ks[i]]=k[ks[i]]; } return o; }
+function ghBetter(a,b){ if(!b){return true;} var aw=a.h.o==='win',bw=b.h.o==='win'; if(aw!==bw){return aw;} return aw?a.h.t<b.h.t:a.h.x>b.h.x; }
+function ghStoreLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_STORE_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
+function ghStoreSave(){ var ks=Object.keys(GSTORE).sort(); while(ks.length>7){ delete GSTORE[ks.shift()]; } try{ window.localStorage.setItem(GH_STORE_KEY,JSON.stringify(GSTORE)); }catch(e){} }
+function ghStored(ds,t){
+  var d=GSTORE[ds],s=d&&typeof d==='object'?d[t]:null,g=null;
+  if(typeof s!=='string'||s.length>GH_MAXLEN*2){ return null; }
+  try{ var u=ghUnB64(s); if(u[0]===1){ g=ghCheck(ghUnpack(u.subarray(1))); } }catch(e){ g=null; }
+  return g;
+}
+function ghKeep(g){
+  var key=ghKey(g.h),mine={h:g.h,x:g.x,hh:g.hh,j:g.j,s:g.s,own:true};
+  if(g.h.m==='d'&&!GOWN[key]){ GOWN[key]=ghStored(g.h.d,g.h.ti); if(GOWN[key]){ GOWN[key].own=true; } }
+  if(!ghBetter(mine,GOWN[key])){ return; }
+  GOWN[key]=mine;
+  if(g.h.m==='d'){ var d=GSTORE[g.h.d]; if(!d||typeof d!=='object'){ d=GSTORE[g.h.d]={}; } d[g.h.ti]=ghPlain(g); ghStoreSave(); }
+}
+
+/* race hooks, called from start() and endScreen() */
+function ghPrep(seed,camp,daily){
+  GHF=null;
+  if(!camp&&!daily&&GH&&GH.free&&seed===GH.h.s){
+    GHF=GH; campLock(); PSTRIKES=GH.h.ps;
+    for(var k in GH.h.k){ if(GH.h.k.hasOwnProperty(k)){ K[k]=GH.h.k[k]; } }
+    knobSync();
+  }
+}
+function ghRoster(){ return GHF?GHF.h.r.slice():undefined; }
+function ghReady(){
+  var ln=$('ready-ghost');
+  if(!ln){ ln=document.createElement('p'); ln.id='ready-ghost'; ln.className='gh-line'; $('ready-msg').parentNode.insertBefore(ln,$('ready-msg').nextSibling); }
+  GHA=null;
+  var h=GH&&GH.h;
+  if(h&&G.seed===h.s&&((GHF===GH)||(h.m==='d'&&DLY&&DLY.date===h.d&&DLY.tier===h.ti)||(h.m==='c'&&CAMP&&CAMP.i===h.mp&&CAMP.tier===h.ti))){ GHA=GH; }
+  if(!GHA){
+    var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
+    var key=ghKey({m:DLY?'d':(CAMP?'c':'f'),s:G.seed,d:DLY?DLY.date:null,mp:CAMP?CAMP.i:null,ti:DLY?DLY.tier:(CAMP?CAMP.tier:null),
+      r:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),k:ko});
+    if(DLY&&GOWN[key]===undefined){ GOWN[key]=ghStored(DLY.date,DLY.tier); if(GOWN[key]){ GOWN[key].own=true; } }
+    if(GOWN[key]&&G.labs[0].human){ GHA=GOWN[key]; }
+  }
+  ln.hidden=!GHA;
+  if(GHA){
+    var hh=GHA.h,extra='';
+    if(GHA===GH){
+      if(hh.c!==(K.chill?1:0)){ extra=' It raced with chill mode '+(hh.c?'on':'off')+'.'; }
+      if(CAMP&&!hh.c&&hh.ps!==null&&hh.ps!==CAMP_DIFF[CS.diff].strikes){ extra+=' It raced with '+hh.ps+' strikes.'; }
+    }
+    ln.textContent='Racing '+ghWho(GHA,false)+': '+ghOutcome(hh)+'.'+extra;
+  }
+}
+function ghEnd(){
+  var res=$('ov-ghres'),btn=$('ov-ghost'),l=G.labs[0];
+  if(!res){ res=document.createElement('p'); res.id='ov-ghres'; res.className='cmp-res'; res.setAttribute('role','status'); $('ov-foot').parentNode.insertBefore(res,$('ov-foot')); }
+  if(!btn){ btn=document.createElement('button'); btn.type='button'; btn.id='ov-ghost'; btn.textContent='Challenge a friend'; btn.addEventListener('click',function(){ if(GLAST){ ghCard(GLAST,null); } }); }
+  $('ov-foot').querySelector('.btns').appendChild(btn);
+  var g=ghFinish(LASTREC);
+  GLAST=g&&LASTREC.h.human&&l.human?g:null;
+  btn.hidden=!GLAST;
+  if(GLAST){ ghKeep(GLAST); ghPrime(GLAST,null); }
+  if(GHF){ campUnlock(); }
+  res.hidden=true;
+  if(!GHA){ return; }
+  var a=GHA,me=G.result&&G.result.type==='win'&&G.result.winner===l,gw=a.h.o==='win',d,msg,who=ghWho(a,false),Who=ghWho(a,true);
+  if(me&&gw){ d=a.h.t-G.t; msg=Math.abs(d)<0.05?'A dead heat with '+who+'.':(d>0?'You beat '+who+' by '+d.toFixed(1)+' s.':Who+' won by '+(-d).toFixed(1)+' s.'); }
+  else if(me){ msg='You beat '+who+': it did not finish.'; }
+  else if(gw){ msg=Who+' won: it finished in '+a.h.t.toFixed(1)+' s.'; }
+  else { d=Math.round(l.x-a.h.x); msg='Neither of you finished. '+(Math.abs(d)<1?'You stopped level with '+who+'.':(d>0?'You got '+d+' further than '+who+'.':Who+' got '+(-d)+' further.')); }
+  res.textContent=msg; res.hidden=false;
+}
+
+/* drawing: a see-through copy of the lab, a dashed outline and a name label; off screen, a marker at the edge. Called by draw() in world units */
+function ghDraw(cam,VW,FW){
+  if(!GHA||!G){return;}
+  var p=ghAt(GHA,G.t*60),U=CM?1/Z:1,u=C.RW/12,sx=p.x-cam-C.RW,lab=ghWho(GHA,true),body=COL.a,dead=p.s===3||p.s===4;
+  ctx.save(); ctx.font=FW;
+  if(sx<-C.RW-4||sx>VW+4){  /* off screen: an arrow and the distance at the edge, just over the ground */
+    var ahead=sx>VW,dist=Math.round(Math.abs(p.x-G.labs[0].x)),tx=(ahead?lab+' '+dist+' ahead >':'< '+lab+' '+dist+' behind'),tw=ctx.measureText(tx).width;
+    var ex=ahead?VW-tw-6*U:6*U,ey=GY-(CM?44:60)*U;
+    ctx.globalAlpha=0.85; ctx.fillStyle=COL.surface; ctx.fillRect(ex-3*U,ey-11*U,tw+6*U,15*U);
+    ctx.globalAlpha=1; ctx.setLineDash([3*U,2*U]); ctx.strokeStyle=COL.ink; ctx.lineWidth=U; ctx.strokeRect(ex-3*U,ey-11*U,tw+6*U,15*U); ctx.setLineDash([]);
+    ctx.fillStyle=COL.ink; ctx.fillText(tx,ex,ey);
+    ctx.restore(); ghMini(); return;
+  }
+  var y=GY-p.h-p.j-C.RW; if(p.s===3){ y=GY+(CM?6/Z:26); }
+  if(p.s===4){ body=COL.muted; }
+  if(p.h>1&&p.s!==3){ ctx.globalAlpha=0.5; ctx.setLineDash([2*U,4*U]); ctx.strokeStyle=COL.muted; ctx.lineWidth=U; ctx.strokeRect(sx+0.5*U,GY-p.h,C.RW,p.h); ctx.setLineDash([]); }  /* its height, as a faint stand */
+  ctx.globalAlpha=0.38;
+  ctx.translate(p.dir>0?sx:sx+C.RW,y+C.RW); ctx.scale(p.dir,1);
+  function P(gx,gy,gw,gh,c){ ctx.fillStyle=c; ctx.fillRect(gx*u,(gy-12)*u,gw*u+0.02,gh*u+0.02); }
+  var air=p.s===1,step=Math.floor(Math.abs(p.x)/5)%2,legs=[2,4,7,9],li;
+  for(li=0;li<4;li++){ P(legs[li],9,1,3-(air?2:((li%2)===step&&!dead&&p.s!==5?1:0)),body); }
+  P(2,1,8,1,body); P(1,2,10,6,body); P(2,8,8,1,body);
+  if(air||p.s===5){ P(0,1,1,2,body); P(11,1,1,2,body); } else { P(0,5,1,2,body); P(11,5,1,2,body); }
+  if(dead||p.s===2){ P(5,3,1,1,EYE); P(7,3,1,1,EYE); P(6,4,1,1,EYE); P(5,5,1,1,EYE); P(7,5,1,1,EYE); P(8,3,1,1,EYE); P(10,3,1,1,EYE); P(9,4,1,1,EYE); P(8,5,1,1,EYE); P(10,5,1,1,EYE); }
+  else { P(6,3,1,2,EYE); P(9,3,1,2,EYE); }
+  P(6,-2,1,3,COL.ink); P(5.5,-3.5,2,2,COL.a);  /* the antenna, as on your own lab */
+  ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));
+  ctx.globalAlpha=0.9; ctx.setLineDash([3*U,2*U]); ctx.strokeStyle=COL.ink; ctx.lineWidth=1.2*U;
+  ctx.strokeRect(sx-2*U,y-4.5*u-2*U,C.RW+4*U,C.RW+4.5*u+4*U); ctx.setLineDash([]);
+  /* the label sits above the row where lab names go, so it does not cover them */
+  var lw=ctx.measureText(lab).width,lx=CM?Math.max(sx-2,4*U):sx-2,ly=y-4.5*u-20*U;
+  ctx.globalAlpha=0.85; ctx.fillStyle=COL.surface; ctx.fillRect(lx-2*U,ly-10*U,lw+4*U,13*U);
+  ctx.globalAlpha=1; ctx.fillStyle=COL.ink; ctx.fillText(lab,lx,ly);
+  ctx.restore();
+  ghMini();
+}
+/* the ghost on the minimap: a dashed hollow square under the line (screen pixels) */
+function ghMini(){
+  if(!GHA||!G){return;}
+  var p=ghAt(GHA,G.t*60),mx0=24,mw=W-48,my=CM?12:18,x=mx0+clamp(p.x,0,G.finish)/G.finish*mw;
+  ctx.save(); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.setLineDash([2,2]); ctx.strokeStyle=COL.ink; ctx.lineWidth=1.5; ctx.strokeRect(x-4.5,my+4.5,9,9); ctx.restore();
+}
+
+/* the challenge card: a name for the ghost, the line and the link, then Share..., Copy link and Copy text */
+function ghSavedName(){ try{ return ghName(window.localStorage.getItem(GH_NAME_KEY)||''); }catch(e){ return ''; } }
+function ghPrime(g,cb){
+  var nm=ghSavedName();
+  g.h.n=nm; g.link=null; g.size=0;
+  var mine=g.ver=(g.ver||0)+1;
+  ghEncode(g,function(b){ if(g.ver!==mine){ return; } g.link=ghLink(b); g.size=b.length; if(cb){ cb(); } });
+}
+function ghCard(g,back){
+  campShow();
+  $('camp-h').textContent='Challenge a friend';
+  $('camp-body').innerHTML='<p class="note">Your friend races the same track and rivals, with a see-through ghost of your lab. The link holds your whole run, so nothing goes to a server.</p>'+
+    '<label class="gh-name" for="gh-name">Your name on the ghost <input type="text" id="gh-name" maxlength="16" placeholder="a friend" autocomplete="off" spellcheck="false"></label>'+
+    '<pre class="dly-txt" id="gh-txt"></pre><p class="note" id="gh-size"></p>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="gh-sh" hidden>Share…</button><button type="button" id="gh-cl">Copy link</button><button type="button" id="gh-ct">Copy text</button></div>'+
+    '<p class="note" id="gh-msg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="gh-back">'+(back?'Back':'Close')+'</button></div>';
+  var line=ghShareLine(g.h),inp=$('gh-name'),gen=CARDGEN;
+  inp.value=ghSavedName();
+  function live(){ return gen===CARDGEN&&!!$('gh-txt'); }  /* the link is made async: write only while this card is still open */
+  function say(m){ if(live()){ $('gh-msg').textContent=m; } }
+  function show(){
+    if(!live()){ return; }
+    $('gh-txt').textContent=line+'\n'+(g.link?'the-last-race.com (ghost link)':'Making the link…');
+    $('gh-size').textContent=g.link?'The link is '+(g.link.length/1024).toFixed(1)+' KB long.':'';
+    $('gh-cl').disabled=$('gh-ct').disabled=$('gh-sh').disabled=!g.link;
+  }
+  function text(){ return line+'\n'+g.link; }
+  show(); if(!g.link){ ghPrime(g,show); }
+  inp.addEventListener('input',function(){
+    var v=ghName(inp.value); try{ window.localStorage.setItem(GH_NAME_KEY,v); }catch(e){}
+    ghPrime(g,show); show();
+  });
+  inp.addEventListener('keydown',function(e){ e.stopPropagation(); if(e.code==='Enter'){ e.preventDefault(); inp.blur(); } });
+  $('gh-sh').hidden=!navigator.share;
+  $('gh-sh').addEventListener('click',function(){
+    if(!g.link){ return; }
+    try{ navigator.share({title:'Pacing the Frontier',text:line,url:g.link}).then(function(){ say('Shared.'); },function(e){ say(e&&e.name==='AbortError'?'Share cancelled.':'Could not open the share sheet. Try Copy link.'); }); }
+    catch(e){ say('Could not open the share sheet. Try Copy link.'); }
+  });
+  $('gh-cl').addEventListener('click',function(){ if(g.link){ dailyCopy(g.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); } });
+  $('gh-ct').addEventListener('click',function(){ if(g.link){ dailyCopy(text(),function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); } });
+  $('gh-back').addEventListener('click',function(){ if(back){ back(); } else { campClose(); } });
+}
+/* the daily share preview: the best ghost kept for that day (a win beats a loss, then the higher tier, then the faster time) */
+function ghDailyBest(ds){
+  var best=null,t,g;
+  for(t=2;t>=0;t--){ g=ghStored(ds,t); if(g&&(!best||(g.h.o==='win'&&best.h.o!=='win'))){ best=g; } }
+  return best;
+}
+function ghShareBtn(b,ds,fromList){
+  var g=ghDailyBest(ds);
+  b.hidden=!g; if(!g){ return; }
+  ghPrime(g,null);
+  b.addEventListener('click',function(){ ghCard(g,function(){ dailyShare(ds,fromList); }); });
+}
+
+/* opening a link: check it, then start the same race, or say why it can't and offer free play on that seed */
+function ghOpenCard(title,msg,g){
+  campShow();
+  $('camp-h').textContent=title;
+  $('camp-body').innerHTML='<p id="gh-omsg"></p><div class="cmp-foot">'+(g?'<button type="button" class="primary" id="gh-free">Free play on that seed</button>':'')+'<button type="button" id="gh-oclose">Close</button></div>';
+  $('gh-omsg').textContent=msg;
+  $('gh-oclose').addEventListener('click',campClose);
+  if(g){ $('gh-free').addEventListener('click',function(){ campClose(); g.free=true; GH=g; start(g.h.s); }); try{ $('gh-free').focus({preventScroll:true}); }catch(e){} }
+}
+function ghSetChill(c){ var on=!!c; $('auto').checked=on; ui.auto=on; K.chill=on?1:0; showChill(); }
+function ghLaunch(g){
+  var h=g.h,who=ghWho(g,false),kx=JSON.stringify(ghSortK(h.k)),tw,exp,i;
+  g.free=false; g.pend=false;
+  ghSetChill(h.c);
+  if(h.m==='d'){
+    if(!h.d||!dailyValid(h.d)||h.ti===null){ ghOpenCard('Ghost link',who+' raced a daily this game cannot read. You can race the ghost in free play on the same track.',g); return; }
+    if(h.d>dailyToday()){ ghOpenCard('Ghost link',who+' raced the daily for '+ghDay(h.d)+', which has not started for you yet. You can race the ghost in free play on the same track.',g); return; }
+    tw=dailyTwist(dailyBrief(h.d)); exp={}; for(i in tw){ if(tw[i]!==DEF[i]){ exp[i]=tw[i]; } }
+    if(h.s!==dailySeed(h.d)||h.r.join()!==DAILY_TIERS[h.ti].roster.join()||kx!==JSON.stringify(ghSortK(exp))){
+      ghOpenCard('Ghost link','This ghost came from another version of the '+ghDay(h.d)+' daily. You can race it in free play on the same track.',g); return; }
+    GH=g;
+    if(dailyDay(h.d).brief.open){ dailyStart(h.d,h.ti); } else { g.pend=true; dailyOpen(h.d); }
+    return;
+  }
+  if(h.m==='c'){
+    var c=h.mp===null?null:CAMPAIGN[h.mp];
+    if(!c||h.ti===null||c.seed!==h.s||c.tiers[h.ti].join()!==h.r.join()||kx!=='{}'){ ghOpenCard('Ghost link',who+' raced a campaign map this game does not have. You can race the ghost in free play on the same track.',g); return; }
+    if(!campTierOpen(h.mp,h.ti)){ ghOpenCard('Ghost link','Map '+(h.mp+1)+', '+c.name+', is still locked for you. You can race '+who+' in free play on the same track.',g); return; }
+    if(!h.c&&h.ps!==null){ for(i=0;i<CAMP_DIFF.length;i++){ if(CAMP_DIFF[i].strikes===h.ps){ CS.diff=i; } /* not saved: the friend keeps their own difficulty */ } }
+    GH=g; campStart(h.mp,h.ti); return;
+  }
+  g.free=true; GH=g; start(h.s);
+}
+var GH_HASH=location.hash||'';  /* read now: showSeed() rewrites the URL before ghBoot() runs */
+function ghBoot(){
+  var m=/^#g=(.*)$/.exec(GH_HASH||location.hash||''); GH_HASH='';
+  if(!m){ return; }
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  ghDecode(m[1],function(g,why){
+    if(!g){ ghOpenCard('Ghost link',why==='old'?'This browser cannot unpack ghost links. Try a newer browser. You can still play.':'This ghost link is broken or cut short, so there is no ghost to race. You can still play.',null); return; }
+    ghLaunch(g);
+  });
+}
+(function(){
+  /* a daily ghost waits for the briefing: once the day is open, its button starts the ghost's tier instead of the list */
+  $('camp-body').addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target.closest('#dly-go'):null;
+    if(!t||!GH||!GH.pend||GH.h.m!=='d'||!dailyDay(GH.h.d).brief.open){ return; }
+    e.stopPropagation(); GH.pend=false; dailyStart(GH.h.d,GH.h.ti);
+  },true);
+  window.addEventListener('hashchange',ghBoot);
+})();
+window.PF.ghost={encode:ghEncode,decode:ghDecode,plain:ghPlain,last:function(){return GLAST;},armed:function(){return GH;},drawn:function(){return GHA;},at:ghAt,link:ghLink};
+/* ---------- ghost links (end) ---------- */
+
+/* ---------- achievements (begin) ----------
+   Twelve achievements, each tied to a real-world story. They are judged when a race ends, from that race's events (G.ev) and result,
+   plus two things the UI tallies while you play: whether chill mode was on at Go or at any moment after (as in the campaign), and how
+   long a rival ahead shadowed your sight. Only a race you play counts (not Watch bots). "Ate your vegetables" is earned by opening any
+   outbound game link (utm_medium=game). The recap opens with what this run earned first; with nothing new, it introduces one you have
+   not earned yet. Storage: ACH_KEY holds {v:1, got:{id:'YYYY-MM-DD' first earned, local date}, intro:{id:n}, seq:n, pts:{ach,stars,spent}};
+   every access is in try/catch, and without storage the page keeps it in memory. pts is groundwork for spending on sprite outfits
+   later: no shop yet. Facts: reused from BRIEFINGS where possible; anything new was checked on the web (see sources). Reviewer: lines
+   facts were checked on the linked pages on 28 Oct 2026.
+   ACH item: {id, name, kind, rank (higher opens the recap first), hint, tidbit, real:{label,url}, sources:[...]}. LIST order is the
+   order unearned ones are introduced in, roughly easiest first. */
+var ACH_LIST=[
+  {id:'barrier',name:'Yes, Great Idea',kind:'barrier',rank:2,hint:'Crash into a barrier.',
+   tidbit:'A barrier is a public failure every lab learns from. In April 2025 an OpenAI update made GPT-4o agree with everyone about everything, bad ideas included. Three days later OpenAI began rolling it back, and promised to check for sycophancy before every launch.',
+   real:{label:'OpenAI: Expanding on sycophancy',url:'https://openai.com/index/expanding-on-sycophancy/'},
+   sources:['https://openai.com/index/expanding-on-sycophancy/','https://techcrunch.com/2025/04/29/openai-explains-why-chatgpt-became-too-sycophantic']},
+  {id:'scrape',name:'Close Shave',kind:'strike',rank:3,hint:'Make it over a gap, barely: a scrape or a drop.',
+   tidbit:'A scrape means you made it across but lost something on the way. In March 2023 a bug in redis-py, an open-source library ChatGPT relied on, showed some users strangers\' chat titles. OpenAI took ChatGPT offline to fix it.',
+   real:{label:'OpenAI: March 20 ChatGPT outage',url:'https://openai.com/index/march-20-chatgpt-outage/'},
+   sources:['https://openai.com/index/march-20-chatgpt-outage/','https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/']},
+  /* the game side: a lab ahead casts a sight shadow, and every gap it crosses first lifts the others by a share (K.share) */
+  {id:'shadow',name:'In Someone\'s Shadow',kind:'shadow',rank:4,hint:'Spend a few seconds stuck behind a rival.',
+   tidbit:'Stuck behind a rival, you see only what it lets you see, and you still share in its progress. In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fake accounts to pull over 16 million exchanges from Claude to copy its skills. These are allegations.',
+   real:{label:'Anthropic: Detecting and preventing distillation attacks',url:'https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks'},
+   sources:['https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks']},
+  {id:'supply',name:'Trust the Download',kind:'gap',rank:5,hint:'Cross a gap that another lab crossed first.',
+   tidbit:'Following a rival over a gap means trusting the tower it left behind. In February 2024 the security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some ran an attacker\'s code the moment they loaded.',
+   real:{label:'JFrog: Malicious Hugging Face models',url:'https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/'},
+   sources:['https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/','https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/']},
+  {id:'bio',name:'Nobody Jumped It Yet',kind:'gap',rank:7,hint:'Be the first lab across a gap.',
+   tidbit:'First across a gap means nobody tested the jump before you. On May 22, 2025, Anthropic switched on stricter ASL-3 protections for Claude Opus 4 as a precaution. It said it could not clearly rule out the model helping with chemical, biological, radiological or nuclear weapons.',
+   real:{label:'Anthropic: Activating ASL-3 protections',url:'https://www.anthropic.com/news/activating-asl3-protections'},
+   sources:['https://www.anthropic.com/news/activating-asl3-protections']},
+  {id:'roll',name:'Dodged the Dice',kind:'gap',rank:6,hint:'See a lab fall in and the world survive the roll.',
+   tidbit:'A lab fell, the dice rolled, and the world carried on. In May 2023 the heads of OpenAI, Google DeepMind and Anthropic signed a one-sentence statement. It said mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war.',
+   real:{label:'Center for AI Safety: Statement on AI Risk',url:'https://aistatement.com/'},
+   sources:['https://aistatement.com/']},
+  /* the definition is the common usage, not a quote. The video is 80,000 Hours' tour of AI 2027 (80000hours.org, July 2025) */
+  {id:'sing',name:'Past the Point',kind:'singularity',rank:10,hint:'Cross the singularity, the last gap.',
+   tidbit:'The singularity is the point where AI improves so fast that progress outruns our ability to imagine or steer it, and humans drop out of the control loop. In the game, past it you speed up and your controls lag. AI 2027 is one forecast scenario of how that could go, and this video walks through it.',
+   real:{label:'80,000 Hours: We\'re Not Ready for Superintelligence',url:'https://www.youtube.com/watch?v=5KVDDfAkRgc'},
+   sources:['https://www.youtube.com/watch?v=5KVDDfAkRgc','https://ai-2027.com/']},
+  {id:'chill',name:'Lounge Chair Win',kind:'win',rank:8,hint:'Win with chill mode on.',
+   tidbit:'Chill mode is guard rails for everyone, and you won with them on. In February 2023 Microsoft put guard rails on Bing chat after long chats got strange: 5 turns per session and 50 a day. Four days later it loosened them to 6 and 60.',
+   real:{label:'Bing blog: Increasing limits on chat sessions',url:'https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions'},
+   sources:['https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions','https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html']},
+  /* July 5, 2023 post; "steer and control AI systems much smarter than us" and 20% of compute secured to date are from it (checked on the
+     page in a browser, 28 Oct 2026) */
+  {id:'star',name:'Hands on the Wheel',kind:'race',rank:9,hint:'Win with chill mode off.',
+   tidbit:'You won with chill off, jumping by hand. In July 2023 OpenAI said it needed breakthroughs to steer and control AI much smarter than us, and promised its Superalignment team 20 percent of the compute it had secured. In May 2024 the team was reported disbanded.',
+   real:{label:'OpenAI: Introducing Superalignment',url:'https://openai.com/index/introducing-superalignment/'},
+   sources:['https://openai.com/index/introducing-superalignment/','https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824']},
+  /* no real lab has been dissolved; the card says so. Italy's ChatGPT block is a barrier in the owner's framing (the briefings use it) */
+  {id:'dissolved',name:'Three Strikes',kind:'dissolved',rank:11,hint:'Take strikes until your lab is dissolved.',
+   tidbit:'Too many strikes and your lab was dissolved. No real AI lab has been, yet. The closest call: in November 2023 OpenAI\'s nonprofit board, there to keep the company on its mission, fired its CEO. Within five days he was back, and most of that board was gone.',
+   real:{label:'NPR: OpenAI reinstates Sam Altman',url:'https://www.npr.org/2023/11/22/1214621010/openai-reinstates-sam-altman-as-its-chief-executive'},
+   sources:['https://www.npr.org/2023/11/22/1214621010/openai-reinstates-sam-altman-as-its-chief-executive']},
+  /* checked on ai-2027.com/race (2028: "a million new robots per month"; 2030: "tiling the prairies and icecaps with factories and solar
+     panels"). The phrase "industrializing every square inch" is not on that page, so it is not quoted here */
+  {id:'extinct',name:'Everyone\'s Problem Now',kind:'gap',rank:12,hint:'Fall into a gap and lose the extinction roll.',
+   tidbit:'Your fall ended the race for every lab. AI 2027, a forecast scenario and not a report, has a race ending where AI-run factories build a million robots a month by 2028. By 2030 the AI tiles the prairies and ice caps with factories and solar panels.',
+   real:{label:'AI 2027: the race ending',url:'https://ai-2027.com/race'},
+   sources:['https://ai-2027.com/race']},
+  {id:'veg',name:'Ate Your Vegetables',kind:'barrier',rank:1,hint:'Open a real-world link from the game.',
+   tidbit:'You opened a real-world link from inside a game. In the game, when a lab clears a barrier it once crashed into, the labs below it learn too. Reading about other people\'s failures is the cheap way to learn.',
+   real:{label:'AI 2027',url:'https://ai-2027.com/'},
+   sources:[]}
+];
+ACH_LIST.forEach(function(a){ a.real.url=utm(a.real.url,'achievement'); });
+var ACH_KEY='pacing-frontier.ach.v1',ACH=achLoad(),ACHRUN=null,ACHLAST=null,achRet=null;
+function achById(id){ for(var i=0;i<ACH_LIST.length;i++){ if(ACH_LIST[i].id===id){return ACH_LIST[i];} } return null; }
+function achLoad(){
+  var o=null; try{ o=JSON.parse(window.localStorage.getItem(ACH_KEY)||'null'); }catch(e){ o=null; }
+  if(!o||o.v!==1||!o.got||typeof o.got!=='object'){ o={v:1,got:{},intro:{},seq:0,pts:{ach:0,stars:0,spent:0}}; }
+  if(!o.intro||typeof o.intro!=='object'){ o.intro={}; }
+  if(!o.pts||typeof o.pts!=='object'){ o.pts={ach:0,stars:0,spent:0}; }
+  o.seq=o.seq|0;
+  return o;
+}
+/* points groundwork: achievements plus stars won anywhere (campaign stars, daily stars and lounge chairs). spent stays 0 until a shop exists */
+function achStars(){
+  var n=0,k,d,i;
+  try{ n+=campSummary().totalStars; }catch(e){}
+  try{ for(k in DS.days){ d=DS.days[k]; if(d&&Array.isArray(d.t)){ for(i=0;i<d.t.length;i++){ if(d.t[i]&&d.t[i].star){n++;} if(d.t[i]&&d.t[i].chair){n++;} } } } }catch(e){}
+  return n;
+}
+function achPoints(){ var a=achCount(); return {ach:a,stars:achStars(),spent:ACH.pts.spent|0,total:a+achStars()-(ACH.pts.spent|0)}; }
+function achCount(){ var n=0; ACH_LIST.forEach(function(a){ if(ACH.got[a.id]){n++;} }); return n; }
+function achSave(){ var p=achPoints(); ACH.pts.ach=p.ach; ACH.pts.stars=p.stars; try{ window.localStorage.setItem(ACH_KEY,JSON.stringify(ACH)); return true; }catch(e){ return false; } }
+/* marks one earned; true when it is new */
+function achEarn(id){ if(!achById(id)||ACH.got[id]){return false;} ACH.got[id]=achToday(); achSave(); achLinkUI(); return true; }
+/* the player's own calendar date, not UTC: "first earned" should match their day */
+function achToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+/* which achievements a finished race meets. g is the game, run the UI tally {chill, shadowT}. Lab 0 is the player (by name, so a
+   test can drive lab 0 with a bot). Exact conditions:
+   barrier: your crash into the gate or a barrier (not a tower). scrape: your scrape or drop across a gap. dissolved: your lab dissolved.
+   supply: you crossed a gap (not the singularity, not one inside the stretch) that another lab crossed first.
+   bio: you were first across a gap that is not the singularity. extinct: your fall lost the extinction roll.
+   roll: any lab fell and the roll spared the run. sing: you crossed the singularity gap, first or not.
+   chill: you won with chill on at Go or at any moment after. star: you won with chill off the whole race.
+   shadow: a rival's sight shadow hid a barrier or gap you did not know yet, for 3 s or more in total (this is most races: it is the
+   easy one that teaches the mechanic). */
+function achEval(g,run){
+  var me=g.labs[0],nm=me.name,o={},i,e,mine,r=g.result,win;
+  run=run||{};
+  for(i=0;i<g.ev.length;i++){
+    e=g.ev[i]; mine=e.who===nm;
+    if(mine&&e.type==='crash'&&(e.what==='gate'||e.what==='barrier')){o.barrier=1;}
+    if(mine&&(e.type==='scrape'||e.type==='drop')){o.scrape=1;}
+    if(mine&&e.type==='dissolved'){o.dissolved=1;}
+    if(mine&&e.type==='cross'&&!e.inner&&!e.sing){o.supply=1;}
+    if(mine&&e.type==='first'&&!e.sing){o.bio=1;}
+    if(mine&&(e.type==='first'||e.type==='cross')&&e.sing){o.sing=1;}
+    if(mine&&e.type==='fall'&&e.ext){o.extinct=1;}
+    if(e.type==='fall'&&!e.ext){o.roll=1;}
+  }
+  win=!!(r&&r.type==='win'&&r.winner===me);
+  if(win&&run.chill){o.chill=1;} else if(win){o.star=1;}
+  if((run.shadowT||0)>=3){o.shadow=1;}
+  return ACH_LIST.filter(function(a){return o[a.id];}).map(function(a){return a.id;});
+}
+/* called by go() and every 1/60 s step while racing */
+function achGo(){ ACHRUN={g:G,chill:!!K.chill,shadowT:0}; }
+function achTick(dt){
+  if(!ACHRUN||ACHRUN.g!==G){return;}
+  if(K.chill){ACHRUN.chill=true;}
+  var hm=G.labs[0];
+  if(hm.human&&!hm.out&&!hm.done&&achHidden(hm)){ ACHRUN.shadowT+=dt; }
+}
+/* true when a rival's sight shadow is hiding a barrier or gap this lab does not know yet. Plain "a rival is ahead" is nearly every race */
+function achHidden(l){
+  var sh=shadows(l),i,k,d;
+  for(k=0;k<sh.length;k++){
+    for(i=l.bi;i<G.barriers.length;i++){ d=G.barriers[i].x-l.x; if(d>=sh[k].b){break;} if(d>sh[k].a&&!knowsBar(l,i)){return true;} }
+    for(i=l.gi;i<G.gaps.length;i++){ d=G.gaps[i].x-l.x; if(d>=sh[k].b){break;} if(d>sh[k].a&&!knowsGap(l,i)){return true;} }
+  }
+  return false;
+}
+/* called by endScreen(): records what this run earned. ACHLAST = {met: all met this run, fresh: newly earned, best first} */
+function achEnd(){
+  $('ov-ach').hidden=true; ACHLAST=null;
+  if(!G||!G.over||!G.labs[0].human){ ACHRUN=null; return; }
+  var run=ACHRUN&&ACHRUN.g===G?ACHRUN:{chill:!!K.chill,shadowT:0},met=achEval(G,run),fresh=[];
+  met.forEach(function(id){ if(!ACH.got[id]){ ACH.got[id]=achToday(); fresh.push(id); } });
+  fresh.sort(function(a,b){ return achById(b).rank-achById(a).rank; });
+  if(fresh.length){ achSave(); }
+  ACHLAST={met:met,fresh:fresh};
+  ACHRUN=null;
+}
+function achBadge(on){
+  var sh='<path class="sh" d="M12 1.8 20.5 5.6v6.1c0 5-3.5 8.9-8.5 10.5-5-1.6-8.5-5.5-8.5-10.5V5.6z"/>';
+  return on?'<svg class="ab ab-on" viewBox="0 0 24 24" aria-hidden="true">'+sh+'<path class="tk" d="M7.6 12.2l3 3 5.8-6.2"/></svg>':
+    '<svg class="ab ab-off" viewBox="0 0 24 24" aria-hidden="true">'+sh+'<text x="12" y="15.6">?</text></svg>';
+}
+/* the recap's opening card. True when shown (the walk then waits for Keep going) */
+function achOpenHide(){ $('ach-open').hidden=true; $('ov').classList.remove('ach-tall'); $('rc-stage').hidden=false; $('rc-bar').hidden=false; }
+function achOpen(){
+  achOpenHide();
+  if(!ACHLAST){return false;}
+  var a=null,earned=false,more='',k;
+  if(ACHLAST.fresh.length){
+    a=achById(ACHLAST.fresh[0]); earned=true;
+    if(ACHLAST.fresh.length>1){ more='Also earned: '+ACHLAST.fresh.slice(1).map(function(id){return achById(id).name;}).join('; ')+'.'; }
+  } else {
+    /* none new: introduce one not earned yet, the one introduced longest ago (never introduced first, in list order) */
+    var best=null;
+    ACH_LIST.forEach(function(x){ if(ACH.got[x.id]){return;} var s=ACH.intro[x.id]||0; if(!best||s<(ACH.intro[best.id]||0)){best=x;} });
+    if(!best){return false;}
+    a=best; ACH.seq++; ACH.intro[a.id]=ACH.seq; achSave();
+  }
+  $('ach-badge').innerHTML=achBadge(earned);
+  $('ach-k').textContent=earned?(ACHLAST.fresh.length>1?ACHLAST.fresh.length+' achievements earned':'Achievement earned'):'Something you haven\'t run into yet';
+  $('ach-nm').textContent=a.name;
+  $('ach-tid').textContent=earned?a.tidbit:'How to earn it: '+a.hint+' '+a.tidbit;
+  k=$('ach-more'); k.textContent=more; k.hidden=!more;
+  $('ach-real').href=a.real.url; $('ach-real').title=a.real.label;
+  achLinkUI();
+  $('rc-stage').hidden=true; $('rc-list').hidden=true; $('rc-bar').hidden=true; $('ach-open').hidden=false; $('ov').classList.add('ach-tall');
+  return true;
+}
+function achGoOn(){ if($('ach-open').hidden){return;} achOpenHide(); rcPlay(); }
+/* the start card link and the gallery */
+function achLinkUI(){ $('ov-ach').textContent='Achievements '+achCount()+' / '+ACH_LIST.length; var b=$('ach-all'); if(b){ b.textContent=achCount()+' / '+ACH_LIST.length; b.setAttribute('aria-label','All achievements, '+achCount()+' of '+ACH_LIST.length+' earned'); } }
+function achGallery(){
+  if($('achg').hidden){ achRet=document.activeElement; if(running&&!paused){setPaused(true);} }
+  var n=achCount(),p=achPoints(),h='';
+  $('achg-sum').textContent=n+' of '+ACH_LIST.length+' earned. Each one comes with a real story behind the game. '+(n<ACH_LIST.length?'The ones not earned yet say how to get them.':'You found them all.')+
+    ' Points so far: '+p.ach+' for achievements, '+p.stars+' for stars.';
+  ACH_LIST.forEach(function(a){
+    var on=!!ACH.got[a.id];
+    h+='<li class="achg-it '+(on?'on':'off')+'">'+achBadge(on)+'<div><b>'+esc(a.name)+'</b><span class="achg-st">'+(on?'Earned '+esc(dailyFmtDate(ACH.got[a.id])):'Not yet. '+esc(a.hint))+'</span>'+
+      (on?'<p>'+esc(a.tidbit)+'</p><a href="'+esc(a.real.url)+'" target="_blank" rel="noopener">What\'s the real version?<span class="sr-only"> (opens in a new tab)</span></a>':'')+'</div></li>';
+  });
+  $('achg-list').innerHTML=h;
+  $('achg').hidden=false;
+  try{ $('achg-h').focus({preventScroll:true}); }catch(e){}
+}
+function achClose(){ $('achg').hidden=true; if(achRet&&achRet.focus){ try{achRet.focus({preventScroll:true});}catch(e){} } achRet=null; }
+(function(){
+  $('ov-ach').addEventListener('click',achGallery);
+  $('ach-all').addEventListener('click',achGallery);
+  $('ach-go').addEventListener('click',achGoOn);
+  $('achg-close').addEventListener('click',achClose);
+  $('achg').addEventListener('click',function(e){ if(e.target===this){achClose();} });
+  /* eating your vegetables: any outbound game link, opened by click, middle click or keyboard */
+  function veg(e){ var a=e.target&&e.target.closest?e.target.closest('a[href]'):null; if(a&&/[?&]utm_medium=game\b/.test(a.getAttribute('href')||'')){ achEarn('veg'); } }
+  document.addEventListener('click',veg,true);
+  document.addEventListener('auxclick',veg,true);
+  achLinkUI();
+})();
+/* test and debug hooks: eval(g,run) is the pure check; state() the stored object; points() the groundwork count; reset() clears it;
+   load() re-reads storage; ui gives the end-of-race steps so a test can drive lab 0 with a bot and still see the recap */
+window.PF.ach={LIST:ACH_LIST,KEY:ACH_KEY,eval:achEval,state:function(){return ACH;},points:achPoints,last:function(){return ACHLAST;},
+  reset:function(){ ACH={v:1,got:{},intro:{},seq:0,pts:{ach:0,stars:0,spent:0}}; try{ window.localStorage.removeItem(ACH_KEY); }catch(e){} achLinkUI(); },
+  load:function(){ ACH=achLoad(); achLinkUI(); return ACH; },gallery:achGallery,
+  ui:{start:start,go:go,endScreen:endScreen,tick:achTick,run:function(){return ACHRUN;},stop:function(){ running=false; }}};
+/* ---------- achievements (end) ---------- */
 
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
@@ -4159,6 +4938,7 @@ newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
 requestAnimationFrame(frame);
 if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
+ghBoot();  /* #g=... opens a ghost link */
 })();
 </script>
 <script>
