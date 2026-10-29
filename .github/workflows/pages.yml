@@ -2,7 +2,8 @@ name: Publish Pacing the Frontier
 # Serves the single-file game at the repository's GitHub Pages address. Needs Settings > Pages > Source: GitHub Actions.
 # Each open pull request from a branch in this repository is also published at /preview/pr-<number>/, so it can be played on a phone
 # before merging. This workflow always runs from main; it copies the branch's HTML file as a static file and never runs code from it.
-# Pull requests from forks get no preview, so outside code is never hosted on the site. A closed pull request's preview goes at the next deploy.
+# Only pull requests opened by the owner from a branch in this repository get a preview; forks and other authors are skipped,
+# so outside code is never hosted on the site. PREVIEW_AUTHORS is the allowlist. A closed pull request's preview goes at the next deploy.
 on:
   push:
     branches: [main]
@@ -22,6 +23,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      PREVIEW_AUTHORS: uncomposed
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -37,8 +40,8 @@ jobs:
           mkdir -p _site
           cp experiments/pacing-the-frontier/prototype.html _site/index.html
           cp experiments/pacing-the-frontier/spec.html _site/spec.html
-          gh pr list --state open --base main --json number,headRefName,isCrossRepository \
-            --jq '.[] | select(.isCrossRepository | not) | "\(.number) \(.headRefName)"' |
+          gh pr list --state open --base main --json number,headRefName,isCrossRepository,author \
+            --jq '.[] | select((.isCrossRepository | not) and (.author.login as $a | $ENV.PREVIEW_AUTHORS | split(" ") | index($a))) | "\(.number) \(.headRefName)"' |
           while read -r num ref; do
             if git show "origin/$ref:experiments/pacing-the-frontier/prototype.html" > page.html 2>/dev/null; then
               mkdir -p "_site/preview/pr-$num"
