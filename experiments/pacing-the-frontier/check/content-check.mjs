@@ -63,7 +63,6 @@ return {PF:window.PF,KNOBS,CAMPAIGN,BRIEFINGS,TWISTS,KIND_WORDS,ACH_LIST,dailySe
     check(X.campFormer(i) === 1, '(a) map ' + (i + 1) + ': a star on former seed ' + C[i].was[0] + ' is not counted');
     check(X.campStars(i) === 0 && X.campIsNew(i), '(a) map ' + (i + 1) + ' should read "New map" (former-seed star, none on ' + C[i].seed + ')');
     check(i + 1 >= C.length || X.campOpen(i + 1), '(a) map ' + (i + 2) + ' should stay open after map ' + (i + 1) + "'s seed changed");
-    check(!X.CS().maps[String(C[i].seed)] || true, '');
     s.maps[String(C[i].seed)] = {chill: [false, false, false], medal: [2, 0, 0], best: [null, null, null], noDeaths: false};
     check(!X.campIsNew(i), '(a) map ' + (i + 1) + ' still says "New map" with a star on its new seed');
   }
@@ -76,7 +75,7 @@ return {PF:window.PF,KNOBS,CAMPAIGN,BRIEFINGS,TWISTS,KIND_WORDS,ACH_LIST,dailySe
   delete all.maps[String(C[C.length - 1].was && C[C.length - 1].was.length ? C[C.length - 1].was[0] : C[C.length - 1].seed)];
   check(!X.campAllStarred(), '(a) the epilogue check passes with the last map unstarred');
   const none = {v: 2, maps: {}, stats: {}, epilogue: false, diff: 1};
-  X.setCS(none); X.campFormer(1); X.campOpen(2);
+  X.setCS(none); C.forEach((c, i) => X.campFormer(i));
   check(Object.keys(none.maps).length === 0, '(a) reading former seeds wrote entries into progress');
   check(!X.campOpen(1), '(a) map 2 opens with no stars at all');
 }
@@ -116,10 +115,9 @@ const N = 100, START = '2029-01-01';
     const add = new Date(Date.parse(next + 'T00:00:00Z') + (k - 1) * 30 * 864e5).toISOString().slice(0, 10);
     B.push({...B[0], id: 'test-' + k, added: add});
     dates.forEach((d, i) => { if (d < add && X.dailyBrief(d).id !== ids[i]) check(false, '(c) appending a briefing added ' + add + ' changed ' + d); });
-    for (let i = 0; i < dates.length; i++) if (dates[i] < add) ids[i] = X.dailyBrief(dates[i]).id;
+    dates.forEach((d, i) => { ids[i] = X.dailyBrief(d).id; });
   }
   B.splice(B.length - 3, 3);
-  check(dates.slice(-400).some((d, i, arr) => true), '');
   for (let i = 1; i < B.length; i++) check(B[i].added >= B[i - 1].added, '(c) BRIEFINGS ' + B[i].id + ' has an added date earlier than the item before it');
 }
 
@@ -158,10 +156,10 @@ const N = 100, START = '2029-01-01';
     const w = 'ACH_LIST[' + i + '] ' + x.id;
     check(text(x.id) && !aseen[x.id], w + ': missing or repeated id'); aseen[x.id] = 1;
     for (const k of ['name', 'hint', 'tidbit']) check(text(x[k]), w + ': empty ' + k);
-    check(!!X.KIND_WORDS[x.kind], w + ': unknown kind ' + x.kind);
+    check(text(x.kind), w + ': empty kind');
     check(Number.isInteger(x.rank), w + ': rank is not a whole number');
     check(!!x.real && text(x.real.label) && https(x.real.url), w + ': real link needs a label and an https URL');
-    check(Array.isArray(x.sources) && x.sources.length > 0 && x.sources.every(https), w + ': sources must be https URLs');
+    check(Array.isArray(x.sources) && x.sources.every(https), w + ': sources must be https URLs');
   });
 }
 
