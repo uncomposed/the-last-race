@@ -3139,13 +3139,13 @@ $('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
-    if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play again'); }
-    else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
+    if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play another'); }
+    else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play another'); }
   } else if(r.type==='all'){
-    showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play again');
+    showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play another');
   } else if(r.type==='allout'){
-    showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
-  } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
+    showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play another');
+  } else { showOverlay('Time limit','Nobody finished in time.','Play another'); }
   achEnd();  /* achievements: what this run earned, saved before the recap opens with it */
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
@@ -3874,7 +3874,7 @@ function campShowEnd(i,t,res,o){
    res.chill and res.diff (0 Easy, 1 Medium, 2 Hard) say how it was won. load() re-reads storage (for migration tests); setOpenTiers(b) flips CAMP_OPEN_TIERS */
 window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,KEY_V1:CAMP_KEY_V1,DIFF:CAMP_DIFF,state:function(){return CS;},summary:campSummary,record:campRecord,reset:campReset,list:campList,tiers:campTiers,start:campStart,
   end:function(i,t,res){ CAMP={i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()}; running=false; $('ready').hidden=true;
-    showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play again');
+    showOverlay(res.won?'You won':'Sprinter won',res.won?'You crossed the finish first in '+res.time.toFixed(1)+' s.':'Sprinter crossed the finish first.','Play another');
     campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
   load:function(){ CS=campLoad(); return CS; },setOpenTiers:function(b){ CAMP_OPEN_TIERS=!!b; },setDiff:campSetDiff,
   locked:function(){ return !!CAMP_SAVED; },playerStrikes:function(){ return PSTRIKES; },
