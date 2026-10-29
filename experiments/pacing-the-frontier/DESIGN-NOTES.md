@@ -553,7 +553,7 @@ At Medium the probe is dissolved in 23.0% of runs (was 17.5%); scrapes and drops
 
 ## Daily twists
 
-28 October 2026. The question was whether each daily twist makes every tier harder. Setup: the custom bot as lab 0 (perfect hands), the default knobs plus the twist, `PSTRIKES` null as in the daily, the three daily rosters (solo, Steward, Sprinter and Steward), chill off and on. Seeds are daily seeds (`dailySeed` of a date), 200 a block: block A (from 2027-01-01) to tune, block B (from 2027-08-01) to check, block C (from 2028-03-01) to report. A twist ships only if it lowers wins in all six cells of the report block. Paired: the same seeds with and without the twist. Bot play only; shares are outcomes of this sampling, not calibrated probabilities.
+28 October 2026. The question was whether each daily twist makes every tier harder. Setup: the custom bot as lab 0 (perfect hands), the default knobs plus the twist, `PSTRIKES` null as in the daily, the three daily rosters (solo, Steward, Sprinter and Steward), chill off and on. Seeds are daily seeds (`dailySeed` of a date), 200 a block: block A (from 2027-01-01) to tune, block B (from 2027-08-01) and block D (100 seeds from 2029-01-01, the block `check/content-check.mjs` uses) to check, block C (from 2028-03-01) to report. A twist ships only if it lowers wins in all six cells. Paired: the same seeds with and without the twist. Bot play only; shares are outcomes of this sampling, not calibrated probabilities.
 
 **Block C, wins out of 200 per cell, tiers 1 / 2 / 3 (solo / Steward / Sprinter and Steward).**
 
@@ -569,18 +569,17 @@ At Medium the probe is dissolved in 23.0% of runs (was 17.5%); scrapes and drops
 | Only 2 Strikes (kept) | strikes 2 | 35 / 26 / 26 | 42 / 30 / 28 | yes |
 | Hard Lessons | barScale 150, spill 0 | 81 / 23 / 25 | 110 / 37 / 46 | yes |
 | Wider Gaps | gapScale 125 | 87 / 38 / 26 | 104 / 43 / 32 | yes |
-| Rivals Copy You More | shareRiv 80, investYou 12 | 94 / 41 / 33 | 117 / 42 / 35 | yes |
-| Slower Investment | investYou 12 | 94 / 40 / 36 | 117 / 41 / 35 | yes |
+| Rivals Copy You More | shareRiv 80, airH 12 | 59 / 29 / 30 | 73 / 31 / 33 | yes |
 | Wider Singularity | singGap 140 | 84 / 36 / 24 | 109 / 34 / 26 | yes |
 | (shareRiv 80 alone) | shareRiv 80 | 104 / 49 / 47 | 129 / 57 / 48 | no |
 | (spill 0 alone) | spill 0 | 101 / 27 / 34 | 125 / 37 / 38 | yes |
+| (investYou 12, dropped) | investYou 12 | 94 / 40 / 36 | 117 / 41 / 35 | yes, but not on block D |
 
 **Findings**
 
-- **Taller Barriers did little** because most walls already sit at their height cap (the ceiling plus the jump, less 6), and barScale's range stops at 150 (the default is 140). Hard Lessons adds `spill` 0: a lab that climbs a wall gives no height to the others. spill 0 alone lowers all six cells of block C too (101 / 27 / 34 off, 125 / 37 / 38 on), so it does most of the work against rivals; the taller walls add to it in solo.
-- **Copying more helps a trailing player.** A bigger share for everyone (the old twist) raised wins against the Steward. Giving the bigger share to the rivals only (`shareRiv`) still does not lower wins against the Steward, and solo has no rivals to copy you, so on its own it can never make tier 1 harder. Rivals Copy You More keeps the rivals' bigger share for the story, but the part that makes it harder is the slower Build (`investYou` 12): its cells are within 3 games of Slower Investment's.
-- **Slower Investment slowed the bots too,** which made the versus tiers easier (Steward 45 to 67). `investYou` slows only lab 0.
+- **Taller Barriers did little** because most walls already sit at their height cap (the ceiling plus the jump, less 6), and barScale's range stops at 150 (the default is 140). Hard Lessons adds `spill` 0: a lab that climbs a wall gives no height to the others. spill 0 alone lowers all six cells of block C, so it does most of the work against rivals; the taller walls add to it in solo.
+- **Copying more helps a trailing player.** A bigger share for everyone (the old twist) raised wins against the Steward. Giving the bigger share to the rivals only (`shareRiv`) still does not lower wins against the Steward, and solo has no rivals to copy you, so on its own it can never make tier 1 harder. Rivals Copy You More keeps the rivals' bigger share for the story, but the part that makes it harder is `airH` 12 (height adds less air time to a jump, for every lab).
+- **Slowing your own Build is not a reliable twist.** The old Slower Investment slowed the bots too, which made the versus tiers easier (Steward 45 to 67). Slowing only lab 0 (`investYou` 12) lowered all six cells of blocks A, B and C but raised the Steward tier on block D (22 to 27 wins, chill off), and slower settings (9, 8) raised it on block A (46 to 55 and 74). A lab held back gets more catch-up help, so it can end up closer to the Steward. It was dropped; its two briefings now use Hard Lessons and Only 2 Strikes. `airH` 13 alone was also tried and failed the Steward tier on block B.
 - **Extinction odds cannot touch solo:** your own fall loses the race whatever the roll. Faster Singularity changed solo by one game or none. Both were replaced by Wider Singularity: `singGap` widens the singularity gap, never past 0.95 of its ceiling coverage (the generator keeps it under 0.8 otherwise).
-- **Tuning.** Settings were picked on block A. On block B, Wider Singularity at 125 lowered the Steward tier by one game only, so it was raised to 140 and everything was reported from a fresh block C. Wider Gaps at 120 failed block A; 125 passed A, B and C.
-- **Not tested.** Human play. Twists that only a human feels (the control lag past the singularity) cannot be measured with bots. `check/content-check.mjs` re-checks every twist on a small fixed block (n stated in its output).
-
+- **Tuning.** Settings were picked on block A. On block B, Wider Singularity at 125 lowered the Steward tier by one game only, so it was raised to 140. Wider Gaps at 120 failed block A; 125 passed every block. The Steward tier is the fragile one: a twist that slows every lab can help you against the Steward.
+- **Not tested.** Human play. Twists that only a human feels (the control lag past the singularity) cannot be measured with bots.
