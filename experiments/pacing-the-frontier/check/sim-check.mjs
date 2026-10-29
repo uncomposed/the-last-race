@@ -21,6 +21,30 @@ if (a < 0 || b < a) { console.error('Could not find the simulation section in pr
 const sim = lines.slice(a, b + 1).join('\n');
 const simHash = createHash('sha256').update(sim).digest('hex');
 
+// Determinism rules for the simulation, so a server can replay a run to the last bit in any browser. Math.min, max, abs, floor, ceil,
+// round, trunc, sign, sqrt, imul and PI give the same result in every engine. Math.sin, cos, log, exp, pow and the rest may differ in
+// the last bit between engines (Safari is not V8), so the simulation uses its own dsin, dcos, dlog and dexp. Clocks and random
+// numbers would make a replay differ from the race outright.
+const EXACT_MATH = new Set(['min', 'max', 'abs', 'floor', 'ceil', 'round', 'trunc', 'sign', 'sqrt', 'imul', 'fround', 'clz32', 'PI']);
+const banned = new Set(), code = sim.replace(/\/\*[\s\S]*?\*\//g, ''); // block comments may name the banned functions
+for (const m of code.matchAll(/\bMath\.([A-Za-z0-9_]+)/g)) if (!EXACT_MATH.has(m[1])) banned.add('Math.' + m[1]);
+for (const m of code.matchAll(/\b(Date\.|performance\.|crypto\.)/g)) banned.add(m[1].slice(0, -1));
+if (/\*\*/.test(code)) banned.add('the ** operator');
+if (banned.size) {
+  console.error('The simulation section uses ' + [...banned].join(', ') + ', which can differ between engines or runs. Use the exact Math functions or dsin, dcos, dlog and dexp.');
+  process.exit(1);
+}
+
+// The page carries its own simulation hash (SIM_HASH, outside the simulation section) for the input log's header.
+const hashRe = /^var SIM_HASH='([0-9a-f]*)';$/m;
+const pageText = readFileSync(page, 'utf8'), hm = hashRe.exec(pageText);
+if (!hm) { console.error("Could not find `var SIM_HASH='...';` in prototype.html"); process.exit(1); }
+if (hm[1] !== simHash) {
+  if (!write) { console.error('SIM_HASH in prototype.html is stale (the simulation section hashes to ' + simHash.slice(0, 12) + '...). Run sim-check with --write and commit the page.'); process.exit(1); }
+  writeFileSync(page, pageText.replace(hashRe, "var SIM_HASH='" + simHash + "';"));
+  console.log('Updated SIM_HASH in prototype.html.');
+}
+
 let ref = null;
 try { ref = JSON.parse(readFileSync(refPath, 'utf8')); } catch { /* no reference yet */ }
 if (!write && ref && ref.simHash === simHash) {

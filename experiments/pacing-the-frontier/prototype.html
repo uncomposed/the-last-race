@@ -1906,6 +1906,33 @@ html.epi-open{overflow:hidden}
 'use strict';
 function $(id){return document.getElementById(id);}
 function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
+/* sin, cos, log and exp that give the same bits in every engine. A server replays a race the browser played, so the two must agree
+   to the last bit, and engines may round Math.sin, cos, log and exp differently (Safari is not V8). These use only + - * / and
+   floor and round, which are exact everywhere. Accurate to about 1e-14, far finer than a race can notice. */
+var TWO_PI=6.283185307179586,HALF_PI=1.5707963267948966,LN2=0.6931471805599453;
+function dsin(x){
+  x-=Math.round(x/TWO_PI)*TWO_PI;  /* -pi..pi */
+  if(x>HALF_PI){x=Math.PI-x;} else if(x<-HALF_PI){x=-Math.PI-x;}
+  var q=x*x;
+  return x*(1+q*(-1/6+q*(1/120+q*(-1/5040+q*(1/362880+q*(-1/39916800+q*(1/6227020800+q*(-1/1307674368000+q*(1/355687428096000+q*(-1/121645100408832000))))))))));
+}
+function dcos(x){ return dsin(x+HALF_PI); }
+function dlog(x){
+  if(!(x>0)){ return x===0?-Infinity:NaN; }
+  var e=0;
+  while(x<0.7071067811865476){x*=2;e--;}
+  while(x>1.4142135623730951){x*=0.5;e++;}
+  var s=(x-1)/(x+1),q=s*s;
+  return e*LN2+2*s*(1+q*(1/3+q*(1/5+q*(1/7+q*(1/9+q*(1/11+q*(1/13+q*(1/15+q*(1/17+q/19)))))))));
+}
+function dexp(x){
+  if(x<-700){return 0;} if(x>700){return Infinity;}
+  var k=Math.round(x/LN2),r=x-k*LN2;
+  var p=1+r*(1+r/2*(1+r/3*(1+r/4*(1+r/5*(1+r/6*(1+r/7*(1+r/8*(1+r/9*(1+r/10*(1+r/11*(1+r/12*(1+r/13))))))))))));
+  while(k>0){p*=2;k--;}
+  while(k<0){p*=0.5;k++;}
+  return p;
+}
 
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
@@ -1962,7 +1989,7 @@ function profD(P,u,hi){
   else if(P.shape===1){d=0.2+0.5*(1-sstep(0.12,0.5,u))+0.2*u;}
   else if(P.shape===2){d=0.1+0.75*Math.min(P.n,Math.floor(u*(P.n+1)))/P.n;}
   else {d=0.14+0.12*u+0.68*sstep(0.55,0.85,u);}
-  d+=P.off+P.w1*Math.sin(6.2832*(P.f1*u+P.p1))+P.w2*Math.sin(6.2832*(P.f2*u+P.p2));
+  d+=P.off+P.w1*dsin(6.2832*(P.f1*u+P.p1))+P.w2*dsin(6.2832*(P.f2*u+P.p2));
   return clamp(d,0.03,hi||1);
 }
 /* the track stream r draws everything about the world; heights and widths both come from D plus per-feature coupling noise A.
@@ -2114,11 +2141,11 @@ function makeLab(id,kind,human,x){
 function handsN(l,tag,idx){
   var r=rngMaker((G.seed^Math.imul(l.id+1,0x9E3779B1)^Math.imul(tag,0x85EBCA77)^Math.imul(idx+1,0xC2B2AE3D))>>>0);
   r(); var u=Math.max(r(),1e-9),v=r();
-  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  return Math.sqrt(-2*dlog(u))*dcos(2*Math.PI*v);
 }
 function sloppy(l){ if(l.human){return 0;} var s=SKILL[l.kind]!==undefined?SKILL[l.kind]:K.skill; return clamp(1-s/100,0,1); }
 /* a misjudgment fixed per obstacle, which fades while the lab stands still and takes a closer look */
-function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*Math.exp(-l.still/2):1; }
+function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*dexp(-l.still/2):1; }
 function newGame(seed,humanKind,roster){
   seed=seed>>>0;
   var rt=rngMaker(seed),rb=rngMaker((seed^0x9E3779B9)>>>0),rr=rngMaker((seed^0x85EBCA6B)>>>0);
@@ -2159,7 +2186,7 @@ function updateJump(l,dt){
   if(l.jt<0){l.jy=0;return;}
   l.jt+=dt;
   var u=l.jt/l.jd;
-  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1);}
+  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*dsin(Math.PI*u),0,1);}
 }
 
 function applyLevel(k,by){
@@ -3523,7 +3550,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); rlTick(RL,hm,1/60); acc-=1/60;
+      syncInput(); ghRec(); recTick(); stepGame(1/60); recAfter(); achTick(1/60); rlTick(RL,hm,1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -4338,11 +4365,16 @@ function dailyBestHtml(x){
 function dailyRivals(t){ var ro=DAILY_TIERS[t].roster; return ro.length?'<b>vs</b> '+rivalsHtml(ro):'<b>Solo</b>, just you and the track'; }
 function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
 
+/* sha256 of the simulation section (from `function $(id)` to `window.PF={`), the same simHash check/sim-check.mjs computes. A run's
+   header carries it so a server replays the run on the simulation it was played on. sim-check fails when this is stale and
+   `sim-check --write` updates it in place */
+var SIM_HASH='b99d731c72db56bb5a321672008e9cf93a2aaca7e981e106cd90a8e00ea954f0';
 /* input log: G.input as the sim sees it each 1/60 s tick of a live race, one row [tick, field, value] per change. jump is a pulse
-   (logged when pressed). The header holds what a replay needs. Headless run() steps at 1/30, so a replay must step at h.dt */
+   (logged when it is set and the step before did not leave it set, see recAfter). The header holds what a replay needs. Headless
+   run() steps at 1/30, so a replay must step at h.dt */
 function recStart(){
   var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
-  REC={h:{v:1,seed:G.seed,mode:DLY?'daily':(CAMP?'campaign':'free'),date:DLY?DLY.date:null,tier:DLY?DLY.tier:(CAMP?CAMP.tier:null),map:CAMP?CAMP.i:null,
+  REC={h:{v:1,sim:SIM_HASH,seed:G.seed,mode:DLY?'daily':(CAMP?'campaign':'free'),date:DLY?DLY.date:null,tier:DLY?DLY.tier:(CAMP?CAMP.tier:null),map:CAMP?CAMP.i:null,
     roster:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),knobs:ko,pstrikes:PSTRIKES,chill:K.chill,human:!!G.labs[0].human,dt:1/60,
     fields:['tick','field','value']},inputs:[],tick:0,last:null};
 }
@@ -4357,6 +4389,9 @@ function recTick(){
   if(i.jump&&!(p&&p.jump)){ L.push([n,'jump',1]); }
   REC.last={pace:i.pace,w:i.w.slice(),auto:i.auto,rev:i.rev,fwd:i.fwd,jump:i.jump};
 }
+/* called right after each stepGame. The sim clears G.input.jump once the player's lab has used the pulse, so a jump still set here
+   was not used and must not be logged again, while one pressed on the very next tick is a new press and must be */
+function recAfter(){ if(REC&&REC.last){ REC.last.jump=G.input.jump; } }
 function recEnd(){
   if(!REC){return null;}
   var h=G.labs[0],r=G.result||{type:'none'};
