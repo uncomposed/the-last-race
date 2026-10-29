@@ -6,7 +6,8 @@
 //   (b) each daily twist lowers the custom bot's wins on all three daily tiers, chill off and on, on a fixed block of daily seeds;
 //   (c) appending a briefing does not change any earlier date's briefing;
 //   (d) every BRIEFINGS, TWISTS and ACH_LIST entry is well formed;
-//   (e) "you raced like" still names each rival kind as itself when that kind drives lab 0, on held-out seeds.
+//   (e) "you raced like" still names each rival kind as itself when that kind drives lab 0, on held-out seeds;
+//   (f) the leaderboard screens' position maths on fixed boards, and a published run becoming a ghost (bad ones refused).
 // Bot play only: (b) is a regression check on one small block, not a balance claim (see DESIGN-NOTES.md, "Daily twists").
 import {readFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
@@ -195,6 +196,66 @@ const N = 100, START = '2029-01-01';
     check(Array.isArray(X.RL_WORDS[k]) && X.RL_WORDS[k].length >= 3, '(e) RL_WORDS.' + k + ' needs at least 3 lines');
   }
   check(!/—/.test(JSON.stringify([X.RL_WORDS, X.RL_WHY])), '(e) RL_WORDS or RL_WHY has an em dash');
+}
+
+// (f) the leaderboard screens' logic, on fixed boards: where a time ranks and how the line reads (Cole's rule: no entries "the first", under
+// 100 entries the place only, from 100 entries the place and the total, ties share a place), and a published run from the server
+// becoming a ghost (good ones convert; every malformed one is refused). No server and no DOM; the live path is tested by hand.
+{
+  const Y = new Function('KNOBS', [line('var GH_E='), 'function clamp(x,a,b){return Math.min(b,Math.max(a,x));}',
+    ...['lbPlace', 'lbOrd', 'lbLine', 'lbT', 'lbArr', 'lbGhost', 'ghInt', 'ghName', 'ghCheck'].map(fn),
+    'return {lbPlace,lbOrd,lbLine,lbT,lbGhost};'].join('\n'))(X.KNOBS);
+  const eq = (got, want, msg) => check(got === want, '(f) ' + msg + ': got ' + JSON.stringify(got) + ', wanted ' + JSON.stringify(want));
+  const board = [41.2, 42.5, 42.5, 43, 50];
+  eq(Y.lbPlace(board, 40000), 1, 'faster than all');
+  eq(Y.lbPlace(board, 41200), 1, 'equal to the fastest shares first place');
+  eq(Y.lbPlace(board, 42500), 2, 'a tie shares the place of the first of the tied');
+  eq(Y.lbPlace(board, 42501), 4, 'just behind a tie');
+  eq(Y.lbPlace(board, 99000), 6, 'slower than all');
+  eq(Y.lbPlace([], 41200), 1, 'empty board');
+  eq(Y.lbPlace([0.1 + 0.2], 300), 1, 'float noise in a stored time does not push you down');
+  [[1, '1st'], [2, '2nd'], [3, '3rd'], [4, '4th'], [11, '11th'], [12, '12th'], [13, '13th'], [21, '21st'], [22, '22nd'], [23, '23rd'], [101, '101st'], [111, '111th'], [112, '112th']]
+    .forEach(([n, w]) => eq(Y.lbOrd(n), w, 'ordinal of ' + n));
+  eq(Y.lbLine(1, 0, false, 'today\'s board'), 'You\'d be the first on today\'s board', 'no entries, before publishing');
+  eq(Y.lbLine(1, 0, true, 'today\'s board'), 'Published: 1st', 'no other entries, after publishing');
+  eq(Y.lbLine(2, 1, false, 'b'), 'You\'d be 2nd', 'one other entry shows the place only');
+  eq(Y.lbLine(14, 99, false, 'b'), 'You\'d be 14th', '99 entries still show the place only');
+  eq(Y.lbLine(14, 100, false, 'b'), 'You\'d be 14th of 101', '100 entries show the total, which counts you');
+  eq(Y.lbLine(14, 229, true, 'b'), 'Published: 14th of 230', 'published on a big board');
+  eq(Y.lbLine(1, 100, false, 'b'), 'You\'d be 1st of 101', 'first on a big board');
+  eq(Y.lbT(41.2), '41.2 s', 'a time trims its zeros');
+  eq(Y.lbT(41.235), '41.235 s', 'a time keeps three decimals');
+  // a server run as the game receives it (header = the log's header, ghost = the replay's samples)
+  const run = o => JSON.parse(JSON.stringify({date: '2026-10-28', kind: 'star', t: 41.2, name: 'Cole', header: {v: 1, mode: 'daily', date: '2026-10-28', seed: 123, tier: 1,
+    roster: ['sprinter', 'steward', 'gambler'], knobs: {}, pstrikes: null}, ghost: {e: 6, tk: 24, x: [0, 10, 20, 30, 40], h: [0, 0, 5, 5, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}, ...o}));
+  const g = Y.lbGhost(run({}));
+  check(g && g.x.length === 5 && g.hh.length === 5 && g.j.length === 5 && g.s.length === 5, '(f) a good run becomes a ghost with all four tracks');
+  if (g) {
+    eq(g.h.o, 'win', 'the ghost is a win'); eq(g.h.n, 'Cole', 'the ghost carries the name'); eq(g.h.d, '2026-10-28', 'the ghost carries the day'); eq(g.h.ti, 1, 'the ghost keeps the 0-based tier');
+    eq(g.h.x, 40, 'the ghost finishes at its last x'); eq(g.h.c, 0, 'a star run is not a chair run'); eq(g.hh[2], 5, 'height samples keep their order');
+  }
+  eq(Y.lbGhost(run({kind: 'chair'})).h.c, 1, 'a lounge-chair run is marked');
+  eq(Y.lbGhost(run({name: 'A\u0000B\n  C'})).h.n, 'AB C', 'control characters leave the name');
+  eq(Y.lbGhost(run({ghost: {e: 6, tk: 24, x: [0, 1e9, 20, 30, 40], h: [0, 0, 5, 5, 99999], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}})).x[1], 40000, 'a huge x is clamped');
+  const bad = {
+    'not an object': null, 'no ghost': {ghost: undefined}, 'another day': {date: '2026-10-27'}, 'a free-play header': {header: {mode: 'free'}},
+    'an unknown rival': {header: {roster: ['sprinter', 'robot']}}, 'a repeated rival': {header: {roster: ['sprinter', 'sprinter']}}, 'a missing seed': {header: {seed: 'x'}},
+    'a short height track': {ghost: {e: 6, tk: 24, x: [0, 10, 20, 30, 40], h: [0, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}},
+    'a NaN in x': {ghost: {e: 6, tk: 24, x: [0, null, 20, 30, 40], h: [0, 0, 0, 0, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}},
+    'a string in x': {ghost: {e: 6, tk: 24, x: [0, '10', 20, 30, 40], h: [0, 0, 0, 0, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}},
+    'x not an array': {ghost: {e: 6, tk: 24, x: 'abc', h: [], j: [], s: []}}, 'no samples': {ghost: {e: 6, tk: 0, x: [], h: [], j: [], s: []}},
+    'a tick count that does not fit': {ghost: {e: 6, tk: 9999, x: [0, 10, 20, 30, 40], h: [0, 0, 0, 0, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}},
+    'a zero sample gap': {ghost: {e: 0, tk: 24, x: [0, 10, 20, 30, 40], h: [0, 0, 0, 0, 0], j: [0, 0, 0, 0, 0], s: [0, 0, 0, 0, 0]}},
+  };
+  for (const [what, o] of Object.entries(bad)) {
+    const r = o === null ? null : run(o);
+    if (what === 'no ghost') delete r.ghost;
+    if (what === 'a free-play header') r.header = {...run({}).header, mode: 'free'};
+    if (what === 'an unknown rival' || what === 'a repeated rival') r.header = {...run({}).header, roster: o.header.roster};
+    if (what === 'a missing seed') r.header = {...run({}).header, seed: 'x'};
+    let got; try { got = Y.lbGhost(r); } catch (e) { got = 'threw'; }
+    check(got === null, '(f) ' + what + ' must be refused, not raced' + (got === 'threw' ? ' (it threw instead of returning null)' : ''));
+  }
 }
 
 const s = ((Date.now() - t0) / 1000).toFixed(1);
