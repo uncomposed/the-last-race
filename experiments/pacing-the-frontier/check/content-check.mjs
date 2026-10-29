@@ -5,7 +5,8 @@
 //   (a) campaign progress survives a seed change (CAMPAIGN[i].was);
 //   (b) each daily twist lowers the custom bot's wins on all three daily tiers, chill off and on, on a fixed block of daily seeds;
 //   (c) appending a briefing does not change any earlier date's briefing;
-//   (d) every BRIEFINGS, TWISTS and ACH_LIST entry is well formed.
+//   (d) every BRIEFINGS, TWISTS and ACH_LIST entry is well formed;
+//   (e) "you raced like" still names each rival kind as itself when that kind drives lab 0, on held-out seeds.
 // Bot play only: (b) is a regression check on one small block, not a balance claim (see DESIGN-NOTES.md, "Daily twists").
 import {readFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
@@ -46,10 +47,12 @@ const sim = lines.slice(a, b + 1).join('\n');
 const parts = [sim, table('KNOBS'), table('CAMPAIGN'), line('var MEDALS='), table('CAMP_DIFF'), table('BRIEFINGS'), table('TWISTS'), table('KIND_WORDS'),
   'var CS=null;', 'function utm(url,camp){ return url; }', table('ACH_LIST'),
   ...['campBlank', 'campMap', 'campStar', 'campStarred', 'campStars', 'campFormer', 'campCredit', 'campIsNew', 'campOpen', 'campTierOpen', 'campAllStarred',
-    'dailySeed', 'dailyDayNum', 'dailyPool', 'dailyBrief'].map(fn)];
+    'dailySeed', 'dailyDayNum', 'dailyPool', 'dailyBrief'].map(fn),
+  table('RACED'), line('var RL_F='), table('RL_WORDS'), table('RL_WHY'), ...['rlNew', 'rlTick', 'rlFeat', 'rlClassify'].map(fn)];
 const X = new Function('window', 'document', parts.join('\n') + `
 return {PF:window.PF,KNOBS,CAMPAIGN,BRIEFINGS,TWISTS,KIND_WORDS,ACH_LIST,dailySeed,dailyBrief,
-  setCS:function(o){CS=o;},CS:function(){return CS;},campStars,campFormer,campCredit,campIsNew,campOpen,campAllStarred};`)({}, null);
+  setCS:function(o){CS=o;},CS:function(){return CS;},campStars,campFormer,campCredit,campIsNew,campOpen,campAllStarred,
+  RACED,RL_F,RL_WORDS,RL_WHY,rlNew,rlTick,rlFeat,rlClassify};`)({}, null);
 
 // (a) campaign progress across a seed change
 {
@@ -161,6 +164,37 @@ const N = 100, START = '2029-01-01';
     check(!!x.real && text(x.real.label) && https(x.real.url), w + ': real link needs a label and an https URL');
     check(Array.isArray(x.sources) && x.sources.every(https), w + ': sources must be https URLs');
   });
+}
+
+// (e) "you raced like": each rival kind drives lab 0 on a held-out block (RACED was measured on seeds 1 to 300, and validated on
+// 10001 to 10300, where the lowest was the Gambler, chill off, named as itself in 288 of 300 runs). Here 40 seeds a kind, chill on, default knobs, stepped at
+// 1/60 s as the page does. The bar is 32 of 40 (80%): at the measured 96% a kind falls below it by chance about 2 in 100,000 runs of
+// this check (binomial, n = 40, p = 0.96). Below the bar, that kind's habits have moved toward another kind's: re-measure RACED. Bot play only.
+{
+  const PF = X.PF, K = PF.K, DEF = {...K}, KS = ['sprinter', 'steward', 'gambler'], S0 = 20001, NS = 40, MIN = 32, dt = 1 / 60;
+  for (const k in DEF) K[k] = DEF[k];
+  K.chill = 1; PF.setPlayerStrikes(null); PF.setRoster(null);
+  console.log('(e) you raced like: ' + NS + ' held-out seeds a kind from ' + S0 + ', rows true kind, columns named kind (Sprinter / Steward / Gambler), mixes; bot play only');
+  for (const kind of KS) {
+    const row = {sprinter: 0, steward: 0, gambler: 0};
+    let mix = 0, none = 0;
+    for (let s = S0; s < S0 + NS; s++) {
+      PF.newGame(s, kind); const G = PF.G(), l = G.labs[0], A = X.rlNew();
+      for (let g = 0; !G.over && !l.out && !l.done && g < 40000; g++) { PF.step(dt); X.rlTick(A, l, dt); }
+      const r = X.rlClassify(X.rlFeat(A, l));
+      if (!r) { none++; continue; }
+      row[r.k]++; if (r.k2) mix++;
+    }
+    console.log('    ' + kind.padEnd(9) + KS.map(q => String(row[q]).padStart(4)).join('') + '   mixes ' + mix + (none ? ', no result ' + none : ''));
+    check(row[kind] >= MIN, '(e) ' + kind + ' named as itself in ' + row[kind] + ' of ' + NS + ' runs (needs ' + MIN + ')');
+  }
+  for (const k in DEF) K[k] = DEF[k];
+  check(X.RL_WHY.length === X.RL_F.length, '(e) RL_WHY needs one pair of words per habit in RL_F');
+  for (const k of KS) {
+    check(X.RACED[k] && X.RACED[k].m.length === X.RL_F.length && X.RACED[k].s.length === X.RL_F.length, '(e) RACED.' + k + ' needs a mean and spread per habit');
+    check(Array.isArray(X.RL_WORDS[k]) && X.RL_WORDS[k].length >= 3, '(e) RL_WORDS.' + k + ' needs at least 3 lines');
+  }
+  check(!/—/.test(JSON.stringify([X.RL_WORDS, X.RL_WHY])), '(e) RL_WORDS or RL_WHY has an em dash');
 }
 
 const s = ((Date.now() - t0) / 1000).toFixed(1);

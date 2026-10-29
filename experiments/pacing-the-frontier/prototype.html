@@ -78,6 +78,13 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 #ov-how{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
 #ov-how:hover{color:var(--ink)}
 #ov-msg[hidden]{display:none}
+/* you raced like: one line with the kind's critter; the name is always written out */
+.rl-line{display:flex;align-items:center;gap:8px;margin:0;font:500 14px/1.4 var(--body)}
+.rl-line[hidden]{display:none}
+@media (max-width:600px){.rl-line{font-size:13px;gap:6px}}
+.rl-ic{width:15px;height:17px;flex:none;image-rendering:pixelated}
+.rl-ic+.rl-ic{margin-left:-4px}
+.achg-usual[hidden]{display:none}
 /* end-of-run story: set apart from the result line, in the body face, a little quieter */
 /* the recap: Professor Postmortem walks a miniature of the track just raced and stops at its disasters. The plaque pops up over
    the spot, the line sits in a speech bubble under the strip. Tap the strip to skip ahead; it never blocks the buttons */
@@ -525,6 +532,7 @@ html.epi-open{overflow:hidden}
         </ul>
         <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button></div>
         <p id="ov-msg" hidden>The start is slow. A gate near the start is too tall to jump from a standstill, so move the bar toward Build or hold Back to stand still and build height. Run is your cruise; Build is the rest, and it goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down move the bar toward Run or Build, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
+        <p class="rl-line" id="ov-like" hidden></p>
         <div class="story" id="ov-story" hidden>
           <!-- achievements: the recap opens with this card; Keep going starts the walk -->
           <div class="ach-open" id="ach-open" role="group" aria-labelledby="ach-nm" hidden>
@@ -672,6 +680,7 @@ html.epi-open{overflow:hidden}
   <div class="card">
     <div class="cmp-top"><h2 id="achg-h" tabindex="-1">Achievements</h2><button id="achg-close" type="button">Close</button></div>
     <p class="achg-sum" id="achg-sum"></p>
+    <p class="rl-line achg-usual" id="achg-usual" hidden></p>
     <ul class="achg-list" id="achg-list"></ul>
   </div>
 </div>
@@ -2926,6 +2935,126 @@ function triEvent(e){
   });
 })();
 
+/* ---------- you raced like: the rival kind your habits were closest to ----------
+   rlTick samples lab 0 after every step while it is still racing. It reads the lab and changes nothing, so the simulation is the same.
+   Five habits (RL_F): run, the mean Run while moving forward; sight and speed, the shares of Build that went to sight and to max speed
+   (weighted by how much was being built, and skipped while a crash or scrape cap forces the split); floor, the share of moving time at
+   full throttle (Floor it, or Run at 100); knock, crashes, scrapes and drops per barrier or gap reached.
+   RACED holds each kind's mean (m) and sample spread (s) of the five, in RL_F order, measured with that kind driving lab 0 against all
+   three rivals: seeds 1 to 300 (n = 300 per kind), free play, default knobs (chill on, skill 100), stepped at 1/60 s as the page does.
+   Bot play only; no human has been measured. On held-out seeds 10001 to 10300 (n = 300 per kind) each kind was named as itself in
+   296 (Sprinter), 300 (Steward) and 291 (Gambler) of 300 runs with chill on, 297, 300 and 288 with chill off. The splits do much of that
+   work, since each bot's split is fixed: from run, floor and knock alone it was 250, 290 and 219 of 300 (chill on). With RL_MIX at 0.15,
+   16, 0 and 12 of those 300 runs read as a mix (chill on). check/raced-like.mjs re-measures all of this; check/content-check.mjs (e)
+   re-checks it on a smaller held-out block */
+var RACED={
+  sprinter:{m:[0.753,0.2,0.2,0.067,0.197],s:[0.046,0,0,0.08,0.161]},
+  steward:{m:[0.56,0.3,0.149,0.012,0.02],s:[0.034,0.002,0.005,0.028,0.029]},
+  gambler:{m:[0.662,0.2,0.3,0.058,0.146],s:[0.049,0,0,0.076,0.122]}
+};
+/* RL_SMIN: no spread is taken as smaller than 0.05, one press of Up or Down on the Run / Build bar. The bots' splits are fixed, so their
+   measured spread there is about 0, and without a floor any player off a bot's exact split would be infinitely far from it.
+   RL_MIX: when the two closest kinds are within this (in spreads) the result is a mix of both */
+var RL_F=['run','sight','speed','floor','knock'],RL_SMIN=0.05,RL_MIX=0.15,RL_KEY='pacing-frontier.raced.v1';
+var RL_WORDS={
+  sprinter:['fast, light, and sure the road would hold','head down, eyes on the next gap','speed first, questions at the finish'],
+  steward:['slow hands, wide eyes, few regrets','you looked before every leap','careful, tall, and hard to knock over'],
+  gambler:['fast, thin, and trusting the dice','you liked the odds more than the map','quick feet and a lucky coin'],
+  mix:['a bit of each, which is a style too','two habits, one lab','hard to pin down, in a good way']
+};
+/* each habit in plain words, compared with the kind it was told apart from: [more than that kind, less] */
+var RL_WHY=[
+  ['more Run','less Run'],['more sight','less sight'],['more max speed','less max speed'],
+  ['more flat-out running','less flat-out running'],['more knocks','fewer knocks']
+];
+function rlNew(){ return {t:0,mv:0,run:0,floor:0,iw:0,s:[0,0,0]}; }
+function rlTick(A,l,dt){
+  if(!A||l.out||l.done){return;}
+  A.t+=dt;
+  if(l.v>1&&!l.bounce){ A.mv+=dt; A.run+=l.pace*dt; if(l.pace>=0.995){A.floor+=dt;} }
+  var w=l.ivw,r=l.ivr||0,tot,q;
+  if(w&&r>0.02&&!capped(l)){ tot=w[0]+w[1]+w[2]; if(tot>0){ q=r*dt; A.iw+=q; A.s[0]+=q*w[0]/tot; A.s[1]+=q*w[1]/tot; A.s[2]+=q*w[2]/tot; } }
+}
+/* the five habits, or null when the lab raced for under 3 s or barely moved */
+function rlFeat(A,l){
+  if(!A||A.t<3||A.mv<1){return null;}
+  return [A.run/A.mv,A.iw?A.s[0]/A.iw:0.25,A.iw?A.s[2]/A.iw:0.25,A.floor/A.mv,(l.st.bc+l.st.tc+l.st.sc)/Math.max(1,l.bi+l.gi)];
+}
+/* the closest kind by standardised distance (root mean square of z over the habits), a mix when the runner-up is within RL_MIX, and the
+   habits that decided it: those that favour the closest kind over the runner-up (for a mix, over the farthest kind), biggest first */
+function rlClassify(f){
+  if(!f){return null;}
+  var ks=['sprinter','steward','gambler'],d=[],i,j,c,s2,z;
+  for(i=0;i<ks.length;i++){ c=RACED[ks[i]]; s2=0; for(j=0;j<f.length;j++){ z=(f[j]-c.m[j])/Math.max(c.s[j],RL_SMIN); s2+=z*z; } d.push({k:ks[i],d:Math.sqrt(s2/f.length)}); }
+  d.sort(function(a,b){return a.d-b.d;});
+  var mix=d[1].d-d[0].d<RL_MIX,A=RACED[d[0].k],B=RACED[(mix?d[2]:d[1]).k],why=[],za,zb;
+  for(j=0;j<f.length;j++){
+    if(A.m[j]===B.m[j]){continue;}
+    za=(f[j]-A.m[j])/Math.max(A.s[j],RL_SMIN); zb=(f[j]-B.m[j])/Math.max(B.s[j],RL_SMIN);
+    if(zb*zb>za*za&&(A.m[j]>B.m[j])===(f[j]>B.m[j])){ why.push({j:j,c:zb*zb-za*za,hi:A.m[j]>B.m[j]}); }
+  }
+  why.sort(function(a,b){return b.c-a.c;});
+  return {k:d[0].k,k2:mix?d[1].k:null,vs:(mix?d[2]:d[1]).k,d:d,why:why.slice(0,2)};
+}
+function rlLike(r){ return r.k2?'a mix of a '+KINDS[r.k].name+' and a '+KINDS[r.k2].name:'a '+KINDS[r.k].name; }
+/* a one-liner picked by the run (seed and time), so the same race always says the same thing */
+function rlQuip(r,n){ var p=RL_WORDS[r.k2?'mix':r.k]; n=Math.abs(Math.floor(n))||0; return p[n%p.length]; }
+function rlWhy(r){ return r.why.map(function(w){ return RL_WHY[w.j][w.hi?0:1]; }).join(' and '); }
+function rlCard(r,n){ return 'You raced like '+rlLike(r)+': '+rlQuip(r,n)+'.'; }
+/* "You raced like a Steward: less Run and more sight than a Gambler." */
+function rlRecap(r){ var w=rlWhy(r); return 'You raced like '+rlLike(r)+(w?': '+w+' than a '+KINDS[r.vs].name:'')+'.'; }
+
+/* the race hooks: a fresh tally at Go, a sample per step, the result when the race ends (lab 0 played by you only) */
+var RL=null,RLR=null,RLT=rlLoad();
+function rlLoad(){ try{ var a=JSON.parse(window.localStorage.getItem(RL_KEY)||'null'); if(Array.isArray(a)){ return a.filter(function(x){ return x&&RACED[x.k]&&(!x.k2||RACED[x.k2]); }).slice(-20); } }catch(e){} return []; }
+function rlSave(){ try{ window.localStorage.setItem(RL_KEY,JSON.stringify(RLT)); }catch(e){} }
+function rlEnd(){
+  RLR=null;
+  var l=G.labs[0];
+  if(!RL||!l.human){ return null; }
+  var r=rlClassify(rlFeat(RL,l));
+  if(!r){ return null; }
+  r.n=(G.seed>>>0)+Math.round(G.t*10); RLR=r;
+  RLT.push({k:r.k,k2:r.k2,d:DLY?DLY.date:null}); while(RLT.length>20){ RLT.shift(); } rlSave();
+  return r;
+}
+/* "Usually: a Steward" once there are 5 or more results: the kind named closest most often (a tie names both) */
+function rlUsual(){
+  if(RLT.length<5){ return null; }
+  var c={sprinter:0,steward:0,gambler:0},ks=['sprinter','steward','gambler'];
+  RLT.forEach(function(x){ c[x.k]++; });
+  ks.sort(function(a,b){ return c[b]-c[a]; });
+  var r={k:ks[0],k2:c[ks[1]]===c[ks[0]]?ks[1]:null};
+  return {r:r,text:r.k2?'Usually: a '+KINDS[r.k].name+' or a '+KINDS[r.k2].name+', '+c[r.k]+' races each of your last '+RLT.length+'.':
+    'Usually: a '+KINDS[r.k].name+', in '+c[r.k]+' of your last '+RLT.length+' races.'};
+}
+/* the latest result from a daily date, for the share poster and text */
+function rlDay(ds){ for(var i=RLT.length-1;i>=0;i--){ if(RLT[i].d===ds){ return RLT[i]; } } return (RLR&&DLY&&DLY.date===ds)?RLR:null; }
+/* the kind's little critter with its hat, on a 15 x 17 cell grid: drawn beside each line, the name is always written out too */
+var RL_HUE={sprinter:'#F2708F',steward:'#A58BEE',gambler:'#F0A04B'};
+function rlCritter(c,k,x,y,u,ink,band){
+  function P(gx,gy,gw,gh,col){ c.fillStyle=col; c.fillRect(x+(gx+2)*u,y+(gy+4)*u,gw*u,gh*u); }
+  var body=RL_HUE[k];
+  P(2,9,1,3,body); P(4,9,1,3,body); P(7,9,1,3,body); P(9,9,1,3,body);
+  P(2,1,8,1,body); P(1,2,10,6,body); P(2,8,8,1,body); P(0,5,1,2,body); P(11,5,1,2,body);
+  P(6,3,1,2,EYE); P(9,3,1,2,EYE);
+  if(k==='sprinter'){ P(1,2,10,1,band); P(-1,2,2,1,band); P(-2,3,1,1,band); }
+  else if(k==='steward'){ P(3,-1,6,1,HAT.steward); P(2,0,8,1,HAT.steward); P(1,1,11,1,HAT.steward); }
+  else { P(3,-4,6,4,ink); P(3,-1,6,1,RL_HUE.sprinter); P(1,0,10,1,ink); }
+}
+/* a line of text with the critter (or two, for a mix) in front of it */
+function rlPut(el,r,txt){
+  el.textContent='';
+  var cs=getComputedStyle(document.documentElement),ink=cs.getPropertyValue('--ink').trim()||'#11161D',sf=cs.getPropertyValue('--surface').trim()||'#F8F9FB';
+  [r.k,r.k2].forEach(function(k){
+    if(!k){return;}
+    var cv=document.createElement('canvas'),d=2; cv.className='rl-ic'; cv.width=15*d; cv.height=17*d; cv.setAttribute('aria-hidden','true');
+    try{ rlCritter(cv.getContext('2d'),k,0,0,d,ink,sf); }catch(e){}
+    el.appendChild(cv);
+  });
+  var s=document.createElement('span'); s.textContent=txt; el.appendChild(s);
+}
+
 /* the end-of-run recap. PFStory picks the stops and writes the lines; this plays them. Professor Postmortem, a pixel historian in a
    mortarboard and spectacles, walks a miniature of the track just raced (gaps as notches, the singularity marked, barriers as ticks,
    the finish flag, all at their real x), stops at each event, points the stick, pops a plaque and says one line with a soft chip
@@ -2953,7 +3082,7 @@ function tellStory(){
       lo=0; for(k=1;k<stops.length;k++){ if(stops[k].score<stops[lo].score){lo=k;} }
       stops.splice(lo,1);
     }
-    stops.push({x:G.finish,kind:'verdict',mood:st.verdict.mood,plaque:st.verdict.title,line:st.verdict.line,lab:'',verdict:true});
+    stops.push({x:G.finish,kind:'verdict',mood:st.verdict.mood,plaque:st.verdict.title,line:st.verdict.line+(RLR?' '+rlRecap(RLR):''),lab:'',verdict:true});
     RC.stops=stops;
     RC.geo={finish:G.finish,gaps:G.gaps.map(function(g){return {x:g.x,W:g.W,sing:!!g.sing};}),bars:G.barriers.map(function(b){return {x:b.x,h:b.h,gate:!!b.gate};})};
     box.hidden=false;
@@ -3135,7 +3264,7 @@ function cardPrimary(){
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
-  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
+  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false; $('ov-like').hidden=true;  /* end screens: the result line, not the start card's short lines */
 }
 /* the start card: three short lines; "How to play" shows and hides the full rules */
 $('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
@@ -3149,6 +3278,8 @@ function endScreen(){
   } else if(r.type==='allout'){
     showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play another');
   } else { showOverlay('Time limit','Nobody finished in time.','Play another'); }
+  var rl=rlEnd(),lk=$('ov-like');  /* you raced like: the closest rival kind, on this card, in the recap, the ghost and the daily share */
+  lk.hidden=!rl; if(rl){ rlPut(lk,rl,rlCard(rl,rl.n)); }
   achEnd();  /* achievements: what this run earned, saved before the recap opens with it */
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
@@ -3166,6 +3297,7 @@ function showSeed(){
 /* daily (from dailyStart) makes it a daily race: that day's seed, the tier's roster and today's twist on the default knobs */
 function start(seed,camp,daily){
   rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
+  RL=null; RLR=null;
   CAMP=camp||null; DLY=daily||null;
   $('btn-restart').textContent=CAMP?'Retry map':(DLY?'Retry tier':'New run');  /* mid-race, a campaign or daily run restarts itself */
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
@@ -3186,6 +3318,7 @@ function go(){
   dailyGo();  /* daily: count the attempt and fix the race's chill state */
   recStart();  /* every run: start the input log */
   achGo();  /* achievements: start this run's chill and shadow tally */
+  RL=rlNew();  /* you raced like: start this run's habit tally */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
   sndStarted=true; snd.unlock(); snd.sfx('go');
 }
@@ -3205,7 +3338,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); acc-=1/60;
+      syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); rlTick(RL,hm,1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -4205,7 +4338,9 @@ function dailyShowAnswer(ds,now){
 function dailyShareInfo(ds){
   var d=dailyDay(ds),b=dailyBrief(ds),wins=0,rows=[],t,x;
   for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } rows.push({res:dailyRes(x),star:x.star,chair:x.chair,att:x.att,bs:x.bs,bc:x.bc,best:x.bs===null&&x.bc===null?x.best:null,name:DAILY_TIERS[t].name}); }
+  var lr=rlDay(ds);  /* you raced like: the latest race of that day */
   return {ds:ds,twist:b.twist.name,rows:rows,wins:wins,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
+    lk:lr?{k:lr.k,k2:lr.k2||null}:null,like:lr?'I raced like '+rlLike(lr):'',
     link:utm('https://'+DAILY_SITE+'?daily='+ds,'daily-share')};
 }
 /* "star 61.2 s, lounge chair 70.1 s": each kind of win with its own best time */
@@ -4221,6 +4356,7 @@ function dailyShareText(ds){
   var s=dailyShareInfo(ds),L=['Pacing the Frontier, daily '+ds,'Twist: '+s.twist];
   s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+dailyRowWords(r,true)+', '+dailyAtt(r.att)); });
   if(s.broc){ L.push('🥦 Broccoli badge'); }
+  if(s.like){ L.push(s.like); }
   L.push(s.line); L.push(s.link);
   return L.join('\n');
 }
@@ -4262,10 +4398,14 @@ function dailyPoster(ds,cb){
       pxText(c,dailyAtt(r.att),972,y+52,30,PXC.muted,500,220);
       c.textAlign='left';
     }
-    y=850;
+    y=s.lk?826:850;  /* room for the raced-like line */
     pxText(c,s.wins?s.wins+' of 3 tiers won':'No tier won yet',80,y,44,PXC.ink,700,920);
     if(s.broc){ pxSprite(c,PXS.broc,80,y+34,9,cols); pxText(c,'Broccoli badge: briefing right first time',190,y+92,32,PXC.stalk,500,800); }
-    pxText(c,s.line,80,1060,58,PXC.ink,700,920);
+    if(s.lk){  /* you raced like: the kind's critter (two for a mix) and the words */
+      rlCritter(c,s.lk.k,80,956,4,PXC.ink,PXC.ink); if(s.lk.k2){ rlCritter(c,s.lk.k2,136,956,4,PXC.ink,PXC.ink); }
+      pxText(c,s.like,s.lk.k2?206:150,1010,40,PXC.ink,500,s.lk.k2?794:850);
+    }
+    pxText(c,s.line,80,s.lk?1090:1060,s.lk?52:58,PXC.ink,700,920);
     /* a strip of track: ground, a barrier, a gap and a lab */
     c.fillStyle=PXC.ground; c.fillRect(80,1170,420,16); c.fillRect(600,1170,400,16);
     c.fillStyle=PXC.muted; for(i=0;i<5;i++){ c.fillRect(90+i*84,1190,40,8); } for(i=0;i<5;i++){ c.fillRect(610+i*80,1190,40,8); }
@@ -4380,6 +4520,7 @@ function ghFinish(rec){
   else if(r.type==='timeout'){ o='time'; }
   var h=rec.h,hd={v:1,s:h.seed,m:h.mode==='daily'?'d':(h.mode==='campaign'?'c':'f'),d:h.date,mp:h.map,ti:h.tier,r:h.roster.slice(),k:h.knobs,ps:h.pstrikes,
     c:rec.result.chill?1:0,t:Math.round(rec.result.t*100)/100,o:o,x:rec.result.x,n:'',e:GH_E,tk:GR.tk};
+  if(RLR){ hd.lk=RLR.k2?[RLR.k,RLR.k2]:[RLR.k]; }  /* you raced like, for the share line; old links have none */
   return {h:hd,x:GR.x,hh:GR.h,j:GR.j,s:GR.s};
 }
 
@@ -4468,6 +4609,7 @@ function ghCheck(g){
   o.o=({win:1,sing:1,fell:1,dis:1,lost:1,ext:1,time:1})[h.o]?h.o:'lost';
   o.x=typeof h.x==='number'&&isFinite(h.x)?Math.round(clamp(h.x,-500,40000)):0;
   o.n=ghName(h.n);
+  if(Array.isArray(h.lk)&&h.lk.length>=1&&h.lk.length<=2&&h.lk.every(function(k){ return ['sprinter','steward','gambler'].indexOf(k)>=0; })){ o.lk=h.lk.slice(); }
   o.e=ghInt(h.e,1,60);
   o.tk=ghInt(h.tk,0,GH_MAXN*60);
   var N=g.x.length;
@@ -4496,12 +4638,12 @@ function ghWhere(h){
   return 'seed '+h.s;
 }
 function ghShareLine(h){
-  var w=ghWhere(h);
-  if(h.o==='win'){ return 'I finished '+w+' in '+h.t.toFixed(1)+' s. Race my ghost:'; }
-  if(h.o==='sing'){ return 'I crashed out at the singularity on '+w+'. Can you do better?'; }
-  if(h.o==='fell'){ return 'I fell into a gap on '+w+'. Can you do better?'; }
-  if(h.o==='dis'){ return 'My lab was dissolved on '+w+'. Can you do better?'; }
-  return 'I did not win '+w+'. Can you do better?';
+  var w=ghWhere(h),like=h.lk?'I raced like '+rlLike({k:h.lk[0],k2:h.lk[1]||null})+' and ':'I ';
+  if(h.o==='win'){ return like+'finished '+w+' in '+h.t.toFixed(1)+' s. Race my ghost:'; }
+  if(h.o==='sing'){ return like+'crashed out at the singularity on '+w+'. Can you do better?'; }
+  if(h.o==='fell'){ return like+'fell into a gap on '+w+'. Can you do better?'; }
+  if(h.o==='dis'){ return (h.lk?like+'my lab was':'My lab was')+' dissolved on '+w+'. Can you do better?'; }
+  return like+'did not win '+w+'. Can you do better?';
 }
 function ghLink(b64){ return utm('https://'+DAILY_SITE,'ghost')+'#g='+b64; }
 
@@ -4920,6 +5062,7 @@ function achGallery(){
   var n=achCount(),p=achPoints(),h='';
   $('achg-sum').textContent=n+' of '+ACH_LIST.length+' earned. Each one comes with a real story behind the game. '+(n<ACH_LIST.length?'The ones not earned yet say how to get them.':'You found them all.')+
     ' Points so far: '+p.ach+' for achievements, '+p.stars+' for stars.';
+  var us=rlUsual(); $('achg-usual').hidden=!us; if(us){ rlPut($('achg-usual'),us.r,us.text); }  /* you raced like: the last 20 races, from 5 */
   ACH_LIST.forEach(function(a){
     var on=!!ACH.got[a.id];
     h+='<li class="achg-it '+(on?'on':'off')+'">'+achBadge(on)+'<div><b>'+esc(a.name)+'</b><span class="achg-st">'+(on?'Earned '+esc(dailyFmtDate(ACH.got[a.id])):'Not yet. '+esc(a.hint))+'</span>'+
