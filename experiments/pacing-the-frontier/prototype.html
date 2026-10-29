@@ -4594,7 +4594,7 @@ function ghLaunch(g){
     var c=h.mp===null?null:CAMPAIGN[h.mp];
     if(!c||h.ti===null||c.seed!==h.s||c.tiers[h.ti].join()!==h.r.join()||kx!=='{}'){ ghOpenCard('Ghost link',who+' raced a campaign map this game does not have. You can race the ghost in free play on the same track.',g); return; }
     if(!campTierOpen(h.mp,h.ti)){ ghOpenCard('Ghost link','Map '+(h.mp+1)+', '+c.name+', is still locked for you. You can race '+who+' in free play on the same track.',g); return; }
-    if(!h.c&&h.ps!==null){ for(i=0;i<CAMP_DIFF.length;i++){ if(CAMP_DIFF[i].strikes===h.ps){ CS.diff=i; campSave(); } } }
+    if(!h.c&&h.ps!==null){ for(i=0;i<CAMP_DIFF.length;i++){ if(CAMP_DIFF[i].strikes===h.ps){ CS.diff=i; } /* not saved: the friend keeps their own difficulty */ } }
     GH=g; campStart(h.mp,h.ti); return;
   }
   g.free=true; GH=g; start(h.s);
