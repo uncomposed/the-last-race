@@ -335,7 +335,7 @@ body.chill #btn-jump{display:none}
   .kh{display:none}
   .ov{padding:8px}.card{padding:10px 12px;gap:6px}.card h2{font-size:18px}.card p{font-size:12.5px;line-height:1.4}
 }
-@media (orientation:portrait) and (max-width:600px){ canvas{aspect-ratio:5/4} }
+@media (orientation:portrait) and (max-width:600px){ #cv{aspect-ratio:5/4} }
 /* landscape phone: the track fills the height. Left thumb: a Run / Build throttle with Jump under it. Right thumb: the split triangle,
    then Back up and Floor it side by side, then Pause and New run at the bottom, set apart so they are not hit by mistake */
 @media (orientation:landscape) and (max-height:540px){
@@ -346,7 +346,7 @@ body.chill #btn-jump{display:none}
   .throttle{display:flex;flex:1;min-height:0}
   .lcol #btn-jump{flex:none;min-height:96px;min-width:0;padding:4px;font-size:15px}
   .stage{grid-column:2;grid-row:1}
-  canvas{aspect-ratio:auto;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
+  #cv{aspect-ratio:auto;height:calc(100vh - 12px);height:calc(100dvh - 12px)}
   .panel.pace{grid-column:3;grid-row:1;height:calc(100vh - 12px);height:calc(100dvh - 12px);padding:8px;display:grid;gap:8px;
     grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) 60px 14px auto auto;
     grid-template-areas:"tri tri" "back fwd" ". ." "pause new" "chill chill"}
