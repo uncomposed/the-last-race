@@ -3719,11 +3719,16 @@ function campUnlock(){
 
 /* the overlay: the map list, and a tier pick for one map */
 var campRet=null;
+/* every new card in the dialog (and closing it) ends the card before it: async work started by that card checks CARDGEN before it
+   writes, and the share preview's object URL is revoked */
+var CARDGEN=0,CARDURL=null;
+function cardEnd(){ CARDGEN++; if(CARDURL){ try{URL.revokeObjectURL(CARDURL);}catch(e){} CARDURL=null; } }
 function campShow(){
+  cardEnd();
   if($('camp').hidden){ campRet=document.activeElement; if(running&&!paused){setPaused(true);} }
   $('camp').hidden=false;
 }
-function campClose(){ $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
+function campClose(){ cardEnd(); $('camp').hidden=true; if(campRet&&campRet.focus){ try{campRet.focus({preventScroll:true});}catch(e){} } campRet=null; }
 function campList(){
   campShow();
   var s=campSummary(),h='<p class="note">Win a map to earn a star and open the next. Each star races a different set of rivals. With chill mode off a win earns the star in '+
@@ -4116,9 +4121,14 @@ function dailyShowAnswer(ds,now){
     $('camp-body').appendChild(st);
   }
   var dp=$('dly-deep');
-  if(dp){ dp.addEventListener('click',function(){
-    var dd=dailyDay(ds); dd.brief.deep=true; if(!dd.brief.open){ dd.brief.open=true; dailySave(); $('dly-gofoot').hidden=false; var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
-  }); }
+  /* opening the link opens the day, however it is opened: click, middle click (auxclick), the context menu (open in new tab),
+     a press of the pointer, or Enter on the focused link */
+  function deep(e){
+    if(e&&e.type==='keydown'&&e.key!=='Enter'){ return; }
+    var dd=dailyDay(ds),gf=$('dly-gofoot'); dd.brief.deep=true;
+    if(!dd.brief.open){ dd.brief.open=true; dailySave(); if(gf){ gf.hidden=false; } var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
+  }
+  if(dp){ ['click','auxclick','contextmenu','pointerdown','keydown'].forEach(function(t){ dp.addEventListener(t,deep); }); }
   if(now){ try{ (ok?$('dly-go'):dp).focus(); }catch(e){} }  /* scrolls the card so the next step is in view */
 }
 
@@ -4215,11 +4225,14 @@ function dailyShare(ds,fromList){
     '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button><button type="button" id="dly-gh" hidden>Challenge a friend</button></div>'+
     '<p class="note" id="dly-smsg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="dly-sback">'+(fromList?'Back to the daily':'Close')+'</button></div>';
   $('dly-txt').textContent=txt;
-  function say(m){ $('dly-smsg').textContent=m; }
+  var gen=CARDGEN;
+  function live(){ return gen===CARDGEN&&!!$('dly-prev'); }  /* false once Back, Close, Escape or another card has ended this preview */
+  function say(m){ if(live()){ $('dly-smsg').textContent=m; } }
   function ready(bl){
+    if(!live()){ return; }
     blob=bl; if(!bl){ $('dly-prev').innerHTML='<p class="note">Could not make the poster. The text and link still work.</p>'; return; }
     try{ file=new File([bl],name,{type:'image/png'}); }catch(e){ file=null; }
-    try{ url=URL.createObjectURL(bl); }catch(e){ url=null; }
+    try{ url=URL.createObjectURL(bl); CARDURL=url; }catch(e){ url=null; }
     if(url){ var im=new Image(); im.className='dly-img'; im.alt=alt; im.src=url; var pv=$('dly-prev'); pv.innerHTML=''; pv.appendChild(im); }
     $('dly-si').disabled=false;
     var can=false; try{ can=!!(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})); }catch(e){ can=false; }
@@ -4235,7 +4248,7 @@ function dailyShare(ds,fromList){
   $('dly-ct').addEventListener('click',function(){ dailyCopy(txt,function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); });
   $('dly-si').addEventListener('click',function(){ say(blob&&dailySaveImg(blob,name)?'Image saved as '+name+'.':'Could not save the image.'); });
   ghShareBtn($('dly-gh'),ds,fromList);
-  $('dly-sback').addEventListener('click',function(){ if(url){ try{URL.revokeObjectURL(url);}catch(e){} } if(fromList){ dailyList(ds); } else { campClose(); } });
+  $('dly-sback').addEventListener('click',function(){ if(fromList){ dailyList(ds); } else { campClose(); } });  /* both end the card, which revokes url */
   try{ $('dly-cl').focus({preventScroll:true}); }catch(e){}
   if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ ready(DSHARE.blob); return; }
   dailyPoster(ds,function(c){ if(!c||!c.toBlob){ ready(null); return; } try{ c.toBlob(function(bl){ if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt){ DSHARE.blob=bl; } ready(bl); },'image/png'); }catch(e){ ready(null); } });
@@ -4546,10 +4559,12 @@ function ghCard(g,back){
     '<pre class="dly-txt" id="gh-txt"></pre><p class="note" id="gh-size"></p>'+
     '<div class="dly-sbtn"><button type="button" class="primary" id="gh-sh" hidden>Share…</button><button type="button" id="gh-cl">Copy link</button><button type="button" id="gh-ct">Copy text</button></div>'+
     '<p class="note" id="gh-msg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="gh-back">'+(back?'Back':'Close')+'</button></div>';
-  var line=ghShareLine(g.h),inp=$('gh-name');
+  var line=ghShareLine(g.h),inp=$('gh-name'),gen=CARDGEN;
   inp.value=ghSavedName();
-  function say(m){ $('gh-msg').textContent=m; }
+  function live(){ return gen===CARDGEN&&!!$('gh-txt'); }  /* the link is made async: write only while this card is still open */
+  function say(m){ if(live()){ $('gh-msg').textContent=m; } }
   function show(){
+    if(!live()){ return; }
     $('gh-txt').textContent=line+'\n'+(g.link?'the-last-race.com (ghost link)':'Making the link…');
     $('gh-size').textContent=g.link?'The link is '+(g.link.length/1024).toFixed(1)+' KB long.':'';
     $('gh-cl').disabled=$('gh-ct').disabled=$('gh-sh').disabled=!g.link;
