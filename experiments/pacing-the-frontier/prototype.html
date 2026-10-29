@@ -375,6 +375,22 @@ body.chill #btn-jump{display:none}
 @media (max-width:600px),(orientation:landscape) and (max-height:540px){
   .dly-title{font-size:17px}.dly-q legend{font-size:14px}.dly-a{font-size:13px;min-height:44px;padding:6px 10px}.card .dly-twist,.dly-out{font-size:13px}
 }
+/* after the guess: what the event is in the game, the folded story, and the share preview */
+.card .dly-kind{align-self:flex-start;font-size:13px;line-height:1.4;padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.dly-story{border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:8px}
+.dly-story summary{cursor:pointer;font:600 14px var(--body);min-height:32px;display:flex;align-items:center;gap:6px}
+.dly-story summary::-webkit-details-marker{display:none}
+.dly-story summary::before{content:'\25B8';font-size:12px;color:var(--muted)}
+.dly-story[open] summary::before{content:'\25BE'}
+.dly-story[open]>*+*{margin-top:8px}
+.dly-prev{display:flex;justify-content:center;min-height:60px;align-items:center}
+.dly-img{display:block;width:auto;height:auto;max-width:100%;max-height:min(46vh,440px);border:1px solid var(--line);border-radius:4px;image-rendering:pixelated}
+.dly-txt{margin:0;padding:8px 10px;max-height:8.5em;overflow:auto;white-space:pre-wrap;word-break:break-word;font:400 12px/1.45 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.dly-sbtn{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5em,1fr));gap:8px}
+.dly-sbtn button{min-height:44px}
+.dly-sbtn #dly-sh{grid-column:1/-1}
+.dly-sbtn [hidden]{display:none}
+@media (orientation:landscape) and (max-height:540px){ .dly-img{max-height:38vh}.dly-txt{max-height:5.5em}.dly-sbtn{grid-template-columns:repeat(4,1fr)}.dly-sbtn #dly-sh{grid-column:auto} }
 /* ---- daily (end) ---- */
 /* end-of-campaign epilogue: a full-screen modal dialog opened by window.showEpilogue(summary), or by ?epilogue=careful|reckless|mixed */
 dialog.epi{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -3773,7 +3789,7 @@ var BRIEFINGS=[
   {"id":"chatgpt-redis-leak","kind":"strike","title":"A Library Bug Showed Strangers Your Chats","body":"On March 20, 2023, a bug in redis-py, an open-source library ChatGPT relied on, let some users see other users' chat titles. For about 1.2 percent of Plus subscribers, billing details were briefly visible too. OpenAI took ChatGPT offline to fix it.","question":"What caused the March 2023 ChatGPT data exposure?","answers":["A bug in an open-source library called redis-py","A hacker group stealing passwords","An employee emailing the wrong file"],"correct":0,"explain":"A rare timing bug in redis-py could hand one user's data to another, and OpenAI patched it and notified affected users.","twist":{"name":"Only 2 Strikes","knob":"strikes","direction":"2","why":"A leak like this is a scrape, not a crash, but trust is hard to win back, so the margin for error shrinks to two strikes."},"deeper":{"label":"OpenAI: March 20 ChatGPT outage","url":"https://openai.com/blog/march-20-chatgpt-outage?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/blog/march-20-chatgpt-outage","https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/"]},
   {"id":"hf-malicious-models","kind":"gap","title":"Download a Model, Get a Backdoor","body":"In February 2024, security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some used Python's pickle format to run code the moment a model loaded, including one that opened a reverse shell to the attacker.","question":"What did JFrog find on Hugging Face in February 2024?","answers":["Around 100 models carrying malicious code","A leaked copy of GPT-4","A fake site stealing logins"],"correct":0,"explain":"Loading a pickle-based model can execute code, so downloading a model can be as risky as running an unknown program.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"Supply-chain attacks widen the attack surface: every shared model is another place the track can drop out from under you."},"deeper":{"label":"JFrog: Data scientists targeted by malicious Hugging Face models","url":"https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/","https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/"]},
   {"id":"asl3-bio","kind":"gap","title":"A Lab Can't Rule Out Bioweapon Help","body":"On May 22, 2025, Anthropic switched on its ASL-3 protections for Claude Opus 4 as a precaution, saying it could not clearly rule out help with chemical, biological, radiological or nuclear weapons. In July, OpenAI treated ChatGPT Agent as High bio capability, also as a precaution.","question":"Why did Anthropic turn on ASL-3 protections for Claude Opus 4?","answers":["It could not rule out serious weapons-related risk","A customer filed a lawsuit","The model failed its coding tests"],"correct":0,"explain":"Anthropic called it a precaution because ruling out ASL-3 level CBRN risk was no longer possible, not because it had proved the threshold was crossed.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"A bio gap is a risk that could end everything; the more capable the model, the wider the jump you have to clear."},"deeper":{"label":"Anthropic: Activating AI Safety Level 3 protections","url":"https://www.anthropic.com/news/activating-asl3-protections?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/activating-asl3-protections","https://fortune.com/2025/07/18/openai-chatgpt-agent-could-aid-dangerous-bioweapon-development"]},
-  {"id":"italy-chatgpt-ban","kind":"dissolved","title":"Italy Pulls the Plug on ChatGPT","body":"On March 31, 2023, Italy's data protection authority, the Garante, temporarily blocked ChatGPT over privacy concerns, including training data and no age checks. OpenAI went offline in Italy. Access returned April 28 after it added age verification and privacy changes.","question":"Which body temporarily blocked ChatGPT in March 2023?","answers":["Italy's data protection authority","The US Senate","Microsoft's legal team"],"correct":0,"explain":"The Garante said OpenAI lacked a legal basis for mass data collection and did not check users' ages; the block lifted after OpenAI made changes.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"A regulator closing a whole market for a month is lost revenue and lost momentum, which is exactly what slower investment means."},"deeper":{"label":"Al Jazeera: ChatGPT available in Italy a month after temporary ban","url":"https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban","https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/"]},
+  {"id":"italy-chatgpt-ban","kind":"barrier","title":"Italy Pulls the Plug on ChatGPT","body":"On March 31, 2023, Italy's data protection authority, the Garante, temporarily blocked ChatGPT over privacy concerns, including training data and no age checks. OpenAI went offline in Italy. Access returned April 28 after it added age verification and privacy changes.","question":"Which body temporarily blocked ChatGPT in March 2023?","answers":["Italy's data protection authority","The US Senate","Microsoft's legal team"],"correct":0,"explain":"The Garante said OpenAI lacked a legal basis for mass data collection and did not check users' ages; the block lifted after OpenAI made changes.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"A regulator closing a whole market for a month is lost revenue and lost momentum, which is exactly what slower investment means."},"deeper":{"label":"Al Jazeera: ChatGPT available in Italy a month after temporary ban","url":"https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban","https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/"]},
   {"id":"superalignment-dissolved","kind":"race","title":"The Safety Team With 20 Percent of the Compute","body":"OpenAI said in 2023 it would give its Superalignment team 20 percent of its compute. In May 2024 the team was reported disbanded after leaders Ilya Sutskever and Jan Leike left. Leike said safety had taken a backseat to shiny products.","question":"Who said safety culture had taken a backseat to shiny products when leaving OpenAI?","answers":["Jan Leike","Sam Altman","Satya Nadella"],"correct":0,"explain":"Leike, co-lead of Superalignment, said so on X in May 2024; OpenAI said the work would be folded into its wider research.","twist":{"name":"Faster Singularity","knob":"singSpeed","direction":"up","why":"Racing with no Build is the game's version of this story: when speed beats safety work, the finish line comes sooner."},"deeper":{"label":"NBC News: OpenAI dissolves team focused on long-term AI risks","url":"https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824","https://www.bloomberg.com/news/articles/2024-05-17/openai-dissolves-key-safety-team-after-chief-scientist-ilya-sutskever-s-exit"]},
   {"id":"distillation-allegations","kind":"shadow","title":"Your Rival Learns From Your Answers","body":"In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fraudulent accounts to pull over 16 million exchanges from Claude. In January 2025 OpenAI alleged DeepSeek had distilled its models. These are allegations.","question":"What is distillation, as Anthropic uses the word?","answers":["Training a weaker model on a stronger model's outputs","Compressing a model to run on a phone","Deleting data a model memorized"],"correct":0,"explain":"Anthropic calls distillation a legitimate, widely used method, and says the problem is doing it at scale through fake accounts to copy a rival.","twist":{"name":"Rivals Copy You More","knob":"share","direction":"up","why":"Distillation lets a trailing lab absorb the leader's skills, which is the same as rivals shadowing your lead more closely."},"deeper":{"label":"Anthropic: Detecting and preventing distillation attacks","url":"https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks","https://www.euronews.com/2025/01/29/openai-says-chinese-companies-are-trying-to-use-us-models-to-train-ai"]},
   {"id":"statement-on-ai-risk","kind":"singularity","title":"One Sentence Signed by the Lab Bosses","body":"In late May 2023, the Center for AI Safety published a one-sentence statement: mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war. Signers included Geoffrey Hinton, Sam Altman, Demis Hassabis and Dario Amodei.","question":"What did the May 2023 Statement on AI Risk put alongside AI extinction risk as a global priority?","answers":["Pandemics and nuclear war","Climate change and inflation","Cybercrime and piracy"],"correct":0,"explain":"The statement was one sentence long, and signers included the heads of the three leading labs plus pioneers like Hinton and Bengio.","twist":{"name":"Higher Extinction Odds","knob":"singOdds","direction":"up","why":"The people building the race said extinction was a real risk, so the final roll should feel heavier."},"deeper":{"label":"Center for AI Safety: Statement on AI Risk","url":"https://www.safe.ai/work/statement-on-ai-risk?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.safe.ai/work/statement-on-ai-risk"]},
@@ -3828,6 +3844,9 @@ function dailyIcon(r,label){
   if(r==='star'){ var a=label?' role="img" aria-label="'+esc(label)+'"':' aria-hidden="true"'; return '<svg class="si si-d" viewBox="0 0 24 24"'+a+'>'+(label?'<title>'+esc(label)+'</title>':'')+'<path d="'+STAR_P+'"/></svg>'; }
   return starIcon({medal:0,chill:false},label);
 }
+/* what each briefing kind is in the game, in words (shown after the guess) */
+var KIND_WORDS={barrier:'a barrier, a public failure everyone learned from',gap:'a gap, a risk that could end everything',strike:'a strike, a near miss',
+  shadow:'a shadow, rivals copying your lead',race:'the race, speed over safety',singularity:'the singularity, progress outrunning human control'};
 var BROC='<svg class="si dly-broc" viewBox="0 0 24 24" aria-hidden="true"><path class="st" d="M10 13h4l1 9h-6z"/><circle cx="7" cy="10" r="4.5"/><circle cx="17" cy="10" r="4.5"/><circle cx="12" cy="7" r="5"/></svg>';
 function dailyRivals(t){ var ro=DAILY_TIERS[t].roster; return ro.length?'<b>vs</b> '+rivalsHtml(ro):'<b>Solo</b>, just you and the track'; }
 function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
@@ -3931,13 +3950,13 @@ function dailyList(ds){
       '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+(x.best!==null?'<span>best '+fmtT(x.best)+'</span>':'')+'</span></button>';
   }
   h+='</div>'+(d.brief.ok?'<p class="note dly-badge">'+BROC+' Broccoli badge: briefing right first time.</p>':'')+
-    '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div><p class="note" id="dly-sharemsg" role="status" aria-live="polite"></p>';
+    '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div>';
   $('camp-h').textContent='Daily challenge'; $('camp-body').innerHTML=h;
   var bs=$('camp-body').querySelectorAll('.cmp-tier');
   for(var k=0;k<bs.length;k++){ bs[k].addEventListener('click',function(){ dailyStart(ds,+this.getAttribute('data-tier')); }); }
   if(first>=0){ bs[first].classList.add('next'); }
   $('dly-brief').addEventListener('click',function(){ dailyBriefCard(ds); });
-  $('dly-share').addEventListener('click',function(){ dailyShare(ds,$('dly-sharemsg')); });
+  $('dly-share').addEventListener('click',function(){ dailyShare(ds,true); });
   try{ bs[first<0?0:first].focus({preventScroll:true}); }catch(e){}
   dailyPrime(ds);
 }
@@ -3946,7 +3965,7 @@ function dailyBriefCard(ds){
   var b=dailyBrief(ds),d=dailyDay(ds),o=dailyOrder(ds),h,i;
   /* the question comes first; the story and the reason for the twist are revealed after the guess, so the card never gives the answer away */
   h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(ds===dailyToday()?', today':'')+' (UTC)</p>'+
-    '<p class="dly-twist"><b>'+(ds===dailyToday()?'Today\'s twist: ':'Twist: ')+esc(b.twist.name)+'.</b> Answer to find out why.</p>'+
+    '<p class="dly-twist" id="dly-tw0"><b>'+(ds===dailyToday()?'Today\'s twist: ':'Twist: ')+esc(b.twist.name)+'.</b> Answer to find out why.</p>'+
     '<fieldset class="dly-q"><legend>'+esc(b.question)+'</legend><div class="dly-ans">';
   for(i=0;i<3;i++){ h+='<button type="button" class="dly-a" data-a="'+o[i]+'"><span class="dly-l" aria-hidden="true">'+'ABC'.charAt(i)+'</span><span>'+esc(b.answers[o[i]])+'</span><span class="dly-m"></span></button>'; }
   h+='</div></fieldset><div class="dly-out" id="dly-out" aria-live="polite"></div>'+
@@ -3971,16 +3990,25 @@ function dailyShowAnswer(ds,now){
     bs[i].classList.toggle('ok',a===b.correct); bs[i].classList.toggle('no',a===g&&a!==b.correct);
     m.textContent=a===b.correct?(a===g?'✓ Your answer, right':'✓ Right answer'):(a===g?'✗ Your answer':'');
   }
-  h='<h3 class="dly-title">'+esc(b.title)+'</h3><p>'+esc(b.body)+'</p><p class="dly-twist"><b>Why the twist:</b> '+esc(b.twist.why)+'</p>';
-  if(ok){
-    h='<p><b>Right.</b> '+esc(b.explain)+'</p><p class="dly-badge">'+BROC+' Broccoli badge earned.</p>'+h;
-  } else {
-    h='<p><b>Not this one.</b> The answer is: '+esc(b.answers[b.correct])+'.</p><p>'+esc(b.explain)+'</p>'+h+
-      '<p><a id="dly-deep" href="'+esc(b.deeper.url)+'" target="_blank" rel="noopener">Go deeper: '+esc(b.deeper.label)+'</a> <span class="note">(opens in a new tab)</span></p>'+
+  /* compact reveal: verdict, explanation, what it is in the game, then the badge or the link, with the button right under it.
+     The story, the twist's reason and the marked answers fold into "Read the story" below the button */
+  h=ok?'<p><b>Right.</b> '+esc(b.explain)+'</p>':'<p><b>Not this one.</b> The answer is: '+esc(b.answers[b.correct])+'.</p><p>'+esc(b.explain)+'</p>';
+  h+=KIND_WORDS[b.kind]?'<p class="dly-kind"><b>In the game:</b> '+esc(KIND_WORDS[b.kind])+'.</p>':'';
+  if(ok){ h+='<p class="dly-badge">'+BROC+' Broccoli badge earned.</p>'; }
+  else {
+    h+='<p><a id="dly-deep" href="'+esc(b.deeper.url)+'" target="_blank" rel="noopener">Go deeper: '+esc(b.deeper.label)+'</a> <span class="note">(opens in a new tab)</span></p>'+
       (d.brief.open?'':'<p class="note" id="dly-hint">Open the link to unlock today\'s challenge.</p>');
   }
   $('dly-out').innerHTML=h;
   $('dly-gofoot').hidden=!d.brief.open;
+  var st=$('dly-story'),q=$('camp-body').querySelector('.dly-q'),tw=$('dly-tw0');
+  if(!st){
+    st=document.createElement('details'); st.className='dly-story'; st.id='dly-story';
+    st.innerHTML='<summary>Read the story</summary><h3 class="dly-title">'+esc(b.title)+'</h3><p>'+esc(b.body)+'</p><p class="dly-twist"><b>Twist: '+esc(b.twist.name)+'.</b> '+esc(b.twist.why)+'</p>';
+    if(q){ st.appendChild(q); }
+    if(tw){ tw.parentNode.removeChild(tw); }
+    $('camp-body').appendChild(st);
+  }
   var dp=$('dly-deep');
   if(dp){ dp.addEventListener('click',function(){
     var dd=dailyDay(ds); dd.brief.deep=true; if(!dd.brief.open){ dd.brief.open=true; dailySave(); $('dly-gofoot').hidden=false; var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
@@ -4069,32 +4097,46 @@ function dailyCopy(txt,cb){
   try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){cb(true);},old); return; } }catch(e){}
   old();
 }
-function dailyShare(ds,msg){
-  var txt=dailyShareText(ds),name='pacing-frontier-daily-'+ds+'.png';
-  function say(m){ if(msg){ msg.textContent=m; msg.hidden=false; } }
-  function fallback(blob){
-    var saved=false;
-    if(blob){ try{ var u=URL.createObjectURL(blob),a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},4000); saved=true; }catch(e){} }
-    dailyCopy(txt,function(ok){ say((saved?'Poster saved as '+name+'. ':'Could not make the poster. ')+(ok?'Result text copied to the clipboard.':'Could not copy the text.')); });
+/* Share opens a preview first: the poster and the text, then Share… (only where the system share sheet takes files), Copy link,
+   Copy text and Save image. The poster is primed when the end card or daily list opens, so share() still runs inside the tap */
+function dailySaveImg(blob,name){ try{ var u=URL.createObjectURL(blob),a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},4000); return true; }catch(e){ return false; } }
+function dailyShare(ds,fromList){
+  campShow();
+  var txt=dailyShareText(ds),info=dailyShareInfo(ds),name='pacing-frontier-daily-'+ds+'.png',blob=null,file=null,url=null;
+  var alt='Share poster. '+txt.split('\n').slice(0,-1).join('. ').replace(/[⭐⬜]|\uD83E[\uDE91\uDD66]/g,'').replace(/\s+/g,' ');
+  $('camp-h').textContent='Share today\'s result';
+  $('camp-body').innerHTML='<div class="dly-prev" id="dly-prev"><p class="note">Making the poster…</p></div><pre class="dly-txt" id="dly-txt"></pre>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button></div>'+
+    '<p class="note" id="dly-smsg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="dly-sback">'+(fromList?'Back to the daily':'Close')+'</button></div>';
+  $('dly-txt').textContent=txt;
+  function say(m){ $('dly-smsg').textContent=m; }
+  function ready(bl){
+    blob=bl; if(!bl){ $('dly-prev').innerHTML='<p class="note">Could not make the poster. The text and link still work.</p>'; return; }
+    try{ file=new File([bl],name,{type:'image/png'}); }catch(e){ file=null; }
+    try{ url=URL.createObjectURL(bl); }catch(e){ url=null; }
+    if(url){ var im=new Image(); im.className='dly-img'; im.alt=alt; im.src=url; var pv=$('dly-prev'); pv.innerHTML=''; pv.appendChild(im); }
+    $('dly-si').disabled=false;
+    var can=false; try{ can=!!(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})); }catch(e){ can=false; }
+    $('dly-sh').hidden=!can;
+    try{ (can?$('dly-sh'):$('dly-cl')).focus({preventScroll:true}); }catch(e){}
   }
-  function go(blob){
-    var file=null;
-    if(blob){ try{ file=new File([blob],name,{type:'image/png'}); }catch(e){ file=null; } }
-    try{
-      if(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        navigator.share({files:[file],title:'Pacing the Frontier daily',text:txt}).then(function(){ say('Shared.'); },function(e){ if(e&&e.name==='AbortError'){ say('Share cancelled.'); } else { fallback(blob); } });
-        return;
-      }
-    }catch(e){}
-    fallback(blob);
-  }
-  if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ go(DSHARE.blob); return; }
-  dailyPoster(ds,function(c){ if(!c||!c.toBlob){ go(null); return; } try{ c.toBlob(function(b){ go(b); },'image/png'); }catch(e){ go(null); } });
+  $('dly-sh').addEventListener('click',function(){
+    if(!file){ return; }
+    try{ navigator.share({files:[file],title:'Pacing the Frontier daily',text:txt}).then(function(){ say('Shared.'); },function(e){ say(e&&e.name==='AbortError'?'Share cancelled.':'Could not open the share sheet. Try Save image or Copy text.'); }); }
+    catch(e){ say('Could not open the share sheet. Try Save image or Copy text.'); }
+  });
+  $('dly-cl').addEventListener('click',function(){ dailyCopy(info.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); });
+  $('dly-ct').addEventListener('click',function(){ dailyCopy(txt,function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); });
+  $('dly-si').addEventListener('click',function(){ say(blob&&dailySaveImg(blob,name)?'Image saved as '+name+'.':'Could not save the image.'); });
+  $('dly-sback').addEventListener('click',function(){ if(url){ try{URL.revokeObjectURL(url);}catch(e){} } if(fromList){ dailyList(ds); } else { campClose(); } });
+  try{ $('dly-cl').focus({preventScroll:true}); }catch(e){}
+  if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ ready(DSHARE.blob); return; }
+  dailyPoster(ds,function(c){ if(!c||!c.toBlob){ ready(null); return; } try{ c.toBlob(function(bl){ if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt){ DSHARE.blob=bl; } ready(bl); },'image/png'); }catch(e){ ready(null); } });
 }
 (function(){
   $('ov-replay').addEventListener('click',function(){ if(DLY){ dailyStart(DLY.date,DLY.tier); } else if(CAMP){ campStart(CAMP.i,CAMP.tier); } else { start(G.seed); } });
   $('ov-daily').addEventListener('click',function(){ dailyOpen(DLY?DLY.date:dailyToday()); });
-  $('ov-share').addEventListener('click',function(){ if(DLY){ dailyShare(DLY.date,$('ov-sharemsg')); } });
+  $('ov-share').addEventListener('click',function(){ if(DLY){ dailyShare(DLY.date,false); } });
   $('ov-up').addEventListener('click',function(){ if(DLY&&!CAMP&&DLY.tier<2){ dailyStart(DLY.date,DLY.tier+1); } });
   $('auto').addEventListener('change',function(){ if(DLY&&running&&K.chill){ DLY.chillUsed=true; } });
 })();
