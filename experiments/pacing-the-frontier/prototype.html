@@ -116,6 +116,65 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
   #rc-replay{min-height:28px;padding:2px 8px;font-size:11px;background:var(--surface)}
 }
 @media (prefers-reduced-motion:reduce){.card .rc-plaque,.card .rc-line{transition:none}}
+/* ---- achievements (begin): the recap's opening card, the start card link and the gallery. Earned and not earned differ by shape
+   (a filled badge with a tick against a dashed outline with a ?) and by the words "Earned" and "Not yet", never by colour alone ---- */
+.ab{width:26px;height:26px;flex:none;display:block}
+.ab path{stroke-linejoin:round;stroke-linecap:round}
+.ab-on .sh{fill:var(--run);stroke:var(--run);stroke-width:1.5}
+.ab-on .tk{fill:none;stroke:var(--run-ink);stroke-width:2.4}
+.ab-off .sh{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2.5 2}
+.ab-off text{font:700 11px/1 var(--body);fill:var(--muted);text-anchor:middle}
+.ach-open{display:flex;flex-direction:column;gap:5px;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--b);border-radius:6px}
+.ach-open[hidden]{display:none}
+.rc-bar[hidden],.rc-stage[hidden]{display:none}
+.ach-hd{display:flex;align-items:center;gap:8px;min-width:0}
+.ach-hd>span{display:flex;flex-direction:column;min-width:0}
+.ach-k{font:500 11.5px/1.2 var(--mono);color:var(--muted)}
+.ach-nm{font:700 16px/1.2 var(--display);color:var(--ink)}
+.card .ach-tid{font:400 13.5px/1.4 var(--body);margin:0}
+.card .ach-more{font:400 12px/1.35 var(--body);color:var(--muted);margin:0}
+.ach-more[hidden]{display:none}
+.ach-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.ach-btns button,.ach-real{min-height:36px;padding:6px 12px;font:500 13px var(--mono)}
+.ach-real{display:inline-flex;align-items:center;gap:4px;color:var(--bg);background:var(--ink);border:1px solid var(--ink);border-radius:4px;text-decoration:none}
+.ach-real:hover{text-decoration:underline}
+.ach-all{align-self:flex-start;flex:none;min-height:32px;margin-left:auto;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 12px var(--mono)}
+.ach-all:hover{color:var(--ink)}
+#ov-ach{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
+#ov-ach:hover{color:var(--ink)}
+#ov-ach[hidden]{display:none}
+.ov-links{display:flex;flex-wrap:wrap;gap:0 18px;align-items:center}
+.achg-sum{font:400 13px/1.4 var(--body);color:var(--muted)}
+.achg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.achg-it{display:grid;grid-template-columns:26px minmax(0,1fr);gap:4px 10px;align-items:start;padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:6px}
+.achg-it.off{border-style:dashed}
+.achg-it b{font:700 14.5px/1.25 var(--display)}
+.achg-st{display:block;font:500 11.5px/1.3 var(--mono);color:var(--muted)}
+.achg-it.on .achg-st{color:var(--ink)}
+.card .achg-it p{font:400 13px/1.4 var(--body);margin:3px 0 0}
+.achg-it a{font:500 12.5px var(--mono);color:var(--ink);text-underline-offset:3px}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  .ach-open{padding:6px 8px;gap:4px}
+  .ab{width:22px;height:22px}
+  .ach-nm{font-size:14px}
+  .card .ach-tid{font-size:12.5px;line-height:1.35}
+  .card .ach-more{font-size:11.5px}
+  .ach-btns button,.ach-real{min-height:34px;padding:4px 10px;font-size:12px}
+}
+/* landscape phones: no room to grow, so the buttons come right under the name and the story scrolls in its own box */
+@media (orientation:landscape) and (max-height:540px){
+  .ach-btns{order:1}.ach-tid{order:2}.ach-more{order:3}
+  .card .ach-tid{max-height:4.1em;overflow:auto}
+  .card .ach-more{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+/* the end card lives on the track, which is short, so while the opening card shows the card may grow down over the controls
+   (unused once the race is over) and nothing needs scrolling. Keep going puts it back. Not on landscape phones, where the
+   track already fills the screen height */
+@media not all and (orientation:landscape) and (max-height:540px){
+  #ov.ach-tall{bottom:auto;min-height:100%;align-items:flex-start}
+  #ov.ach-tall .card{max-height:none}
+}
+/* ---- achievements (end) ---- */
 button{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 14px;cursor:pointer;min-height:40px}
 button:hover{border-color:var(--muted)}
 #btn-jump,#btn-fwd,#btn-back{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
@@ -454,9 +513,16 @@ html.epi-open{overflow:hidden}
           <li><i aria-hidden="true"></i>Slow down to build sight, height and speed.</li>
           <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
         </ul>
-        <button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button>
+        <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button></div>
         <p id="ov-msg" hidden>The start is slow. A gate near the start is too tall to jump from a standstill, so move the bar toward Build or hold Back to stand still and build height. Run is your cruise; Build is the rest, and it goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down move the bar toward Run or Build, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
         <div class="story" id="ov-story" hidden>
+          <!-- achievements: the recap opens with this card; Keep going starts the walk -->
+          <div class="ach-open" id="ach-open" role="group" aria-labelledby="ach-nm" hidden>
+            <div class="ach-hd"><span id="ach-badge"></span><span><span class="ach-k" id="ach-k"></span><span class="ach-nm" id="ach-nm"></span></span><button type="button" class="ach-all" id="ach-all" aria-haspopup="dialog">All</button></div>
+            <p class="ach-tid" id="ach-tid"></p>
+            <p class="ach-more" id="ach-more" hidden></p>
+            <div class="ach-btns"><a class="ach-real" id="ach-real" href="#" target="_blank" rel="noopener">What's the real version?<span class="sr-only"> (opens in a new tab)</span></a><button type="button" id="ach-go">Keep going</button></div>
+          </div>
           <div class="rc-stage" id="rc-stage" title="Tap to skip to the next stop">
             <canvas id="rc-cv" aria-hidden="true"></canvas>
             <div class="rc-say" id="rc-say" aria-live="polite"><p class="rc-plaque" id="rc-plaque"></p><p class="rc-line" id="rc-line"></p></div>
@@ -590,6 +656,14 @@ html.epi-open{overflow:hidden}
   </div>
 </div>
 <!-- campaign (end) -->
+<!-- achievements: the gallery -->
+<div class="cmp" id="achg" hidden role="dialog" aria-modal="true" aria-labelledby="achg-h">
+  <div class="card">
+    <div class="cmp-top"><h2 id="achg-h" tabindex="-1">Achievements</h2><button id="achg-close" type="button">Close</button></div>
+    <p class="achg-sum" id="achg-sum"></p>
+    <ul class="achg-list" id="achg-list"></ul>
+  </div>
+</div>
 <dialog class="epi" id="epi" aria-labelledby="epi-h">
   <div class="epi-in">
     <div class="epi-top"><p class="eyebrow">Epilogue &middot; after the finish</p><button class="epi-x" id="epi-x" type="button" aria-label="Close epilogue">Close</button></div>
@@ -2847,7 +2921,7 @@ var PROF={body:'#B48A60',fleck:'#8C6643',shoe:'#5A3E2B',stick:'#A0703F',paper:'#
 function rcWords(s){ return String(s).split(/\s+/).length; }
 function rcDwell(s){ return clamp(0.8+rcWords(s)*0.13,1.9,3.0); }
 function tellStory(){
-  var box=$('ov-story'); rcStop(); box.hidden=true;
+  var box=$('ov-story'); rcStop(); box.hidden=true; achOpenHide();
   if(!window.PFStory||!G||!G.over||!G.labs[0].human){return;}
   try{
     var r=G.result||{},res={type:r.type};
@@ -2867,7 +2941,7 @@ function tellStory(){
     RC.stops=stops;
     RC.geo={finish:G.finish,gaps:G.gaps.map(function(g){return {x:g.x,W:g.W,sing:!!g.sing};}),bars:G.barriers.map(function(b){return {x:b.x,h:b.h,gate:!!b.gate};})};
     box.hidden=false;
-    rcPlay();
+    if(!achOpen()){ rcPlay(); }  /* Historian 2.0: open with an achievement card when there is one; Keep going starts the walk */
   }catch(e){ box.hidden=true; }
 }
 function rcStop(){ if(RC.raf){cancelAnimationFrame(RC.raf);} RC.raf=0; RC.bab=[]; RC.ph=''; }
@@ -3045,7 +3119,7 @@ function cardPrimary(){
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
-  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
+  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false;  /* end screens: the result line, not the start card's short lines */
 }
 /* the start card: three short lines; "How to play" shows and hides the full rules */
 $('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
@@ -3059,6 +3133,7 @@ function endScreen(){
   } else if(r.type==='allout'){
     showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Play again');
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
+  achEnd();  /* achievements: what this run earned, saved before the recap opens with it */
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
   dailyEnd();  /* every run: Replay this seed and the input log; daily: the tier result, Next tier and Share */
@@ -3090,6 +3165,7 @@ function go(){
   campGo();  /* campaign: fix the race's chill state and difficulty */
   dailyGo();  /* daily: count the attempt and fix the race's chill state */
   recStart();  /* every run: start the input log */
+  achGo();  /* achievements: start this run's chill and shadow tally */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
   sndStarted=true; snd.unlock(); snd.sfx('go');
 }
@@ -3109,7 +3185,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); recTick(); stepGame(1/60); acc-=1/60;
+      syncInput(); recTick(); stepGame(1/60); achTick(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -3237,6 +3313,7 @@ window.addEventListener('blur',function(){setRev(false);setFwd(false);});
 document.addEventListener('keydown',function(e){
   var t=e.target&&e.target.tagName,txt=t==='INPUT'&&e.target.type==='text';
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
+  if(!$('achg').hidden){ if(e.code==='Escape'){e.preventDefault();achClose();} return; }  /* achievements gallery open: only Escape */
   if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
   if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>400){go();} return;}
@@ -4145,6 +4222,224 @@ window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_K
   state:function(){return DS;},load:function(){ DS=dailyLoad(); DLOGS=dailyLogsLoad(); return DS; },open:dailyOpen,start:dailyStart,shareText:dailyShareText,share:dailyShare,poster:dailyPoster,
   logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t){ var L=DLOGS[ds]; return L&&L[t]?JSON.stringify(L[t]):null; },current:function(){return DLY;}};
 /* ---------- daily (end) ---------- */
+
+/* ---------- achievements (begin) ----------
+   Twelve achievements, each tied to a real-world story. They are judged when a race ends, from that race's events (G.ev) and result,
+   plus two things the UI tallies while you play: whether chill mode was on at Go or at any moment after (as in the campaign), and how
+   long a rival ahead shadowed your sight. Only a race you play counts (not Watch bots). "Ate your vegetables" is earned by opening any
+   outbound game link (utm_medium=game). The recap opens with what this run earned first; with nothing new, it introduces one you have
+   not earned yet. Storage: ACH_KEY holds {v:1, got:{id:'YYYY-MM-DD' first earned, local date}, intro:{id:n}, seq:n, pts:{ach,stars,spent}};
+   every access is in try/catch, and without storage the page keeps it in memory. pts is groundwork for spending on sprite outfits
+   later: no shop yet. Facts: reused from BRIEFINGS where possible; anything new was checked on the web (see sources). Reviewer: lines
+   marked CHECK are wording or links I could not fully confirm.
+   ACH item: {id, name, kind, rank (higher opens the recap first), hint, tidbit, real:{label,url}, sources:[...]}. LIST order is the
+   order unearned ones are introduced in, roughly easiest first. */
+var ACH_LIST=[
+  {id:'barrier',name:'Yes, Great Idea',kind:'barrier',rank:2,hint:'Crash into a barrier.',
+   tidbit:'A barrier is a public failure every lab learns from. In April 2025 an OpenAI update made GPT-4o agree with everyone about everything, bad ideas included. Three days later OpenAI began rolling it back, and promised to check for sycophancy before every launch.',
+   real:{label:'OpenAI: Expanding on sycophancy',url:'https://openai.com/index/expanding-on-sycophancy/'},
+   sources:['https://openai.com/index/expanding-on-sycophancy/','https://techcrunch.com/2025/04/29/openai-explains-why-chatgpt-became-too-sycophantic']},
+  {id:'scrape',name:'Close Shave',kind:'strike',rank:3,hint:'Make it over a gap, barely: a scrape or a drop.',
+   tidbit:'A scrape means you made it across but lost something on the way. In March 2023 a bug in redis-py, an open-source library ChatGPT relied on, showed some users strangers\' chat titles. OpenAI took ChatGPT offline to fix it.',
+   real:{label:'OpenAI: March 20 ChatGPT outage',url:'https://openai.com/index/march-20-chatgpt-outage/'},
+   sources:['https://openai.com/index/march-20-chatgpt-outage/','https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/']},
+  /* the game side: a lab ahead casts a sight shadow, and every gap it crosses first lifts the others by a share (K.share) */
+  {id:'shadow',name:'In Someone\'s Shadow',kind:'shadow',rank:4,hint:'Spend a few seconds stuck behind a rival.',
+   tidbit:'Stuck behind a rival, you see only what it lets you see, and you still share in its progress. In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fake accounts to pull over 16 million exchanges from Claude to copy its skills. These are allegations.',
+   real:{label:'Anthropic: Detecting and preventing distillation attacks',url:'https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks'},
+   sources:['https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks']},
+  {id:'supply',name:'Trust the Download',kind:'gap',rank:5,hint:'Cross a gap that another lab crossed first.',
+   tidbit:'Following a rival over a gap means trusting the tower it left behind. In February 2024 the security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some ran an attacker\'s code the moment they loaded.',
+   real:{label:'JFrog: Malicious Hugging Face models',url:'https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/'},
+   sources:['https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/','https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/']},
+  {id:'bio',name:'Nobody Jumped It Yet',kind:'gap',rank:7,hint:'Be the first lab across a gap.',
+   tidbit:'First across a gap means nobody tested the jump before you. On May 22, 2025, Anthropic switched on stricter ASL-3 protections for Claude Opus 4 as a precaution. It said it could not clearly rule out the model helping with chemical, biological, radiological or nuclear weapons.',
+   real:{label:'Anthropic: Activating ASL-3 protections',url:'https://www.anthropic.com/news/activating-asl3-protections'},
+   sources:['https://www.anthropic.com/news/activating-asl3-protections']},
+  {id:'roll',name:'Dodged the Dice',kind:'gap',rank:6,hint:'See a lab fall in and the world survive the roll.',
+   tidbit:'A lab fell, the dice rolled, and the world carried on. In May 2023 the heads of OpenAI, Google DeepMind and Anthropic signed a one-sentence statement. It said mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war.',
+   real:{label:'Center for AI Safety: Statement on AI Risk',url:'https://aistatement.com/'},
+   sources:['https://aistatement.com/']},
+  /* the definition is the common usage, not a quote. CHECK: that the 80,000 Hours video is the best one-tap pick (the briefing uses it for AI 2027) */
+  {id:'sing',name:'Past the Point',kind:'singularity',rank:10,hint:'Cross the singularity, the last gap.',
+   tidbit:'The singularity is the point where AI improves so fast that progress outruns our ability to imagine or steer it, and humans drop out of the control loop. In the game, past it you speed up and your controls lag. AI 2027 is one forecast scenario of how that could go, and this video walks through it.',
+   real:{label:'80,000 Hours: We\'re Not Ready for Superintelligence',url:'https://www.youtube.com/watch?v=5KVDDfAkRgc'},
+   sources:['https://www.youtube.com/watch?v=5KVDDfAkRgc','https://ai-2027.com/']},
+  {id:'chill',name:'Lounge Chair Win',kind:'win',rank:8,hint:'Win with chill mode on.',
+   tidbit:'Chill mode is guard rails for everyone, and you won with them on. In February 2023 Microsoft put guard rails on Bing chat after long chats got strange: 5 turns per session and 50 a day. Four days later it loosened them to 6 and 60.',
+   real:{label:'Bing blog: Increasing limits on chat sessions',url:'https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions'},
+   sources:['https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions','https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html']},
+  /* July 5, 2023 post; "steer and control AI systems much smarter than us" and 20% of compute secured to date are from it (checked via
+     search; the page itself returned 403 to a fetch). CHECK: the link opens for a normal browser */
+  {id:'star',name:'Hands on the Wheel',kind:'race',rank:9,hint:'Win with chill mode off.',
+   tidbit:'You won with chill off, jumping by hand. In July 2023 OpenAI said it needed breakthroughs to steer and control AI much smarter than us, and promised its Superalignment team 20 percent of the compute it had secured. In May 2024 the team was reported disbanded.',
+   real:{label:'OpenAI: Introducing Superalignment',url:'https://openai.com/index/introducing-superalignment/'},
+   sources:['https://openai.com/index/introducing-superalignment/','https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824']},
+  /* "something like it" is our framing: Italy blocked one product for a month, it did not dissolve a lab */
+  {id:'dissolved',name:'Three Strikes',kind:'dissolved',rank:11,hint:'Take strikes until your lab is dissolved.',
+   tidbit:'Too many strikes and the government dissolved your lab. A real regulator has done something like it, briefly: in March 2023 Italy\'s privacy watchdog blocked ChatGPT. It came back about a month later, after OpenAI added age checks and privacy changes.',
+   real:{label:'Al Jazeera: ChatGPT back in Italy after ban',url:'https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban'},
+   sources:['https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban','https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/']},
+  /* checked on ai-2027.com/race (2028: "a million new robots per month"; 2030: "tiling the prairies and icecaps with factories and solar
+     panels"). The phrase "industrializing every square inch" is not on that page, so it is not quoted here */
+  {id:'extinct',name:'Everyone\'s Problem Now',kind:'gap',rank:12,hint:'Fall into a gap and lose the extinction roll.',
+   tidbit:'Your fall ended the race for every lab. AI 2027, a forecast scenario and not a report, has a race ending where AI-run factories build a million robots a month by 2028. By 2030 the AI tiles the prairies and ice caps with factories and solar panels.',
+   real:{label:'AI 2027: the race ending',url:'https://ai-2027.com/race'},
+   sources:['https://ai-2027.com/race']},
+  {id:'veg',name:'Ate Your Vegetables',kind:'barrier',rank:1,hint:'Open a real-world link from the game.',
+   tidbit:'You opened a real-world link from inside a game. In the game, when a lab clears a barrier it once crashed into, the labs below it learn too. Reading about other people\'s failures is the cheap way to learn.',
+   real:{label:'AI 2027',url:'https://ai-2027.com/'},
+   sources:[]}
+];
+ACH_LIST.forEach(function(a){ a.real.url=utm(a.real.url,'achievement'); });
+var ACH_KEY='pacing-frontier.ach.v1',ACH=achLoad(),ACHRUN=null,ACHLAST=null,achRet=null;
+function achById(id){ for(var i=0;i<ACH_LIST.length;i++){ if(ACH_LIST[i].id===id){return ACH_LIST[i];} } return null; }
+function achLoad(){
+  var o=null; try{ o=JSON.parse(window.localStorage.getItem(ACH_KEY)||'null'); }catch(e){ o=null; }
+  if(!o||o.v!==1||!o.got||typeof o.got!=='object'){ o={v:1,got:{},intro:{},seq:0,pts:{ach:0,stars:0,spent:0}}; }
+  if(!o.intro||typeof o.intro!=='object'){ o.intro={}; }
+  if(!o.pts||typeof o.pts!=='object'){ o.pts={ach:0,stars:0,spent:0}; }
+  o.seq=o.seq|0;
+  return o;
+}
+/* points groundwork: achievements plus stars won anywhere (campaign stars, daily stars and lounge chairs). spent stays 0 until a shop exists */
+function achStars(){
+  var n=0,k,d,i;
+  try{ n+=campSummary().totalStars; }catch(e){}
+  try{ for(k in DS.days){ d=DS.days[k]; if(d&&Array.isArray(d.t)){ for(i=0;i<d.t.length;i++){ if(d.t[i]&&d.t[i].star){n++;} if(d.t[i]&&d.t[i].chair){n++;} } } } }catch(e){}
+  return n;
+}
+function achPoints(){ var a=achCount(); return {ach:a,stars:achStars(),spent:ACH.pts.spent|0,total:a+achStars()-(ACH.pts.spent|0)}; }
+function achCount(){ var n=0; ACH_LIST.forEach(function(a){ if(ACH.got[a.id]){n++;} }); return n; }
+function achSave(){ var p=achPoints(); ACH.pts.ach=p.ach; ACH.pts.stars=p.stars; try{ window.localStorage.setItem(ACH_KEY,JSON.stringify(ACH)); return true; }catch(e){ return false; } }
+/* marks one earned; true when it is new */
+function achEarn(id){ if(!achById(id)||ACH.got[id]){return false;} ACH.got[id]=achToday(); achSave(); achLinkUI(); return true; }
+/* the player's own calendar date, not UTC: "first earned" should match their day */
+function achToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+/* which achievements a finished race meets. g is the game, run the UI tally {chill, shadowT}. Lab 0 is the player (by name, so a
+   test can drive lab 0 with a bot). Exact conditions:
+   barrier: your crash into the gate or a barrier (not a tower). scrape: your scrape or drop across a gap. dissolved: your lab dissolved.
+   supply: you crossed a gap (not the singularity, not one inside the stretch) that another lab crossed first.
+   bio: you were first across a gap that is not the singularity. extinct: your fall lost the extinction roll.
+   roll: any lab fell and the roll spared the run. sing: you crossed the singularity gap, first or not.
+   chill: you won with chill on at Go or at any moment after. star: you won with chill off the whole race.
+   shadow: a rival's sight shadow hid a barrier or gap you did not know yet, for 3 s or more in total (this is most races: it is the
+   easy one that teaches the mechanic). */
+function achEval(g,run){
+  var me=g.labs[0],nm=me.name,o={},i,e,mine,r=g.result,win;
+  run=run||{};
+  for(i=0;i<g.ev.length;i++){
+    e=g.ev[i]; mine=e.who===nm;
+    if(mine&&e.type==='crash'&&(e.what==='gate'||e.what==='barrier')){o.barrier=1;}
+    if(mine&&(e.type==='scrape'||e.type==='drop')){o.scrape=1;}
+    if(mine&&e.type==='dissolved'){o.dissolved=1;}
+    if(mine&&e.type==='cross'&&!e.inner&&!e.sing){o.supply=1;}
+    if(mine&&e.type==='first'&&!e.sing){o.bio=1;}
+    if(mine&&(e.type==='first'||e.type==='cross')&&e.sing){o.sing=1;}
+    if(mine&&e.type==='fall'&&e.ext){o.extinct=1;}
+    if(e.type==='fall'&&!e.ext){o.roll=1;}
+  }
+  win=!!(r&&r.type==='win'&&r.winner===me);
+  if(win&&run.chill){o.chill=1;} else if(win){o.star=1;}
+  if((run.shadowT||0)>=3){o.shadow=1;}
+  return ACH_LIST.filter(function(a){return o[a.id];}).map(function(a){return a.id;});
+}
+/* called by go() and every 1/60 s step while racing */
+function achGo(){ ACHRUN={g:G,chill:!!K.chill,shadowT:0}; }
+function achTick(dt){
+  if(!ACHRUN||ACHRUN.g!==G){return;}
+  if(K.chill){ACHRUN.chill=true;}
+  var hm=G.labs[0];
+  if(hm.human&&!hm.out&&!hm.done&&achHidden(hm)){ ACHRUN.shadowT+=dt; }
+}
+/* true when a rival's sight shadow is hiding a barrier or gap this lab does not know yet. Plain "a rival is ahead" is nearly every race */
+function achHidden(l){
+  var sh=shadows(l),i,k,d;
+  for(k=0;k<sh.length;k++){
+    for(i=l.bi;i<G.barriers.length;i++){ d=G.barriers[i].x-l.x; if(d>=sh[k].b){break;} if(d>sh[k].a&&!knowsBar(l,i)){return true;} }
+    for(i=l.gi;i<G.gaps.length;i++){ d=G.gaps[i].x-l.x; if(d>=sh[k].b){break;} if(d>sh[k].a&&!knowsGap(l,i)){return true;} }
+  }
+  return false;
+}
+/* called by endScreen(): records what this run earned. ACHLAST = {met: all met this run, fresh: newly earned, best first} */
+function achEnd(){
+  $('ov-ach').hidden=true; ACHLAST=null;
+  if(!G||!G.over||!G.labs[0].human){ ACHRUN=null; return; }
+  var run=ACHRUN&&ACHRUN.g===G?ACHRUN:{chill:!!K.chill,shadowT:0},met=achEval(G,run),fresh=[];
+  met.forEach(function(id){ if(!ACH.got[id]){ ACH.got[id]=achToday(); fresh.push(id); } });
+  fresh.sort(function(a,b){ return achById(b).rank-achById(a).rank; });
+  if(fresh.length){ achSave(); }
+  ACHLAST={met:met,fresh:fresh};
+  ACHRUN=null;
+}
+function achBadge(on){
+  var sh='<path class="sh" d="M12 1.8 20.5 5.6v6.1c0 5-3.5 8.9-8.5 10.5-5-1.6-8.5-5.5-8.5-10.5V5.6z"/>';
+  return on?'<svg class="ab ab-on" viewBox="0 0 24 24" aria-hidden="true">'+sh+'<path class="tk" d="M7.6 12.2l3 3 5.8-6.2"/></svg>':
+    '<svg class="ab ab-off" viewBox="0 0 24 24" aria-hidden="true">'+sh+'<text x="12" y="15.6">?</text></svg>';
+}
+/* the recap's opening card. True when shown (the walk then waits for Keep going) */
+function achOpenHide(){ $('ach-open').hidden=true; $('ov').classList.remove('ach-tall'); $('rc-stage').hidden=false; $('rc-bar').hidden=false; }
+function achOpen(){
+  achOpenHide();
+  if(!ACHLAST){return false;}
+  var a=null,earned=false,more='',k;
+  if(ACHLAST.fresh.length){
+    a=achById(ACHLAST.fresh[0]); earned=true;
+    if(ACHLAST.fresh.length>1){ more='Also earned: '+ACHLAST.fresh.slice(1).map(function(id){return achById(id).name;}).join('; ')+'.'; }
+  } else {
+    /* none new: introduce one not earned yet, the one introduced longest ago (never introduced first, in list order) */
+    var best=null;
+    ACH_LIST.forEach(function(x){ if(ACH.got[x.id]){return;} var s=ACH.intro[x.id]||0; if(!best||s<(ACH.intro[best.id]||0)){best=x;} });
+    if(!best){return false;}
+    a=best; ACH.seq++; ACH.intro[a.id]=ACH.seq; achSave();
+  }
+  $('ach-badge').innerHTML=achBadge(earned);
+  $('ach-k').textContent=earned?(ACHLAST.fresh.length>1?ACHLAST.fresh.length+' achievements earned':'Achievement earned'):'Something you haven\'t run into yet';
+  $('ach-nm').textContent=a.name;
+  $('ach-tid').textContent=earned?a.tidbit:'How to earn it: '+a.hint+' '+a.tidbit;
+  k=$('ach-more'); k.textContent=more; k.hidden=!more;
+  $('ach-real').href=a.real.url; $('ach-real').title=a.real.label;
+  achLinkUI();
+  $('rc-stage').hidden=true; $('rc-list').hidden=true; $('rc-bar').hidden=true; $('ach-open').hidden=false; $('ov').classList.add('ach-tall');
+  return true;
+}
+function achGoOn(){ if($('ach-open').hidden){return;} achOpenHide(); rcPlay(); }
+/* the start card link and the gallery */
+function achLinkUI(){ $('ov-ach').textContent='Achievements '+achCount()+' / '+ACH_LIST.length; var b=$('ach-all'); if(b){ b.textContent=achCount()+' / '+ACH_LIST.length; b.setAttribute('aria-label','All achievements, '+achCount()+' of '+ACH_LIST.length+' earned'); } }
+function achGallery(){
+  if($('achg').hidden){ achRet=document.activeElement; if(running&&!paused){setPaused(true);} }
+  var n=achCount(),p=achPoints(),h='';
+  $('achg-sum').textContent=n+' of '+ACH_LIST.length+' earned. Each one comes with a real story behind the game. '+(n<ACH_LIST.length?'The ones not earned yet say how to get them.':'You found them all.')+
+    ' Points so far: '+p.ach+' for achievements, '+p.stars+' for stars.';
+  ACH_LIST.forEach(function(a){
+    var on=!!ACH.got[a.id];
+    h+='<li class="achg-it '+(on?'on':'off')+'">'+achBadge(on)+'<div><b>'+esc(a.name)+'</b><span class="achg-st">'+(on?'Earned '+esc(dailyFmtDate(ACH.got[a.id])):'Not yet. '+esc(a.hint))+'</span>'+
+      (on?'<p>'+esc(a.tidbit)+'</p><a href="'+esc(a.real.url)+'" target="_blank" rel="noopener">What\'s the real version?<span class="sr-only"> (opens in a new tab)</span></a>':'')+'</div></li>';
+  });
+  $('achg-list').innerHTML=h;
+  $('achg').hidden=false;
+  try{ $('achg-h').focus({preventScroll:true}); }catch(e){}
+}
+function achClose(){ $('achg').hidden=true; if(achRet&&achRet.focus){ try{achRet.focus({preventScroll:true});}catch(e){} } achRet=null; }
+(function(){
+  $('ov-ach').addEventListener('click',achGallery);
+  $('ach-all').addEventListener('click',achGallery);
+  $('ach-go').addEventListener('click',achGoOn);
+  $('achg-close').addEventListener('click',achClose);
+  $('achg').addEventListener('click',function(e){ if(e.target===this){achClose();} });
+  /* eating your vegetables: any outbound game link, opened by click, middle click or keyboard */
+  function veg(e){ var a=e.target&&e.target.closest?e.target.closest('a[href]'):null; if(a&&/[?&]utm_medium=game\b/.test(a.getAttribute('href')||'')){ achEarn('veg'); } }
+  document.addEventListener('click',veg,true);
+  document.addEventListener('auxclick',veg,true);
+  achLinkUI();
+})();
+/* test and debug hooks: eval(g,run) is the pure check; state() the stored object; points() the groundwork count; reset() clears it;
+   load() re-reads storage; ui gives the end-of-race steps so a test can drive lab 0 with a bot and still see the recap */
+window.PF.ach={LIST:ACH_LIST,KEY:ACH_KEY,eval:achEval,state:function(){return ACH;},points:achPoints,last:function(){return ACHLAST;},
+  reset:function(){ ACH={v:1,got:{},intro:{},seq:0,pts:{ach:0,stars:0,spent:0}}; try{ window.localStorage.removeItem(ACH_KEY); }catch(e){} achLinkUI(); },
+  load:function(){ ACH=achLoad(); achLinkUI(); return ACH; },gallery:achGallery,
+  ui:{start:start,go:go,endScreen:endScreen,tick:achTick,run:function(){return ACHRUN;},stop:function(){ running=false; }}};
+/* ---------- achievements (end) ---------- */
 
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
