@@ -3723,7 +3723,7 @@ var campRet=null;
 /* every new card in the dialog (and closing it) ends the card before it: async work started by that card checks CARDGEN before it
    writes, and the share preview's object URL is revoked */
 var CARDGEN=0,CARDURL=null;
-function cardEnd(){ CARDGEN++; if(CARDURL){ try{URL.revokeObjectURL(CARDURL);}catch(e){} CARDURL=null; } }
+function cardEnd(){ CARDGEN++; if(CARDURL){ var u=CARDURL; CARDURL=null; setTimeout(function(){ try{URL.revokeObjectURL(u);}catch(e){} },1000); } }  /* a moment late, so an image still loading it does not log an error */
 function campShow(){
   cardEnd();
   if($('camp').hidden){ campRet=document.activeElement; if(running&&!paused){setPaused(true);} }
