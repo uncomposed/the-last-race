@@ -78,6 +78,18 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 #ov-how{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
 #ov-how:hover{color:var(--ink)}
 #ov-msg[hidden]{display:none}
+.tour{display:flex;flex-direction:column;gap:6px;width:100%;max-width:300px;align-self:center}
+.tour[hidden]{display:none}
+.tour canvas{width:100%;aspect-ratio:320/180;display:block;background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.card p.tour-cap{font:600 14px/1.3 var(--body);min-height:2.6em;margin:0;flex:1;display:flex;align-items:center}
+.tour-row{display:flex;align-items:center;gap:8px}
+.tour-ctl{display:flex;gap:4px;margin-left:auto;flex:none}
+.tour-ctl button{min-width:32px;min-height:32px;padding:0;font-size:14px;line-height:1}
+.card:has(.tour:not([hidden])) > h2,.card:has(.tour:not([hidden])) .ov-lead,.card:has(.tour:not([hidden])) #ready-msg,.card:has(.tour:not([hidden])) .hint-note,.card:has(.tour:not([hidden])) #ready-snd,.card:has(.tour:not([hidden])) #ready-camp,.card:has(.tour:not([hidden])) #ready-diff{display:none}
+.card:has(.tour:not([hidden])){width:min(100%,340px)}
+.card.small:has(.tour:not([hidden])){max-width:340px}
+@media (max-width:600px){.tour{max-width:268px}}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){.card:has(.tour:not([hidden])) :is(#ov-foot,#ov-btn,#ov-ach,#ready-btn){display:none}}  /* short stages: the demo gets the room; Hide the demo brings the buttons back */
 /* you raced like: one line with the kind's critter; the name is always written out */
 .rl-line{display:flex;align-items:center;gap:8px;margin:0;font:500 14px/1.4 var(--body)}
 .rl-line[hidden]{display:none}
@@ -531,7 +543,7 @@ html.epi-open{overflow:hidden}
           <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
         </ul>
         <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button></div>
-        <p id="ov-msg" hidden>The start is slow. A gate near the start is too tall to jump from a standstill, so move the bar toward Build or hold Back to stand still and build height. Run is your cruise; Build is the rest, and it goes to sight, height and max speed, split by the point in the triangle (drag it, or keys 1 to 7). Hold the right arrow or D to floor it, the left arrow, A or B to back up, Up and Down move the bar toward Run or Build, Space jumps. The seed sets the track and you see only what your sight reaches or what is public. A barrier bounces you back and caps your speed. Three strikes: the first crash into each different barrier or tower is a strike, hitting the same one again is free, and the third strike gets your lab dissolved. Only a fall into a gap can roll for extinction. Miss a gap and you drop while you keep moving: reach the far side before you bottom out and you lose height and take a strike (a scrape), even if you never jumped. Bottom out and it is a fall, and a roll can end the run for everyone. The last gap is the singularity: the widest, with the worst odds, and the first lab across gets the full ceiling. Past it your top speed is multiplied, your controls lag and everyone auto-jumps, so set your balance before you cross. First over the finish wins.</p>
+        <p id="ov-msg" hidden></p>
         <p class="rl-line" id="ov-like" hidden></p>
         <div class="story" id="ov-story" hidden>
           <!-- achievements: the recap opens with this card; Keep going starts the walk -->
@@ -3261,13 +3273,138 @@ function cardPrimary(){
   }
   return null;
 }
+/* How to play: a looping animation, five short steps, drawn on one small canvas with the game's own colours.
+   Run moves you; Build grows meters but slows you; the triangle splits Build; a tall gate costs a strike until you build Height and jump;
+   a gap drops you unless you jump it. Meter names are written out, so colour is never the only cue. With reduced motion it does not
+   autoplay: each step shows its end state and Next / Prev move between them. Returns {el, show(), hide()}. */
+function makeTour(){
+  var W=320,H=180,GY=62,MONO="'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace",V=60,S,cur=0,t=0,playing=true,raf=0,last=0,C={},capNow='',
+      RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var el=document.createElement('div'); el.className='tour'; el.hidden=true;
+  el.innerHTML='<canvas role="img" aria-label="Animation in five steps. Run moves you forward. Build grows your meters but slows you down. The triangle splits Build between Sight, Height and Max speed. A tall gate gives a strike until you slow down, build Height and jump. Miss a gap and you fall, so jump it."></canvas>'+
+    '<div class="tour-row"><p class="tour-cap"></p><div class="tour-ctl"><button type="button" data-k="prev" aria-label="Previous step">&lsaquo;</button><button type="button" data-k="play"></button><button type="button" data-k="next" aria-label="Next step">&rsaquo;</button></div></div>';
+  var cv=el.firstChild,g=cv.getContext('2d'),capEl=el.querySelector('.tour-cap'),playB=el.querySelector('[data-k=play]');
+  function clamp(x){ return x<0?0:x>1?1:x; }
+  function ease(x){ return x*x*(3-2*x); }
+  function mix(a,b,k){ return a.map(function(v,i){ return v+(b[i]-v)*k; }); }
+  function base(){ S={run:1,speed:0,off:0,m:[0,0,0],split:[1/3,1/3,1/3],lx:70,lh:0,gate:null,gap:null,posts:false,tri:false,pips:false,strikes:0,key:false,say:'',mark:false,b:0}; }
+  function reach(){ return 4+22*S.m[1]; }  /* jump reach, px: grows with the Height meter */
+  function sightX(){ return 70+16+90+200*S.m[0]; }  /* how far ahead you see: grows with the Sight meter */
+  function topSpeed(){ return V+40*S.m[2]; }  /* speed cap: grows with the Max speed meter */
+  var SC=[
+    {dur:3.2,cap:'Run moves you forward.',init:function(){},step:function(){}},
+    {dur:5,cap:function(p){ return p<.35?'Slide the bar toward Build.':'You slow down. Your meters grow.'; },init:function(){ S.posts=true; },
+     step:function(dt,p){ S.run=1-.5*ease(clamp((p-.15)/.3)); }},
+    {dur:8.5,cap:function(p){ return p<.1?'The triangle splits your Build.':p<.38?'Point at Sight: you see further.':p<.62?'Point at Height: you jump higher.':'Point at Max speed: your top speed rises.'; },
+     init:function(){ S.run=.5; S.m=[.1,.1,.1]; S.tri=true; S.posts=true; },
+     step:function(dt,p){
+       var C3=[1/3,1/3,1/3],A3=[.8,.1,.1],H3=[.1,.8,.1],S3=[.1,.1,.8];
+       S.split=p<.1?C3:p<.28?mix(C3,A3,ease((p-.1)/.18)):p<.38?A3:p<.52?mix(A3,H3,ease((p-.38)/.14)):p<.62?H3:p<.78?mix(H3,S3,ease((p-.62)/.16)):S3;
+     }},
+    {dur:7.5,cap:function(p){ return p<.27?'A tall gate ahead.':p<.6?'Bonk: a strike. Slow down, build Height.':'Height past the mark? Jump.'; },
+     init:function(){ S.gate={x:300,w:10,h:16}; S.pips=true; S.mark=true; },
+     step:function(dt,p,D){
+       var G=S.gate;
+       if(p<.27){ S.speed=V; G.x=86+V*(.27-p)*D; return; }
+       S.strikes=1; S.split=[0,1,0]; S.run=1-.85*ease(clamp((p-.3)/.12));
+       S.lx=70-8*Math.sin(Math.PI*clamp((p-.27)/.06)); S.say=p<.34?'Bonk!':'';
+       if(p<.62){ S.speed=0; G.x=86; return; }
+       var q=clamp((p-.62)/.14); S.lh=q<1?reach()*Math.sin(Math.PI*q):0; S.key=p<.78; S.speed=45; G.x=86-45*q*.14*D;
+       if(p>.76){ S.run=1-.85*(1-ease(clamp((p-.78)/.1))); S.speed=null; G.x-=V*S.run*(p-.76)*D; }
+     }},
+    {dur:8,cap:function(p){ return p<.4?'Miss a gap and you fall.':p<.5?'A fall can end the race for everyone.':'Build Height first, then jump it.'; },
+     init:function(){ S.gap={x:300,w:44}; S.m=[0,.1,0]; },
+     step:function(dt,p,D){
+       var G=S.gap,p0=160/(V*D);
+       if(p<.5){ if(p<p0){ S.speed=V; G.x=230-V*D*p; } else { S.speed=0; G.x=230-V*D*p0; var ft=(p-p0)*D; S.lh=-90*ft*ft; S.say=p>p0+.02?'Fall!':''; } return; }
+       if(!S.b){ S.b=1; S.lh=0; S.say=''; S.m=[0,.85,0]; }
+       S.speed=V; G.x=230-V*D*(p-.5);
+       var q=clamp((p-.75)/.185); S.lh=q>0&&q<1?reach()*Math.sin(Math.PI*q):0; S.key=p>=.74&&p<.94;
+     }}
+  ];
+  function colors(){ var cs=getComputedStyle(document.documentElement); ['ink','muted','line','surface','bg','a','b','c','run','run-ink'].forEach(function(k){ C[k]=cs.getPropertyValue('--'+k).trim(); }); }
+  function go(i){ cur=(i+SC.length)%SC.length; t=0; base(); SC[cur].init(); if(RM){ playing=false; var tt=0; while(tt<SC[cur].dur){ tt+=.05; frame(.05); } } else { frame(0); } sync(); draw(); }
+  function frame(dt){
+    var sc=SC[cur],p,i; t=Math.min(sc.dur,t+dt); p=t/sc.dur;
+    S.speed=null; sc.step(dt,p,sc.dur); if(S.speed==null){ S.speed=topSpeed()*S.run; }
+    S.off+=S.speed*dt; for(i=0;i<3;i++){ S.m[i]=Math.min(1,S.m[i]+dt*.45*(1-S.run)*S.split[i]); }
+    var c=typeof sc.cap==='function'?sc.cap(p):sc.cap; if(c!==capNow){ capNow=c; capEl.textContent=c; }
+  }
+  function sync(){ playB.innerHTML=playing?'&#10074;&#10074;':'&#9654;'; playB.setAttribute('aria-label',playing?'Pause':'Play'); }
+  function tick(now){
+    raf=0; if(el.offsetParent===null){ return; }
+    var dt=Math.min(.05,(now-last)/1000||0); last=now;
+    if(playing){ frame(dt); if(t>=SC[cur].dur){ go(cur+1); } }
+    draw(); raf=requestAnimationFrame(tick);
+  }
+  function txt(s,x,y,col,al,sz){ g.font='500 '+(sz||10)+'px '+MONO; g.fillStyle=col; g.textAlign=al||'left'; g.textBaseline='middle'; g.fillText(s,x,y); }
+  function ln(x1,y1,x2,y2,col,w){ g.strokeStyle=col; g.lineWidth=w||1; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); }
+  function track(){
+    var i,x,G=S.gap,GP=G?G.x:W+1,GE=G?G.x+G.w:W+1;
+    g.save(); g.beginPath(); g.rect(0,0,W,84); g.clip();
+    for(x=-(S.off%24);x<W;x+=24){ if(!(G&&x>GP&&x<GE)){ ln(x,GY+6,x,GY+10,C.muted); } }
+    if(G){ ln(0,GY,GP,GY,C.ink,2); ln(GE,GY,W,GY,C.ink,2); ln(GP,GY,GP,GY+16,C.muted); ln(GE,GY,GE,GY+16,C.muted); } else { ln(0,GY,W,GY,C.ink,2); }
+    if(S.gate){ var Q=S.gate; g.fillStyle=C.surface; g.fillRect(Q.x,GY-Q.h,Q.w,Q.h); g.strokeStyle=C.ink; g.lineWidth=1.5; g.strokeRect(Q.x,GY-Q.h,Q.w,Q.h);
+      g.save(); g.beginPath(); g.rect(Q.x,GY-Q.h,Q.w,Q.h); g.clip(); for(i=-Q.h;i<Q.w;i+=5){ ln(Q.x+i,GY,Q.x+i+Q.h,GY-Q.h,C.muted); } g.restore(); txt('Gate',Q.x+Q.w/2,GY-Q.h-9,C.muted,'center'); }
+    if(S.posts){ for(x=-(S.off%110)+60;x<W;x+=110){ ln(x,GY,x,GY-14,C.muted,2); } }
+    var sgx=sightX(); if(sgx<W){ g.globalAlpha=.78; g.fillStyle=C.bg; g.fillRect(sgx,0,W-sgx,84); g.globalAlpha=1; g.setLineDash([3,3]); ln(sgx,26,sgx,GY+14,C.a,1.5); g.setLineDash([]); }
+    var ly=GY-16-S.lh,n=Math.ceil(S.speed/20); for(i=0;i<n;i++){ var sx=S.lx-8-((S.off*1.5+i*13)%36); ln(sx,ly+4+i*3,sx-10,ly+4+i*3,C.muted); }
+    g.fillStyle=C.run; g.fillRect(S.lx,ly,16,16); g.strokeStyle=C.ink; g.lineWidth=1.5; g.strokeRect(S.lx,ly,16,16); g.fillStyle=C['run-ink']; g.fillRect(S.lx+9,ly+4,4,4);
+    var rc=reach(),ix=S.lx+8,ty=GY-16-rc; g.setLineDash([2,2]); ln(ix,GY-17,ix,ty,C.c,1.5); g.setLineDash([]); ln(ix-4,ty,ix+4,ty,C.c,2); txt('Jump',S.lx+2,ty,C.ink,'right',9);
+    if(S.say){ txt(S.say,112,34,C.ink,'left',13); }
+    g.restore();
+    if(sgx<W-20){ txt('Sight',sgx,GY+21,C.a,'center',9); }
+    txt('Speed',12,9,C.muted); g.strokeStyle=C.muted; g.lineWidth=1; g.strokeRect(50.5,4.5,60,9); g.fillStyle=C.ink; g.fillRect(51,5,Math.min(1,S.speed/100)*59,8); var tx=51+59*topSpeed()/100; ln(tx,2,tx,16,C.b,2); txt('max',114,9,C.muted,'left',9);
+    if(S.pips){ txt('Strikes '+S.strikes+'/3',246,12,C.muted,'right'); for(i=0;i<3;i++){ g.strokeStyle=C.ink; g.lineWidth=1.5; g.strokeRect(254.5+i*18,6.5,12,12); if(i<S.strikes){ g.fillStyle=C.b; g.fillRect(255+i*18,7,11,11); ln(257+i*18,9,264+i*18,16,C.ink,1.5); ln(264+i*18,9,257+i*18,16,C.ink,1.5); } } }
+    if(S.key){ g.fillStyle=C.surface; g.fillRect(120,26,76,18); g.strokeStyle=C.ink; g.lineWidth=1.5; g.strokeRect(120.5,26.5,75,17); txt('Space: jump',158,35,C.ink,'center'); }
+  }
+  function bar(y){
+    var x=12,w=296,h=18,rw=w*S.run,i;
+    g.fillStyle=C.run; g.fillRect(x,y,rw,h); g.fillStyle=C.surface; g.fillRect(x+rw,y,w-rw,h);
+    g.save(); g.beginPath(); g.rect(x+rw,y,w-rw,h); g.clip(); for(i=-h;i<w;i+=6){ ln(x+i,y+h,x+i+h,y,C.line); } g.restore();
+    g.strokeStyle=C.ink; g.lineWidth=1.5; g.strokeRect(x,y,w,h);
+    txt('Run '+Math.round(S.run*100)+'%',x+6,y+h/2+1,rw>=62?C['run-ink']:C.ink,'left',11);
+    txt('Build '+Math.round((1-S.run)*100)+'%',x+w-6,y+h/2+1,w-rw>=70?C.ink:C['run-ink'],'right',11);
+    g.fillStyle=C.ink; g.fillRect(x+rw-3,y-4,6,h+8); g.strokeStyle=C.surface; g.lineWidth=1; g.strokeRect(x+rw-2.5,y-3.5,5,h+7);
+  }
+  function meters(x,y,w){
+    var nm=['Sight','Height','Max speed'],col=[C.a,C.c,C.b],i,bx=x+60,bw=w-60;
+    for(i=0;i<3;i++){ var yy=y+i*16; txt(nm[i],x,yy+5,C.ink); g.fillStyle=C.surface; g.fillRect(bx,yy,bw,10); g.fillStyle=col[i]; g.fillRect(bx,yy,bw*S.m[i],10); g.strokeStyle=C.ink; g.lineWidth=1; g.strokeRect(bx+.5,yy+.5,bw-1,9);
+      if(S.mark&&i===1){ g.fillStyle=C.ink; g.fillRect(bx+bw*.55-1,yy-2,2,14); } }
+  }
+  function tri(x,y,s){
+    var hh=s*.866,v=[[x+s/2,y],[x,y+hh],[x+s,y+hh]],col=[C.c,C.a,C.b],nm=['Height','Sight','Max speed'],i,px=0,py=0,wt=[S.split[1],S.split[0],S.split[2]];
+    g.beginPath(); g.moveTo(v[0][0],v[0][1]); g.lineTo(v[1][0],v[1][1]); g.lineTo(v[2][0],v[2][1]); g.closePath(); g.fillStyle=C.surface; g.fill(); g.strokeStyle=C.muted; g.lineWidth=1.5; g.stroke();
+    for(i=0;i<3;i++){ px+=v[i][0]*wt[i]; py+=v[i][1]*wt[i]; g.fillStyle=col[i]; g.beginPath(); g.arc(v[i][0],v[i][1],4,0,6.3); g.fill(); g.strokeStyle=C.ink; g.lineWidth=1; g.stroke(); }
+    txt(nm[0],v[0][0]+9,v[0][1]+1,C.ink,'left'); txt(nm[1],v[1][0]-14,v[1][1]+11,C.ink,'left'); txt(nm[2],v[2][0]-6,v[2][1]+11,C.ink,'left');
+    g.fillStyle=C.ink; g.beginPath(); g.arc(px,py,6,0,6.3); g.fill(); g.strokeStyle=C.surface; g.lineWidth=2; g.stroke();
+  }
+  function draw(){
+    var w=cv.clientWidth; if(!w){ return; }
+    var d=window.devicePixelRatio||1; if(cv.width!==Math.round(w*d)){ cv.width=Math.round(w*d); cv.height=Math.round(w*d*H/W); }
+    colors(); g.setTransform(cv.width/W,0,0,cv.width/W,0,0); g.clearRect(0,0,W,H);
+    track();
+    if(S.tri){ bar(92); tri(30,118,50); meters(134,126,174); } else { bar(92); meters(12,126,296); }
+  }
+  el.addEventListener('keydown',function(e){ if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); } });
+  el.addEventListener('click',function(e){
+    var k=e.target.getAttribute&&e.target.getAttribute('data-k'); if(!k){ return; }
+    if(k==='play'){ playing=!playing; sync(); } else { go(cur+(k==='next'?1:-1)); }
+  });
+  function show(){ el.hidden=false; last=performance.now(); go(0); if(!RM){ playing=true; sync(); } if(!raf){ raf=requestAnimationFrame(tick); } }
+  function hide(){ el.hidden=true; }
+  return {el:el,show:show,hide:hide};
+}
+var ovTour=makeTour();
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
-  $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false; $('ov-like').hidden=true;  /* end screens: the result line, not the start card's short lines */
+  ovTour.hide(); $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false; $('ov-like').hidden=true;  /* end screens: the result line, not the start card's short lines */
 }
-/* the start card: three short lines; "How to play" shows and hides the full rules */
-$('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
+/* the start card: three short lines; "How to play" shows and hides the animation */
+$('ov-msg').parentNode.insertBefore(ovTour.el,$('ov-msg'));
+ovTour.el.id='ov-tour'; $('ov-how').setAttribute('aria-controls','ov-tour');
+$('ov-how').addEventListener('click',function(){ var open=ovTour.el.hidden; if(open){ ovTour.show(); } else { ovTour.hide(); } this.setAttribute('aria-expanded',open?'true':'false'); this.textContent=open?'Hide the demo':'How to play'; });
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
@@ -3486,7 +3623,7 @@ document.addEventListener('keydown',function(e){
 /* first-run hints: shown once each, at the moment they matter, while the human plays. They read the game state and never write it.
    Seen flags live in localStorage when it works and in memory when it throws; "How to play" on the Ready card clears them. */
 (function(){
-  var how=document.createElement('button'),note=document.createElement('p');
+  var how=document.createElement('button'),note=document.createElement('p'),tour=makeTour();
   var KEY='pf-hints-seen',seen={},q=[],cur=null,left=0,shownT=0,hG=null,began=false,prev=performance.now(),el=$('hint');
   var TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
   try{ seen=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ seen={}; }
@@ -3552,8 +3689,9 @@ document.addEventListener('keydown',function(e){
   how.type='button'; how.className='hint-how'; how.textContent='How to play';
   note.className='hint-note'; note.hidden=true; note.textContent='Hints are back on: they show during this race as each thing comes up.';
   how.addEventListener('keydown',function(e){ if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); } });
-  how.addEventListener('click',function(){ seen={}; save(); try{ localStorage.removeItem(KEY); }catch(e){} note.hidden=false; });
-  $('ready-btn').parentNode.insertBefore(how,$('ready-btn')); $('ready-btn').parentNode.insertBefore(note,$('ready-btn'));
+  how.addEventListener('click',function(){ seen={}; save(); try{ localStorage.removeItem(KEY); }catch(e){} note.hidden=false; if(tour.el.hidden){ tour.show(); } else { tour.hide(); } how.textContent=tour.el.hidden?'How to play':'Hide the demo'; how.setAttribute('aria-expanded',tour.el.hidden?'false':'true'); });
+  how.setAttribute('aria-expanded','false');
+  $('ready-btn').parentNode.insertBefore(how,$('ready-btn')); $('ready-btn').parentNode.insertBefore(note,$('ready-btn')); $('ready-btn').parentNode.insertBefore(tour.el,$('ready-btn'));
 })();
 
 /* investment flow: while your lab is investing (the sim's l.ivr and l.ivw, read only), small dots leave the Build part of the bar,
