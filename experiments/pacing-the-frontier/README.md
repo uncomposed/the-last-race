@@ -74,6 +74,10 @@ Open design items are listed at the end of `spec.html` (which still describes ve
 
 `.github/workflows/pages.yml` publishes `prototype.html` as `index.html`, with `spec.html` beside it, on GitHub Pages. It runs on pushes to `main` that touch this folder, or by hand. The repository must be public (or on a plan with private Pages), with Settings > Pages > Source set to "GitHub Actions".
 
+Each open pull request that the owner opened from a branch in this repository is also published at `/preview/pr-<number>/`, a minute or two after its checks finish. Fork pull requests get no preview.
+
+Links that send players to outside reading carry `utm_source=the-last-race.com&utm_medium=game&utm_campaign=<where in the game>`, so those sites can see the visits came from the game. Tag any new outbound link the same way.
+
 ## Checks
 
 `check/sim-check.mjs` replays 300 races (seeds 1 to 100 with chill on, chill off, and Steward alone) and compares each game's full result with `check/reference.json`. It needs only Node: `node experiments/pacing-the-frontier/check/sim-check.mjs`. When the simulation section of `prototype.html` (from `function $(id)` to `window.PF={`) is byte-identical to the recorded one, it skips the replay, so UI changes cost nothing. When race results change on purpose, run it with `--write` and commit `reference.json` with the change. `.github/workflows/pacing-check.yml` runs it on pushes and pull requests that touch this folder.
