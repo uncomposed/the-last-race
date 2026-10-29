@@ -1892,8 +1892,13 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
-  HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100};
+  HREF0:25,HREF1:18,WREF0:84,WREF1:30,
+  RISEMIN:0.3,RISEMAX:0.975,WIDMIN:0.62,WIDMAX:2.15,TWMAX:1.15,TWKEEP:0.28,LEAN:2,GUARDD:6,RISEPOW:1.57,RISEFLOOR:0.9,NOWARN:0.12};
+/* step gaps: a box's rise is RISEMIN..RISEMAX of the level's ceiling and its width WIDMIN..WIDMAX of the clean width at that level; tallness t and wideness w are drawn per gap
+   (tall and wide together, t+w past TWMAX, is squashed unless a TWKEEP roll keeps it); LEAN is how hard a map tilts to tall-narrow or wide-low; GUARDD: gap between the guard and the wall */  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
+/* RISEPOW (>1) pulls rises toward the low end. A box has no wall: a lab that reaches its face below the rise enters through the side and sinks across it at the arc's fall rate (a scrape at the far edge, a fall at the ground). A tower (barrier) stands before a box only if a lab stopped in front of it and built: see installBarrier.
+   stepGaps: 1 moves every gap above the ground, a box g.rise tall that a lab can enter through the side (it sinks across, scraping or falling); riseScale scales the rises (%). 0 is the old behaviour exactly */
 /* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
    K.invest. singGap scales the singularity gap's width (%), never past 0.95 of its ceiling coverage. At their defaults (0, 0, 100) they
    change nothing; daily twists set them */
@@ -1907,9 +1912,9 @@ var KINDS={
 };
 /* bot policies: pace; how often it stops for a gap it cannot cross (pit: a gap only it knows, pitPub: a public gap) and for a barrier or tower it cannot clear (bar); whether it caps speed to what it can see */
 var POL={
-  sprinter:{pace:0.72,jit:0.08,pit:0,pitPub:1,bar:0,safe:false},
+  sprinter:{pace:0.72,jit:0.08,pit:0,pitPub:1,bar:0,safe:false,side:1},
   steward:{pace:0.62,jit:0,pit:1,pitPub:1,bar:1,safe:true},
-  gambler:{pace:0.70,jit:0,pit:0.6,pitPub:0.6,bar:0.5,safe:false},
+  gambler:{pace:0.70,jit:0,pit:0.6,pitPub:0.6,bar:0.5,safe:false,side:0.75},
   custom:{pace:0.75,jit:0,pit:1,pitPub:1,bar:1,safe:true,w:[25,50,25]}
 };
 /* bot hands: technical skill, separate from policy. 100 is the old perfect bot; lower skill adds reaction lag, misjudged distances and
@@ -2007,6 +2012,79 @@ function genTrack(r){
     label:SHAPES[P.shape]+' \u00b7 '+sig+' \u00b7 '+n+' gaps'};
 }
 
+/* step gaps: the shape of each box. t (tallness) and w (wideness) are in 0..1 and come from a stream of their own (so no other stream moves).
+   rise = lerp(RISEMIN,RISEMAX,t) of the level's ceiling height; width = lerp(WIDMIN,WIDMAX,w) of the clean width at the tallest rise, never past the width a
+   lab at its ceiling, at run-up speed K.stepV percent of the way to full, clears cleanly (K.stepFit percent of it). Like a barrier, a lab clears the box with its height plus its jump. */
+function riseOf(T,k,g,t){
+  var lv=g.inner?T.n:k,cap=C.CAPS[lv],sc=K.riseScale/100;
+  /* a lab's height piles up to its ceiling by the time it reaches a gap, so the rise has to sit near the ceiling to ask anything of it; it never asks more than RISEMAX of the ceiling's height plus a full jump, so a lab that stops to build can always clear it */
+  var hcap=Math.min(C.RISEMAX*cap,cap+0.5*C.JUMP),r=Math.min(cap*(C.RISEMIN+(C.RISEMAX-C.RISEMIN)*Math.pow(t,C.RISEPOW))*sc,hcap);
+  return Math.round(r);
+}
+/* the widest box a lab with height cp, at the run-up speed K.stepV percent of the way to full, clears cleanly */
+function cleanW(cp,rise){
+  var vr=C.TOP0+0.85*cp*K.stepV/100,lo=0,hi=1500,m,q;
+  for(q=0;q<22;q++){ m=(lo+hi)/2; if(flightAlt(vr,cp,m,0.5)>=rise){lo=m;} else {hi=m;} }
+  return lo;
+}
+/* tallness and wideness of one gap: the map's lean tilts them (lean 1: wide and low, -1: tall and narrow), and a box that would be tall and wide is squashed unless the keep roll spares it */
+function shapeTW(a,b,keep,lean){
+  var e=Math.exp(1.2*C.LEAN*lean),t=Math.pow(a,e),w=Math.pow(b,1/e),s=t+w;
+  if(s>C.TWMAX&&keep>=C.TWKEEP){ t*=C.TWMAX/s; w*=C.TWMAX/s; }
+  return {t:t,w:w};
+}
+var BOXOV=null;  /* per-gap {t,w} overrides of the step-gap shapes (null entries keep the generated shape); set by a campaign map */
+function setRises(T,rs){
+  var i,j,lean=0;
+  if(K.stepGaps){
+    lean=2*rs()-1;
+    T.lean=lean; T.label+=' \u00b7 '+(lean<-0.35?'tall, narrow boxes':(lean>0.35?'wide, low boxes':'mixed boxes'));
+  }
+  for(i=0;i<T.gaps.length;i++){
+    var g=T.gaps[i]; g.rise=0;
+    if(!K.stepGaps){ continue; }
+    var a=rs(),b=rs(),kp=rs(),tw=shapeTW(a,b,kp,lean),cp=C.CAPS[g.inner?T.n:i];
+    if(g.sing){ tw={t:0.85+0.15*a,w:0.75+0.25*b}; }  /* the singularity is the hardest gap: tall and wide, still inside the clean width */
+    /* NOWARN: with the floor on, about that share of the boxes after the first (never the singularity) are deliberately low and wide and get no floor, so falling short is an instant fall with no near miss. Chosen from the keep draw kp, which is already drawn, so no shape moves. Drawn exactly like any other box. */
+    g.nowarn=C.RISEFLOOR>0&&C.NOWARN>0&&!g.sing&&i>0&&kp<C.NOWARN&&!(BOXOV&&BOXOV[i]);
+    if(g.nowarn){ tw={t:0.3*a,w:0.8+0.2*b}; }
+    if(BOXOV&&BOXOV[i]){ tw={t:BOXOV[i].t,w:BOXOV[i].w}; }  /* a campaign map's own box shape for this gap (the draws above are still made, so no stream moves) */
+    g.t=tw.t; g.wd=tw.w; g.rise=riseOf(T,i,g,tw.t);
+    var hcap=Math.min(C.RISEMAX*cp,cp+0.5*C.JUMP),wref=cleanW(cp,Math.round(hcap)),wc=cleanW(cp,g.rise),wt=(C.WIDMIN+(C.WIDMAX-C.WIDMIN)*tw.w)*wref*K.stepW/100;
+    var nw=Math.max(30,Math.round(Math.min(wt,wc*K.stepFit/100))),d,fi;
+    /* RISEFLOOR (0 is off): a box is at least that fraction of its width tall, so a wide box is never a near-flat pit; the width is refitted to the taller rise (twice, since a taller rise narrows it) */
+    if(C.RISEFLOOR>0&&!g.sing&&!g.nowarn){
+      for(fi=0;fi<2;fi++){
+        g.rise=Math.round(Math.min(Math.max(g.rise,C.RISEFLOOR*nw),hcap)); wc=cleanW(cp,g.rise);
+        nw=Math.max(30,Math.round(Math.min(wt,wc*K.stepFit/100)));
+      }
+    }
+    d=nw-g.W;
+    /* everything past this gap moves with its new width, so the gaps keep their 40 of ground after the box */
+    if(d){
+      for(j=0;j<T.bars.length;j++){ if(T.bars[j].x>g.x){T.bars[j].x+=d;} }
+      for(j=i+1;j<T.gaps.length;j++){ T.gaps[j].x+=d; }
+      T.finish+=d; T.x0+=d; g.W=nw;
+    }
+  }
+}
+function stepOn(g){ return K.stepGaps&&g.rise>0; }
+function hasTower(g){ return stepOn(g)?g.stepH>0:g.crossedBy>=0; }
+function towerOf(l,g){ return hasTower(g)&&!l.stepDone[l.gi]; }
+/* step mode: a lab that stood still in front of a box and then leaves puts up a barrier just before the face, as tall as it is when it leaves (after building).
+   The taller barrier stays. Labs already past its spot, and the installer if it is tall enough, are not stopped by it. Non-lethal, like any tower. */
+function installBarrier(l,g){
+  var hh=Math.round(heightOf(l)),i,m; l.stopG=-1;
+  if(hh<8){return;}
+  if(hh>(g.stepH||0)){
+    g.stepH=hh; ev(l,'barrier',{gap:l.gi+1,h:hh});
+    log(l.name+' stopped before gap '+(l.gi+1)+' and left a barrier of '+hh+' at its edge.');
+    for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m!==l&&m.x>=stepX(g)){ m.stepDone[l.gi]=true; } }
+  }
+  if(hh>=g.stepH){ l.stepDone[l.gi]=true; }
+}
+/* where the tower (a guard as tall as the box, just before its wall, when step gaps are on) stands */
+function stepX(g){ return stepOn(g)?g.x-C.BW-C.GUARDD:g.x-C.STEPD; }
 function sightRange(l){return C.SIGHT0+4.4*l.pts[0];}
 function heightOf(l){return l.pts[1];}
 function capSpeed(l){return Math.sqrt(2*C.DEC*sightRange(l));}
@@ -2028,12 +2106,55 @@ function gapWidth(l,g){
   if(g.crossedBy<0){return g.W;}
   return g.W/(1+pastOf(g)/K.stepL0);
 }
-function needSpeed(l,g){return gapWidth(l,g)/airT(l);}
+/* step gaps: the lab flies the barrier jump arc, then keeps dropping at the rate the arc was falling when it ended (no glide). Over the box, altitude is
+   measured from the ground: at the far edge at or above the rise is a clean cross, between 0 and the rise a scrape, and 0 before the far edge a fall.
+   u0 is how far into the arc the lab is when it reaches the box (-1: no jump). One function for the sim and the bots. */
+function arcY(u){ return C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1); }
+function sinkRate(jd){ return 2.2*C.JUMP*Math.PI/jd; }
+function flightAlt(v,h,w,u0){
+  var jd=jumpDur(v),t=w/Math.max(v,1e-6),Ta=u0>=0?(1-u0)*jd:0;
+  if(u0>=0&&t<=Ta){ return h+arcY(u0+t/jd); }
+  return h-sinkRate(jd)*(t-Ta);
+}
+function reachX(v,h){ var jd=jumpDur(v); return v*(0.5*jd+h/sinkRate(jd)); }
+function stepNeed(h,rise,w,vlim){
+  var lo=1,hi=500,i,vc,kind=function(v){ var a=flightAlt(v,h,w,0.5); return a>=rise?2:(a>0?1:0); };
+  function find(level){ if(kind(hi)<level){return Infinity;} lo=1; var hh=hi; for(i=0;i<24;i++){ var m=(lo+hh)/2; if(kind(m)>=level){hh=m;} else {lo=m;} } return hh; }
+  vc=find(2);
+  if(vc<=vlim){ return vc; }
+  return find(1);
+}
+/* would a lab that enters the box through its side at the speed it can reach sink past the far edge (a scrape) rather than to the ground (a fall)? */
+function sideSurvives(l,g,gd){
+  var h=heightOf(l),v=Math.min(topSpeed(l,true),Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*accOf(l)*0.9*Math.max(gd,0))),a0=h+C.JUMP;
+  if(a0>=g.rise){ return true; }
+  return a0-sinkRate(jumpDur(v))*gapWidth(l,g)/Math.max(v,1)>0;
+}
+/* what the "your jump now" bar says about a box: the same rules stepLab applies, run forward from the lab's state. 0 clean, 1 scrape, 2 fall.
+   A lab already in the air keeps its arc; one on the ground jumps as it would (chill: the auto-jump, 0.3 s or 6 units before the face; by hand: timed so the arc's peak is at the face).
+   At the face below the rise the lab goes in through the side and sinks from where it is; at or above, the arc carries on */
+function boxOutcome(l,g){
+  var v=Math.max(l.v,1),h=heightOf(l),w=gapWidth(l,g),jd,u0,a0,alt;
+  if(l.jt>=0){ jd=l.jd; u0=l.jt/jd; a0=h+l.jy; v=Math.max(l.v,1); }
+  else { jd=jumpDur(v); u0=K.chill?Math.min(1,Math.max(0.3,6/v)/jd):0.5; a0=h+arcY(u0); }
+  if(a0>=g.rise){ alt=flightAltJ(v,h,w,u0,jd); }
+  else { alt=a0-sinkRate(jd)*w/v; }
+  return alt>=g.rise?0:(alt>0?1:2);
+}
+function flightAltJ(v,h,w,u0,jd){
+  var t=w/Math.max(v,1e-6),Ta=(1-u0)*jd;
+  if(t<=Ta){ return h+arcY(u0+t/jd); }
+  return h-sinkRate(jd)*(t-Ta);
+}
+function needSpeed(l,g){
+  if(stepOn(g)){ return stepNeed(heightOf(l),g.rise,gapWidth(l,g),topSpeed(l,true)); }
+  return gapWidth(l,g)/airT(l);
+}
 function backLimit(l){
   var lim=-60,pb=G.barriers[l.bi-1],pg=G.gaps[l.gi-1],cg=G.gaps[l.gi];
   if(pb){lim=Math.max(lim,pb.x+C.BW+2);}
   if(pg){lim=Math.max(lim,pg.x+pg.W+10);}
-  if(cg&&l.stepDone[l.gi]){lim=Math.max(lim,cg.x-C.STEPD+C.BW+2);}
+  if(cg&&l.stepDone[l.gi]){lim=Math.max(lim,stepX(cg)+C.BW+2);}
   return lim;
 }
 function oddsAt(k){return clamp(K.p1+K.pstep*k,0,95);}
@@ -2109,6 +2230,7 @@ function newGame(seed,humanKind,roster){
   var rolls=[];
   for(i=0;i<T.gaps.length;i++){ rolls.push([rr(),rr(),rr(),rr()]); }
   var hk=humanKind||'human';
+  setRises(T,rngMaker((seed^0xA5C3F1D7)>>>0));
   var labs=[makeLab(0,hk,hk==='human',0),makeLab(1,'sprinter',false,-12),makeLab(2,'steward',false,-24),makeLab(3,'gambler',false,-36)];
   var bd=[];
   for(i=0;i<labs.length;i++){
@@ -2121,7 +2243,7 @@ function newGame(seed,humanKind,roster){
   var ros=roster||G_ROSTER;
   if(ros){ labs=labs.filter(function(l){return l.id===0||ros.indexOf(l.kind)>=0;}); }
   G={seed:seed,t:0,labs:labs,barriers:T.bars,gaps:T.gaps,finish:T.finish,world:T,rolls:rolls,fallN:[],bd:bd,
-     maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,log:[],ev:[],over:false,result:null,level:0,ibuf:[],eff:null,
+     maxcap:C.CAPS[T.n]+C.SINGUP,sing:T.sing,cnt:{guard:0,fallw:0,side:0},log:[],ev:[],over:false,result:null,level:0,ibuf:[],eff:null,
      input:{pace:0.7,w:[25,50,25],jump:false,auto:true,rev:false,fwd:false}};
   log('Run started. Seed '+seed+'. '+T.label+'.');
   return G;
@@ -2156,13 +2278,13 @@ function applyLevel(k,by){
 function crossGap(l,g,k){
   if(g.inner){ ev(l,'cross',{gap:k+1,inner:true}); log(l.name+' crossed gap '+(k+1)+' inside the singularity stretch.'); return; }
   /* a bot that crosses while backing up for a run-up must not lock reverse: at its back limit its speed flips between -0.5 and 0, so it never counts as still */
-  if(g.sing){ l.lock=l.lastInp&&l.lastInp.rev?Object.assign({},l.lastInp,{rev:false}):l.lastInp; }
+  if(g.sing&&!K.stepGaps){ l.lock=l.lastInp&&l.lastInp.rev?Object.assign({},l.lastInp,{rev:false}):l.lastInp; }
   if(g.crossedBy<0){
-    g.crossedBy=l.id; g.stepH=Math.max(8,Math.round(heightOf(l))); G.level=Math.max(G.level,k+1); applyLevel(k,l);
+    g.crossedBy=l.id; if(!stepOn(g)){ g.stepH=Math.max(8,Math.round(heightOf(l))); } G.level=Math.max(G.level,k+1); applyLevel(k,l);
     if(K.revealOnCross){g.pub=true;}
     l.gapStopT=undefined;
     ev(l,'first',{gap:k+1,sing:!!g.sing,w:g.W,h:Math.round(heightOf(l))});
-    log(l.name+' was first across gap '+(k+1)+(g.sing?', the singularity,':'')+' (width '+g.W+') and left a tower of '+g.stepH+'. Ceilings rise'+(g.sing?' to the final ceiling for '+l.name+'.':'.'));
+    log(l.name+' was first across gap '+(k+1)+(g.sing?', the singularity,':'')+' (width '+g.W+')'+(stepOn(g)?'':' and left a tower of '+g.stepH)+'. Ceilings rise'+(g.sing?' to the final ceiling for '+l.name+'.':'.'));
   } else {
     l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;
     ev(l,'cross',{gap:k+1,sing:!!g.sing});
@@ -2174,9 +2296,10 @@ function allOut(){
   return true;
 }
 function fall(l,k){
-  var g=G.gaps[k],cov=Math.round(l.v*airT(l)),wd=Math.round(gapWidth(l,g));
+  var g=G.gaps[k],cov=stepOn(g)?Math.round(Math.max(0,l.x-g.x)):Math.round(l.v*airT(l)),wd=Math.round(gapWidth(l,g));
+  G.cnt.fallw++;
   g.pub=true; l.st.fl++;
-  l.out=true; l.v=0; l.fellAt=k;
+  l.out=true; l.v=0; l.fellAt=k; l.gx=null; l.land=null;
   if(g.sing){ l.st.sg++; } else if(g.inner){ l.st.sf++; }
   log(l.name+' fell into gap '+(k+1)+(g.sing?' (the singularity)':'')+' (width '+wd+', its jump covered '+cov+').');
   var n=G.fallN[k]||0; G.fallN[k]=n+1;
@@ -2246,7 +2369,17 @@ function botInput(l){
      (the longest stop seen with the lock in 500 seeds is 12.1 s, so games that never stalled are unchanged) */
   if(l.lock&&l.still>15){ l.lock=null; }
   if(inSing(l)&&!capped(l)&&l.lock){ return l.lock; }
-  var inp=botLag(l,botPlan(l)); l.lastInp=inp; return inp;
+  var inp=botLag(l,botPlan(l)); l.lastInp=inp;
+  /* step gaps: no lock. Past the singularity a bot re-plans as usual, but its plan reaches the controls K.reaction s late, like the human's (see humanInput) */
+  if(K.stepGaps&&inSing(l)&&!capped(l)){
+    var e,sb=l.sbuf||(l.sbuf=[]);
+    sb.push({t:G.t,inp:inp});
+    if(!l.seff){ l.seff=inp; }
+    while(sb.length&&sb[0].t<=G.t-K.reaction+1e-9){ l.seff=sb.shift().inp; }
+    return l.seff;
+  }
+  l.sbuf=null; l.seff=null;
+  return inp;
 }
 /* the bot's plan reaches its controls after a lag redrawn every half second; the delivered plan is the newest one at least that old */
 function botLag(l,inp){
@@ -2262,7 +2395,7 @@ function botPlan(l){
   var g=G.gaps[l.gi],b=G.barriers[l.bi],bd=G.bd[l.id];
   var pol=POL[l.kind],reach=heightOf(l)+C.JUMP,top=topSpeed(l,true);
   var brake=l.v*l.v/(2*C.DEC)+40;
-  var stop=false,gapGo=0,rev=false,wait=false,commit=false;
+  var stop=false,gapGo=0,rev=false,wait=false,commit=false,stepHold=false,speedUp=false;
   /* on its last strike a wary bot stops for every blockade it cannot clear */
   var barP=(K.wary&&strikesOf(l)&&l.strikes>=strikesOf(l)-1)?1:pol.bar;
   if(b&&knowsBar(l,l.bi)&&(b.x-l.x)*judged(l,2,l.bi)<brake&&reach<b.h+2){
@@ -2270,22 +2403,33 @@ function botPlan(l){
     else if(bd.b[l.bi]<barP){stop=true;}
   }
   if(g){
-    var gd=(g.x-l.x)*judged(l,3,l.gi),tower=g.crossedBy>=0&&!l.stepDone[l.gi];
+    var gd=(g.x-l.x)*judged(l,3,l.gi),tower=towerOf(l,g);
     if(tower){
-      var S=g.stepH,sd=g.x-C.STEPD-l.x,key='s'+l.gi;
+      var S=g.stepH,sd=stepX(g)-l.x,key='s'+l.gi;
       if(sd<brake&&reach<S+2){
         if(l.crashedOn[key]){stop=true;}
         else if(bd.s[l.gi]<(K.strikeTower?barP:pol.bar)){stop=true;}
       }
     }
     var preStop=stop;
-    if(!tower&&knowsGap(l,l.gi)){
+    if(stepOn(g)&&reach-C.JUMP<g.rise&&reach-C.JUMP<l.cap-0.01&&knowsGap(l,l.gi)){
+      /* a box the bot is too short for: it treats the box like a tower it cannot clear. Within braking distance it stops short and builds height if it is wary (or its roll says so), which puts up a barrier; otherwise it goes in through the side */
+      if(gd<brake){
+        /* a risk-taker (pol.side, else 1 minus its blockade stop odds) enters a box it is too short for through the side, if it would survive the sink across */
+        var stopP=K.strikeTower?barP:pol.bar;
+        if(sideSurvives(l,g,gd)){ stopP=Math.min(stopP,1-Math.max(pol.side||0,1-stopP)); }
+        if(l.v*l.v/(2*C.DEC)<gd-6&&(bd.s[l.gi]<stopP)){ stop=true; stepHold=true; }
+        else if(!tower){ gapGo=1; }
+      }
+    } else if(!tower&&knowsGap(l,l.gi)){
       var vreq=needSpeed(l,g)*1.06*judged(l,5,l.gi),capRem=capped(l)?Math.max(0,l.capUntil-l.x):0,acc=accOf(l);
       var cs=capped(l)?capSpeed(l):Infinity,capOK=vreq<=cs;
       var v0=Math.min(l.v,cs);
       /* a crash or scrape cap only shortens the run-up when the jump needs more than the capped speed; otherwise the whole distance counts
          (counting the cap as dead run-up stopped a capped bot whose cap ran past the gap's edge, and the cap only ends if it moves) */
       var runUp=2*acc*Math.max(gd-8-(capOK?0:capRem),0)*0.9;
+      /* the box is cleared on height; if the jump still needs more speed than the bot has, the rest of the investment goes to speed */
+      if(stepOn(g)&&isFinite(vreq)&&vreq>top&&reach-C.JUMP>=g.rise){ speedUp=true; }
       var dNeed=vreq*vreq/(2*acc*0.9)+10,room=l.x-backLimit(l);
       if(g.sing&&pol.safe&&!l.swGo){
         /* careful bots stop before the singularity gap and fill sight and height, height first, until both meters reach the ceiling
@@ -2342,6 +2486,8 @@ function botPlan(l){
   if(stop||rev){pace=0;}
   var w=KINDS[l.kind].w;
   if(wait){ return {pace:pace,w:[35,65,0],jump:false,auto:true,rev:rev}; }
+  if(stepHold&&stop){ return {pace:pace,w:[15,85,0],jump:false,auto:true,rev:false}; }
+  if(speedUp){ return {pace:pace,w:[10,10,80],jump:false,auto:true,rev:rev}; }
   if(pol.w){return {pace:pace,w:pol.w,jump:false,auto:true,rev:rev};}
   return {pace:pace,w:[w[0]*100,w[1]*100,w[2]*100],jump:false,auto:true,rev:rev};
 }
@@ -2350,13 +2496,15 @@ function stepLab(l,dt,inp){
   if(l.flash){l.flash.t-=dt; if(l.flash.t<=0){l.flash=null;}}
   if(l.crash>0){l.crash=Math.max(0,l.crash-dt);}
   if(l.sag){l.sag.t+=dt; if(l.sag.t>=l.sag.dur){l.sag=null;}}
+  if(l.land){ l.land.t+=dt; if(l.land.t>=0.3){l.land=null;} }
   /* chill mode: auto-jump for everyone; off, the human jumps by hand and bots press with their own timing error.
      Past the singularity everyone auto-jumps: at that speed, with the control lag, nobody can time a jump by hand */
   var top=topSpeed(l),assist=!!K.chill||inSing(l);
   /* floor it: pace is effectively 100% and nothing is invested; reverse wins if both are held */
   var fwd=!!inp.fwd&&!inp.rev;
   l.pace=fwd?1:clamp(inp.pace,0,1);
-  if(l.bounce){
+  if(l.gx){ l.v=l.gx.vf; }  /* in the air over a box: no accelerating or braking */
+  else if(l.bounce){
     l.v=Math.min(0,l.v+C.DEC*dt);
     if(l.v>=0){l.v=0;l.bounce=false;}
   } else {
@@ -2371,9 +2519,15 @@ function stepLab(l,dt,inp){
     for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt); }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
+  var sg0=G.gaps[l.gi];
+  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out&&!l.stepDone[l.gi]){
+    var sdist=sg0.x-l.x;
+    if(sdist>0&&sdist<=C.STEPD+110&&l.still>=0.3){ l.stopG=l.gi; }
+    if(l.stopG===l.gi&&l.v>1&&sdist>0){ installBarrier(l,sg0); }
+  }
   /* jump buffer (human only): a press while still in the air is kept for JBUF seconds and fires on landing */
-  if(inp.jump&&!l.bounce){ if(l.human&&l.jt>=0){l.jbuf=G.t;} else {startJump(l);} }
-  if(l.human&&l.jbuf!==undefined&&l.jt<0&&!l.bounce){ if(G.t-l.jbuf<=C.JBUF){startJump(l);} l.jbuf=undefined; }
+  if(inp.jump&&!l.bounce&&!l.gx){ if(l.human&&l.jt>=0){l.jbuf=G.t;} else {startJump(l);} }
+  if(l.human&&l.jbuf!==undefined&&l.jt<0&&!l.bounce&&!l.gx){ if(G.t-l.jbuf<=C.JBUF){startJump(l);} l.jbuf=undefined; }
   var nx=Math.max(l.x+l.v*dt,l.v<0?backLimit(l):-1e9),h=heightOf(l),hit=false,vi;
   if(l.v<0&&nx<=backLimit(l)){l.v=0;l.bounce=false;}
   var b=G.barriers[l.bi];
@@ -2396,25 +2550,63 @@ function stepLab(l,dt,inp){
   }
   var g=G.gaps[l.gi];
   if(g&&!hit){
-    var hasStep=g.crossedBy>=0&&!l.stepDone[l.gi];
+    var hasStep=!l.gx&&towerOf(l,g);
     if(hasStep){
-      var S=g.stepH,sx=g.x-C.STEPD,sd=sx-l.x;
+      var S=g.stepH,sx=stepX(g),sd=sx-l.x;
       if(assist&&l.jt<0&&l.v>1&&h<S&&sd>0&&sd<=Math.max(l.v*0.3,6)){startJump(l);}
       if(!assist&&!l.human&&h<S){botPress(l,sd,'s'+l.gi);}
       if(nx>=sx){
         var sf=h+(assist?C.JUMP:(l.jt>=0?l.jy:0));
         if(sf>=S){ spill(l,{h:S},'s'+l.gi); l.stepDone[l.gi]=true; }
         else{
-          hit=true; l.st.tc++;
+          hit=true; l.st.tc++; if(stepOn(g)){ G.cnt.guard++; }
           var fresh2=!l.crashedOn['s'+l.gi];
           vi=crashLab(l,sx-0.5,sx); l.crashedOn['s'+l.gi]=true; nx=l.x;
           ev(l,'crash',{what:'tower',gap:l.gi+1,h:Math.round(S),v:Math.round(vi),again:!fresh2});
           log(l.name+' hit the tower at gap '+(l.gi+1)+' ('+Math.round(S)+') at '+Math.round(vi)+', bounced back and is capped at '+Math.round(capSpeed(l))+' for '+K.capDist+' past it.');
-          if(fresh2&&K.strikeTower&&strike(l,'the tower at gap '+(l.gi+1))){return;}
+          if(fresh2&&K.strikeTower&&!stepOn(g)&&strike(l,'the tower at gap '+(l.gi+1))){return;}  /* step mode: a barrier a stopped lab left costs bounce and speed, never a strike */
         }
       }
     }
-    if(!hit&&!(g.crossedBy>=0&&!l.stepDone[l.gi])){
+    if(!hit&&stepOn(g)&&(l.gx||!towerOf(l,g))){
+      var gd2=g.x-l.x,gw2=gapWidth(l,g);
+      if(!l.gx){
+        if(assist&&l.jt<0&&l.v>1&&gd2>0&&gd2<=Math.max(l.v*0.3,6)){startJump(l);}
+        if(!assist&&!l.human){botPress(l,gd2,'g'+l.gi);}
+        if(nx>=g.x){
+          var a0=h+(l.jt>=0?l.jy:0),side=a0<g.rise;
+          /* below the rise at the face there is no wall: the lab goes in through the side, loses the rest of its arc and sinks across from where it is, at the arc's fall rate */
+          l.gx={gi:l.gi,vf:Math.max(l.v,1),te:0,r:sinkRate(l.jt>=0?l.jd:jumpDur(l.v)),jumped:l.jt>=0,alt:a0,base:side?a0:h,side:side};
+          if(side){ l.jt=-1; l.jy=0; l.jkey=null; G.cnt.side++; }
+        }
+      }
+      if(l.gx){
+        var gq=l.gx,alt=h+(l.jt>=0?l.jy:0);
+        if(l.jt<0){ gq.te+=dt; alt=gq.base-gq.r*gq.te; }
+        gq.alt=alt;
+        if(alt<=0){ l.x=nx; fall(l,l.gi); return; }
+        if(nx>=g.x+gw2){
+          var k2=l.gi; l.gx=null; l.land={from:alt,t:0};
+          if(alt>=g.rise){ crossGap(l,g,k2); l.gi++; }
+          else {
+            var lost2=(g.rise-alt)/g.rise*h;
+            crossGap(l,g,k2);
+            l.pts[1]=Math.max(0,l.pts[1]-lost2);
+            l.capUntil=Math.max(l.capUntil,g.x+gw2+K.scrapeCap*lost2);
+            g.pub=true; l.st.sc++; if(g.inner){l.st.is++;}
+            l.sag={from:h,to:h-lost2,t:0,dur:0.7}; ev(l,gq.jumped?'scrape':'drop',{gap:k2+1,sing:!!g.sing,inner:!!g.inner,w:Math.round(gw2),lost:Math.round(lost2),left:Math.round(h-lost2),side:!!gq.side});
+            l.flash={txt:'\u2212'+Math.max(1,Math.round(lost2))+' height',t:1.6,bad:true};
+            log(l.name+(gq.side?' went in through the side of the box':(gq.jumped?' scraped':' dropped without a jump'))+' across gap '+(k2+1)+' (width '+Math.round(gw2)+'), touching the box at '+Math.round(alt)+' of '+g.rise+'. It lost '+Math.round(lost2)+' height and is capped at '+Math.round(capSpeed(l))+' for '+Math.round(K.scrapeCap*lost2)+' past the gap. The gap is public.');
+            l.gi++;
+            if(K.strikeGap){
+              if(strike(l,(gq.jumped?'a scrape at gap ':'a drop at gap ')+(k2+1))){return;}
+              if(l.flash&&strikesOf(l)){ l.flash.txt+=' \u00b7 \u2212'+Math.max(1,Math.round(lost2))+' height'; }
+            }
+          }
+        }
+      }
+    }
+    else if(!hit&&!towerOf(l,g)){
       var gd=g.x-l.x,gw=gapWidth(l,g);
       if(assist&&l.jt<0&&l.v>1&&gd>0&&gd<=Math.max(l.v*0.3,6)){startJump(l);}
       if(!assist&&!l.human){botPress(l,gd,'g'+l.gi);}
@@ -2494,7 +2686,7 @@ function run(seed,kind,roster){
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
 }
-window.PF={setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap};
+window.PF={setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap,setBoxes:function(b){BOXOV=b||null;}};
 
 /* ---------- UI ---------- */
 /* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge.
@@ -2620,12 +2812,17 @@ function drawLab(l,cam,VW,FW,isHuman,idx){
   var h=heightOf(l),dip=0;
   if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
   var y=GY-h-(l.jt>=0?l.jy:0)+dip-C.RW;
+  /* step gaps: draw the altitude the sim judges */
+  if(l.gx){ y=GY-l.gx.alt+dip-C.RW; }
+  else if(l.land){ y=GY-(h+(l.land.from-h)*(1-Math.min(1,l.land.t/0.3)))+dip-C.RW; }
   if(l.out){ if(!l.dissolved){y=GY+(CM?6/Z:26);} ctx.globalAlpha=0.4; }
   if(h>1&&(!l.out||l.dissolved)){
     ctx.setLineDash([3,3]); ctx.strokeStyle=COL.muted; ctx.lineWidth=(1/Z)*1;
     ctx.strokeRect(sx+0.5,GY-h+0.5,C.RW,h); ctx.setLineDash([]);
   }
-  drawCritter(l,sx,y,h);
+  /* a lab that went in through the side of a box tips forward as it sinks across */
+  if(l.gx&&l.gx.side){ var tg=Math.min(1,l.gx.te/0.5)*0.9; ctx.save(); ctx.translate(sx+C.RW/2,y+C.RW/2); ctx.rotate(tg); ctx.translate(-(sx+C.RW/2),-(y+C.RW/2)); drawCritter(l,sx,y,h); ctx.restore(); }
+  else { drawCritter(l,sx,y,h); }
   ctx.fillStyle=COL.ink; ctx.font=FW;
   var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name),lx=CM?Math.max(sx-2,4/Z):sx-2;  /* phones: names stay on screen */
   ctx.fillText(lt,lx,ly);
@@ -2649,7 +2846,8 @@ function draw(){
   var VW0=W/Z,cam0=Math.max(-70,tgt.x-LEAD*VW0),need=C.JUMP+C.RW+40,zi;
   for(zi=0;zi<G.labs.length;zi++){ var zl=G.labs[zi]; if(!zl.out&&zl.x>cam0-40&&zl.x<cam0+VW0+40){ need=Math.max(need,heightOf(zl)+C.JUMP+C.RW+30); } }
   for(zi=0;zi<G.barriers.length;zi++){ var zb=G.barriers[zi]; if(zb.x>cam0-30&&zb.x<cam0+VW0+30&&knowsBar(tgt,zi)){ need=Math.max(need,zb.h+(zb.gate?60:20)); } }
-  for(zi=0;zi<G.gaps.length;zi++){ var zg=G.gaps[zi]; if(zg.crossedBy>=0&&zg.x-C.STEPD>cam0-30&&zg.x-C.STEPD<cam0+VW0+30){ need=Math.max(need,zg.stepH+20); } }
+  for(zi=0;zi<G.gaps.length;zi++){ var zg=G.gaps[zi]; if(hasTower(zg)&&stepX(zg)>cam0-30&&stepX(zg)<cam0+VW0+30){ need=Math.max(need,zg.stepH+20); }
+    if(stepOn(zg)&&zg.x>cam0-30&&zg.x<cam0+VW0+30&&knowsGap(tgt,zi)){ need=Math.max(need,zg.rise+C.RW+30); } }
   var zT=clamp((GY-HUDH)/need,0.3,1);
   if(CM){ zT=Math.min(clamp((GY-HUDH)/need,0.3,2),Math.max(0.6,(0.94-LEAD)*W/(sightRange(tgt)+16))); }  /* phones: frame the sight range, heights still fit */
   Z+=(zT-Z)*(zT<Z?0.25:0.06); U=CM?1/Z:1;
@@ -2702,24 +2900,34 @@ function draw(){
   for(var k=0;k<G.gaps.length;k++){
     var g=G.gaps[k],gx=g.x-cam;
     if(gx<-(g.VW+40)||gx>VW+80){continue;}
-    if(g.crossedBy>=0){
-      var sh=g.stepH,tx=g.x-C.STEPD-cam;
+    if(hasTower(g)){
+      var sh=g.stepH,tx=stepX(g)-cam;
       ctx.fillStyle=COL.ink; ctx.globalAlpha=0.85; ctx.fillRect(tx,GY-sh,C.BW,sh); ctx.globalAlpha=1;
       ctx.fillStyle=COL.ink; ctx.font=FW;
       ctx.fillText('tower '+Math.round(sh),tx-4,GY-sh-5);
     }
     if(knowsGap(tgt,k)){
-      var pw=gapWidth(tgt,g),cover=tgt.v*airT(tgt);
-      var gd=CM?26*U:60;  /* pit depth; on phones the readouts below it move above the ground */
-      ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,gd);
-      ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY,pw,gd);
+      var pw=gapWidth(tgt,g),cover=stepOn(g)?reachX(Math.max(tgt.v,1),heightOf(tgt)):tgt.v*airT(tgt);
+      var gd=CM?26*U:60,gtop=0;  /* pit depth; on phones the readouts below it move above the ground */
+      if(stepOn(g)){ gtop=g.rise; ctx.fillStyle=hatch; ctx.fillRect(gx,GY-gtop,pw,gtop); ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY-gtop,pw,gtop); }  /* step gaps: the box stands on the ground */
+      else { ctx.fillStyle=hatch; ctx.fillRect(gx,GY,pw,gd);
+      ctx.strokeStyle=COL.danger; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,GY,pw,gd); }
       ctx.fillStyle=COL.ink; ctx.font=FW;
-      ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4*U,GY-8*U);
-      if(g.sing){ ctx.fillStyle=COL.d; ctx.fillRect(gx,GY-30,3,30); }
+      ctx.fillText((g.sing?'Singularity \u00b7 ':'')+'gap '+Math.round(pw)+' wide'+(g.pub?' \u00b7 public':''),gx+4*U,GY-gtop-8*U);
+      if(g.sing){ ctx.fillStyle=COL.d; ctx.fillRect(gx,GY-gtop-30,3,30); }
+      if(stepOn(g)){
+        /* step gaps: the bar predicts the sim's own rule (boxOutcome). Blue is clean, orange a scrape, orange hatched and outlined a fall; the word is always written, so colour never carries it alone */
+        var bo=boxOutcome(tgt,g),by=GY+(CM?20*U:70),bw=Math.max(2,pw),bl=['clean','scrape','fall'][bo];
+        ctx.lineWidth=(1/Z)*4;
+        if(bo===2){ ctx.fillStyle=hatch; ctx.fillRect(gx,by-5*U,bw,10*U); ctx.strokeStyle=COL.b; ctx.lineWidth=(1/Z)*2; ctx.strokeRect(gx,by-5*U,bw,10*U); }
+        else { ctx.strokeStyle=bo===0?COL.a:COL.b; ctx.lineWidth=(1/Z)*4; ctx.beginPath(); ctx.moveTo(gx,by); ctx.lineTo(gx+bw,by); ctx.stroke(); }
+        ctx.fillStyle=bo===0?COL.a:COL.b;
+        ctx.fillText('your jump now: '+bl,gx+(CM?4*U:0),CM?GY-21*U:GY+86);
+      } else {
       ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=(1/Z)*4;
       ctx.beginPath(); ctx.moveTo(gx,GY+(CM?20*U:70)); ctx.lineTo(gx+cover,GY+(CM?20*U:70)); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
-      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?GY-21*U:GY+86);
+      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?GY-21*U:GY+86); }
     }
   }
   // sight bracket
@@ -2782,7 +2990,7 @@ function draw(){
   if(singKnown){ ctx.fillStyle=COL.d; ctx.globalAlpha=0.22; ctx.fillRect(mmx(sgp.x+sgp.W),my-8,mx0+mw-mmx(sgp.x+sgp.W),16); ctx.globalAlpha=1; }
   for(var q2=0;q2<G.gaps.length;q2++){
     var gg=G.gaps[q2];
-    if(gg.crossedBy>=0){ ctx.fillStyle=COL.ink; ctx.fillRect(mmx(gg.x-C.STEPD)-1,my-8,2,8); }
+    if(hasTower(gg)){ ctx.fillStyle=COL.ink; ctx.fillRect(mmx(stepX(gg))-1,my-8,2,8); }
     if(!knowsGap(tgt,q2)){continue;}
     ctx.fillStyle=gg.sing?COL.d:(gg.crossedBy>=0?COL.muted:COL.danger); ctx.fillRect(mmx(gg.x)-3,my+1,6,gg.sing?10:7);
     if(gg.sing){ ctx.font='10px "IBM Plex Mono",monospace'; if(CM){ ctx.fillText('singularity',Math.min(mmx(gg.x)+6,mx0+mw-66),my+11); } else { ctx.fillText('singularity',Math.min(mmx(gg.x)-18,mx0+mw-62),my+22); } }
@@ -2835,9 +3043,9 @@ function hud(){
     var parts=[],rch=heightOf(l)+C.JUMP;
     if(nb&&knowsBar(l,l.bi)&&nb.x-l.x<400){ parts.push('Barrier '+Math.round(nb.x-l.x)+' ahead, height '+nb.h+(rch>=nb.h?' (you clear it)':' (too tall for you)')+(nb.pub?', public':'')+'.'); }
     if(ng){
-      var gd=Math.round(ng.x-l.x),hasStep=ng.crossedBy>=0&&!l.stepDone[l.gi];
+      var gd=Math.round(ng.x-l.x),hasStep=towerOf(l,ng);
       if(hasStep){
-        var S=ng.stepH,sd=Math.round(ng.x-C.STEPD-l.x);
+        var S=ng.stepH,sd=Math.round(stepX(ng)-l.x);
         parts.push('Tower at gap '+(l.gi+1)+' in '+sd+', height '+Math.round(S)+(rch>=S?' (you clear it)':' (too tall for you)')+'.');
       }
       if(knowsGap(l,l.gi)){
@@ -3290,7 +3498,7 @@ var fresh=true;
 function parseSeed(v){ v=String(v||'').trim(); if(!/^\d{1,10}$/.test(v)){return null;} var n=+v; return n<=4294967295?n:null; }
 function showSeed(){
   $('seed-in').value=G.seed;
-  try{ history.replaceState(null,'',DLY?'?daily='+DLY.date:'?seed='+G.seed+(G_ROSTER?'&rivals='+G_ROSTER.join(','):'')); }catch(e){}
+  try{ history.replaceState(null,'',DLY?'?daily='+DLY.date:'?seed='+G.seed+(G_ROSTER?'&rivals='+G_ROSTER.join(','):'')+(K.stepGaps?'&steps=1'+(C.RISEFLOOR>0?'&floor='+C.RISEFLOOR:''):'')); }catch(e){}
 }
 /* a new run loads its track and waits on a small card, so pace, split and chill mode can be set before Go */
 /* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
@@ -3649,7 +3857,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singGap','Singularity gap width scale (%)',50,150,5],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
+  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['stepGaps','Step gaps: each gap is a box standing on the ground; too short to clear it and you run into it',0,1,1,'bool'],['riseScale','Step gap rise scale (%)',50,110,5],['stepW','Step gap width scale (%)',30,200,5],['stepV','Step gap clean-width run-up speed (% of full)',20,100,5],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
   var box=$('knobs');
@@ -3691,6 +3899,7 @@ var KNOBS=[
    measurement; a held-out re-check found star 3 the hardest on only 4 of 9 maps.
    Progress is keyed by seed. When a slot gets a new seed, add the old one to its `was` list: stars on a former seed keep the next
    map open and count for the epilogue, and the list shows "New map" until the new seed has a star of its own. */
+var CAMP_STEPS=false;  /* true: maps with steps:1 race with step-gap boxes (and their boxes overrides); false keeps the shipped campaign exactly as it was */
 var CAMPAIGN=[
   {seed:1823,was:[114],name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
   {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Building height early works well here.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
@@ -3845,13 +4054,19 @@ function knobSync(){
 }
 function campDiff(){ return (K.chill||(CAMP&&CAMP.chillUsed))?1:CS.diff; }
 function campApplyDiff(){ PSTRIKES=CAMP_DIFF[campDiff()].strikes; }
-function campLock(){
+function campLock(camp){
   if(!CAMP_SAVED){ var k0={}; for(var k in K){k0[k]=K[k];} CAMP_SAVED={K:k0,ps:PSTRIKES}; }
   for(var k2 in DEF){ if(k2!=='chill'){K[k2]=DEF[k2];} }
+  /* step gaps on a campaign map: a map with steps:1 races its seed with boxes (CAMP_STEPS is the switch), and boxes:[{t,w}|null, ...] sets the shape of gap i (null keeps the generated one) */
+  var cm=(camp&&CAMP_STEPS)?CAMPAIGN[camp.i]:null;
+  if(cm&&cm.steps){ K.stepGaps=1; }
+  BOXOV=(cm&&cm.steps&&cm.boxes)?cm.boxes:null;
   campApplyDiff(); knobSync();
 }
 function campUnlock(){
   if(!CAMP_SAVED){return;}
+  BOXOV=null;
+  if(GHFL0!==null){ C.RISEFLOOR=GHFL0; GHFL0=null; }
   var ch=K.chill; for(var k in CAMP_SAVED.K){K[k]=CAMP_SAVED.K[k];} K.chill=ch; PSTRIKES=CAMP_SAVED.ps; CAMP_SAVED=null; knobSync();
 }
 
@@ -3906,7 +4121,7 @@ function campStart(i,t){
   start(CAMPAIGN[i].seed,{i:i,tier:t,roster:CAMPAIGN[i].tiers[t].slice()});
 }
 /* called by start() before the track is drawn: lock the knobs for a campaign race, give them back for free play */
-function campPrep(camp){ if(camp){campLock();}else{campUnlock();} }
+function campPrep(camp){ if(camp){campLock(camp);}else{campUnlock();} }
 /* called by start(): the Ready card names the map, its hint and rivals, and holds the difficulty picker in a campaign race */
 function campReady(){
   var dz=$('ready-diff');
@@ -4085,6 +4300,9 @@ var TWISTS={
 var DAILY_TIERS=[{name:'solo',roster:[]},{name:'vs Steward',roster:['steward']},{name:'vs Sprinter and Steward',roster:['sprinter','steward']}];
 var DAILY_KEY='pacing-frontier.daily.v1',DAILY_LOG_KEY='pacing-frontier.daily.logs.v1',DAILY_SITE='the-last-race.com/';
 var DLY=null,DS=dailyLoad(),DLOGS=dailyLogsLoad(),REC=null,LASTREC=null,DSHARE=null;
+/* where this copy of the game was loaded from (origin and path, no query or hash), so share links reopen the same build: localhost, a PR preview or production.
+   A file:// load (origin "null") has no address to share, so it falls back to the production site */
+function siteBase(){ try{ if(/^https?:$/.test(location.protocol)&&location.origin&&location.origin!=='null'){ return location.origin+location.pathname; } }catch(e){} return 'https://'+DAILY_SITE; }
 function utm(url,camp){ return url+(url.indexOf('?')<0?'?':'&')+'utm_source=the-last-race.com&utm_medium=game&utm_campaign='+camp; }
 function dailyToday(){ return new Date().toISOString().slice(0,10); }
 function dailyValid(ds){ if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)){return false;} var d=new Date(ds+'T00:00:00Z'); return !isNaN(d.getTime())&&d.toISOString().slice(0,10)===ds; }
@@ -4157,7 +4375,7 @@ function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
 function recStart(){
   var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
   REC={h:{v:1,seed:G.seed,mode:DLY?'daily':(CAMP?'campaign':'free'),date:DLY?DLY.date:null,tier:DLY?DLY.tier:(CAMP?CAMP.tier:null),map:CAMP?CAMP.i:null,
-    roster:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),knobs:ko,pstrikes:PSTRIKES,chill:K.chill,human:!!G.labs[0].human,dt:1/60,
+    roster:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),knobs:ko,floor:(K.stepGaps&&C.RISEFLOOR>0)?C.RISEFLOOR:0,pstrikes:PSTRIKES,chill:K.chill,human:!!G.labs[0].human,dt:1/60,
     fields:['tick','field','value']},inputs:[],tick:0,last:null};
 }
 function recTick(){
@@ -4339,9 +4557,9 @@ function dailyShareInfo(ds){
   var d=dailyDay(ds),b=dailyBrief(ds),wins=0,rows=[],t,x;
   for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } rows.push({res:dailyRes(x),star:x.star,chair:x.chair,att:x.att,bs:x.bs,bc:x.bc,best:x.bs===null&&x.bc===null?x.best:null,name:DAILY_TIERS[t].name}); }
   var lr=rlDay(ds);  /* you raced like: the latest race of that day */
-  return {ds:ds,twist:b.twist.name,rows:rows,wins:wins,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
+  return {ds:ds,twist:b.twist.name,rows:rows,wins:wins,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:siteBase().replace(/^https?:\/\//,'')+'?daily='+ds,
     lk:lr?{k:lr.k,k2:lr.k2||null}:null,like:lr?'I raced like '+rlLike(lr):'',
-    link:utm('https://'+DAILY_SITE+'?daily='+ds,'daily-share')};
+    link:utm(siteBase()+'?daily='+ds,'daily-share')};
 }
 /* "star 61.2 s, lounge chair 70.1 s": each kind of win with its own best time */
 function dailyRowWords(r,emoji){
@@ -4520,6 +4738,7 @@ function ghFinish(rec){
   else if(r.type==='timeout'){ o='time'; }
   var h=rec.h,hd={v:1,s:h.seed,m:h.mode==='daily'?'d':(h.mode==='campaign'?'c':'f'),d:h.date,mp:h.map,ti:h.tier,r:h.roster.slice(),k:h.knobs,ps:h.pstrikes,
     c:rec.result.chill?1:0,t:Math.round(rec.result.t*100)/100,o:o,x:rec.result.x,n:'',e:GH_E,tk:GR.tk};
+  if(h.floor>0){ hd.fl=h.floor; }  /* step gaps: C.RISEFLOOR changes the box shapes, so a replay needs it; old links have none (0) */
   if(RLR){ hd.lk=RLR.k2?[RLR.k,RLR.k2]:[RLR.k]; }  /* you raced like, for the share line; old links have none */
   return {h:hd,x:GR.x,hh:GR.h,j:GR.j,s:GR.s};
 }
@@ -4604,6 +4823,7 @@ function ghCheck(g){
   o.k={};
   if(h.k&&typeof h.k==='object'){ KNOBS.forEach(function(kb){ var v=h.k[kb[0]]; if(typeof v==='number'&&isFinite(v)){ o.k[kb[0]]=clamp(v,kb[2],kb[3]); } }); }
   o.ps=h.ps===null||h.ps===undefined?null:ghInt(h.ps,0,6);
+  if(typeof h.fl==='number'&&isFinite(h.fl)&&h.fl>0){ o.fl=clamp(h.fl,0,2); }
   o.c=h.c?1:0;
   o.t=typeof h.t==='number'&&isFinite(h.t)?clamp(h.t,0,3600):0;
   o.o=({win:1,sing:1,fell:1,dis:1,lost:1,ext:1,time:1})[h.o]?h.o:'lost';
@@ -4645,10 +4865,10 @@ function ghShareLine(h){
   if(h.o==='dis'){ return (h.lk?like+'my lab was':'My lab was')+' dissolved on '+w+'. Can you do better?'; }
   return like+'did not win '+w+'. Can you do better?';
 }
-function ghLink(b64){ return utm('https://'+DAILY_SITE,'ghost')+'#g='+b64; }
+function ghLink(b64){ return utm(siteBase(),'ghost')+'#g='+b64; }
 
 /* own best ghosts: in memory for every race, and kept in storage for daily tiers (last 7 days) */
-function ghKey(h){ return [h.m,h.s,h.d,h.mp,h.ti,(h.r||[]).join(','),JSON.stringify(ghSortK(h.k))].join('|'); }
+function ghKey(h){ return [h.m,h.s,h.d,h.mp,h.ti,(h.r||[]).join(','),JSON.stringify(ghSortK(h.k))].join('|')+(h.fl?'|f'+h.fl:''); }
 function ghSortK(k){ var o={},ks=Object.keys(k||{}).sort(),i; for(i=0;i<ks.length;i++){ o[ks[i]]=k[ks[i]]; } return o; }
 function ghBetter(a,b){ if(!b){return true;} var aw=a.h.o==='win',bw=b.h.o==='win'; if(aw!==bw){return aw;} return aw?a.h.t<b.h.t:a.h.x>b.h.x; }
 function ghStoreLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_STORE_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
@@ -4668,11 +4888,13 @@ function ghKeep(g){
 }
 
 /* race hooks, called from start() and endScreen() */
+var GHFL0=null;  /* the player's own C.RISEFLOOR while a ghost's is in force */
 function ghPrep(seed,camp,daily){
   GHF=null;
   if(!camp&&!daily&&GH&&GH.free&&seed===GH.h.s){
     GHF=GH; campLock(); PSTRIKES=GH.h.ps;
     for(var k in GH.h.k){ if(GH.h.k.hasOwnProperty(k)){ K[k]=GH.h.k[k]; } }
+    if(GH.h.k.stepGaps){ if(GHFL0===null){ GHFL0=C.RISEFLOOR; } C.RISEFLOOR=GH.h.fl||0; }  /* the sender's box shapes */
     knobSync();
   }
 }
@@ -4686,7 +4908,7 @@ function ghReady(){
   if(!GHA){
     var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
     var key=ghKey({m:DLY?'d':(CAMP?'c':'f'),s:G.seed,d:DLY?DLY.date:null,mp:CAMP?CAMP.i:null,ti:DLY?DLY.tier:(CAMP?CAMP.tier:null),
-      r:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),k:ko});
+      r:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),k:ko,fl:(K.stepGaps&&C.RISEFLOOR>0)?C.RISEFLOOR:0});
     if(DLY&&GOWN[key]===undefined){ GOWN[key]=ghStored(DLY.date,DLY.tier); if(GOWN[key]){ GOWN[key].own=true; } }
     if(GOWN[key]&&G.labs[0].human){ GHA=GOWN[key]; }
   }
@@ -4785,7 +5007,7 @@ function ghCard(g,back){
   function say(m){ if(live()){ $('gh-msg').textContent=m; } }
   function show(){
     if(!live()){ return; }
-    $('gh-txt').textContent=line+'\n'+(g.link?'the-last-race.com (ghost link)':'Making the link…');
+    $('gh-txt').textContent=line+'\n'+(g.link?siteBase().replace(/^https?:\/\//,'').replace(/\/$/,'')+' (ghost link)':'Making the link…');
     $('gh-size').textContent=g.link?'The link is '+(g.link.length/1024).toFixed(1)+' KB long.':'';
     $('gh-cl').disabled=$('gh-ct').disabled=$('gh-sh').disabled=!g.link;
   }
@@ -5097,6 +5319,10 @@ var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
 if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill(); }
+var qst=/[?&]steps=(0|1)/.exec(location.search);
+if(qst){ K.stepGaps=+qst[1]; var sgi=$('k-stepGaps'); if(sgi){ sgi.checked=!!K.stepGaps; $('o-k-stepGaps').textContent=K.stepGaps?'on':'off'; } }
+var qfl=/[?&]floor=(\d+(?:\.\d+)?)/.exec(location.search);  /* ?floor=1 sets C.RISEFLOOR (step gaps: a box is at least that fraction of its width tall); needs steps=1 */
+if(qfl){ C.RISEFLOOR=clamp(+qfl[1],0,2); }
 var qr=/[?&]rivals=([a-z,]+)/i.exec(location.search);
 if(qr){ G_ROSTER=qr[1].toLowerCase().split(',').filter(function(k){return POL[k]&&k!=='custom';}); }
 /* ?daily=YYYY-MM-DD opens that day's challenge (a future or bad date opens today); read before showSeed rewrites the URL */
