@@ -380,6 +380,7 @@ body.chill #btn-jump{display:none}
 .card .cmp-dl{font-size:13px;line-height:1.4}
 .card .cmp-diff .note{font-size:12px}
 .cmp-nd{font:500 11px var(--mono);color:var(--good)}
+.cmp-new{display:inline-block;margin-left:6px;padding:0 5px;border:1px dashed currentColor;border-radius:4px;font:500 11px var(--mono);vertical-align:1px}
 .cmp-tiers{display:flex;flex-direction:column;gap:6px}
 .cmp-tier{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;min-height:56px;width:100%;font:400 13px/1.35 var(--body)}
 .cmp-tier b{font-weight:600}
@@ -3546,20 +3547,22 @@ var KNOBS=[
      theme  which strategy the map tests (a note for editors, not shown)
      hint   one line shown in the list, the tier pick and the Ready card
      tiers  the rival rosters for 1, 2 and 3 stars, as bot kinds ('sprinter', 'steward', 'gambler')
+     was    (optional) seeds this slot used before. A star won on a former seed still counts for unlocking and for the epilogue
    Seeds, tiers and hints come from the lesson re-check (chill off, Medium, strike for gaps on; bot play only; see DESIGN-NOTES.md
    "Campaign maps"): each map's lesson strategy beats its foil strategies there, and the tiers are ordered by measured difficulty,
    not by the number of rivals (Sprinter with Steward is often the hardest; the full field is sometimes the easiest).
-   Progress is keyed by seed, so changing a seed resets that map's stars. */
+   Progress is keyed by seed. When a slot gets a new seed, add the old one to its `was` list: stars on a former seed keep the next
+   map open and count for the epilogue, and the list shows "New map" until the new seed has a star of its own. */
 var CAMPAIGN=[
-  {seed:1823,name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
+  {seed:1823,was:[114],name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
   {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Build height early.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
-  {seed:676,name:'Coin Toss',theme:'gamble',hint:'Low walls and two small gaps, then six tall walls past the singularity. Careful costs more than it saves.',tiers:[['steward','gambler'],['steward'],['sprinter','steward','gambler']]},
+  {seed:676,was:[1167],name:'Coin Toss',theme:'gamble',hint:'Low walls and two small gaps, then six tall walls past the singularity. Careful costs more than it saves.',tiers:[['steward','gambler'],['steward'],['sprinter','steward','gambler']]},
   {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. See before you leap.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
   {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. Balance your split.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
-  {seed:698,name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Take the lead early.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
-  {seed:1531,name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Be first across.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
-  {seed:322,name:'Slipstream',theme:'drafter',hint:'A long road to a very wide singularity. Follow the pack, then pass.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
-  {seed:2785,name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
+  {seed:698,was:[1548],name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Take the lead early.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
+  {seed:1531,was:[1115],name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Be first across.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
+  {seed:322,name:'Slipstream',theme:'follower',hint:'A long road to a very wide singularity. Follow the pack, then pass.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
+  {seed:2785,was:[199],name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
 ];
 /* Rules.
    Stars: star t (1 to 3) is earned by winning the map against tiers[t-1]. A map's stars are its highest tier won.
@@ -3574,7 +3577,7 @@ var CAMPAIGN=[
    No deaths: a map gets the mark for a win (any tier) in which your lab never crashed into a barrier, the gate or a tower
      (st.bc+st.tc===0, plus no scrape or drop, st.sc, while strikeGap is on). So it took no strike and could not be dissolved, and a win means it never fell.
    Best time: the fastest winning time per tier, chill or not; the list shows the fastest over all tiers.
-   Unlock: map 1 is always open; map n+1 opens once map n has a star.
+   Unlock: map 1 is always open; map n+1 opens once map n has a star (on its current seed or a former one, see `was`).
    Knobs: a campaign race locks every tuning knob at its default (DEF) except chill mode, then applies the difficulty. The player's
      own knob values come back when the race ends or free play starts (campLock / campUnlock).
    Progress lives in localStorage under CAMP_KEY (v2). A v1 object (CAMP_KEY_V1) is migrated on load: a won tier becomes a chill
@@ -3622,17 +3625,28 @@ function campMap(i){
 function campStar(i,t){ var m=campMap(i); return {medal:Math.max(0,Math.min(3,m.medal[t]|0)),chill:!!m.chill[t]}; }
 function campStarred(i,t){ var s=campStar(i,t); return s.medal>0||s.chill; }
 function campStars(i){ var s=0; for(var t=0;t<3;t++){ if(campStarred(i,t)){s=t+1;} } return s; }
-function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campStars(i-1)>=1); }
+/* stars won on a slot's former seeds (CAMPAIGN[i].was), read without creating entries */
+function campFormer(i){
+  var w=CAMPAIGN[i].was||[],n=0,j,t,m;
+  for(j=0;j<w.length;j++){ m=CS.maps[String(w[j])]; if(!m||typeof m!=='object'){continue;}
+    for(t=0;t<3;t++){ if((Array.isArray(m.medal)&&(m.medal[t]|0)>0)||(Array.isArray(m.chill)&&m.chill[t])){ n++; } } }
+  return n;
+}
+/* a slot counts as starred, for unlocking and the epilogue, if its current seed or any former seed has a star */
+function campCredit(i){ return campStars(i)>=1||campFormer(i)>0; }
+/* "New map": stars on a former seed, none yet on the current one */
+function campIsNew(i){ return campStars(i)<1&&campFormer(i)>0; }
+function campOpen(i){ return i===0||(i<CAMPAIGN.length&&campCredit(i-1)); }
 function campTierOpen(i,t){ return campOpen(i)&&(CAMP_OPEN_TIERS||t===0||campStarred(i,t-1)); }
 function campBest(i){ var b=campMap(i).best,m=null; for(var t=0;t<3;t++){ if(b[t]!==null&&(m===null||b[t]<m)){m=b[t];} } return m; }
 /* the tier a map offers first: the lowest one without a star, else the lowest one short of gold, else the top one */
 function campNextTier(i){ var t; for(t=0;t<3;t++){ if(!campStarred(i,t)){return t;} } for(t=0;t<3;t++){ if(campStar(i,t).medal<3){return t;} } return 2; }
-function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(campStars(i)<1){return false;} } return true; }
+function campAllStarred(){ for(var i=0;i<CAMPAIGN.length;i++){ if(!campCredit(i)){return false;} } return true; }
 function campSummary(){
   var med={gold:0,silver:0,bronze:0},chillStars=0;
   var maps=CAMPAIGN.map(function(c,i){ var m=campMap(i),ms=[],cw=[];
     for(var t=0;t<3;t++){ var s=campStar(i,t); ms.push(MEDALS[s.medal]); cw.push(s.chill); if(s.medal){med[MEDALS[s.medal]]++;} else if(s.chill){chillStars++;} }
-    return {index:i,seed:c.seed,name:c.name,stars:campStars(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice(),medals:ms,chillWon:cw}; });
+    return {index:i,seed:c.seed,name:c.name,stars:campStars(i),formerStars:campFormer(i),noDeaths:!!m.noDeaths,best:campBest(i),bestByTier:m.best.slice(),medals:ms,chillWon:cw}; });
   var st=CS.stats;
   return {maps:maps,totalStars:maps.reduce(function(a,m){return a+m.stars;},0),noDeathMaps:maps.filter(function(m){return m.noDeaths;}).length,
     falls:st.falls,extinctions:st.extinctions,dissolutions:st.dissolved,races:st.races,wins:st.wins,
@@ -3717,7 +3731,7 @@ function campList(){
     (s.medalStars?', '+s.medalStars+' with a medal':'')+(s.noDeathMaps?', '+s.noDeathMaps+(s.noDeathMaps===1?' map':' maps')+' without a crash':'')+'.</p><ol class="cmp-list">';
   CAMPAIGN.forEach(function(c,i){
     var open=campOpen(i),m=campMap(i),b=campBest(i);
-    h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+'</span><span class="cmp-hint">'+
+    h+='<li><button type="button" class="cmp-row" data-map="'+i+'"'+(open?'':' disabled')+'><span class="cmp-n">'+(i+1)+'</span><span><span class="cmp-name">'+esc(c.name)+(open&&campIsNew(i)?' <span class="cmp-new">New map</span>':'')+'</span><span class="cmp-hint">'+
       (open?esc(c.hint):'Locked. Earn a star on map '+i+' to open it.')+'</span></span><span class="cmp-meta">'+(open?mapStars(i)+'<span>'+(b===null?'no time yet':'best '+fmtT(b))+'</span>'+(m.noDeaths?'<span class="cmp-nd">no deaths</span>':''):'<span>locked</span>')+'</span></button></li>';
   });
   h+='</ol><div class="cmp-foot"><span class="note">Free play (New run) races a random track against all three.</span><button type="button" id="camp-free">Free play</button></div>';
@@ -3858,7 +3872,7 @@ window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,KEY_V1:CAMP_KEY_V1,DIFF:CAMP_
     campFoot(); campShowEnd(i,t,res,campRecord(i,t,res)); },
   load:function(){ CS=campLoad(); return CS; },setOpenTiers:function(b){ CAMP_OPEN_TIERS=!!b; },setDiff:campSetDiff,
   locked:function(){ return !!CAMP_SAVED; },playerStrikes:function(){ return PSTRIKES; },
-  stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen};
+  stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen,former:campFormer,credit:campCredit,isNew:campIsNew,allStarred:campAllStarred};
 window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(location.search).get('epilogue')){campList();} });
 /* ---------- campaign (end) ---------- */
 /* ---------- daily (begin) ---------- */
