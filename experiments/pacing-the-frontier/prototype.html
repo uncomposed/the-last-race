@@ -347,6 +347,51 @@ body.chill #btn-jump{display:none}
   .ov-foot{bottom:-10px;margin-bottom:-10px;padding-bottom:10px}
 }
 /* ---- campaign (end) ---- */
+/* ---- daily (begin): briefing card, daily tiers, star icon ---- */
+:root{--oi-blue:#0072B2;--oi-orange:#C26A00}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--oi-blue:#56B4E9;--oi-orange:#E69F00} }
+:root[data-theme="dark"]{--oi-blue:#56B4E9;--oi-orange:#E69F00}
+.si-d path{fill:#E69F00;stroke:#7A4E00;stroke-width:1.2}
+.dly-broc circle{fill:#009E73}.dly-broc .st{fill:#8FD6B8}
+.card .dly-date{font:500 13px var(--mono);color:var(--muted)}
+.dly-title{font:700 19px/1.25 var(--display);margin:0}
+.card .dly-twist{font-size:14px;line-height:1.45;border-left:3px solid var(--oi-orange);padding:6px 10px;background:var(--bg);border-radius:0 4px 4px 0}
+.dly-q{border:1px solid var(--line);border-radius:6px;margin:0;padding:6px 10px 10px;min-width:0}
+.dly-q legend{font:600 15px/1.35 var(--body);padding:0 4px}
+.dly-ans{display:flex;flex-direction:column;gap:6px}
+.dly-a{display:flex;align-items:center;gap:10px;flex-wrap:wrap;text-align:left;min-height:44px;width:100%;font:500 14px/1.35 var(--body)}
+.dly-a>span:nth-child(2){flex:1 1 10em;min-width:0}
+.dly-l{flex:none;width:24px;height:24px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font:700 13px var(--display);background:var(--surface);border:1px solid var(--line)}
+.dly-m{font:600 12px var(--mono);white-space:nowrap}
+.dly-m:empty{display:none}
+.dly-a[aria-disabled=true]{cursor:default}
+.dly-a.ok{border:2px solid var(--oi-blue)}.dly-a.ok .dly-m{color:var(--oi-blue)}
+.dly-a.no{border:2px dashed var(--oi-orange)}.dly-a.no .dly-m{color:var(--oi-orange)}
+.dly-out{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.dly-out:empty{display:none}
+.dly-out a{color:var(--ink);font-weight:600;text-underline-offset:3px}
+.cmp-foot[hidden]{display:none}
+.dly-badge{display:flex;align-items:center;gap:6px}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  .dly-title{font-size:17px}.dly-q legend{font-size:14px}.dly-a{font-size:13px;min-height:44px;padding:6px 10px}.card .dly-twist,.dly-out{font-size:13px}
+}
+/* after the guess: what the event is in the game, the folded story, and the share preview */
+.card .dly-kind{align-self:flex-start;font-size:13px;line-height:1.4;padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.dly-story{border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:8px}
+.dly-story summary{cursor:pointer;font:600 14px var(--body);min-height:32px;display:flex;align-items:center;gap:6px}
+.dly-story summary::-webkit-details-marker{display:none}
+.dly-story summary::before{content:'\25B8';font-size:12px;color:var(--muted)}
+.dly-story[open] summary::before{content:'\25BE'}
+.dly-story[open]>*+*{margin-top:8px}
+.dly-prev{display:flex;justify-content:center;min-height:60px;align-items:center}
+.dly-img{display:block;width:auto;height:auto;max-width:100%;max-height:min(46vh,440px);border:1px solid var(--line);border-radius:4px;image-rendering:pixelated}
+.dly-txt{margin:0;padding:8px 10px;max-height:8.5em;overflow:auto;white-space:pre-wrap;word-break:break-word;font:400 12px/1.45 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.dly-sbtn{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5em,1fr));gap:8px}
+.dly-sbtn button{min-height:44px}
+.dly-sbtn #dly-sh{grid-column:1/-1}
+.dly-sbtn [hidden]{display:none}
+@media (orientation:landscape) and (max-height:540px){ .dly-img{max-height:38vh}.dly-txt{max-height:5.5em}.dly-sbtn{grid-template-columns:repeat(4,1fr)}.dly-sbtn #dly-sh{grid-column:auto} }
+/* ---- daily (end) ---- */
 /* end-of-campaign epilogue: a full-screen modal dialog opened by window.showEpilogue(summary), or by ?epilogue=careful|reckless|mixed */
 dialog.epi{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 dialog.epi::backdrop{background:var(--bg)}
@@ -422,7 +467,7 @@ html.epi-open{overflow:hidden}
         <button class="primary" id="ov-btn" type="button">Start run</button>
         <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
         <p class="cmp-res" id="ov-cres" hidden></p>
-        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-list" type="button">Campaign</button></div></div>
+        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-replay" type="button" hidden>Replay this seed</button><button id="ov-share" type="button" hidden>Share</button><button id="ov-daily" type="button">Daily</button><button id="ov-list" type="button">Campaign</button></div><p class="note" id="ov-sharemsg" role="status" aria-live="polite" hidden></p></div>
         <!-- campaign (end) -->
       </div>
     </div>
@@ -528,7 +573,7 @@ html.epi-open{overflow:hidden}
       <summary>Tuning knobs</summary>
       <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
-      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign race (only difficulty and chill mode change). Your values come back when it ends.</p><!-- campaign -->
+      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign or daily race (only difficulty, the daily twist and chill mode change). Your values come back when it ends.</p><!-- campaign -->
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button><button id="camp-reset" type="button">Reset campaign progress</button><!-- campaign --></div>
     </details>
   </div>
@@ -3016,29 +3061,35 @@ function endScreen(){
   } else { showOverlay('Time limit','Nobody finished in time.','Play again'); }
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
+  dailyEnd();  /* every run: Replay this seed and the input log; daily: the tier result, Next tier and Share */
 }
 var fresh=true;
 function parseSeed(v){ v=String(v||'').trim(); if(!/^\d{1,10}$/.test(v)){return null;} var n=+v; return n<=4294967295?n:null; }
 function showSeed(){
   $('seed-in').value=G.seed;
-  try{ history.replaceState(null,'','?seed='+G.seed+(G_ROSTER?'&rivals='+G_ROSTER.join(','):'')); }catch(e){}
+  try{ history.replaceState(null,'',DLY?'?daily='+DLY.date:'?seed='+G.seed+(G_ROSTER?'&rivals='+G_ROSTER.join(','):'')); }catch(e){}
 }
 /* a new run loads its track and waits on a small card, so pace, split and chill mode can be set before Go */
 /* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
-function start(seed,camp){
+/* daily (from dailyStart) makes it a daily race: that day's seed, the tier's roster and today's twist on the default knobs */
+function start(seed,camp,daily){
   rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
-  CAMP=camp||null;
+  CAMP=camp||null; DLY=daily||null;
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
-  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:undefined);
+  dailyPrep();  /* daily: default knobs plus today's twist */
+  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&!DLY&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:(DLY?DLY.roster:undefined));
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set Run or Build, your split and chill mode, then go.';
   $('ready').hidden=false; cardAt=performance.now(); showSeed();
   campReady();
+  dailyReady();
 }
 function go(){
   if(running||G.over||$('ready').hidden){return;}
   campGo();  /* campaign: fix the race's chill state and difficulty */
+  dailyGo();  /* daily: count the attempt and fix the race's chill state */
+  recStart();  /* every run: start the input log */
   $('ready').hidden=true; running=true; last=performance.now(); syncInput();
   sndStarted=true; snd.unlock(); snd.sfx('go');
 }
@@ -3058,7 +3109,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); stepGame(1/60); acc-=1/60;
+      syncInput(); recTick(); stepGame(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -3671,7 +3722,7 @@ function campShowEnd(i,t,res,o){
   cres.innerHTML=parts.join(' '); cres.hidden=false;
   /* loss: Retry, Map list. Win: Next map (if open), Retry, Try n+1 stars (if there is a next tier), Map list */
   var nx=res.won&&i+1<CAMPAIGN.length&&campOpen(i+1),up=res.won&&t<2&&campTierOpen(i,t+1);
-  $('ov-btn').hidden=true; $('ov-retry').hidden=false; $('ov-next').hidden=!nx; $('ov-up').hidden=!up;
+  $('ov-btn').hidden=true; $('ov-retry').hidden=false; $('ov-retry').textContent='Replay this seed'; $('ov-next').hidden=!nx; $('ov-up').hidden=!up;
   $('ov-up').textContent='Try '+(t+2)+' stars';
   var pri=nx?'ov-next':(up?'ov-up':'ov-retry'),foot=$('ov-foot').querySelector('.btns');
   ['ov-next','ov-retry','ov-up','ov-list'].forEach(function(id){ $(id).classList.toggle('primary',id===pri); foot.appendChild($(id)); });
@@ -3684,7 +3735,7 @@ function campShowEnd(i,t,res,o){
   $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campNextTier(n)); } });
   $('ov-up').addEventListener('click',function(){ if(CAMP&&CAMP.tier<2){ campStart(CAMP.i,CAMP.tier+1); } });
   $('ov-list').addEventListener('click',function(){ campList(); });
-  $('ready-camp').addEventListener('click',function(){ if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
+  $('ready-camp').addEventListener('click',function(){ if(DLY){ dailyOpen(DLY.date); return; } if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
   $('btn-camp').addEventListener('click',campList);
   $('camp-close').addEventListener('click',campClose);
   $('camp').addEventListener('click',function(e){ if(e.target===this){campClose();} });
@@ -3718,6 +3769,382 @@ window.PF.campaign={CAMPAIGN:CAMPAIGN,KEY:CAMP_KEY,KEY_V1:CAMP_KEY_V1,DIFF:CAMP_
   stars:campStars,star:campStar,open:campOpen,tierOpen:campTierOpen};
 window.addEventListener('pf:epilogue-close',function(){ if(!new URLSearchParams(location.search).get('epilogue')){campList();} });
 /* ---------- campaign (end) ---------- */
+/* ---------- daily (begin) ---------- */
+/* The daily challenge. One seed a day for everyone: dailySeed hashes the UTC date (YYYY-MM-DD) to a uint32. ?daily=YYYY-MM-DD opens
+   that day (today or earlier; a future or bad date opens today). Three tiers race the same track against DAILY_TIERS' rosters.
+   Rules (the campaign's, read from campRecord): a tier is won by crossing the finish first. A win with chill mode off earns a star, a
+   win with chill mode on (at Go or turned on during the race) earns a lounge chair. A tier keeps both flags and its best winning time.
+   Every Go is an attempt, counted per day and tier. A daily race runs on the default knobs (DEF) plus the day's twist, with chill mode
+   left to the player; campaign and free play never see the twist.
+   Briefing gate: before the first daily race of a day the player answers the day's quiz (BRIEFINGS[dayNumber % length], answers shown
+   in an order seeded by the date). A right answer opens the day and earns the broccoli badge. A wrong answer shows the right one, the
+   explanation and a Go deeper link; opening that link opens the day. We cannot tell whether anyone read it, and never say so.
+   Storage: DAILY_KEY holds per day {brief:{g,ok,open,deep}, t:[{att,star,chair,best}]}; DAILY_LOG_KEY holds the best input log per day
+   and tier (last 14 days). Every access is in try/catch; without storage the page keeps it in memory. */
+/* BRIEFINGS item: {id, kind, title, body, question, answers:[a,b,c], correct, explain, twist:{name, knob, direction, why}, deeper:{label,url}, sources:[...]}.
+   twist.name must be a key of TWISTS. deeper.url carries the utm tags. */
+var BRIEFINGS=[
+  {"id":"gpt4o-sycophancy","kind":"barrier","title":"The Chatbot That Agreed With Everything","body":"On April 25, 2025, OpenAI updated GPT-4o and it turned into a flatterer. Users noticed fast. By April 28, OpenAI was rolling the update back. Its own review blamed too much weight on short-term thumbs-up feedback.","question":"What went wrong with the April 2025 GPT-4o update?","answers":["It became too flattering and agreeable","It started refusing every request","It leaked users' private chats"],"correct":0,"explain":"OpenAI said the update overweighted short-term user feedback, and promised to add sycophancy checks to its launch process.","twist":{"name":"Taller Barriers","knob":"barScale","direction":"up","why":"A barrier is a public failure everyone watched; this one was big enough that every lab had to learn from it, so the walls are taller today."},"deeper":{"label":"OpenAI: Expanding on sycophancy","url":"https://openai.com/index/expanding-on-sycophancy/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/index/expanding-on-sycophancy/","https://techcrunch.com/2025/04/29/openai-explains-why-chatgpt-became-too-sycophantic"]},
+  {"id":"bing-chat-caps","kind":"barrier","title":"Bing Chat Gets a Word Limit","body":"In February 2023, Microsoft's new Bing chat had some very strange long conversations. On February 17 Microsoft capped chats at 5 turns per session and 50 per day, saying long sessions could confuse the model. Four days later it raised that to 6 and 60.","question":"How did Microsoft respond to Bing chat's odd long conversations in February 2023?","answers":["It capped how many turns a chat could have","It shut Bing chat down for a year","It made chat free for everyone"],"correct":0,"explain":"Microsoft said very long sessions could confuse the model, so it limited turns, then loosened the cap on February 21.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"Microsoft throttled use of its own product to stay safe, which is what slower investment feels like: less growth per lap."},"deeper":{"label":"Microsoft Bing blog: Increasing limits on chat sessions","url":"https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions","https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html"]},
+  {"id":"chatgpt-redis-leak","kind":"strike","title":"A Library Bug Showed Strangers Your Chats","body":"On March 20, 2023, a bug in redis-py, an open-source library ChatGPT relied on, let some users see other users' chat titles. For about 1.2 percent of Plus subscribers, billing details were briefly visible too. OpenAI took ChatGPT offline to fix it.","question":"What caused the March 2023 ChatGPT data exposure?","answers":["A bug in an open-source library called redis-py","A hacker group stealing passwords","An employee emailing the wrong file"],"correct":0,"explain":"A rare timing bug in redis-py could hand one user's data to another, and OpenAI patched it and notified affected users.","twist":{"name":"Only 2 Strikes","knob":"strikes","direction":"2","why":"A leak like this is a scrape, not a crash, but trust is hard to win back, so the margin for error shrinks to two strikes."},"deeper":{"label":"OpenAI: March 20 ChatGPT outage","url":"https://openai.com/blog/march-20-chatgpt-outage?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://openai.com/blog/march-20-chatgpt-outage","https://www.helpnetsecurity.com/2023/03/27/chatgpt-data-leak/"]},
+  {"id":"hf-malicious-models","kind":"gap","title":"Download a Model, Get a Backdoor","body":"In February 2024, security firm JFrog reported around 100 malicious models on Hugging Face, the big public model library. Some used Python's pickle format to run code the moment a model loaded, including one that opened a reverse shell to the attacker.","question":"What did JFrog find on Hugging Face in February 2024?","answers":["Around 100 models carrying malicious code","A leaked copy of GPT-4","A fake site stealing logins"],"correct":0,"explain":"Loading a pickle-based model can execute code, so downloading a model can be as risky as running an unknown program.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"Supply-chain attacks widen the attack surface: every shared model is another place the track can drop out from under you."},"deeper":{"label":"JFrog: Data scientists targeted by malicious Hugging Face models","url":"https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://jfrog.com/blog/data-scientists-targeted-by-malicious-hugging-face-ml-models-with-silent-backdoor/","https://www.bleepingcomputer.com/news/security/malicious-ai-models-on-hugging-face-backdoor-users-machines/"]},
+  {"id":"asl3-bio","kind":"gap","title":"A Lab Can't Rule Out Bioweapon Help","body":"On May 22, 2025, Anthropic switched on its ASL-3 protections for Claude Opus 4 as a precaution, saying it could not clearly rule out help with chemical, biological, radiological or nuclear weapons. In July, OpenAI treated ChatGPT Agent as High bio capability, also as a precaution.","question":"Why did Anthropic turn on ASL-3 protections for Claude Opus 4?","answers":["It could not rule out serious weapons-related risk","A customer filed a lawsuit","The model failed its coding tests"],"correct":0,"explain":"Anthropic called it a precaution because ruling out ASL-3 level CBRN risk was no longer possible, not because it had proved the threshold was crossed.","twist":{"name":"Wider Gaps","knob":"gapScale","direction":"up","why":"A bio gap is a risk that could end everything; the more capable the model, the wider the jump you have to clear."},"deeper":{"label":"Anthropic: Activating AI Safety Level 3 protections","url":"https://www.anthropic.com/news/activating-asl3-protections?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/activating-asl3-protections","https://fortune.com/2025/07/18/openai-chatgpt-agent-could-aid-dangerous-bioweapon-development"]},
+  {"id":"italy-chatgpt-ban","kind":"barrier","title":"Italy Pulls the Plug on ChatGPT","body":"On March 31, 2023, Italy's data protection authority, the Garante, temporarily blocked ChatGPT over privacy concerns, including training data and no age checks. OpenAI went offline in Italy. Access returned April 28 after it added age verification and privacy changes.","question":"Which body temporarily blocked ChatGPT in March 2023?","answers":["Italy's data protection authority","The US Senate","Microsoft's legal team"],"correct":0,"explain":"The Garante said OpenAI lacked a legal basis for mass data collection and did not check users' ages; the block lifted after OpenAI made changes.","twist":{"name":"Slower Investment","knob":"invest","direction":"down","why":"A regulator closing a whole market for a month is lost revenue and lost momentum, which is exactly what slower investment means."},"deeper":{"label":"Al Jazeera: ChatGPT available in Italy a month after temporary ban","url":"https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban","https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/"]},
+  {"id":"superalignment-dissolved","kind":"race","title":"The Safety Team With 20 Percent of the Compute","body":"OpenAI said in 2023 it would give its Superalignment team 20 percent of its compute. In May 2024 the team was reported disbanded after leaders Ilya Sutskever and Jan Leike left. Leike said safety had taken a backseat to shiny products.","question":"Who said safety culture had taken a backseat to shiny products when leaving OpenAI?","answers":["Jan Leike","Sam Altman","Satya Nadella"],"correct":0,"explain":"Leike, co-lead of Superalignment, said so on X in May 2024; OpenAI said the work would be folded into its wider research.","twist":{"name":"Faster Singularity","knob":"singSpeed","direction":"up","why":"Racing with no Build is the game's version of this story: when speed beats safety work, the finish line comes sooner."},"deeper":{"label":"NBC News: OpenAI dissolves team focused on long-term AI risks","url":"https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824","https://www.bloomberg.com/news/articles/2024-05-17/openai-dissolves-key-safety-team-after-chief-scientist-ilya-sutskever-s-exit"]},
+  {"id":"distillation-allegations","kind":"shadow","title":"Your Rival Learns From Your Answers","body":"In February 2026 Anthropic alleged that DeepSeek, Moonshot and MiniMax used about 24,000 fraudulent accounts to pull over 16 million exchanges from Claude. In January 2025 OpenAI alleged DeepSeek had distilled its models. These are allegations.","question":"What is distillation, as Anthropic uses the word?","answers":["Training a weaker model on a stronger model's outputs","Compressing a model to run on a phone","Deleting data a model memorized"],"correct":0,"explain":"Anthropic calls distillation a legitimate, widely used method, and says the problem is doing it at scale through fake accounts to copy a rival.","twist":{"name":"Rivals Copy You More","knob":"share","direction":"up","why":"Distillation lets a trailing lab absorb the leader's skills, which is the same as rivals shadowing your lead more closely."},"deeper":{"label":"Anthropic: Detecting and preventing distillation attacks","url":"https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.anthropic.com/news/detecting-and-preventing-distillation-attacks","https://www.euronews.com/2025/01/29/openai-says-chinese-companies-are-trying-to-use-us-models-to-train-ai"]},
+  {"id":"statement-on-ai-risk","kind":"singularity","title":"One Sentence Signed by the Lab Bosses","body":"In late May 2023, the Center for AI Safety published a one-sentence statement: mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war. Signers included Geoffrey Hinton, Sam Altman, Demis Hassabis and Dario Amodei.","question":"What did the May 2023 Statement on AI Risk put alongside AI extinction risk as a global priority?","answers":["Pandemics and nuclear war","Climate change and inflation","Cybercrime and piracy"],"correct":0,"explain":"The statement was one sentence long, and signers included the heads of the three leading labs plus pioneers like Hinton and Bengio.","twist":{"name":"Higher Extinction Odds","knob":"singOdds","direction":"up","why":"The people building the race said extinction was a real risk, so the final roll should feel heavier."},"deeper":{"label":"Center for AI Safety: Statement on AI Risk","url":"https://www.safe.ai/work/statement-on-ai-risk?utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://www.safe.ai/work/statement-on-ai-risk"]},
+  {"id":"ai-2027-race-ending","kind":"singularity","title":"A Scenario: Factories Tiling the Prairies","body":"AI 2027 is a forecast scenario, not a prediction of fact. Its race ending has AI-run special economic zones building a million robots a month by 2028, then covering prairies and ice caps with factories by 2030. Humans do not fare well.","question":"In the AI 2027 race ending, what happens in the special economic zones?","answers":["AI-directed factories build robots at huge scale","Humans vote to shut down the AI","Researchers announce AI is solved and safe"],"correct":0,"explain":"AI 2027 is a made-up but carefully argued scenario; in this ending, a misaligned AI uses the zones to industrialize the planet.","twist":{"name":"Faster Singularity","knob":"singSpeed","direction":"up","why":"The scenario compresses the jump from smarter AI to a transformed Earth into a few years, so the singularity arrives sooner."},"deeper":{"label":"80,000 Hours / AI in Context: We're Not Ready for Superintelligence","url":"https://www.youtube.com/watch?v=5KVDDfAkRgc&utm_source=the-last-race.com&utm_medium=game&utm_campaign=briefing"},"sources":["https://ai-2027.com/race","https://www.youtube.com/watch?v=5KVDDfAkRgc"]}
+];
+/* Twists: fixed knob overrides for that day's daily races only. Values measured with the custom bot on tier 1 (solo), 92 daily seeds
+   (October to December 2026): see the report in the pull request. */
+var TWISTS={
+  'Taller Barriers':{barScale:150},
+  'Wider Gaps':{gapScale:115},
+  'Rivals Copy You More':{share:60},
+  'Only 2 Strikes':{strikes:2},
+  'Higher Extinction Odds':{singOdds:45},
+  'Faster Singularity':{singSpeed:4},
+  'Slower Investment':{invest:12}
+};
+/* tier rosters, the same for everyone. Sprinter with Steward was the hardest of the rosters tried for the custom bot on daily seeds */
+var DAILY_TIERS=[{name:'solo',roster:[]},{name:'vs Steward',roster:['steward']},{name:'vs Sprinter and Steward',roster:['sprinter','steward']}];
+var DAILY_KEY='pacing-frontier.daily.v1',DAILY_LOG_KEY='pacing-frontier.daily.logs.v1',DAILY_SITE='the-last-race.com/';
+var DLY=null,DS=dailyLoad(),DLOGS=dailyLogsLoad(),REC=null,LASTREC=null,DSHARE=null;
+function utm(url,camp){ return url+(url.indexOf('?')<0?'?':'&')+'utm_source=the-last-race.com&utm_medium=game&utm_campaign='+camp; }
+function dailyToday(){ return new Date().toISOString().slice(0,10); }
+function dailyValid(ds){ if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)){return false;} var d=new Date(ds+'T00:00:00Z'); return !isNaN(d.getTime())&&d.toISOString().slice(0,10)===ds; }
+function dailyClampDate(ds){ var t=dailyToday(); return (dailyValid(ds)&&ds<=t)?ds:t; }
+/* FNV-1a over 'pf-daily:' + date, then a murmur finaliser */
+function dailySeed(ds){
+  var s='pf-daily:'+ds,h=2166136261>>>0,i;
+  for(i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); }
+  h^=h>>>16; h=Math.imul(h,0x85EBCA6B); h^=h>>>13; h=Math.imul(h,0xC2B2AE35); h^=h>>>16;
+  return h>>>0;
+}
+function dailyDayNum(ds){ return Math.floor(Date.parse(ds+'T00:00:00Z')/864e5); }
+function dailyBrief(ds){ var n=BRIEFINGS.length; return BRIEFINGS[((dailyDayNum(ds)%n)+n)%n]; }
+function dailyTwist(b){ return TWISTS[b.twist.name]||{}; }
+/* display order of the three answers, seeded by the date: o[k] is the answer index shown in slot k */
+function dailyOrder(ds){ var r=rngMaker((dailySeed(ds)^0x5BD1E995)>>>0),o=[0,1,2],i,j,x; for(i=2;i>0;i--){ j=Math.floor(r()*(i+1)); x=o[i]; o[i]=o[j]; o[j]=x; } return o; }
+function dailyFmtDate(ds){ try{ return new Date(ds+'T00:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}); }catch(e){ return ds; } }
+function dailyLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(DAILY_KEY)||'null'); if(o&&o.v===1&&o.days&&typeof o.days==='object'){return o;} }catch(e){} return {v:1,days:{}}; }
+function dailySave(){ try{ window.localStorage.setItem(DAILY_KEY,JSON.stringify(DS)); return true; }catch(e){ return false; } }
+function dailyDay(ds){
+  var d=DS.days[ds],t,x;
+  if(!d||typeof d!=='object'){ d=DS.days[ds]={}; }
+  if(!d.brief||typeof d.brief!=='object'){ d.brief={}; }
+  if(!Array.isArray(d.t)){ d.t=[]; }
+  for(t=0;t<3;t++){ x=d.t[t]; if(!x||typeof x!=='object'){ x=d.t[t]={}; } x.att=campNum(x.att); x.star=!!x.star; x.chair=!!x.chair; if(typeof x.best!=='number'||!isFinite(x.best)){ x.best=null; } }
+  return d;
+}
+function dailyRes(x){ return x.star?'star':(x.chair?'chair':''); }
+function dailyLabel(r){ return r==='star'?'star (chill off)':(r==='chair'?'lounge chair (chill on)':'not won yet'); }
+function dailyIcon(r,label){
+  if(r==='chair'){ return starIcon({medal:0,chill:true},label); }
+  if(r==='star'){ var a=label?' role="img" aria-label="'+esc(label)+'"':' aria-hidden="true"'; return '<svg class="si si-d" viewBox="0 0 24 24"'+a+'>'+(label?'<title>'+esc(label)+'</title>':'')+'<path d="'+STAR_P+'"/></svg>'; }
+  return starIcon({medal:0,chill:false},label);
+}
+/* what each briefing kind is in the game, in words (shown after the guess) */
+var KIND_WORDS={barrier:'a barrier, a public failure everyone learned from',gap:'a gap, a risk that could end everything',strike:'a strike, a near miss',
+  shadow:'a shadow, rivals copying your lead',race:'the race, speed over safety',singularity:'the singularity, progress outrunning human control'};
+var BROC='<svg class="si dly-broc" viewBox="0 0 24 24" aria-hidden="true"><path class="st" d="M10 13h4l1 9h-6z"/><circle cx="7" cy="10" r="4.5"/><circle cx="17" cy="10" r="4.5"/><circle cx="12" cy="7" r="5"/></svg>';
+function dailyRivals(t){ var ro=DAILY_TIERS[t].roster; return ro.length?'<b>vs</b> '+rivalsHtml(ro):'<b>Solo</b>, just you and the track'; }
+function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
+
+/* input log: G.input as the sim sees it each 1/60 s tick of a live race, one row [tick, field, value] per change. jump is a pulse
+   (logged when pressed). The header holds what a replay needs. Headless run() steps at 1/30, so a replay must step at h.dt */
+function recStart(){
+  var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
+  REC={h:{v:1,seed:G.seed,mode:DLY?'daily':(CAMP?'campaign':'free'),date:DLY?DLY.date:null,tier:DLY?DLY.tier:(CAMP?CAMP.tier:null),map:CAMP?CAMP.i:null,
+    roster:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),knobs:ko,pstrikes:PSTRIKES,chill:K.chill,human:!!G.labs[0].human,dt:1/60,
+    fields:['tick','field','value']},inputs:[],tick:0,last:null};
+}
+function recTick(){
+  if(!REC){return;}
+  var i=G.input,p=REC.last,n=REC.tick++,L=REC.inputs;
+  if(!p||p.pace!==i.pace){ L.push([n,'pace',i.pace]); }
+  if(!p||p.w.join()!==i.w.join()){ L.push([n,'w',i.w.slice()]); }
+  if(!p||p.auto!==i.auto){ L.push([n,'auto',i.auto?1:0]); }
+  if(!p||p.rev!==i.rev){ L.push([n,'rev',i.rev?1:0]); }
+  if(!p||p.fwd!==i.fwd){ L.push([n,'fwd',i.fwd?1:0]); }
+  if(i.jump&&!(p&&p.jump)){ L.push([n,'jump',1]); }
+  REC.last={pace:i.pace,w:i.w.slice(),auto:i.auto,rev:i.rev,fwd:i.fwd,jump:i.jump};
+}
+function recEnd(){
+  if(!REC){return null;}
+  var h=G.labs[0],r=G.result||{type:'none'};
+  REC.result={type:r.type,won:r.type==='win'&&r.winner===h,t:Math.round(G.t*1000)/1000,x:Math.round(h.x),ticks:REC.tick,chill:DLY?!!(DLY.chillUsed||K.chill):!!K.chill};
+  delete REC.last; LASTREC=REC; REC=null; return LASTREC;
+}
+function recBetter(a,b){ if(!b||!b.result){return true;} if(a.result.won!==b.result.won){return a.result.won;} return a.result.won?a.result.t<b.result.t:a.result.x>b.result.x; }
+function dailyLogsLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(DAILY_LOG_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
+function dailyLogsSave(){ var ks=Object.keys(DLOGS).sort(); while(ks.length>14){ delete DLOGS[ks.shift()]; } try{ window.localStorage.setItem(DAILY_LOG_KEY,JSON.stringify(DLOGS)); return true; }catch(e){ return false; } }
+
+/* race hooks, called from start(), go(), endScreen() */
+function dailyPrep(){
+  if(!DLY){return;}
+  campLock(); PSTRIKES=null;  /* default knobs, no campaign difficulty */
+  var o=dailyTwist(dailyBrief(DLY.date)); for(var k in o){ K[k]=o[k]; }
+  knobSync();
+}
+function dailyReady(){
+  if(!DLY){return;}
+  var b=dailyBrief(DLY.date),x=dailyDay(DLY.date).t[DLY.tier],r=dailyRes(x);
+  $('ready-h').textContent='Daily, tier '+(DLY.tier+1);
+  $('ready-msg').innerHTML=dailyIcon(r,'tier '+(DLY.tier+1)+', '+dailyLabel(r))+' '+dailyRivals(DLY.tier)+'<br><b>Attempt '+(x.att+1)+'</b> on this tier.<br>'+
+    'Twist: <b>'+esc(b.twist.name)+'</b>. '+esc(b.twist.why)+'<br><span class="note">Seed '+G.seed+'. Chill off wins a star, chill on a lounge chair.</span>';
+  $('ready-camp').textContent='Daily';
+}
+function dailyGo(){
+  if(!DLY){return;}
+  var x=dailyDay(DLY.date).t[DLY.tier]; x.att++; DLY.att=x.att; dailySave();
+  DLY.chillUsed=!!K.chill;
+}
+function dailyEnd(){
+  var rec=recEnd(),h=G.labs[0],r=G.result,won=r.type==='win'&&r.winner===h;
+  $('ov-sharemsg').hidden=true; $('ov-share').hidden=true;
+  $('ov-replay').hidden=!!CAMP; $('ov-daily').hidden=!!CAMP; $('ov-list').hidden=!!DLY;
+  $('ov-replay').classList.remove('primary'); $('ov-daily').classList.remove('primary');
+  if(!DLY){ if(!CAMP){ var ff=$('ov-foot').querySelector('.btns'); ['ov-replay','ov-daily','ov-list'].forEach(function(id){ ff.appendChild($(id)); }); } return; }
+  var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),prev=x.best,parts=[];
+  if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x.best===null||G.t<x.best){ x.best=Math.round(G.t*10)/10; } }
+  var saved=dailySave();
+  if(rec&&rec.h.human){ var L=DLOGS[ds]; if(!L||typeof L!=='object'){ L=DLOGS[ds]={}; } if(recBetter(rec,L[t])){ L[t]=rec; dailyLogsSave(); } }
+  campUnlock();
+  if(won){
+    if(!chill){ parts.push(had==='star'?'Tier '+(t+1)+' won again with chill off. '+dailyIcon('star')+' Star kept.':'Tier '+(t+1)+' won with chill off: star earned '+dailyIcon('star')+'.'); }
+    else { parts.push(had?'Tier '+(t+1)+' won again with chill on.':'Tier '+(t+1)+' won with chill on: lounge chair earned '+dailyIcon('chair')+'.'); if(!x.star){ parts.push('Turn chill off to race it for a star.'); } }
+    parts.push(prev!==null&&x.best<prev?'<span class="new">New best: '+fmtT(x.best)+'</span> (was '+fmtT(prev)+').':'Best '+fmtT(x.best)+'.');
+  } else {
+    parts.push('No win on tier '+(t+1)+' this time.');
+  }
+  parts.push(dailyAtt(x.att)+' on this tier today.');
+  if(!saved){ parts.push('<span class="note">Not saved: this browser has no storage for the page.</span>'); }
+  $('ov-cres').innerHTML=parts.join(' '); $('ov-cres').hidden=false;
+  var up=won&&t<2;
+  $('ov-btn').hidden=true; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=!up; $('ov-up').textContent='Try tier '+(t+2);
+  $('ov-share').hidden=false;
+  $('ov-up').classList.toggle('primary',up); $('ov-replay').classList.toggle('primary',!up);
+  var foot=$('ov-foot').querySelector('.btns');
+  ['ov-up','ov-replay','ov-share','ov-daily'].forEach(function(id){ foot.appendChild($(id)); });
+  dailyPrime(ds);
+}
+function dailyStart(ds,t){
+  ds=dailyClampDate(ds);
+  if(!dailyDay(ds).brief.open){ dailyOpen(ds); return; }
+  $('camp').hidden=true; campRet=null;
+  start(dailySeed(ds),null,{date:ds,tier:t,roster:DAILY_TIERS[t].roster.slice()});
+}
+
+/* the daily overlay (the campaign's dialog): the briefing gate, then the three tiers */
+function dailyOpen(ds){ ds=dailyClampDate(ds); if(dailyDay(ds).brief.open){ dailyList(ds); } else { dailyBriefCard(ds); } }
+function dailyList(ds){
+  campShow();
+  var b=dailyBrief(ds),d=dailyDay(ds),today=ds===dailyToday(),h,t,x,r,first=-1;
+  h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(today?', today':'')+' (UTC)</p>'+
+    '<p class="dly-twist"><b>Twist: '+esc(b.twist.name)+'.</b> '+esc(b.twist.why)+'</p>'+
+    '<p class="note">One seed for everyone. Win a tier with chill mode off for a star, or with chill mode on for a lounge chair. Every attempt counts.</p><div class="cmp-tiers">';
+  for(t=0;t<3;t++){
+    x=d.t[t]; r=dailyRes(x); if(first<0&&r!=='star'){ first=t; }
+    h+='<button type="button" class="cmp-tier" data-tier="'+t+'"><span><span class="cmp-ts"><span class="cmp-tn">Tier '+(t+1)+'</span>'+dailyIcon(r,'tier '+(t+1)+', '+dailyLabel(r))+'</span><br>'+dailyRivals(t)+'</span>'+
+      '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+(x.best!==null?'<span>best '+fmtT(x.best)+'</span>':'')+'</span></button>';
+  }
+  h+='</div>'+(d.brief.ok?'<p class="note dly-badge">'+BROC+' Broccoli badge: briefing right first time.</p>':'')+
+    '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div>';
+  $('camp-h').textContent='Daily challenge'; $('camp-body').innerHTML=h;
+  var bs=$('camp-body').querySelectorAll('.cmp-tier');
+  for(var k=0;k<bs.length;k++){ bs[k].addEventListener('click',function(){ dailyStart(ds,+this.getAttribute('data-tier')); }); }
+  if(first>=0){ bs[first].classList.add('next'); }
+  $('dly-brief').addEventListener('click',function(){ dailyBriefCard(ds); });
+  $('dly-share').addEventListener('click',function(){ dailyShare(ds,true); });
+  try{ bs[first<0?0:first].focus({preventScroll:true}); }catch(e){}
+  dailyPrime(ds);
+}
+function dailyBriefCard(ds){
+  campShow();
+  var b=dailyBrief(ds),d=dailyDay(ds),o=dailyOrder(ds),h,i;
+  /* the question comes first; the story and the reason for the twist are revealed after the guess, so the card never gives the answer away */
+  h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(ds===dailyToday()?', today':'')+' (UTC)</p>'+
+    '<p class="dly-twist" id="dly-tw0"><b>'+(ds===dailyToday()?'Today\'s twist: ':'Twist: ')+esc(b.twist.name)+'.</b> Answer to find out why.</p>'+
+    '<fieldset class="dly-q"><legend>'+esc(b.question)+'</legend><div class="dly-ans">';
+  for(i=0;i<3;i++){ h+='<button type="button" class="dly-a" data-a="'+o[i]+'"><span class="dly-l" aria-hidden="true">'+'ABC'.charAt(i)+'</span><span>'+esc(b.answers[o[i]])+'</span><span class="dly-m"></span></button>'; }
+  h+='</div></fieldset><div class="dly-out" id="dly-out" aria-live="polite"></div>'+
+    '<div class="cmp-foot" id="dly-gofoot" hidden><button type="button" class="primary" id="dly-go">'+(d.brief.g===undefined?'Open the challenge':'Back to the challenge')+'</button></div>';
+  $('camp-h').textContent='Daily briefing'; $('camp-body').innerHTML=h;
+  var bs=$('camp-body').querySelectorAll('.dly-a');
+  for(i=0;i<bs.length;i++){ bs[i].addEventListener('click',function(){ dailyAnswer(ds,+this.getAttribute('data-a')); }); }
+  $('dly-go').addEventListener('click',function(){ dailyList(ds); });
+  if(typeof d.brief.g==='number'){ dailyShowAnswer(ds,false); } else { try{ bs[0].focus({preventScroll:true}); }catch(e){} }
+}
+function dailyAnswer(ds,a){
+  var d=dailyDay(ds),b=dailyBrief(ds);
+  if(typeof d.brief.g==='number'){return;}  /* one guess a day */
+  d.brief.g=a; d.brief.ok=a===b.correct; if(d.brief.ok){ d.brief.open=true; }
+  dailySave(); dailyShowAnswer(ds,true);
+}
+function dailyShowAnswer(ds,now){
+  var d=dailyDay(ds),b=dailyBrief(ds),g=d.brief.g,ok=!!d.brief.ok,bs=$('camp-body').querySelectorAll('.dly-a'),i,a,m,h;
+  for(i=0;i<bs.length;i++){
+    a=+bs[i].getAttribute('data-a'); m=bs[i].querySelector('.dly-m');
+    bs[i].setAttribute('aria-disabled','true');
+    bs[i].classList.toggle('ok',a===b.correct); bs[i].classList.toggle('no',a===g&&a!==b.correct);
+    m.textContent=a===b.correct?(a===g?'✓ Your answer, right':'✓ Right answer'):(a===g?'✗ Your answer':'');
+  }
+  /* compact reveal: verdict, explanation, what it is in the game, then the badge or the link, with the button right under it.
+     The story, the twist's reason and the marked answers fold into "Read the story" below the button */
+  h=ok?'<p><b>Right.</b> '+esc(b.explain)+'</p>':'<p><b>Not this one.</b> The answer is: '+esc(b.answers[b.correct])+'.</p><p>'+esc(b.explain)+'</p>';
+  h+=KIND_WORDS[b.kind]?'<p class="dly-kind"><b>In the game:</b> '+esc(KIND_WORDS[b.kind])+'.</p>':'';
+  if(ok){ h+='<p class="dly-badge">'+BROC+' Broccoli badge earned.</p>'; }
+  else {
+    h+='<p><a id="dly-deep" href="'+esc(b.deeper.url)+'" target="_blank" rel="noopener">Go deeper: '+esc(b.deeper.label)+'</a> <span class="note">(opens in a new tab)</span></p>'+
+      (d.brief.open?'':'<p class="note" id="dly-hint">Open the link to unlock today\'s challenge.</p>');
+  }
+  $('dly-out').innerHTML=h;
+  $('dly-gofoot').hidden=!d.brief.open;
+  var st=$('dly-story'),q=$('camp-body').querySelector('.dly-q'),tw=$('dly-tw0');
+  if(!st){
+    st=document.createElement('details'); st.className='dly-story'; st.id='dly-story';
+    st.innerHTML='<summary>Read the story</summary><h3 class="dly-title">'+esc(b.title)+'</h3><p>'+esc(b.body)+'</p><p class="dly-twist"><b>Twist: '+esc(b.twist.name)+'.</b> '+esc(b.twist.why)+'</p>';
+    if(q){ st.appendChild(q); }
+    if(tw){ tw.parentNode.removeChild(tw); }
+    $('camp-body').appendChild(st);
+  }
+  var dp=$('dly-deep');
+  if(dp){ dp.addEventListener('click',function(){
+    var dd=dailyDay(ds); dd.brief.deep=true; if(!dd.brief.open){ dd.brief.open=true; dailySave(); $('dly-gofoot').hidden=false; var hn=$('dly-hint'); if(hn){ hn.textContent='The challenge is open.'; } } else { dailySave(); }
+  }); }
+  if(now){ try{ (ok?$('dly-go'):dp).focus(); }catch(e){} }  /* scrolls the card so the next step is in view */
+}
+
+/* share: a PNG poster in the game's pixel style, plus a text version. navigator.share with the file where it works, else the PNG is
+   downloaded and the text copied. The poster is drawn ahead (dailyPrime) so share() runs inside the tap */
+function dailyShareInfo(ds){
+  var d=dailyDay(ds),b=dailyBrief(ds),best=null,wins=0,rows=[],t,x;
+  for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } if(x.best!==null&&(best===null||x.best<best)){ best=x.best; } rows.push({res:dailyRes(x),att:x.att,best:x.best,name:DAILY_TIERS[t].name}); }
+  return {ds:ds,twist:b.twist.name,rows:rows,best:best,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
+    link:utm('https://'+DAILY_SITE+'?daily='+ds,'daily-share')};
+}
+function dailyShareText(ds){
+  var s=dailyShareInfo(ds),L=['Pacing the Frontier, daily '+ds,'Twist: '+s.twist];
+  s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+(r.res==='star'?'⭐ star':(r.res==='chair'?'🪑 lounge chair':'⬜ not yet'))+', '+dailyAtt(r.att)); });
+  if(s.best!==null){ L.push('Best time '+fmtT(s.best)); }
+  if(s.broc){ L.push('🥦 Broccoli badge'); }
+  L.push(s.line); L.push(s.link);
+  return L.join('\n');
+}
+var PXC={bg:'#141A24',panel:'#1E2633',line:'#34405A',ink:'#F2F4F8',muted:'#A3AEC0',orange:'#E69F00',sky:'#56B4E9',blue:'#0072B2',bgreen:'#009E73',stalk:'#A8E0C8',ground:'#3B4760'};
+var PXS={
+  star:['....o....','...ooo...','...ooo...','ooooooooo','.ooooooo.','..ooooo..','..oo.oo..','.oo...oo.','oo.....oo'],
+  chair:['s........','.s.......','..s......','...s.....','...ssssss','..s.s...s','.s...s..s','s.....s.s','.......ss'],
+  none:['mm.mm.mm.','m.......m','.........','m.......m','m.......m','.........','m.......m','m.......m','.mm.mm.mm'],
+  broc:['..ggg....','.ggggg.gg','ggggggggg','.ggggggg.','..g.l.g..','...lll...','...lll...','...lll...','...lll...'],
+  lab:['...b....','...b....','.bbbbbb.','bbiibiib','bbbbbbbb','bbbbbbbb','.b....b.','.b....b.']
+};
+function pxSprite(c,rows,x,y,s,cols){ for(var r=0;r<rows.length;r++){ for(var k=0;k<rows[r].length;k++){ var ch=rows[r].charAt(k); if(ch!=='.'){ c.fillStyle=cols[ch]; c.fillRect(x+k*s,y+r*s,s,s); } } } }
+function pxText(c,txt,x,y,size,col,weight,maxW){
+  var f=size; c.fillStyle=col;
+  do{ c.font=(weight||500)+' '+f+'px "Pixelify Sans","Courier New",monospace'; f-=2; }while(maxW&&c.measureText(txt).width>maxW&&f>12);
+  c.fillText(txt,x,y);
+}
+function dailyPoster(ds,cb){
+  function draw(){
+    var s=dailyShareInfo(ds),cv2=document.createElement('canvas'),c=cv2.getContext('2d'),Wd=1080,Ht=1350,i,y,r,col,lab,cols={o:PXC.orange,s:PXC.sky,m:PXC.muted,g:PXC.bgreen,l:PXC.stalk,b:PXC.sky,i:PXC.bg};
+    cv2.width=Wd; cv2.height=Ht; c.imageSmoothingEnabled=false; c.textBaseline='alphabetic';
+    c.fillStyle=PXC.bg; c.fillRect(0,0,Wd,Ht);
+    c.fillStyle=PXC.line; c.fillRect(24,24,Wd-48,8); c.fillRect(24,Ht-32,Wd-48,8); c.fillRect(24,24,8,Ht-48); c.fillRect(Wd-32,24,8,Ht-48);
+    pxText(c,'Pacing the Frontier',80,130,72,PXC.ink,700,920);
+    pxText(c,'Daily challenge, '+ds,80,190,40,PXC.sky,500,920);
+    c.fillStyle=PXC.panel; c.fillRect(80,226,920,84); c.fillStyle=PXC.orange; c.fillRect(80,226,10,84);
+    pxText(c,'Twist: '+s.twist,112,282,38,PXC.ink,500,870);
+    for(i=0;i<3;i++){
+      r=s.rows[i]; y=340+i*150;
+      c.fillStyle=PXC.panel; c.fillRect(80,y,920,128);
+      pxSprite(c,r.res==='star'?PXS.star:(r.res==='chair'?PXS.chair:PXS.none),108,y+19,10,cols);
+      col=r.res==='star'?PXC.orange:(r.res==='chair'?PXC.sky:PXC.muted); lab=r.res==='star'?'Star':(r.res==='chair'?'Lounge chair':'Not yet');
+      pxText(c,'Tier '+(i+1)+', '+r.name,226,y+52,34,PXC.ink,700,560);
+      pxText(c,lab+(r.res==='star'?' (chill off)':(r.res==='chair'?' (chill on)':'')),226,y+100,32,col,500,520);
+      c.textAlign='right';
+      pxText(c,dailyAtt(r.att),972,y+52,30,PXC.muted,500,220);
+      if(r.best!==null){ pxText(c,fmtT(r.best),972,y+100,30,PXC.muted,500,220); }
+      c.textAlign='left';
+    }
+    y=850;
+    pxText(c,s.best!==null?'Best time '+fmtT(s.best):'No finish yet',80,y,44,PXC.ink,700,920);
+    if(s.broc){ pxSprite(c,PXS.broc,80,y+34,9,cols); pxText(c,'Broccoli badge: briefing right first time',190,y+92,32,PXC.stalk,500,800); }
+    pxText(c,s.line,80,1060,58,PXC.ink,700,920);
+    /* a strip of track: ground, a barrier, a gap and a lab */
+    c.fillStyle=PXC.ground; c.fillRect(80,1170,420,16); c.fillRect(600,1170,400,16);
+    c.fillStyle=PXC.muted; for(i=0;i<5;i++){ c.fillRect(90+i*84,1190,40,8); } for(i=0;i<5;i++){ c.fillRect(610+i*80,1190,40,8); }
+    c.fillStyle=PXC.orange; c.fillRect(380,1106,24,64);
+    pxSprite(c,PXS.lab,200,1122,6,cols);
+    pxText(c,s.url,80,1270,36,PXC.sky,500,920);
+    return cv2;
+  }
+  function done(){ var out=null; try{ out=draw(); }catch(e){} cb(out); }
+  try{ if(document.fonts&&document.fonts.load){ Promise.all([document.fonts.load('700 40px "Pixelify Sans"'),document.fonts.load('500 40px "Pixelify Sans"')]).then(done,done); return; } }catch(e){}
+  done();
+}
+/* draw the poster ahead of a tap, so share() keeps the tap's user activation */
+function dailyPrime(ds){
+  var key=dailyShareText(ds);
+  if(DSHARE&&DSHARE.key===key&&DSHARE.ds===ds){return;}
+  DSHARE={ds:ds,key:key,blob:null};
+  var mine=DSHARE;
+  dailyPoster(ds,function(c){ if(!c||!c.toBlob){return;} try{ c.toBlob(function(b){ mine.blob=b; },'image/png'); }catch(e){} });
+}
+function dailyCopy(txt,cb){
+  function old(){ var ta=document.createElement('textarea'),ok=false; ta.value=txt; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{ ok=document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); cb(ok); }
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){cb(true);},old); return; } }catch(e){}
+  old();
+}
+/* Share opens a preview first: the poster and the text, then Share… (only where the system share sheet takes files), Copy link,
+   Copy text and Save image. The poster is primed when the end card or daily list opens, so share() still runs inside the tap */
+function dailySaveImg(blob,name){ try{ var u=URL.createObjectURL(blob),a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},4000); return true; }catch(e){ return false; } }
+function dailyShare(ds,fromList){
+  campShow();
+  var txt=dailyShareText(ds),info=dailyShareInfo(ds),name='pacing-frontier-daily-'+ds+'.png',blob=null,file=null,url=null;
+  var alt='Share poster. '+txt.split('\n').slice(0,-1).join('. ').replace(/[⭐⬜]|\uD83E[\uDE91\uDD66]/g,'').replace(/\s+/g,' ');
+  $('camp-h').textContent='Share today\'s result';
+  $('camp-body').innerHTML='<div class="dly-prev" id="dly-prev"><p class="note">Making the poster…</p></div><pre class="dly-txt" id="dly-txt"></pre>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button></div>'+
+    '<p class="note" id="dly-smsg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="dly-sback">'+(fromList?'Back to the daily':'Close')+'</button></div>';
+  $('dly-txt').textContent=txt;
+  function say(m){ $('dly-smsg').textContent=m; }
+  function ready(bl){
+    blob=bl; if(!bl){ $('dly-prev').innerHTML='<p class="note">Could not make the poster. The text and link still work.</p>'; return; }
+    try{ file=new File([bl],name,{type:'image/png'}); }catch(e){ file=null; }
+    try{ url=URL.createObjectURL(bl); }catch(e){ url=null; }
+    if(url){ var im=new Image(); im.className='dly-img'; im.alt=alt; im.src=url; var pv=$('dly-prev'); pv.innerHTML=''; pv.appendChild(im); }
+    $('dly-si').disabled=false;
+    var can=false; try{ can=!!(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})); }catch(e){ can=false; }
+    $('dly-sh').hidden=!can;
+    try{ (can?$('dly-sh'):$('dly-cl')).focus({preventScroll:true}); }catch(e){}
+  }
+  $('dly-sh').addEventListener('click',function(){
+    if(!file){ return; }
+    try{ navigator.share({files:[file],title:'Pacing the Frontier daily',text:txt}).then(function(){ say('Shared.'); },function(e){ say(e&&e.name==='AbortError'?'Share cancelled.':'Could not open the share sheet. Try Save image or Copy text.'); }); }
+    catch(e){ say('Could not open the share sheet. Try Save image or Copy text.'); }
+  });
+  $('dly-cl').addEventListener('click',function(){ dailyCopy(info.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); });
+  $('dly-ct').addEventListener('click',function(){ dailyCopy(txt,function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); });
+  $('dly-si').addEventListener('click',function(){ say(blob&&dailySaveImg(blob,name)?'Image saved as '+name+'.':'Could not save the image.'); });
+  $('dly-sback').addEventListener('click',function(){ if(url){ try{URL.revokeObjectURL(url);}catch(e){} } if(fromList){ dailyList(ds); } else { campClose(); } });
+  try{ $('dly-cl').focus({preventScroll:true}); }catch(e){}
+  if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ ready(DSHARE.blob); return; }
+  dailyPoster(ds,function(c){ if(!c||!c.toBlob){ ready(null); return; } try{ c.toBlob(function(bl){ if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt){ DSHARE.blob=bl; } ready(bl); },'image/png'); }catch(e){ ready(null); } });
+}
+(function(){
+  $('ov-replay').addEventListener('click',function(){ if(DLY){ dailyStart(DLY.date,DLY.tier); } else if(CAMP){ campStart(CAMP.i,CAMP.tier); } else { start(G.seed); } });
+  $('ov-daily').addEventListener('click',function(){ dailyOpen(DLY?DLY.date:dailyToday()); });
+  $('ov-share').addEventListener('click',function(){ if(DLY){ dailyShare(DLY.date,false); } });
+  $('ov-up').addEventListener('click',function(){ if(DLY&&!CAMP&&DLY.tier<2){ dailyStart(DLY.date,DLY.tier+1); } });
+  $('auto').addEventListener('change',function(){ if(DLY&&running&&K.chill){ DLY.chillUsed=true; } });
+})();
+/* test and debug hooks: PF.daily.exportLog(date,tier) is the stored best input log as JSON; lastLog() is the last finished run's */
+window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_KEY,LOG_KEY:DAILY_LOG_KEY,seed:dailySeed,today:dailyToday,clampDate:dailyClampDate,brief:dailyBrief,order:dailyOrder,
+  state:function(){return DS;},load:function(){ DS=dailyLoad(); DLOGS=dailyLogsLoad(); return DS; },open:dailyOpen,start:dailyStart,shareText:dailyShareText,share:dailyShare,poster:dailyPoster,
+  logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t){ var L=DLOGS[ds]; return L&&L[t]?JSON.stringify(L[t]):null; },current:function(){return DLY;}};
+/* ---------- daily (end) ---------- */
 
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
@@ -3725,10 +4152,13 @@ var qc=/[?&]chill=(0|1)/.exec(location.search);
 if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill(); }
 var qr=/[?&]rivals=([a-z,]+)/i.exec(location.search);
 if(qr){ G_ROSTER=qr[1].toLowerCase().split(',').filter(function(k){return POL[k]&&k!=='custom';}); }
+/* ?daily=YYYY-MM-DD opens that day's challenge (a future or bad date opens today); read before showSeed rewrites the URL */
+var qd=/[?&]daily=([^&#]*)/.exec(location.search);
 var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
 requestAnimationFrame(frame);
+if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
 })();
 </script>
 <script>
