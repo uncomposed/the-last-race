@@ -3944,8 +3944,9 @@ function dailyList(ds){
 function dailyBriefCard(ds){
   campShow();
   var b=dailyBrief(ds),d=dailyDay(ds),o=dailyOrder(ds),h,i;
-  h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(ds===dailyToday()?', today':'')+' (UTC)</p><h3 class="dly-title">'+esc(b.title)+'</h3><p>'+esc(b.body)+'</p>'+
-    '<p class="dly-twist"><b>'+(ds===dailyToday()?'Today\'s twist: ':'Twist: ')+esc(b.twist.name)+'.</b> '+esc(b.twist.why)+'</p>'+
+  /* the question comes first; the story and the reason for the twist are revealed after the guess, so the card never gives the answer away */
+  h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(ds===dailyToday()?', today':'')+' (UTC)</p>'+
+    '<p class="dly-twist"><b>'+(ds===dailyToday()?'Today\'s twist: ':'Twist: ')+esc(b.twist.name)+'.</b> Answer to find out why.</p>'+
     '<fieldset class="dly-q"><legend>'+esc(b.question)+'</legend><div class="dly-ans">';
   for(i=0;i<3;i++){ h+='<button type="button" class="dly-a" data-a="'+o[i]+'"><span class="dly-l" aria-hidden="true">'+'ABC'.charAt(i)+'</span><span>'+esc(b.answers[o[i]])+'</span><span class="dly-m"></span></button>'; }
   h+='</div></fieldset><div class="dly-out" id="dly-out" aria-live="polite"></div>'+
@@ -3970,10 +3971,11 @@ function dailyShowAnswer(ds,now){
     bs[i].classList.toggle('ok',a===b.correct); bs[i].classList.toggle('no',a===g&&a!==b.correct);
     m.textContent=a===b.correct?(a===g?'✓ Your answer, right':'✓ Right answer'):(a===g?'✗ Your answer':'');
   }
+  h='<h3 class="dly-title">'+esc(b.title)+'</h3><p>'+esc(b.body)+'</p><p class="dly-twist"><b>Why the twist:</b> '+esc(b.twist.why)+'</p>';
   if(ok){
-    h='<p><b>Right.</b> '+esc(b.explain)+'</p><p class="dly-badge">'+BROC+' Broccoli badge earned.</p>';
+    h='<p><b>Right.</b> '+esc(b.explain)+'</p><p class="dly-badge">'+BROC+' Broccoli badge earned.</p>'+h;
   } else {
-    h='<p><b>Not this one.</b> The answer is: '+esc(b.answers[b.correct])+'.</p><p>'+esc(b.explain)+'</p>'+
+    h='<p><b>Not this one.</b> The answer is: '+esc(b.answers[b.correct])+'.</p><p>'+esc(b.explain)+'</p>'+h+
       '<p><a id="dly-deep" href="'+esc(b.deeper.url)+'" target="_blank" rel="noopener">Go deeper: '+esc(b.deeper.label)+'</a> <span class="note">(opens in a new tab)</span></p>'+
       (d.brief.open?'':'<p class="note" id="dly-hint">Open the link to unlock today\'s challenge.</p>');
   }
