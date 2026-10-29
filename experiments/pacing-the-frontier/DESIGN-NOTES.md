@@ -434,17 +434,19 @@ Replication: in the page, set `PF.K.chill`, `PF.K.skill`, `PF.K.wary`, `PF.SKILL
 
 The nine campaign maps were re-measured on the current code (chill on, skill 100, wary 1) after the deadlock fixes, Floor it and bot hands changed how bots drive. Eight probe strategies played each map 40 times against each roster, with jitter on the probe and the seed's own bot and roll draws (what a player on that map faces). Six of the old nine still held; 210 (tied with scout), 1077 (no probe won), 175 (runup no longer won), 1863 and 63 (weak) were replaced from a sweep of seeds 1 to 3000. Wins out of 40 for the map's strategy, with the runner-up, all three rivals:
 
-| Order | Seed | Strategy | Wins (runner-up) | Trick | 1★ / 2★ / 3★ rivals |
-|---|---|---|---|---|---|
-| 1 | 114 | runup | 39 (climber 2) | wide gaps from the start | S / SG / SP |
-| 2 | 1784 | climber | 37 (bold 12) | six 173-high walls right after the singularity | S / SG / ALL |
-| 3 | 1167 | gamble | 34 (drafter 2) | low walls after the gate, then seven wide gaps | S / SG / ALL |
-| 4 | 717 | scout | 40 (gamble 1) | a 300 wall late, a hidden 253 gap behind it | S / ALL / SG |
-| 5 | 2972 | balanced | 37 (gamble 5) | a 185 gap right after the singularity | SP / S / SG |
-| 6 | 1548 | bold | 32 (climber 1) | an early singularity, then six 173 walls | S / SG / SP |
-| 7 | 1115 | rush | 38 (balanced 9) | narrow early gaps, towers around the singularity | S / ALL / SP |
-| 8 | 322 | drafter | 40 (bold 1) | a 451-wide singularity late | ALL / SG / SP |
-| 9 | 199 | climber, harder | 31 (scout 9) | a staircase to 328 walls, a 491 singularity late | ALL / S / SP |
+| Order | Seed | Strategy | Held-out wins, strategy vs best foil (n=300) | Shipped rival noise | Trick | 1★ / 2★ / 3★ rivals |
+|---|---|---|---|---|---|---|
+| 1 | 1823 (was 114) | runup | 200 vs scout 76 | 188 vs 76 | gaps widen 50, 111, 86, 112, 179, 318, singularity 419 late | S / SP / SG |
+| 2 | 1784 | climber | 122 vs balanced 20 (scout 143 higher) | 288 vs 18 | six 173-high walls right after the singularity | S / SG / ALL |
+| 3 | 676 (was 1167) | gamble | 245 vs climber 50 | 278 vs 82 | low walls, two gaps (77, 138), singularity 218, six 173 walls | SG / S / ALL |
+| 4 | 717 | scout | 169 vs climber 78 (runup 206 higher) | 231 vs 30 | a 300 wall late, a hidden 253 gap behind it | S / ALL / SG |
+| 5 | 2972 | balanced | 176 vs scout 73 (gamble 196 higher) | 206 vs 137 | a 185 gap right after the singularity | S / SG / SP |
+| 6 | 698 (was 1548) | bold | 171 vs climber 66 (gamble 210 higher) | 289 vs 45 | early singularity (193), then 173 walls and an inner gap | SP / S / SG |
+| 7 | 1531 (was 1115) | rush | 173 vs scout 58 | 252 vs 38 | narrow gaps 50 and 72, singularity 174, six 173 walls | SP / S / ALL |
+| 8 | 322 | follower | 152 vs bold 1 and rush 0 (self-scouting twin 59) | 153 vs bold 53 and rush 0 | a 451-wide singularity late | ALL / SG / SP |
+| 9 | 2785 (was 199) | climber, harder | 144 vs balanced 5 (scout 147 higher) | 136 vs 13 | gaps 104 to 281 on a staircase to 288 walls, singularity 356 late | S / SP / ALL |
+
+**Lesson re-check, 28 October 2026 (bot play only).** After the gap strikes, forgiving gap drops and coyote time, each map's lesson was written as a contrast between probe strategies and re-measured: chill off, Medium (3 strikes), strikeGap on, skill 100. Pooled over the map's three rosters, a map passes if the lesson strategy beats the best foil by 15 points or more, ranks top 2 of 8 probes and wins at least 20% itself. Rival bot hands and rolls were varied through a seed hook in a scratch copy of the sim (the repo is untouched); the track is fixed. Old seeds were screened on one noise block and reported on another (60 draws a roster). Replacements came from seeds 1 to 3000: screened on noise 1 to 12, chosen on 101 to 140, reported on 201 to 300 (the n=300 column). A second check ran each seed with its shipped rival noise and 100 probe jitters per roster. Five swaps: 114, 1167, 1548, 1115 and 199 lost the lesson (for example 114: runup 17 of 180 against balanced 76) and were replaced; 1784, 717, 2972 and 322 kept it. Slipstream's lesson is a follower, not a drafter: a probe that puts 5% on sight and lets rivals' crashes and scrapes make obstacles public wins about half its games on 322 where rush and bold win almost none, and its self-scouting twin (same split, 50% sight) wins 59. The old drafter probe was fitted, not recovered, and wins nothing; the follower was chosen after a grid on 322 itself, then confirmed on fresh noise blocks. Tier orders follow the mean wins of all probes in the report block; several tiers differ by under 2 points, so treat them as ties (1531 is flat at 26.8, 26.3 and 25.5; 1823 at 18.5, 16.4 and 16.3). 2972's order was reversed before and is now S, SG, SP. Caveats: the probes are rebuilt, perfect-handed bots; the foil sets are my judgement; the ± on the gaps is about 6 to 8 points; the report block was also used to choose among top candidates; hints are plain descriptions of the generated tracks. Progress is keyed by seed, so the five swaps reset those maps' stars.
 
 S = Steward alone, SG = Steward and Gambler, SP = Sprinter and Steward, ALL = all three. Tiers are ordered by measured difficulty (mean wins over the probes), not by the number of rivals. Since the earlier sweep the pattern flipped: Steward alone is now usually the easiest, Sprinter with Steward most often the hardest, and on 199 and 322 the full field is the easiest. On several maps the best strategy changes with the roster (for example scout wins 1115 and 1548 against Steward alone), so a star ladder does not always repeat the map's one lesson.
 
