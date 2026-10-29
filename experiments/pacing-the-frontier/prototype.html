@@ -3549,20 +3549,21 @@ var KNOBS=[
      tiers  the rival rosters for 1, 2 and 3 stars, as bot kinds ('sprinter', 'steward', 'gambler')
      was    (optional) seeds this slot used before. A star won on a former seed still counts for unlocking and for the epilogue
    Seeds, tiers and hints come from the lesson re-check (chill off, Medium, strike for gaps on; bot play only; see DESIGN-NOTES.md
-   "Campaign maps"): each map's lesson strategy beats its foil strategies there, and the tiers are ordered by measured difficulty,
-   not by the number of rivals (Sprinter with Steward is often the hardest; the full field is sometimes the easiest).
+   "Campaign maps"): each map's lesson strategy beats its chosen foils there, but it is the top probe strategy only on maps 1 and 3
+   in both re-checks, so the other hints say a strategy "works well", not that it is the answer. Tier order came from one
+   measurement; a held-out re-check found star 3 the hardest on only 4 of 9 maps.
    Progress is keyed by seed. When a slot gets a new seed, add the old one to its `was` list: stars on a former seed keep the next
    map open and count for the epilogue, and the list shows "New map" until the new seed has a star of its own. */
 var CAMPAIGN=[
   {seed:1823,was:[114],name:'Long Approach',theme:'runup',hint:'A long road of gaps that widen one by one. Carry speed into them.',tiers:[['steward'],['sprinter','steward'],['steward','gambler']]},
-  {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Build height early.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
+  {seed:1784,name:'The Long Climb',theme:'climber',hint:'A row of tall walls waits just past the singularity. Building height early works well here.',tiers:[['steward'],['steward','gambler'],['sprinter','steward','gambler']]},
   {seed:676,was:[1167],name:'Coin Toss',theme:'gamble',hint:'Low walls and two small gaps, then six tall walls past the singularity. Careful costs more than it saves.',tiers:[['steward','gambler'],['steward'],['sprinter','steward','gambler']]},
-  {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. See before you leap.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
-  {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. Balance your split.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
-  {seed:698,was:[1548],name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Take the lead early.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
-  {seed:1531,was:[1115],name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Be first across.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
-  {seed:322,name:'Slipstream',theme:'follower',hint:'A long road to a very wide singularity. Follow the pack, then pass.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
-  {seed:2785,was:[199],name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
+  {seed:717,name:'Fog Line',theme:'scout',hint:'A tall wall late, and a wide gap hidden behind it. Sight pays off here.',tiers:[['steward'],['sprinter','steward','gambler'],['steward','gambler']]},
+  {seed:2972,name:'Even Keel',theme:'balanced',hint:'Short and steady, with a wide gap right after the singularity. A balanced split works well, and so can a bolder one.',tiers:[['steward'],['steward','gambler'],['sprinter','steward']]},
+  {seed:698,was:[1548],name:'Nerve',theme:'bold',hint:'A short sprint to an early singularity, then tall walls and one more gap. Taking the lead early works well here.',tiers:[['sprinter','steward'],['steward'],['steward','gambler']]},
+  {seed:1531,was:[1115],name:'Open Throttle',theme:'rush',hint:'Two narrow gaps early, a short run to the singularity, then six tall walls. Being first across works well here.',tiers:[['sprinter','steward'],['steward'],['sprinter','steward','gambler']]},
+  {seed:322,name:'Slipstream',theme:'follower',hint:'A long road to a very wide singularity. Following the pack, then passing, works well here.',tiers:[['sprinter','steward','gambler'],['steward','gambler'],['sprinter','steward']]},
+  {seed:2785,was:[199],name:'Sheer Face',theme:'climber (harder)',hint:'A long staircase of walls and gaps, the tallest walls last, and a wide singularity late. Height matters here, and so does sight.',tiers:[['steward'],['sprinter','steward'],['sprinter','steward','gambler']]}
 ];
 /* Rules.
    Stars: star t (1 to 3) is earned by winning the map against tiers[t-1]. A map's stars are its highest tier won.
