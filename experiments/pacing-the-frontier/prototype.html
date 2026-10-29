@@ -1880,7 +1880,10 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100};
+/* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
+   K.invest. singGap scales the singularity gap's width (%), never past 0.95 of its ceiling coverage. At their defaults (0, 0, 100) they
+   change nothing; daily twists set them */
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -1955,6 +1958,7 @@ function genTrack(r){
     var air=C.AIR0+K.airH/1000*C.CAPS[s],cov=(C.TOP0+0.85*C.CAPS[s])*air;
     var W=Math.round(Math.max(40,Math.min(w0,(last?0.8:0.65)*cov)));
     if(last){ W=Math.round(Math.min(Math.max(W,1.1*maxW),0.8*cov)); }  /* the singularity: widest gap, still inside its ceiling coverage */
+    if(last&&K.singGap!==100){ W=Math.round(Math.max(40,Math.min(W*K.singGap/100,0.95*cov))); }
     maxW=Math.max(maxW,W);
     /* clear zone before the gap: the tower's distance, or the run-up a lab at the ceiling needs from a standstill */
     var vn=W/air,gx=rs+L+Math.max(C.STEPD+20,Math.round(1.3*vn*vn/(2*C.ACC))+20);
@@ -2133,7 +2137,7 @@ function applyLevel(k,by){
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i]; if(l.out){continue;}
     if(l===by){ l.cap=Math.max(l.cap,T); }
-    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+K.share/100*d)); }
+    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+((l.id>0&&K.shareRiv>0)?K.shareRiv:K.share)/100*d)); }
   }
 }
 function crossGap(l,g,k){
@@ -2351,7 +2355,7 @@ function stepLab(l,dt,inp){
   l.ivr=r; l.ivw=w;  /* for drawing only: how much of the lab's effort goes to investment, and where */
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
-    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*K.invest*M*dt); }
+    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt); }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   /* jump buffer (human only): a press while still in the air is kept for JBUF seconds and fires on landing */
@@ -3500,13 +3504,13 @@ document.addEventListener('keydown',function(e){
 /* knobs */
 var KNOBS=[
   ['p1','Odds everyone is out at gap 1 (%)',0,60,1],['pstep','Odds added per gap (points)',0,30,1],
-  ['share','Followers’ share of a level-up (%)',0,100,5],['refill','Refill bonus divisor (lower is stronger)',10,200,5],
-  ['stepL0','Gap shrink distance, past the gap (lower is stronger)',5,100,5],['invest','Investment rate (points per second)',5,60,1],
+  ['share','Followers’ share of a level-up (%)',0,100,5],['shareRiv','Rivals’ share of a level-up (%), 0 uses the line above',0,100,5],['refill','Refill bonus divisor (lower is stronger)',10,200,5],
+  ['stepL0','Gap shrink distance, past the gap (lower is stronger)',5,100,5],['invest','Investment rate (points per second)',5,60,1],['investYou','Your investment rate (points per second), 0 uses the line above',0,60,1],
   ['barScale','Barrier height scale (%)',50,150,5],['gapScale','Gap width scale (%)',50,150,5],['airH','Air time per unit of height (ms)',0,40,1],
   ['spill','Barrier spillover (% of barrier height)',0,100,1],['bounce','Crash bounce (fraction of impact speed)',0,1,0.05],
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
-  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
+  ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singGap','Singularity gap width scale (%)',50,150,5],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
   ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
