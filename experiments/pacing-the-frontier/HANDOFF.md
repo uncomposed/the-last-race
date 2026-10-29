@@ -38,11 +38,15 @@ Open: PR 19, this handoff, the leaderboard plan and the saved campaign probe scr
    - one 1/60 s replay path;
    - deterministic maths so Safari replays match (the sim calls `Math.sin`, `Math.log`, `Math.cos` and `Math.exp`);
    - the sim hash in each run log's header;
-   - copy the `auto` input into `K.chill` on replay;
+   - copy the `auto` input into `K.chill` on replay (the server's replayer already does this);
+   - **fix a likely recorder gap:** `recTick` only logs a jump when the previous tick had none, so a jump pressed on two back-to-back ticks is logged once, and that run would fail verification. This was found by reading the code and has not been reproduced;
    - a replay check in CI.
 
    This is the main risk: prove it in Safari before relying on it.
-2. **Leaderboard server**, in the private repo `uncomposed/the-last-race-server`. Its `HANDOFF.md` has its status and deploy steps. Deploying needs Cole's VPS, plus one GoDaddy DNS record for `api.the-last-race.com`. Cloudflare's free plan is recommended in front at public launch.
+2. **Leaderboard server**, in the private repo `uncomposed/the-last-race-server`.
+   - **Status:** first version built and verified by 35 passing tests. 72 headless runs replay identically, about 7 ms each, and tampered logs are rejected.
+   - **Not done yet:** not deployed; the Docker image hasn't been built locally. CI has never run, because GitHub Actions on the private repo is blocked by an account billing or spending-limit problem that Cole needs to look at.
+   - Its `HANDOFF.md` has the details and the deploy steps. Deploying needs Cole's VPS, plus one GoDaddy DNS record for `api.the-last-race.com`. Cloudflare's free plan is recommended in front at public launch.
 3. **Leaderboard screens** in the game: the position line using Cole's wording rule, Publish or Keep private, the board view, and "Race this ghost".
 4. **Sprite customisation.** Points groundwork exists: `PF.ach.points()` counts achievements, stars and chairs. There is no shop yet.
 5. **More briefings.** There are 10, so the daily repeats every 10 days. Each new one needs a sourced fact and Cole's approval, and gets an `added` date, so past days never change.
