@@ -510,3 +510,37 @@ Caveats. The ladder is steeper downwards than upwards (Easy +3.7 points, Hard �
 | strikeGap 1 | 253 (23.4%) | 222 (20.5%) | 150 (13.9%) |
 
 At Medium the probe is dissolved in 23.0% of runs (was 17.5%); scrapes and drops are about 12% of its strikes. The ladder stays monotone in total; the mean rises from Easy to Hard in 4 of 27 cells by 1 or 2 games of 40 (114 2★, 1548 1★ to 3★), against 2 cells with the rebuilt probes under the old rule. The cost falls on the risky lessons: gamble on 1167 (Medium 31 to 21, Hard to 0 or 1) and rush on 1115 2★ (26 to 1 at Medium). Choice: keep Easy 4, Medium 3, Hard 2. Inference, not shown: 1167 and 1115 may now teach a different lesson than their names say; worth a hand playtest. Scripts and CSVs were kept out of the repo.
+
+## Daily twists
+
+28 October 2026. The question was whether each daily twist makes every tier harder. Setup: the custom bot as lab 0 (perfect hands), the default knobs plus the twist, `PSTRIKES` null as in the daily, the three daily rosters (solo, Steward, Sprinter and Steward), chill off and on. Seeds are daily seeds (`dailySeed` of a date), 200 a block: block A (from 2027-01-01) to tune, block B (from 2027-08-01) to check, block C (from 2028-03-01) to report. A twist ships only if it lowers wins in all six cells of the report block. Paired: the same seeds with and without the twist. Bot play only; shares are outcomes of this sampling, not calibrated probabilities.
+
+**Block C, wins out of 200 per cell, tiers 1 / 2 / 3 (solo / Steward / Sprinter and Steward).**
+
+| Twist | Overrides | Chill off | Chill on | All six lower? |
+|---|---|---|---|---|
+| none | | 104 / 45 / 48 | 129 / 57 / 49 | |
+| old Taller Barriers | barScale 150 | 88 / 38 / 40 | 118 / 60 / 50 | no |
+| old Wider Gaps | gapScale 115 | 87 / 48 / 38 | 106 / 53 / 35 | no |
+| old Rivals Copy You More | share 60 | 104 / 49 / 45 | 129 / 57 / 49 | no |
+| old Higher Extinction Odds | singOdds 45 | 104 / 45 / 48 | 129 / 57 / 49 | no |
+| old Faster Singularity | singSpeed 4 | 105 / 39 / 42 | 130 / 48 / 40 | no |
+| old Slower Investment | invest 12 | 94 / 67 / 48 | 117 / 69 / 52 | no |
+| Only 2 Strikes (kept) | strikes 2 | 35 / 26 / 26 | 42 / 30 / 28 | yes |
+| Hard Lessons | barScale 150, spill 0 | 81 / 23 / 25 | 110 / 37 / 46 | yes |
+| Wider Gaps | gapScale 125 | 87 / 38 / 26 | 104 / 43 / 32 | yes |
+| Rivals Copy You More | shareRiv 80, investYou 12 | 94 / 41 / 33 | 117 / 42 / 35 | yes |
+| Slower Investment | investYou 12 | 94 / 40 / 36 | 117 / 41 / 35 | yes |
+| Wider Singularity | singGap 140 | 84 / 36 / 24 | 109 / 34 / 26 | yes |
+| (shareRiv 80 alone) | shareRiv 80 | 104 / 49 / 47 | 129 / 57 / 48 | no |
+| (spill 0 alone) | spill 0 | 101 / 27 / 34 | 125 / 37 / 38 | yes |
+
+**Findings**
+
+- **Taller Barriers did little** because most walls already sit at their height cap (the ceiling plus the jump, less 6), and barScale's range stops at 150 (the default is 140). Hard Lessons adds `spill` 0: a lab that climbs a wall gives no height to the others. spill 0 alone lowers all six cells of block C too (101 / 27 / 34 off, 125 / 37 / 38 on), so it does most of the work against rivals; the taller walls add to it in solo.
+- **Copying more helps a trailing player.** A bigger share for everyone (the old twist) raised wins against the Steward. Giving the bigger share to the rivals only (`shareRiv`) still does not lower wins against the Steward, and solo has no rivals to copy you, so on its own it can never make tier 1 harder. Rivals Copy You More keeps the rivals' bigger share for the story, but the part that makes it harder is the slower Build (`investYou` 12): its cells are within 3 games of Slower Investment's.
+- **Slower Investment slowed the bots too,** which made the versus tiers easier (Steward 45 to 67). `investYou` slows only lab 0.
+- **Extinction odds cannot touch solo:** your own fall loses the race whatever the roll. Faster Singularity changed solo by one game or none. Both were replaced by Wider Singularity: `singGap` widens the singularity gap, never past 0.95 of its ceiling coverage (the generator keeps it under 0.8 otherwise).
+- **Tuning.** Settings were picked on block A. On block B, Wider Singularity at 125 lowered the Steward tier by one game only, so it was raised to 140 and everything was reported from a fresh block C. Wider Gaps at 120 failed block A; 125 passed A, B and C.
+- **Not tested.** Human play. Twists that only a human feels (the control lag past the singularity) cannot be measured with bots. `check/content-check.mjs` re-checks every twist on a small fixed block (n stated in its output).
+
