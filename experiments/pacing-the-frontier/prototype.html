@@ -150,8 +150,12 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 .ach-hd>span{display:flex;flex-direction:column;min-width:0}
 .ach-k{font:500 11.5px/1.2 var(--mono);color:var(--muted)}
 .ach-nm{font:700 16px/1.2 var(--display);color:var(--ink)}
-.card .ach-tid{font:400 13.5px/1.4 var(--body);margin:0}
+.ach-slot .rc-line{margin-top:6px}
 .card .ach-more{font:400 12px/1.35 var(--body);color:var(--muted);margin:0}
+#ach-go{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#ach-go.nudge{animation:achHop .6s ease-out 3}
+@keyframes achHop{0%,100%{transform:none}30%{transform:translateY(-7px)}55%{transform:none}72%{transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){#ach-go.nudge{animation:none}}
 .ach-more[hidden]{display:none}
 .ach-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
 .ach-btns button,.ach-real{min-height:36px;padding:6px 12px;font:500 13px var(--mono)}
@@ -176,14 +180,15 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
   .ach-open{padding:6px 8px;gap:4px}
   .ab{width:22px;height:22px}
   .ach-nm{font-size:14px}
-  .card .ach-tid{font-size:12.5px;line-height:1.35}
   .card .ach-more{font-size:11.5px}
   .ach-btns button,.ach-real{min-height:34px;padding:4px 10px;font-size:12px}
 }
 /* landscape phones: no room to grow, so the buttons come right under the name and the story scrolls in its own box */
 @media (orientation:landscape) and (max-height:540px){
-  .ach-btns{order:1}.ach-tid{order:2}.ach-more{order:3}
-  .card .ach-tid{max-height:4.1em;overflow:auto}
+  .ach-btns{order:1}.ach-slot{order:2}.ach-more{order:3}
+  .ach-lead{display:none}
+  .ach-slot #rc-cv{height:44px}
+  .ach-slot .rc-line{max-height:4.1em;overflow:auto;min-height:0}
   .card .ach-more{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
 /* the end card lives on the track, which is short, so while the opening card shows the card may grow down over the controls
@@ -549,9 +554,9 @@ html.epi-open{overflow:hidden}
           <!-- achievements: the recap opens with this card; Keep going starts the walk -->
           <div class="ach-open" id="ach-open" role="group" aria-labelledby="ach-nm" hidden>
             <div class="ach-hd"><span id="ach-badge"></span><span><span class="ach-k" id="ach-k"></span><span class="ach-nm" id="ach-nm"></span></span><button type="button" class="ach-all" id="ach-all" aria-haspopup="dialog">All</button></div>
-            <p class="ach-tid" id="ach-tid"></p>
+            <div class="ach-slot" id="ach-slot"></div>
             <p class="ach-more" id="ach-more" hidden></p>
-            <div class="ach-btns"><a class="ach-real" id="ach-real" href="#" target="_blank" rel="noopener">What's the real version?<span class="sr-only"> (opens in a new tab)</span></a><button type="button" id="ach-go">Keep going</button></div>
+            <div class="ach-btns"><a class="ach-real" id="ach-real" href="#" target="_blank" rel="noopener"><span class="ach-lead">What's the </span>real version?<span class="sr-only"> (opens in a new tab)</span></a><button type="button" id="ach-go">Review your game</button></div>
           </div>
           <div class="rc-stage" id="rc-stage" title="Tap to skip to the next stop">
             <canvas id="rc-cv" aria-hidden="true"></canvas>
@@ -3119,6 +3124,7 @@ function rcStand(i){
 }
 function rcPlay(){
   rcStop(); readColors();  /* fresh theme colours, in case the theme changed since the last frame */
+  RC.host=null;
   var list=$('rc-list'),say=$('rc-say'),still=!!(RC_RM&&RC_RM.matches);
   list.hidden=!still; say.hidden=still; $('rc-replay').hidden=still; $('rc-n').textContent='';
   $('rc-plaque').className='rc-plaque'; $('rc-plaque').textContent=''; $('rc-line').textContent=still?'':'Professor Postmortem, historian, finds his notes.'; $('rc-line').classList.remove('dim');
@@ -3152,8 +3158,39 @@ function rcArrive(now){
   if(s.mood==='bad'){ snd.sfx('land',{gain:0.35,pan:pan}); }
   else if(s.mood==='good'){ snd.sfx('first',{gain:0.16,pan:pan}); }
 }
+/* hosting the achievement card: he stays put and bounces while the bubble tells the real story, then bounces again, points down at
+   the Review your game button, and the button hops too. h = {plaque, line, plaque2, line2, good}. With reduced motion it is one
+   still bubble holding both lines */
+function rcHost(h){
+  rcStop(); readColors(); RC.host=h;
+  var pl=$('rc-plaque'),ln=$('rc-line'),still=!!(RC_RM&&RC_RM.matches),now=performance.now();
+  $('rc-say').hidden=false; $('rc-list').hidden=true; $('rc-replay').hidden=true; $('rc-n').textContent='';
+  RC.i=-1; RC.t0=now; RC.dwell=clamp(2.5+rcWords(h.line)*0.27,6,15);
+  pl.textContent=h.plaque; pl.className='rc-plaque'; void pl.offsetWidth; pl.classList.add('on'); RC.pw=pl.offsetWidth; RC.rr=0;
+  ln.classList.remove('dim');
+  if(still){
+    ln.textContent=h.line+' '+h.line2; RC.ph='hostEnd';
+    if(rcSize()){ rcDraw(now); }
+    return;
+  }
+  ln.textContent=h.line; RC.ph='host'; rcBabble(now,h.line);
+  if(rcSize()){ rcDraw(now); }
+  RC.raf=requestAnimationFrame(rcFrame);
+}
+function rcBabble(now,line){
+  var n=clamp(Math.round(rcWords(line)/4),2,4),j; RC.bab=[];
+  for(j=0;j<n;j++){ RC.bab.push({at:now+140+j*90+((j*37)%30),n:'jump',g:0.1+(j%3)*0.03,p:0}); }
+}
+function rcHostMore(now){
+  var h=RC.host,pl=$('rc-plaque'),ln=$('rc-line');
+  RC.ph='hostMore'; RC.t0=now;
+  pl.textContent=h.plaque2; pl.classList.remove('on'); void pl.offsetWidth; pl.classList.add('on'); RC.pw=pl.offsetWidth;
+  ln.textContent=h.line2; rcBabble(now,h.line2);
+  $('ach-go').classList.remove('nudge'); void $('ach-go').offsetWidth; $('ach-go').classList.add('nudge');
+}
 function rcSkip(){
-  if(!RC.raf||RC.ph===''||RC.ph==='still'){return;}
+  if(RC.ph==='host'){ rcHostMore(performance.now()); return; }
+  if(!RC.raf||RC.ph===''||RC.ph==='still'||RC.ph==='hostMore'||RC.ph==='hostEnd'){return;}
   var now=performance.now();
   if(RC.ph==='walk'){ rcArrive(now); }
   else if(RC.i<RC.stops.length-1){ rcWalk(now); rcArrive(now); }
@@ -3162,10 +3199,13 @@ function rcFrame(now){
   RC.raf=0;
   if($('ov').hidden||$('ov-story').hidden||!RC.geo){ rcStop(); return; }
   var e=(now-RC.t0)/1000;
+  if(RC.ph==='host'&&e>=RC.dwell){ rcHostMore(now); e=0; }
+  else if(RC.ph==='hostMore'&&e>8){ RC.ph='hostEnd'; }
   if(RC.ph==='walk'&&e>=RC.dur){ rcArrive(now); e=0; }
   else if(RC.ph==='dwell'&&e>=RC.dwell&&RC.i<RC.stops.length-1){ rcWalk(now); }
   while(RC.bab.length&&RC.bab[0].at<=now){ var b=RC.bab.shift(); snd.sfx(b.n,{gain:b.g,pan:b.p}); }
   if(rcSize()){ rcDraw(now); }
+  if(RC.ph==='hostEnd'){ return; }  /* he has said his piece: rest on the last frame */
   /* after the verdict, idle a moment, then rest on the last frame */
   if(RC.ph==='dwell'&&RC.i===RC.stops.length-1&&e>2.2&&!RC.bab.length){ RC.ph='end'; return; }
   RC.raf=requestAnimationFrame(rcFrame);
@@ -3205,6 +3245,13 @@ function rcDraw(now){
   if(RC.ph==='walk'){
     var to=rcStand(RC.i),f=clamp(e/RC.dur,0,1),ph=e*11;
     hx=RC.from+(to-RC.from)*f; o.walk=true; o.step=Math.floor(ph/Math.PI)%2; o.hop=Math.abs(Math.sin(ph))*3; o.dir=to>=RC.from?1:-1;
+  } else if(RC.ph==='host'||RC.ph==='hostMore'||RC.ph==='hostEnd'){
+    /* hosting: centred, bouncing on the spot. The first line is a happy hop now and then; the second is a big hop, then he points
+       down at the button and keeps hopping a little until he rests */
+    hx=Math.round(W/2-6*u); var cyc=e%2.4;
+    if(RC.ph==='host'){ o.mood=RC.host.good?'good':'plain'; o.spark=RC.host.good&&e<1.4; o.hop=e<0.6?Math.abs(Math.sin(Math.PI*e/0.3))*5:(cyc<0.3?Math.sin(Math.PI*cyc/0.3)*2.5:0); }
+    else { o.point=[hx+6*u,H+40]; o.hop=RC.ph==='hostMore'?(e<0.42?Math.sin(Math.PI*e/0.42)*10:((e%1.6)<0.25?Math.sin(Math.PI*(e%1.6)/0.25)*4:0)):0; }
+    o.blink=((now/1000)%3.4)<0.12;
   } else {
     hx=rcStand(RC.i); o.mood=st.mood;
     o.point=st.verdict?[rcSx(g.finish)+2,gy-(H<60?13:18)]:[rcSx(st.x),gy-1];
@@ -3219,7 +3266,8 @@ function rcDraw(now){
   /* the plaque sits over the spot; the bubble's tail points at his head */
   var pl=$('rc-plaque');
   /* to the right of the spot when it fits, else to his left, so it never covers his head */
-  if(RC.ph!=='still'&&st){ var cxp=(st.verdict?fx:rcSx(st.x))-6,rw=W-4-(RC.rr||0),plx=cxp+RC.pw<=rw?cxp:hx-6-RC.pw; pl.style.left=Math.round(clamp(plx,4,Math.max(4,rw-RC.pw)))+'px'; }
+  if(RC.host&&RC.ph.indexOf('host')===0){ pl.style.left='4px'; }
+  else if(RC.ph!=='still'&&st){ var cxp=(st.verdict?fx:rcSx(st.x))-6,rw=W-4-(RC.rr||0),plx=cxp+RC.pw<=rw?cxp:hx-6-RC.pw; pl.style.left=Math.round(clamp(plx,4,Math.max(4,rw-RC.pw)))+'px'; }
   $('rc-line').style.setProperty('--tx',Math.round(clamp(hx+6*u,14,W-14))+'px');
 }
 /* 12 by 14 cells, feet on the bottom row, drawn like the labs: tweed body, round spectacles, a mortarboard with an orange tassel,
@@ -5023,8 +5071,8 @@ window.PF.ghost={encode:ghEncode,decode:ghDecode,plain:ghPlain,last:function(){r
    Twelve achievements, each tied to a real-world story. They are judged when a race ends, from that race's events (G.ev) and result,
    plus two things the UI tallies while you play: whether chill mode was on at Go or at any moment after (as in the campaign), and how
    long a rival ahead shadowed your sight. Only a race you play counts (not Watch bots). "Ate your vegetables" is earned by opening any
-   outbound game link (utm_medium=game). The recap opens with what this run earned first; with nothing new, it introduces one you have
-   not earned yet. Storage: ACH_KEY holds {v:1, got:{id:'YYYY-MM-DD' first earned, local date}, intro:{id:n}, seq:n, pts:{ach,stars,spent}};
+   outbound game link (utm_medium=game). The recap opens with what this run earned first; with nothing new it goes straight to the walk
+   (intro and seq are kept in storage but no longer used). Storage: ACH_KEY holds {v:1, got:{id:'YYYY-MM-DD' first earned, local date}, intro:{id:n}, seq:n, pts:{ach,stars,spent}};
    every access is in try/catch, and without storage the page keeps it in memory. pts is groundwork for spending on sprite outfits
    later: no shop yet. Facts: reused from BRIEFINGS where possible; anything new was checked on the web (see sources). Reviewer: lines
    facts were checked on the linked pages on 28 Oct 2026.
@@ -5174,29 +5222,28 @@ function achBadge(on){
     '<svg class="ab ab-off" viewBox="0 0 24 24" aria-hidden="true">'+sh+'<text x="12" y="15.6">?</text></svg>';
 }
 /* the recap's opening card. True when shown (the walk then waits for Keep going) */
-function achOpenHide(){ $('ach-open').hidden=true; $('ov').classList.remove('ach-tall'); $('rc-stage').hidden=false; $('rc-bar').hidden=false; }
+function achOpenHide(){
+  var st=$('rc-stage'),box=$('ov-story');
+  if(st.parentNode!==box){ box.insertBefore(st,$('rc-list')); }  /* the historian goes back to his own strip */
+  $('ach-open').hidden=true; $('ov').classList.remove('ach-tall'); st.hidden=false; $('rc-bar').hidden=false; $('ach-go').classList.remove('nudge');
+}
 function achOpen(){
   achOpenHide();
   if(!ACHLAST){return false;}
-  var a=null,earned=false,more='',k;
-  if(ACHLAST.fresh.length){
-    a=achById(ACHLAST.fresh[0]); earned=true;
-    if(ACHLAST.fresh.length>1){ more='Also earned: '+ACHLAST.fresh.slice(1).map(function(id){return achById(id).name;}).join('; ')+'.'; }
-  } else {
-    /* none new: introduce one not earned yet, the one introduced longest ago (never introduced first, in list order) */
-    var best=null;
-    ACH_LIST.forEach(function(x){ if(ACH.got[x.id]){return;} var s=ACH.intro[x.id]||0; if(!best||s<(ACH.intro[best.id]||0)){best=x;} });
-    if(!best){return false;}
-    a=best; ACH.seq++; ACH.intro[a.id]=ACH.seq; achSave();
-  }
+  /* nothing earned this run: no card, the historian goes straight to the walk through your game */
+  if(!ACHLAST.fresh.length){return false;}
+  var a=achById(ACHLAST.fresh[0]),earned=true,more='',k;
+  if(ACHLAST.fresh.length>1){ more='Also earned: '+ACHLAST.fresh.slice(1).map(function(id){return achById(id).name;}).join('; ')+'.'; }
   $('ach-badge').innerHTML=achBadge(earned);
   $('ach-k').textContent=earned?(ACHLAST.fresh.length>1?ACHLAST.fresh.length+' achievements earned':'Achievement earned'):'Something you haven\'t run into yet';
   $('ach-nm').textContent=a.name;
-  $('ach-tid').textContent=earned?a.tidbit:'How to earn it: '+a.hint+' '+a.tidbit;
   k=$('ach-more'); k.textContent=more; k.hidden=!more;
   $('ach-real').href=a.real.url; $('ach-real').title=a.real.label;
   achLinkUI();
-  $('rc-stage').hidden=true; $('rc-list').hidden=true; $('rc-bar').hidden=true; $('ach-open').hidden=false; $('ov').classList.add('ach-tall');
+  /* the historian hosts the card: he tells the story in his bubble, then points at Review your game */
+  $('ach-slot').appendChild($('rc-stage')); $('rc-stage').hidden=false; $('rc-bar').hidden=true; $('ach-open').hidden=false; $('ov').classList.add('ach-tall');
+  rcHost({plaque:earned?'Achievement!':'Did you know?',line:earned?a.tidbit:'How to earn it: '+a.hint+' '+a.tidbit,
+    plaque2:'Your game',line2:'That is the history. Now let\'s look at your game and see how it went.',good:earned});
   return true;
 }
 function achGoOn(){ if($('ach-open').hidden){return;} achOpenHide(); rcPlay(); }
