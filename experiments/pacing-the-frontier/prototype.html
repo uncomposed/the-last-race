@@ -3164,6 +3164,7 @@ function showSeed(){
 function start(seed,camp,daily){
   rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
   CAMP=camp||null; DLY=daily||null;
+  $('btn-restart').textContent=CAMP?'Retry map':(DLY?'Retry tier':'New run');  /* mid-race, a campaign or daily run restarts itself */
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
   dailyPrep();  /* daily: default knobs plus today's twist */
   ghPrep(seed,CAMP,DLY);  /* ghost link in free play: the sender's knobs and strikes */
@@ -3317,7 +3318,7 @@ function setPaused(v){ if(!running){return;} paused=v; $('btn-pause').textConten
 $('btn-pause').addEventListener('click',function(){ setPaused(!paused); });
 $('sing-btn').addEventListener('click',function(){ setPaused(false); });
 $('pace').addEventListener('pointerup',function(){this.blur();});
-$('btn-restart').addEventListener('click',function(){start();});
+$('btn-restart').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } else if(DLY){ dailyStart(DLY.date,DLY.tier); } else { start(); } });
 $('btn-seed').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); if(n===null){$('seed-in').value=G.seed;return;} start(n); });
 $('seed-in').addEventListener('keydown',function(e){ if(e.code==='Enter'){e.preventDefault();$('btn-seed').click();} });
 $('ov-btn').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); start(fresh?(n===null?G.seed:n):undefined); });
