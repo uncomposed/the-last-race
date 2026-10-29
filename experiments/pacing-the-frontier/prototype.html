@@ -3945,8 +3945,20 @@ function dailyDay(ds){
   if(!d||typeof d!=='object'){ d=DS.days[ds]={}; }
   if(!d.brief||typeof d.brief!=='object'){ d.brief={}; }
   if(!Array.isArray(d.t)){ d.t=[]; }
-  for(t=0;t<3;t++){ x=d.t[t]; if(!x||typeof x!=='object'){ x=d.t[t]={}; } x.att=campNum(x.att); x.star=!!x.star; x.chair=!!x.chair; if(typeof x.best!=='number'||!isFinite(x.best)){ x.best=null; } }
+  for(t=0;t<3;t++){ x=d.t[t]; if(!x||typeof x!=='object'){ x=d.t[t]={}; } x.att=campNum(x.att); x.star=!!x.star; x.chair=!!x.chair;
+    if(typeof x.best!=='number'||!isFinite(x.best)){ x.best=null; }
+    if(typeof x.bs!=='number'||!isFinite(x.bs)){ x.bs=null; } if(typeof x.bc!=='number'||!isFinite(x.bc)){ x.bc=null; }
+    if(x.best!==null&&x.bs===null&&x.bc===null){ dailySplitBest(ds,t,x); } }
   return d;
+}
+/* best times are kept per tier and per kind of win: bs for a star (chill off), bc for a lounge chair (chill on). best stays the
+   fastest of both, as before. Older data had only best: it goes to the one kind the tier was won with, or, if it has both, to the
+   kind of the stored best log with that time. If neither tells, it stays in best only and is shown as "best (kind not recorded)" */
+function dailySplitBest(ds,t,x){
+  if(x.star&&!x.chair){ x.bs=x.best; return; }
+  if(x.chair&&!x.star){ x.bc=x.best; return; }
+  var L=DLOGS&&DLOGS[ds]&&DLOGS[ds][t],k,r;
+  for(k in {star:1,chair:1}){ r=L&&L[k]&&L[k].result; if(r&&r.won&&Math.abs(r.t-x.best)<0.06){ if(k==='star'){ x.bs=x.best; } else { x.bc=x.best; } return; } }
 }
 function dailyRes(x){ return x.star?'star':(x.chair?'chair':''); }
 function dailyLabel(r){ return r==='star'?'star (chill off)':(r==='chair'?'lounge chair (chill on)':'not won yet'); }
@@ -3959,6 +3971,14 @@ function dailyIcon(r,label){
 var KIND_WORDS={barrier:'a barrier, a public failure everyone learned from',gap:'a gap, a risk that could end everything',strike:'a strike, a near miss',
   shadow:'a shadow, rivals copying your lead',race:'the race, speed over safety',singularity:'the singularity, progress outrunning human control'};
 var BROC='<svg class="si dly-broc" viewBox="0 0 24 24" aria-hidden="true"><path class="st" d="M10 13h4l1 9h-6z"/><circle cx="7" cy="10" r="4.5"/><circle cx="17" cy="10" r="4.5"/><circle cx="12" cy="7" r="5"/></svg>';
+/* a tier's best times, one per kind of win */
+function dailyBestHtml(x){
+  var h='';
+  if(x.bs!==null){ h+='<span>star best '+fmtT(x.bs)+'</span>'; }
+  if(x.bc!==null){ h+='<span>chair best '+fmtT(x.bc)+'</span>'; }
+  if(x.bs===null&&x.bc===null&&x.best!==null){ h+='<span>best '+fmtT(x.best)+' (kind not recorded)</span>'; }
+  return h;
+}
 function dailyRivals(t){ var ro=DAILY_TIERS[t].roster; return ro.length?'<b>vs</b> '+rivalsHtml(ro):'<b>Solo</b>, just you and the track'; }
 function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
 
@@ -3988,7 +4008,16 @@ function recEnd(){
   delete REC.last; LASTREC=REC; REC=null; return LASTREC;
 }
 function recBetter(a,b){ if(!b||!b.result){return true;} if(a.result.won!==b.result.won){return a.result.won;} return a.result.won?a.result.t<b.result.t:a.result.x>b.result.x; }
-function dailyLogsLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(DAILY_LOG_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
+/* DLOGS[date][tier] is {star: best chill-off log, chair: best chill-on log}. An older log stored straight under [tier] moves to the
+   kind its header's result says (result.chill) */
+function dailyLogsLoad(){
+  var o=null; try{ o=JSON.parse(window.localStorage.getItem(DAILY_LOG_KEY)||'null'); }catch(e){ o=null; }
+  if(!o||typeof o!=='object'){ return {}; }
+  var ds,t,L,r;
+  for(ds in o){ L=o[ds]; if(!L||typeof L!=='object'){ continue; }
+    for(t=0;t<3;t++){ r=L[t]; if(r&&typeof r==='object'&&r.h&&r.result){ L[t]={}; L[t][r.result.chill?'chair':'star']=r; } } }
+  return o;
+}
 function dailyLogsSave(){ var ks=Object.keys(DLOGS).sort(); while(ks.length>14){ delete DLOGS[ks.shift()]; } try{ window.localStorage.setItem(DAILY_LOG_KEY,JSON.stringify(DLOGS)); return true; }catch(e){ return false; } }
 
 /* race hooks, called from start(), go(), endScreen() */
@@ -4017,15 +4046,17 @@ function dailyEnd(){
   $('ov-replay').hidden=!!CAMP; $('ov-daily').hidden=!!CAMP; $('ov-list').hidden=!!DLY;
   $('ov-replay').classList.remove('primary'); $('ov-daily').classList.remove('primary');
   if(!DLY){ if(!CAMP){ var ff=$('ov-foot').querySelector('.btns'); ['ov-replay','ov-daily','ov-list'].forEach(function(id){ ff.appendChild($(id)); }); } return; }
-  var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),prev=x.best,parts=[];
-  if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x.best===null||G.t<x.best){ x.best=Math.round(G.t*10)/10; } }
+  var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),bk=chill?'bc':'bs',prev=x[bk],parts=[],tm=Math.round(G.t*10)/10;
+  if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x[bk]===null||tm<x[bk]){ x[bk]=tm; } if(x.best===null||tm<x.best){ x.best=tm; } }
   var saved=dailySave();
-  if(rec&&rec.h.human){ var L=DLOGS[ds]; if(!L||typeof L!=='object'){ L=DLOGS[ds]={}; } if(recBetter(rec,L[t])){ L[t]=rec; dailyLogsSave(); } }
+  if(rec&&rec.h.human){ var L=DLOGS[ds],lk=rec.result.chill?'chair':'star'; if(!L||typeof L!=='object'){ L=DLOGS[ds]={}; } if(!L[t]||typeof L[t]!=='object'){ L[t]={}; }
+    if(recBetter(rec,L[t][lk])){ L[t][lk]=rec; dailyLogsSave(); } }
   campUnlock();
   if(won){
     if(!chill){ parts.push(had==='star'?'Tier '+(t+1)+' won again with chill off. '+dailyIcon('star')+' Star kept.':'Tier '+(t+1)+' won with chill off: star earned '+dailyIcon('star')+'.'); }
     else { parts.push(had?'Tier '+(t+1)+' won again with chill on.':'Tier '+(t+1)+' won with chill on: lounge chair earned '+dailyIcon('chair')+'.'); if(!x.star){ parts.push('Turn chill off to race it for a star.'); } }
-    parts.push(prev!==null&&x.best<prev?'<span class="new">New best: '+fmtT(x.best)+'</span> (was '+fmtT(prev)+').':'Best '+fmtT(x.best)+'.');
+    var kw=chill?'lounge chair':'star';
+    parts.push(prev!==null&&x[bk]<prev?'<span class="new">New best for a '+kw+': '+fmtT(x[bk])+'</span> (was '+fmtT(prev)+').':'Best for a '+kw+': '+fmtT(x[bk])+'.');
   } else {
     parts.push('No win on tier '+(t+1)+' this time.');
   }
@@ -4058,7 +4089,7 @@ function dailyList(ds){
   for(t=0;t<3;t++){
     x=d.t[t]; r=dailyRes(x); if(first<0&&r!=='star'){ first=t; }
     h+='<button type="button" class="cmp-tier" data-tier="'+t+'"><span><span class="cmp-ts"><span class="cmp-tn">Tier '+(t+1)+'</span>'+dailyIcon(r,'tier '+(t+1)+', '+dailyLabel(r))+'</span><br>'+dailyRivals(t)+'</span>'+
-      '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+(x.best!==null?'<span>best '+fmtT(x.best)+'</span>':'')+'</span></button>';
+      '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+dailyBestHtml(x)+'</span></button>';
   }
   h+='</div>'+(d.brief.ok?'<p class="note dly-badge">'+BROC+' Broccoli badge: briefing right first time.</p>':'')+
     '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div>';
@@ -4135,15 +4166,23 @@ function dailyShowAnswer(ds,now){
 /* share: a PNG poster in the game's pixel style, plus a text version. navigator.share with the file where it works, else the PNG is
    downloaded and the text copied. The poster is drawn ahead (dailyPrime) so share() runs inside the tap */
 function dailyShareInfo(ds){
-  var d=dailyDay(ds),b=dailyBrief(ds),best=null,wins=0,rows=[],t,x;
-  for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } if(x.best!==null&&(best===null||x.best<best)){ best=x.best; } rows.push({res:dailyRes(x),att:x.att,best:x.best,name:DAILY_TIERS[t].name}); }
-  return {ds:ds,twist:b.twist.name,rows:rows,best:best,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
+  var d=dailyDay(ds),b=dailyBrief(ds),wins=0,rows=[],t,x;
+  for(t=0;t<3;t++){ x=d.t[t]; if(x.star||x.chair){ wins++; } rows.push({res:dailyRes(x),star:x.star,chair:x.chair,att:x.att,bs:x.bs,bc:x.bc,best:x.bs===null&&x.bc===null?x.best:null,name:DAILY_TIERS[t].name}); }
+  return {ds:ds,twist:b.twist.name,rows:rows,wins:wins,broc:!!d.brief.ok,line:wins?'Can you beat this seed?':'I couldn\'t. Can you?',url:DAILY_SITE+'?daily='+ds,
     link:utm('https://'+DAILY_SITE+'?daily='+ds,'daily-share')};
+}
+/* "star 61.2 s, lounge chair 70.1 s": each kind of win with its own best time */
+function dailyRowWords(r,emoji){
+  var p=[];
+  if(r.star){ p.push((emoji?'⭐ ':'')+'star'+(r.bs!==null?' '+fmtT(r.bs):'')); }
+  if(r.chair){ p.push((emoji?'🪑 ':'')+'lounge chair'+(r.bc!==null?' '+fmtT(r.bc):'')); }
+  if(!p.length){ p.push((emoji?'⬜ ':'')+'not yet'); }
+  else if(r.best!==null){ p.push('best '+fmtT(r.best)); }
+  return p.join(', ');
 }
 function dailyShareText(ds){
   var s=dailyShareInfo(ds),L=['Pacing the Frontier, daily '+ds,'Twist: '+s.twist];
-  s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+(r.res==='star'?'⭐ star':(r.res==='chair'?'🪑 lounge chair':'⬜ not yet'))+', '+dailyAtt(r.att)); });
-  if(s.best!==null){ L.push('Best time '+fmtT(s.best)); }
+  s.rows.forEach(function(r,t){ L.push('Tier '+(t+1)+' ('+r.name+'): '+dailyRowWords(r,true)+', '+dailyAtt(r.att)); });
   if(s.broc){ L.push('🥦 Broccoli badge'); }
   L.push(s.line); L.push(s.link);
   return L.join('\n');
@@ -4176,16 +4215,18 @@ function dailyPoster(ds,cb){
       r=s.rows[i]; y=340+i*150;
       c.fillStyle=PXC.panel; c.fillRect(80,y,920,128);
       pxSprite(c,r.res==='star'?PXS.star:(r.res==='chair'?PXS.chair:PXS.none),108,y+19,10,cols);
-      col=r.res==='star'?PXC.orange:(r.res==='chair'?PXC.sky:PXC.muted); lab=r.res==='star'?'Star':(r.res==='chair'?'Lounge chair':'Not yet');
-      pxText(c,'Tier '+(i+1)+', '+r.name,226,y+52,34,PXC.ink,700,560);
-      pxText(c,lab+(r.res==='star'?' (chill off)':(r.res==='chair'?' (chill on)':'')),226,y+100,32,col,500,520);
+      col=r.res==='star'?PXC.orange:(r.res==='chair'?PXC.sky:PXC.muted);
+      lab=r.star?'Star '+(r.bs!==null?fmtT(r.bs):'(chill off)'):(r.chair?'Chair '+(r.bc!==null?fmtT(r.bc):'(chill on)'):'Not yet');
+      if(r.star&&r.chair){ lab+=' · Chair '+(r.bc!==null?fmtT(r.bc):''); }
+      if((r.star||r.chair)&&r.best!==null){ lab+=' · best '+fmtT(r.best); }
+      pxText(c,'Tier '+(i+1)+', '+r.name,226,y+52,34,PXC.ink,700,520);
+      pxText(c,lab,226,y+100,32,col,500,740);
       c.textAlign='right';
       pxText(c,dailyAtt(r.att),972,y+52,30,PXC.muted,500,220);
-      if(r.best!==null){ pxText(c,fmtT(r.best),972,y+100,30,PXC.muted,500,220); }
       c.textAlign='left';
     }
     y=850;
-    pxText(c,s.best!==null?'Best time '+fmtT(s.best):'No finish yet',80,y,44,PXC.ink,700,920);
+    pxText(c,s.wins?s.wins+' of 3 tiers won':'No tier won yet',80,y,44,PXC.ink,700,920);
     if(s.broc){ pxSprite(c,PXS.broc,80,y+34,9,cols); pxText(c,'Broccoli badge: briefing right first time',190,y+92,32,PXC.stalk,500,800); }
     pxText(c,s.line,80,1060,58,PXC.ink,700,920);
     /* a strip of track: ground, a barrier, a gap and a lab */
@@ -4263,7 +4304,7 @@ function dailyShare(ds,fromList){
 /* test and debug hooks: PF.daily.exportLog(date,tier) is the stored best input log as JSON; lastLog() is the last finished run's */
 window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_KEY,LOG_KEY:DAILY_LOG_KEY,seed:dailySeed,today:dailyToday,clampDate:dailyClampDate,brief:dailyBrief,order:dailyOrder,
   state:function(){return DS;},load:function(){ DS=dailyLoad(); DLOGS=dailyLogsLoad(); return DS; },open:dailyOpen,start:dailyStart,shareText:dailyShareText,share:dailyShare,poster:dailyPoster,
-  logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t){ var L=DLOGS[ds]; return L&&L[t]?JSON.stringify(L[t]):null; },current:function(){return DLY;}};
+  logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t,kind){ var L=DLOGS[ds],o=L&&L[t],r=o?(kind?o[kind]:(o.star||o.chair)):null; return r?JSON.stringify(r):null; },splitBest:dailySplitBest,current:function(){return DLY;}};
 /* ---------- daily (end) ---------- */
 
 /* ---------- ghost links (begin) ---------- */
