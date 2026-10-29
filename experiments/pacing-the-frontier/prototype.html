@@ -4231,7 +4231,7 @@ window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_K
    not earned yet. Storage: ACH_KEY holds {v:1, got:{id:'YYYY-MM-DD' first earned, local date}, intro:{id:n}, seq:n, pts:{ach,stars,spent}};
    every access is in try/catch, and without storage the page keeps it in memory. pts is groundwork for spending on sprite outfits
    later: no shop yet. Facts: reused from BRIEFINGS where possible; anything new was checked on the web (see sources). Reviewer: lines
-   marked CHECK are wording or links I could not fully confirm.
+   facts were checked on the linked pages on 28 Oct 2026.
    ACH item: {id, name, kind, rank (higher opens the recap first), hint, tidbit, real:{label,url}, sources:[...]}. LIST order is the
    order unearned ones are introduced in, roughly easiest first. */
 var ACH_LIST=[
@@ -4260,7 +4260,7 @@ var ACH_LIST=[
    tidbit:'A lab fell, the dice rolled, and the world carried on. In May 2023 the heads of OpenAI, Google DeepMind and Anthropic signed a one-sentence statement. It said mitigating the risk of extinction from AI should be a global priority alongside pandemics and nuclear war.',
    real:{label:'Center for AI Safety: Statement on AI Risk',url:'https://aistatement.com/'},
    sources:['https://aistatement.com/']},
-  /* the definition is the common usage, not a quote. CHECK: that the 80,000 Hours video is the best one-tap pick (the briefing uses it for AI 2027) */
+  /* the definition is the common usage, not a quote. The video is 80,000 Hours' tour of AI 2027 (80000hours.org, July 2025) */
   {id:'sing',name:'Past the Point',kind:'singularity',rank:10,hint:'Cross the singularity, the last gap.',
    tidbit:'The singularity is the point where AI improves so fast that progress outruns our ability to imagine or steer it, and humans drop out of the control loop. In the game, past it you speed up and your controls lag. AI 2027 is one forecast scenario of how that could go, and this video walks through it.',
    real:{label:'80,000 Hours: We\'re Not Ready for Superintelligence',url:'https://www.youtube.com/watch?v=5KVDDfAkRgc'},
@@ -4269,17 +4269,17 @@ var ACH_LIST=[
    tidbit:'Chill mode is guard rails for everyone, and you won with them on. In February 2023 Microsoft put guard rails on Bing chat after long chats got strange: 5 turns per session and 50 a day. Four days later it loosened them to 6 and 60.',
    real:{label:'Bing blog: Increasing limits on chat sessions',url:'https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions'},
    sources:['https://blogs.bing.com/search/february-2023/The-new-Bing-and-Edge-Increasing-Limits-on-Chat-Sessions','https://www.engadget.com/microsoft-limits-bing-conversations-to-prevent-disturbing-chatbot-responses-154142211.html']},
-  /* July 5, 2023 post; "steer and control AI systems much smarter than us" and 20% of compute secured to date are from it (checked via
-     search; the page itself returned 403 to a fetch). CHECK: the link opens for a normal browser */
+  /* July 5, 2023 post; "steer and control AI systems much smarter than us" and 20% of compute secured to date are from it (checked on the
+     page in a browser, 28 Oct 2026) */
   {id:'star',name:'Hands on the Wheel',kind:'race',rank:9,hint:'Win with chill mode off.',
    tidbit:'You won with chill off, jumping by hand. In July 2023 OpenAI said it needed breakthroughs to steer and control AI much smarter than us, and promised its Superalignment team 20 percent of the compute it had secured. In May 2024 the team was reported disbanded.',
    real:{label:'OpenAI: Introducing Superalignment',url:'https://openai.com/index/introducing-superalignment/'},
    sources:['https://openai.com/index/introducing-superalignment/','https://www.nbcnews.com/tech/tech-news/openai-dissolves-team-focused-long-term-ai-risks-less-one-year-announc-rcna152824']},
-  /* "something like it" is our framing: Italy blocked one product for a month, it did not dissolve a lab */
+  /* no real lab has been dissolved; the card says so. Italy's ChatGPT block is a barrier in the owner's framing (the briefings use it) */
   {id:'dissolved',name:'Three Strikes',kind:'dissolved',rank:11,hint:'Take strikes until your lab is dissolved.',
-   tidbit:'Too many strikes and the government dissolved your lab. A real regulator has done something like it, briefly: in March 2023 Italy\'s privacy watchdog blocked ChatGPT. It came back about a month later, after OpenAI added age checks and privacy changes.',
-   real:{label:'Al Jazeera: ChatGPT back in Italy after ban',url:'https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban'},
-   sources:['https://www.aljazeera.com/news/2023/4/28/chatgpt-available-to-users-in-italy-a-month-after-temporary-ban','https://www.privacylaws.com/news/italy-s-garante-imposes-and-then-withdraws-a-ban-on-chatgpt/']},
+   tidbit:'Too many strikes and your lab was dissolved. No real AI lab has been, yet. The closest call: in November 2023 OpenAI\'s nonprofit board, there to keep the company on its mission, fired its CEO. Within five days he was back, and most of that board was gone.',
+   real:{label:'NPR: OpenAI reinstates Sam Altman',url:'https://www.npr.org/2023/11/22/1214621010/openai-reinstates-sam-altman-as-its-chief-executive'},
+   sources:['https://www.npr.org/2023/11/22/1214621010/openai-reinstates-sam-altman-as-its-chief-executive']},
   /* checked on ai-2027.com/race (2028: "a million new robots per month"; 2030: "tiling the prairies and icecaps with factories and solar
      panels"). The phrase "industrializing every square inch" is not on that page, so it is not quoted here */
   {id:'extinct',name:'Everyone\'s Problem Now',kind:'gap',rank:12,hint:'Fall into a gap and lose the extinction roll.',
