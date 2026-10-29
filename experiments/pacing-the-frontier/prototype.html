@@ -4371,13 +4371,19 @@ function dailyEnd(){
   parts.push(dailyAtt(x.att)+' on this tier today.');
   if(!saved){ parts.push('<span class="note">Not saved: this browser has no storage for the page.</span>'); }
   $('ov-cres').innerHTML=parts.join(' '); $('ov-cres').hidden=false;
-  var up=won&&t<2;
-  $('ov-btn').hidden=true; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=!up; $('ov-up').textContent='Try tier '+(t+2);
+  var up=won&&t<2,on=won&&t===2?dailyOnward():null;  /* top tier won: point onward to the campaign, or a random map once every campaign star is in */
+  $('ov-btn').hidden=true; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=!(up||on); $('ov-up').textContent=on?on.label:'Try tier '+(t+2);
+  if(on){ up=true; }
   $('ov-share').hidden=false;
   $('ov-up').classList.toggle('primary',up); $('ov-replay').classList.toggle('primary',!up);
   var foot=$('ov-foot').querySelector('.btns');
   ['ov-up','ov-replay','ov-share','ov-daily'].forEach(function(id){ foot.appendChild($(id)); });
   dailyPrime(ds);
+}
+/* the next campaign map short of three stars (and its next tier), or null when every map has all three: then a random free-play map */
+function dailyOnward(){
+  for(var i=0;i<CAMPAIGN.length;i++){ if(campOpen(i)&&campStars(i)<3){ return {label:'Play the campaign',i:i,tier:campNextTier(i)}; } }
+  return {label:'Play a random map',i:-1};
 }
 function dailyStart(ds,t){
   ds=dailyClampDate(ds);
@@ -4613,7 +4619,8 @@ function dailyShare(ds,fromList){
   $('ov-replay').addEventListener('click',function(){ if(DLY){ dailyStart(DLY.date,DLY.tier); } else if(CAMP){ campStart(CAMP.i,CAMP.tier); } else { start(G.seed); } });
   $('ov-daily').addEventListener('click',function(){ dailyOpen(DLY?DLY.date:dailyToday()); });
   $('ov-share').addEventListener('click',function(){ if(DLY){ dailyShare(DLY.date,false); } });
-  $('ov-up').addEventListener('click',function(){ if(DLY&&!CAMP&&DLY.tier<2){ dailyStart(DLY.date,DLY.tier+1); } });
+  $('ov-up').addEventListener('click',function(){ if(!DLY||CAMP){ return; } if(DLY.tier<2){ dailyStart(DLY.date,DLY.tier+1); return; }
+    var on=dailyOnward(); if(on.i>=0){ campStart(on.i,on.tier); } else { start(); } });
   $('auto').addEventListener('change',function(){ if(DLY&&running&&K.chill){ DLY.chillUsed=true; } });
 })();
 /* test and debug hooks: PF.daily.exportLog(date,tier) is the stored best input log as JSON; lastLog() is the last finished run's */
