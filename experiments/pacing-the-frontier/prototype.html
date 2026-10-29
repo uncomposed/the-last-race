@@ -1799,7 +1799,9 @@ function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 /* ---------- constants and knobs ---------- */
 var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
   HREF0:25,HREF1:18,WREF0:84,WREF1:30};  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100};
+/* K.multipolar: off (0) by default. A distance in world units (a lab body is C.RW = 18, so 18 to 36 is one or two body lengths). When above 0 the race ends the step the first
+   lab LANDS past the singularity gap; see multiFreeze. Bots never read it. */
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,multipolar:0};
 var DEF={}; for(var kk in K){DEF[kk]=K[kk];}
 var KINDS={
   human:{name:'You',col:'a',w:[.25,.5,.25]},
@@ -2326,10 +2328,11 @@ function stepLab(l,dt,inp){
       if(nx>=g.x&&(jumped||!l.human||G.t-l.coyT>=C.COYOTE)){
         /* without a jump a lab with height still drops across at the scrape rate; it falls only if it bottoms out first */
         var cov=jumped?l.v*airT(l):0,dT=K.dropH/1000*h;
-        if(jumped&&cov>=gw){ crossGap(l,g,l.gi); l.gi++; }
+        if(jumped&&cov>=gw){ crossGap(l,g,l.gi); if(g.sing){ l.landX=g.x+cov; } l.gi++; }  /* landX: where the jump ends, for multiFreeze; it changes nothing else */
         else if(h>0.01&&l.v>0&&cov+l.v*dT>=gw){
           var f=clamp((gw-cov)/(l.v*dT),0,1),lost=f*h,k=l.gi;
           crossGap(l,g,k);
+          if(g.sing){ l.landX=g.x+gw; }  /* a scrape or drop lands at the far edge */
           l.pts[1]=Math.max(0,l.pts[1]-lost);
           l.capUntil=Math.max(l.capUntil,g.x+gw+K.scrapeCap*lost);
           g.pub=true; l.st.sc++; if(g.inner){l.st.is++;}
@@ -2367,6 +2370,25 @@ function humanInput(l){
   }
   return (inSing(l)&&!capped(l))?G.eff:li;
 }
+/* Multipolar finish (K.multipolar > 0 only). A lab has LANDED past the singularity gap when it crossed that gap alive (its fall roll is already behind it) and its x has
+   reached landX, the end of its jump (g.x + cov), or the far edge for a scrape or drop. A lab that is still approaching the gap has not been judged, and one in the air
+   has not reached landX: neither counts, so being close never skips the fall roll.
+   Same-step rule: the freeze is decided at the END of a step, after every lab has moved, so the order of labs in the list does not matter. Every lab that has landed by then
+   is a candidate; the winner is the one furthest along (ties go to the lower lab index), and any other landed lab within K.multipolar of the winner's x shares the outcome.
+   An extinction roll in the same step still ends everyone, as today, and then no freeze is evaluated. */
+function landed(l){ return !l.out&&l.landX!==undefined&&l.x>=l.landX; }
+function multiFreeze(){
+  var win=null,sh,i,l;
+  for(i=0;i<G.labs.length;i++){ l=G.labs[i]; if(landed(l)&&(!win||l.x>win.x)){ win=l; } }
+  if(!win){return;}
+  sh=[win];
+  for(i=0;i<G.labs.length;i++){ l=G.labs[i]; if(l!==win&&landed(l)&&win.x-l.x<=K.multipolar){ sh.push(l); } }
+  G.over=true;
+  G.result={type:sh.length>1?'multi':'wta',winner:win,shared:sh,dist:K.multipolar};
+  ev(win,'land',{shared:sh.length>1});
+  log(sh.length>1?sh.map(function(m){return m.name;}).join(' and ')+' landed past the singularity together (within '+K.multipolar+'). The race is frozen as a multipolar finish.'
+    :win.name+' landed past the singularity first with no rival within '+K.multipolar+'. The race is frozen: winner takes all.');
+}
 function stepGame(dt){
   if(G.over){return;}
   G.t+=dt;
@@ -2378,6 +2400,7 @@ function stepGame(dt){
     if(l.human){G.input.jump=false;G.eff.jump=false;}
     if(G.over){break;}
   }
+  if(!G.over&&K.multipolar>0){ multiFreeze(); }
   if(!G.over){updatePublic();}
   if(!G.over&&G.t>C.TLIMIT){G.over=true;G.result={type:'timeout'};log('Time limit reached.');}
 }
@@ -2390,7 +2413,7 @@ function run(seed,kind,roster){
   var res=G.result||{type:'none'},nb=0,ng=0,i;
   for(i=0;i<G.barriers.length;i++){ if(G.barriers[i].pub){nb++;} }
   for(i=0;i<G.gaps.length;i++){ if(G.gaps[i].pub){ng++;} }
-  return {type:res.type,winner:res.winner?res.winner.kind+(res.winner.id===0?'*':''):null,wid:res.winner?res.winner.id:-1,t:G.t,
+  return {type:res.type,winner:res.winner?res.winner.kind+(res.winner.id===0?'*':''):null,wid:res.winner?res.winner.id:-1,shared:res.shared?res.shared.map(function(m){return m.id;}):undefined,t:G.t,
     outs:G.labs.map(function(l){return l.out?1:0;}),dis:G.labs.map(function(l){return l.dissolved?1:0;}),strikes:G.labs.map(function(l){return l.strikes;}),level:G.level,labs:G.labs.map(function(l){return Math.round(l.x);}),
     gi:G.labs.map(function(l){return l.gi;}),st:G.labs.map(function(l){return l.st;}),still:G.labs.map(function(l){return l.maxStill;}),
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
@@ -2849,6 +2872,7 @@ function rcDwell(s){ return clamp(0.8+rcWords(s)*0.13,1.9,3.0); }
 function tellStory(){
   var box=$('ov-story'); rcStop(); box.hidden=true;
   if(!window.PFStory||!G||!G.over||!G.labs[0].human){return;}
+  if(G.result&&(G.result.type==='multi'||G.result.type==='wta')){return;}  /* the recap has no words for the multipolar outcomes */
   try{
     var r=G.result||{},res={type:r.type};
     if(r.type==='win'){res.winner=r.winner.name;} else if(r.type==='all'){res.by=r.by;res.gap=r.gap;res.roll=r.roll;}
@@ -3049,11 +3073,29 @@ function showOverlay(title,msg,btn){
 }
 /* the start card: three short lines; "How to play" shows and hides the full rules */
 $('ov-how').addEventListener('click',function(){ var m=$('ov-msg'); m.hidden=!m.hidden; this.setAttribute('aria-expanded',m.hidden?'false':'true'); this.textContent=m.hidden?'How to play':'Hide the rules'; });
+function nameList(labs){
+  var n=labs.map(function(m){return m.human?'you':m.name;});
+  return n.length<2?n.join(''):n.slice(0,-1).join(', ')+' and '+n[n.length-1];
+}
+/* the multipolar outcomes (K.multipolar above 0): decided when the first lab landed past the singularity gap. No stars, medals or records come from them in this prototype */
+function multiEnd(r,h,t){
+  var w=r.winner,inSh=r.shared.indexOf(h)>=0,list=nameList(r.shared),late='';
+  if(!inSh&&h.out){ late=(h.human?(h.dissolved?' Your lab was dissolved earlier.':' You fell earlier.'):' '+h.name+(h.dissolved?' was dissolved earlier.':' fell earlier.')); }
+  if(r.type==='multi'){
+    var msg='Multipolar finish: '+list+' crossed together, landing within '+r.dist+' of each other past the singularity at '+t+' s. Nobody took it all.';
+    if(inSh&&h.human){ showOverlay('World shared','Multipolar finish: you and '+nameList(r.shared.filter(function(m){return m!==h;}))+' crossed together, landing within '+r.dist+' of each other past the singularity at '+t+' s. Nobody took it all: world shared. This counts as a success.','Play again'); }
+    else { showOverlay('Multipolar finish',msg+late,'Play again'); }
+  } else {
+    showOverlay('Winner takes all',(w.human?'You':w.name)+' landed past the singularity first at '+t+' s, with no rival landed within '+r.dist+'. Winner takes all.'+late,'Play again');
+  }
+}
 function endScreen(){
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
     if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play again'); }
     else { showOverlay(r.winner.name+' won',(h.out?(h.human?(h.dissolved?'Your lab was dissolved earlier. ':'You fell earlier. '):h.name+(h.dissolved?' was dissolved earlier. ':' fell earlier. ')):'')+r.winner.name+' crossed the finish first in '+t+' s.','Play again'); }
+  } else if(r.type==='multi'||r.type==='wta'){
+    multiEnd(r,h,t);
   } else if(r.type==='all'){
     showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Play again');
   } else if(r.type==='allout'){
@@ -3419,7 +3461,7 @@ var KNOBS=[
   ['capDist','Crash speed cap lasts this far past it',0,600,10],['dropH','Scrape: drop time per unit of height (ms)',0,40,1],
   ['scrapeCap','Scrape cap distance per height lost',0,12,0.5],['revealOnCross','Crossing a gap makes it public',0,1,1,'bool'],['occlude','Labs ahead cast a sight shadow',0,1,1,'bool'],
   ['singOdds','Singularity gap: extra fall odds (points)',0,60,1],['singSpeed','Past the singularity: speed multiplier (next run)',1,5,0.5],['reaction','Past the singularity: control lag (s)',0,1,0.05],
-  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
+  ['skill','Bot hands: skill (Rookie 30, Pro 70, Machine 100)',0,100,5],['multipolar','Multipolar finish: labs landed this close share (0 is off; a lab is 18 wide)',0,72,6],['strikes','Strikes (different blockades hit) before a lab is dissolved, 0 is off',0,6,1],['strikeTower','Towers count as blockades for strikes',0,1,1,'bool'],['strikeGap','A scrape or drop across a gap is a strike',0,1,1,'bool'],['wary','Bots on their last strike: 0 as usual, 1 stop for every blockade, 2 also slow to their sight',0,2,1]
 ];
 (function(){
   var box=$('knobs');
@@ -4150,6 +4192,8 @@ var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
 if(qc){ K.chill=+qc[1]; ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill(); }
+var qm=/[?&]multipolar=(\d+(?:\.\d+)?)/.exec(location.search);
+if(qm){ K.multipolar=clamp(+qm[1],0,72); $('k-multipolar').value=K.multipolar; $('o-k-multipolar').textContent=K.multipolar; }
 var qr=/[?&]rivals=([a-z,]+)/i.exec(location.search);
 if(qr){ G_ROSTER=qr[1].toLowerCase().split(',').filter(function(k){return POL[k]&&k!=='custom';}); }
 /* ?daily=YYYY-MM-DD opens that day's challenge (a future or bad date opens today); read before showSeed rewrites the URL */
