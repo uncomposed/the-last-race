@@ -392,6 +392,13 @@ body.chill #btn-jump{display:none}
 .dly-sbtn [hidden]{display:none}
 @media (orientation:landscape) and (max-height:540px){ .dly-img{max-height:38vh}.dly-txt{max-height:5.5em}.dly-sbtn{grid-template-columns:repeat(4,1fr)}.dly-sbtn #dly-sh{grid-column:auto} }
 /* ---- daily (end) ---- */
+/* ---- ghost links (begin) ---- */
+.gh-line{margin:4px 0 0;font:500 13px/1.4 var(--body);padding:4px 9px;border:1px dashed var(--a);border-radius:4px;align-self:stretch}
+.gh-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px var(--body)}
+.gh-name input{font:400 15px var(--body);min-height:40px;padding:6px 8px;width:16ch;max-width:100%;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.dly-sbtn #gh-sh{grid-column:1/-1}
+@media (orientation:landscape) and (max-height:540px){ .dly-sbtn #gh-sh{grid-column:auto} }
+/* ---- ghost links (end) ---- */
 /* end-of-campaign epilogue: a full-screen modal dialog opened by window.showEpilogue(summary), or by ?epilogue=careful|reckless|mixed */
 dialog.epi{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 dialog.epi::backdrop{background:var(--bg)}
@@ -573,7 +580,7 @@ html.epi-open{overflow:hidden}
       <summary>Tuning knobs</summary>
       <p class="note" style="margin-top:8px">Strikes, odds, share, refill, step, invest, air time, spillover, bounce, cap distance, drop, scrape cap, reveal, singularity odds and control lag apply live. Barrier and gap scales and the singularity speed shape the track, so they apply on the next run (air time also changes the widest gap a track allows).</p>
       <div class="knobs" id="knobs"></div>
-      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign or daily race (only difficulty, the daily twist and chill mode change). Your values come back when it ends.</p><!-- campaign -->
+      <p class="note" id="knob-lock" hidden style="margin-top:8px">Locked at the defaults during a campaign, daily or ghost race (only difficulty, the daily twist and chill mode change). Your values come back when it ends.</p><!-- campaign -->
       <div class="btns" style="margin-top:12px"><button id="knob-reset" type="button">Reset knobs</button><button id="camp-reset" type="button">Reset campaign progress</button><!-- campaign --></div>
     </details>
   </div>
@@ -2640,6 +2647,7 @@ function draw(){
     ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(fx,GY); ctx.lineTo(fx,GY-90); ctx.stroke();
     ctx.fillStyle=COL.d; ctx.beginPath(); ctx.moveTo(fx,GY-90); ctx.lineTo(fx+26,GY-80); ctx.lineTo(fx,GY-70); ctx.fill();
   }
+  ghDraw(cam,VW,FW);  /* ghost link: drawn under the labs, never part of the sim */
   // labs
   for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,VW,FW,n===0,n); }
   if(CM){ var rt='reach '+Math.round(reach),rw=ctx.measureText(rt).width;
@@ -3062,6 +3070,7 @@ function endScreen(){
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
   dailyEnd();  /* every run: Replay this seed and the input log; daily: the tier result, Next tier and Share */
+  ghEnd();  /* every run: the ghost result line and Challenge a friend */
 }
 var fresh=true;
 function parseSeed(v){ v=String(v||'').trim(); if(!/^\d{1,10}$/.test(v)){return null;} var n=+v; return n<=4294967295?n:null; }
@@ -3077,13 +3086,15 @@ function start(seed,camp,daily){
   CAMP=camp||null; DLY=daily||null;
   campPrep(CAMP);  /* campaign: default knobs plus difficulty; free play: the player's knobs */
   dailyPrep();  /* daily: default knobs plus today's twist */
-  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&!DLY&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:(DLY?DLY.roster:undefined));
+  ghPrep(seed,CAMP,DLY);  /* ghost link in free play: the sender's knobs and strikes */
+  newGame(seed===undefined?(Math.random()*4294967295)>>>0:seed,(!CAMP&&!DLY&&$('watch').checked)?'custom':undefined,CAMP?CAMP.roster:(DLY?DLY.roster:ghRoster()));
   running=false; paused=false; acc=0; fresh=false; singShown=false;
   $('ov').hidden=true; $('sing').hidden=true; $('btn-pause').textContent='Pause';
   $('ready-msg').textContent='Seed '+G.seed+' · '+G.world.label+'. Set Run or Build, your split and chill mode, then go.';
   $('ready').hidden=false; cardAt=performance.now(); showSeed();
   campReady();
   dailyReady();
+  ghReady();  /* a ghost to race, if one matches this race */
 }
 function go(){
   if(running||G.over||$('ready').hidden){return;}
@@ -3109,7 +3120,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); recTick(); stepGame(1/60); acc-=1/60;
+      syncInput(); ghRec(); recTick(); stepGame(1/60); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -4106,7 +4117,7 @@ function dailyShare(ds,fromList){
   var alt='Share poster. '+txt.split('\n').slice(0,-1).join('. ').replace(/[⭐⬜]|\uD83E[\uDE91\uDD66]/g,'').replace(/\s+/g,' ');
   $('camp-h').textContent='Share today\'s result';
   $('camp-body').innerHTML='<div class="dly-prev" id="dly-prev"><p class="note">Making the poster…</p></div><pre class="dly-txt" id="dly-txt"></pre>'+
-    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button></div>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="dly-sh" hidden>Share…</button><button type="button" id="dly-cl">Copy link</button><button type="button" id="dly-ct">Copy text</button><button type="button" id="dly-si" disabled>Save image</button><button type="button" id="dly-gh" hidden>Challenge a friend</button></div>'+
     '<p class="note" id="dly-smsg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="dly-sback">'+(fromList?'Back to the daily':'Close')+'</button></div>';
   $('dly-txt').textContent=txt;
   function say(m){ $('dly-smsg').textContent=m; }
@@ -4128,6 +4139,7 @@ function dailyShare(ds,fromList){
   $('dly-cl').addEventListener('click',function(){ dailyCopy(info.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); });
   $('dly-ct').addEventListener('click',function(){ dailyCopy(txt,function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); });
   $('dly-si').addEventListener('click',function(){ say(blob&&dailySaveImg(blob,name)?'Image saved as '+name+'.':'Could not save the image.'); });
+  ghShareBtn($('dly-gh'),ds,fromList);
   $('dly-sback').addEventListener('click',function(){ if(url){ try{URL.revokeObjectURL(url);}catch(e){} } if(fromList){ dailyList(ds); } else { campClose(); } });
   try{ $('dly-cl').focus({preventScroll:true}); }catch(e){}
   if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt&&DSHARE.blob){ ready(DSHARE.blob); return; }
@@ -4146,6 +4158,393 @@ window.PF.daily={BRIEFINGS:BRIEFINGS,TWISTS:TWISTS,TIERS:DAILY_TIERS,KEY:DAILY_K
   logs:function(){return DLOGS;},lastLog:function(){return LASTREC;},exportLog:function(ds,t){ var L=DLOGS[ds]; return L&&L[t]?JSON.stringify(L[t]):null; },current:function(){return DLY;}};
 /* ---------- daily (end) ---------- */
 
+/* ---------- ghost links (begin) ---------- */
+/* A ghost is lab 0's path through a live race: x, stand height, jump offset and a state, sampled every GH_E ticks (1/60 s each),
+   rounded to whole units and delta-coded. It is drawn only: it never touches the sim, so float differences between browsers
+   cannot make it drift. A link carries the race header and the path, deflated where the browser can, base64url, in the URL
+   fragment (#g=...), so it never reaches a server log. Everything decoded from a link is untrusted: numbers are checked and
+   clamped, text goes through textContent or the canvas, and sizes are capped. */
+var GH_E=6,GH_MAXLEN=16000,GH_MAXRAW=200000,GH_MAXN=40000,GH_NAME_KEY='pf-ghost-name',GH_STORE_KEY='pacing-frontier.ghosts.v1';
+var GH=null,GHA=null,GHF=null,GR=null,GLAST=null,GOWN={},GSTORE=ghStoreLoad();
+/* the friend's ghost (GH) stays armed for the page; GHA is the ghost drawn in this race; GHF is set while a free race runs on GH's conditions */
+function ghState(l){ return l.done?5:(l.out?(l.dissolved?4:3):(((l.crash>0||l.bounce))?2:(l.jt>=0?1:0))); }
+/* called from frame() before each 1/60 s step of a live race: the state after REC.tick steps */
+function ghRec(){
+  if(!REC){return;}
+  if(!GR||GR.rec!==REC){ GR={rec:REC,x:[],h:[],j:[],s:[],stop:false,tk:0}; }
+  if(GR.stop){return;}
+  var n=REC.tick,l=G.labs[0],s=ghState(l);
+  if(n%GH_E===0||s>=3){ ghPush(GR,l,s); GR.tk=n; if(s>=3){ GR.stop=true; } }
+}
+function ghPush(r,l,s){
+  var h=heightOf(l),dip=0;
+  if(l.sag){ var su=l.sag.t/l.sag.dur; h=l.sag.from+(l.sag.to-l.sag.from)*su; dip=Math.sin(Math.PI*Math.min(1,su*1.4))*14; }
+  r.x.push(Math.round(l.x)); r.h.push(Math.round(h)); r.j.push(Math.round((l.jt>=0?l.jy:0)-dip)); r.s.push(s);
+}
+/* end of race: the last sample at the final tick, then the header */
+function ghFinish(rec){
+  if(!GR||GR.rec!==rec||!rec||!rec.result){return null;}
+  var l=G.labs[0];
+  if(!GR.stop){ ghPush(GR,l,ghState(l)); GR.tk=rec.result.ticks; GR.stop=true; }
+  var r=G.result||{type:'none'},o='lost';
+  if(rec.result.won){ o='win'; }
+  else if(l.out&&l.dissolved){ o='dis'; }
+  else if(l.out){ var sg=G.gaps[G.sing]; o=(sg&&l.x>=sg.x-C.RW&&l.x<=sg.x+sg.W+C.RW)?'sing':'fell'; }
+  else if(r.type==='all'){ o='ext'; }
+  else if(r.type==='timeout'){ o='time'; }
+  var h=rec.h,hd={v:1,s:h.seed,m:h.mode==='daily'?'d':(h.mode==='campaign'?'c':'f'),d:h.date,mp:h.map,ti:h.tier,r:h.roster.slice(),k:h.knobs,ps:h.pstrikes,
+    c:rec.result.chill?1:0,t:Math.round(rec.result.t*100)/100,o:o,x:rec.result.x,n:'',e:GH_E,tk:GR.tk};
+  return {h:hd,x:GR.x,hh:GR.h,j:GR.j,s:GR.s};
+}
+
+/* bytes: varints (zigzag for signed), the header as UTF-8 JSON, then the columns */
+function ghVar(a,v){ v=Math.max(0,Math.floor(v)); while(v>=128){ a.push((v&127)|128); v=Math.floor(v/128); } a.push(v); }
+function ghZig(a,v){ ghVar(a,v<0?-2*v-1:2*v); }
+function ghPack(g){
+  var a=[],hs=unescape(encodeURIComponent(JSON.stringify(g.h))),i,N=g.x.length;
+  ghVar(a,hs.length); for(i=0;i<hs.length;i++){ a.push(hs.charCodeAt(i)); }
+  ghVar(a,N);
+  for(i=0;i<N;i++){ ghZig(a,g.x[i]-(i?g.x[i-1]:0)); }
+  for(i=0;i<N;i++){ ghZig(a,g.hh[i]-(i?g.hh[i-1]:0)); }
+  for(i=0;i<N;i++){ ghZig(a,g.j[i]); }
+  for(i=0;i<N;i++){ a.push(g.s[i]); }
+  return new Uint8Array(a);
+}
+function ghUnpack(u){
+  var p=0;
+  function rv(){ var v=0,m=1,k=0,b; do{ if(p>=u.length||k>5){ throw 0; } b=u[p++]; v+=(b&127)*m; m*=128; k++; }while(b&128); return v; }
+  function rz(){ var v=rv(); return v%2?-(v+1)/2:v/2; }
+  var hl=rv(); if(hl>4000||p+hl>u.length){ throw 0; }
+  var hs='',i; for(i=0;i<hl;i++){ hs+=String.fromCharCode(u[p++]); }
+  var hd=JSON.parse(decodeURIComponent(escape(hs)));
+  var N=rv(); if(N<1||N>GH_MAXN){ throw 0; }
+  var g={h:hd,x:[],hh:[],j:[],s:[]},v=0;
+  for(i=0;i<N;i++){ v+=rz(); g.x.push(clamp(v,-500,40000)); }
+  v=0; for(i=0;i<N;i++){ v+=rz(); g.hh.push(clamp(v,0,2000)); }
+  for(i=0;i<N;i++){ g.j.push(clamp(rz(),-100,2000)); }
+  for(i=0;i<N;i++){ if(p>=u.length){ throw 0; } g.s.push(clamp(u[p++]|0,0,5)); }
+  return g;
+}
+function ghB64(u){ var s='',i; for(i=0;i<u.length;i+=8192){ s+=String.fromCharCode.apply(null,Array.prototype.slice.call(u,i,i+8192)); } return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function ghUnB64(s){ var b=atob(s.replace(/-/g,'+').replace(/_/g,'/')),u=new Uint8Array(b.length),i; for(i=0;i<b.length;i++){ u[i]=b.charCodeAt(i); } return u; }
+/* deflate-raw through CompressionStream where it exists; byte 0 says which: 1 plain, 2 deflated */
+function ghStream(u,T,lim,cb){
+  try{
+    var rd=new Blob([u]).stream().pipeThrough(new T('deflate-raw')).getReader(),parts=[],n=0;
+    var pump=function(){ rd.read().then(function(r){
+      if(r.done){ var out=new Uint8Array(n),o=0; for(var i=0;i<parts.length;i++){ out.set(parts[i],o); o+=parts[i].length; } cb(out); return; }
+      n+=r.value.length; if(n>lim){ try{ rd.cancel(); }catch(e){} cb(null); return; }
+      parts.push(r.value); pump();
+    },function(){ cb(null); }); };
+    pump();
+  }catch(e){ cb(null); }
+}
+function ghPlain(g){ var b=ghPack(g),u=new Uint8Array(b.length+1); u[0]=1; u.set(b,1); return ghB64(u); }
+function ghEncode(g,cb){
+  var b=ghPack(g);
+  if(typeof CompressionStream==='undefined'){ cb(ghPlain(g)); return; }
+  ghStream(b,CompressionStream,GH_MAXRAW,function(z){
+    if(!z||z.length+1>=b.length+1){ cb(ghPlain(g)); return; }
+    var u=new Uint8Array(z.length+1); u[0]=2; u.set(z,1); cb(ghB64(u));
+  });
+}
+function ghDecode(s,cb){
+  var u,g;
+  try{ if(typeof s!=='string'||s.length<4||s.length>GH_MAXLEN||!/^[A-Za-z0-9_-]+$/.test(s)){ throw 0; } u=ghUnB64(s); }catch(e){ cb(null,'broken'); return; }
+  function fin(b){ try{ g=ghCheck(ghUnpack(b)); }catch(e){ g=null; } cb(g,g?null:'broken'); }
+  if(u[0]===1){ fin(u.subarray(1)); return; }
+  if(u[0]!==2){ cb(null,'broken'); return; }
+  if(typeof DecompressionStream==='undefined'){ cb(null,'old'); return; }
+  ghStream(u.subarray(1),DecompressionStream,GH_MAXRAW,function(b){ if(!b){ cb(null,'broken'); return; } fin(b); });
+}
+/* check and clamp a decoded ghost; anything off shape is refused */
+function ghInt(v,lo,hi){ if(typeof v!=='number'||!isFinite(v)||Math.floor(v)!==v||v<lo||v>hi){ throw 0; } return v; }
+function ghName(s){
+  s=String(s===undefined||s===null?'':s).replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁦-⁩﻿]/g,'').replace(/\s+/g,' ').replace(/^\s+|\s+$/g,'');
+  if(s.length>16){ s=s.slice(0,16); if(/[\ud800-\udbff]$/.test(s)){ s=s.slice(0,15); } s=s.replace(/\s+$/,''); }
+  return s;
+}
+function ghCheck(g){
+  var h=g.h,o={},k,i;
+  if(!h||typeof h!=='object'||h.v!==1){ throw 0; }
+  o.v=1; o.s=ghInt(h.s,0,4294967295);
+  o.m=({d:1,c:1,f:1})[h.m]?h.m:null; if(!o.m){ throw 0; }
+  o.d=typeof h.d==='string'&&h.d.length===10&&/^\d{4}-\d{2}-\d{2}$/.test(h.d)?h.d:null;
+  o.mp=h.mp===null||h.mp===undefined?null:ghInt(h.mp,0,999);
+  o.ti=h.ti===null||h.ti===undefined?null:ghInt(h.ti,0,2);
+  if(!Array.isArray(h.r)||h.r.length>3){ throw 0; }
+  o.r=[]; for(i=0;i<h.r.length;i++){ if(['sprinter','steward','gambler'].indexOf(h.r[i])<0||o.r.indexOf(h.r[i])>=0){ throw 0; } o.r.push(h.r[i]); }
+  o.k={};
+  if(h.k&&typeof h.k==='object'){ KNOBS.forEach(function(kb){ var v=h.k[kb[0]]; if(typeof v==='number'&&isFinite(v)){ o.k[kb[0]]=clamp(v,kb[2],kb[3]); } }); }
+  o.ps=h.ps===null||h.ps===undefined?null:ghInt(h.ps,0,6);
+  o.c=h.c?1:0;
+  o.t=typeof h.t==='number'&&isFinite(h.t)?clamp(h.t,0,3600):0;
+  o.o=({win:1,sing:1,fell:1,dis:1,lost:1,ext:1,time:1})[h.o]?h.o:'lost';
+  o.x=typeof h.x==='number'&&isFinite(h.x)?Math.round(clamp(h.x,-500,40000)):0;
+  o.n=ghName(h.n);
+  o.e=ghInt(h.e,1,60);
+  o.tk=ghInt(h.tk,0,GH_MAXN*60);
+  var N=g.x.length;
+  if(o.tk<(N-1-1)*o.e||o.tk>N*o.e+o.e){ throw 0; }
+  g.h=o; return g;
+}
+/* where the ghost is at tick n: samples i at i*e, the last at tk; x, height and jump interpolate, the state is the earlier sample's */
+function ghAt(g,n){
+  var e=g.h.e,N=g.x.length,last=N-1,i,t0,t1,f;
+  if(n>=g.h.tk||N===1){ return {x:g.x[last],h:g.hh[last],j:g.j[last],s:g.s[last],dir:1}; }
+  i=Math.max(0,Math.min(last-1,Math.floor(n/e)));
+  t0=i*e; t1=i+1===last?g.h.tk:(i+1)*e; f=clamp((n-t0)/Math.max(1e-6,t1-t0),0,1);
+  var s=g.s[i];
+  return {x:g.x[i]+(g.x[i+1]-g.x[i])*f,h:g.hh[i]+(g.hh[i+1]-g.hh[i])*f,j:s>=3?g.j[i]:g.j[i]+(g.j[i+1]-g.j[i])*f,s:s,dir:g.x[i+1]<g.x[i]-0.5?-1:1};
+}
+/* "Cole's ghost", "a friend's ghost", or "your best" for your own */
+function ghWho(g,cap){ var w=g.own?'your best':(g.h.n||'a friend')+'\'s ghost'; return cap?w.charAt(0).toUpperCase()+w.slice(1):w; }
+function ghOutcome(h){
+  return h.o==='win'?'finished in '+h.t.toFixed(1)+' s':(h.o==='sing'?'crashed out at the singularity':(h.o==='fell'?'fell into a gap':(h.o==='dis'?'lab dissolved':
+    (h.o==='ext'?'everyone went out':(h.o==='time'?'ran out of time':'did not win')))));
+}
+function ghDay(ds){ try{ return new Date(ds+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}); }catch(e){ return ds; } }
+function ghWhere(h){
+  if(h.m==='d'){ return 'the '+ghDay(h.d)+' daily, tier '+(h.ti+1); }
+  if(h.m==='c'&&CAMPAIGN[h.mp]){ return 'campaign map '+(h.mp+1)+', '+CAMPAIGN[h.mp].name+', star '+(h.ti+1); }
+  return 'seed '+h.s;
+}
+function ghShareLine(h){
+  var w=ghWhere(h);
+  if(h.o==='win'){ return 'I finished '+w+' in '+h.t.toFixed(1)+' s. Race my ghost:'; }
+  if(h.o==='sing'){ return 'I crashed out at the singularity on '+w+'. Can you do better?'; }
+  if(h.o==='fell'){ return 'I fell into a gap on '+w+'. Can you do better?'; }
+  if(h.o==='dis'){ return 'My lab was dissolved on '+w+'. Can you do better?'; }
+  return 'I did not win '+w+'. Can you do better?';
+}
+function ghLink(b64){ return utm('https://'+DAILY_SITE,'ghost')+'#g='+b64; }
+
+/* own best ghosts: in memory for every race, and kept in storage for daily tiers (last 7 days) */
+function ghKey(h){ return [h.m,h.s,h.d,h.mp,h.ti,(h.r||[]).join(','),JSON.stringify(ghSortK(h.k))].join('|'); }
+function ghSortK(k){ var o={},ks=Object.keys(k||{}).sort(),i; for(i=0;i<ks.length;i++){ o[ks[i]]=k[ks[i]]; } return o; }
+function ghBetter(a,b){ if(!b){return true;} var aw=a.h.o==='win',bw=b.h.o==='win'; if(aw!==bw){return aw;} return aw?a.h.t<b.h.t:a.h.x>b.h.x; }
+function ghStoreLoad(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_STORE_KEY)||'null'); if(o&&typeof o==='object'){return o;} }catch(e){} return {}; }
+function ghStoreSave(){ var ks=Object.keys(GSTORE).sort(); while(ks.length>7){ delete GSTORE[ks.shift()]; } try{ window.localStorage.setItem(GH_STORE_KEY,JSON.stringify(GSTORE)); }catch(e){} }
+function ghStored(ds,t){
+  var d=GSTORE[ds],s=d&&typeof d==='object'?d[t]:null,g=null;
+  if(typeof s!=='string'||s.length>GH_MAXLEN*2){ return null; }
+  try{ var u=ghUnB64(s); if(u[0]===1){ g=ghCheck(ghUnpack(u.subarray(1))); } }catch(e){ g=null; }
+  return g;
+}
+function ghKeep(g){
+  var key=ghKey(g.h),mine={h:g.h,x:g.x,hh:g.hh,j:g.j,s:g.s,own:true};
+  if(g.h.m==='d'&&!GOWN[key]){ GOWN[key]=ghStored(g.h.d,g.h.ti); if(GOWN[key]){ GOWN[key].own=true; } }
+  if(!ghBetter(mine,GOWN[key])){ return; }
+  GOWN[key]=mine;
+  if(g.h.m==='d'){ var d=GSTORE[g.h.d]; if(!d||typeof d!=='object'){ d=GSTORE[g.h.d]={}; } d[g.h.ti]=ghPlain(g); ghStoreSave(); }
+}
+
+/* race hooks, called from start() and endScreen() */
+function ghPrep(seed,camp,daily){
+  GHF=null;
+  if(!camp&&!daily&&GH&&GH.free&&seed===GH.h.s){
+    GHF=GH; campLock(); PSTRIKES=GH.h.ps;
+    for(var k in GH.h.k){ if(GH.h.k.hasOwnProperty(k)){ K[k]=GH.h.k[k]; } }
+    knobSync();
+  }
+}
+function ghRoster(){ return GHF?GHF.h.r.slice():undefined; }
+function ghReady(){
+  var ln=$('ready-ghost');
+  if(!ln){ ln=document.createElement('p'); ln.id='ready-ghost'; ln.className='gh-line'; $('ready-msg').parentNode.insertBefore(ln,$('ready-msg').nextSibling); }
+  GHA=null;
+  var h=GH&&GH.h;
+  if(h&&G.seed===h.s&&((GHF===GH)||(h.m==='d'&&DLY&&DLY.date===h.d&&DLY.tier===h.ti)||(h.m==='c'&&CAMP&&CAMP.i===h.mp&&CAMP.tier===h.ti))){ GHA=GH; }
+  if(!GHA){
+    var ko={},k; for(k in K){ if(k!=='chill'&&K[k]!==DEF[k]){ ko[k]=K[k]; } }
+    var key=ghKey({m:DLY?'d':(CAMP?'c':'f'),s:G.seed,d:DLY?DLY.date:null,mp:CAMP?CAMP.i:null,ti:DLY?DLY.tier:(CAMP?CAMP.tier:null),
+      r:G.labs.filter(function(l){return l.id>0;}).map(function(l){return l.kind;}),k:ko});
+    if(DLY&&GOWN[key]===undefined){ GOWN[key]=ghStored(DLY.date,DLY.tier); if(GOWN[key]){ GOWN[key].own=true; } }
+    if(GOWN[key]&&G.labs[0].human){ GHA=GOWN[key]; }
+  }
+  ln.hidden=!GHA;
+  if(GHA){
+    var hh=GHA.h,extra='';
+    if(GHA===GH){
+      if(hh.c!==(K.chill?1:0)){ extra=' It raced with chill mode '+(hh.c?'on':'off')+'.'; }
+      if(CAMP&&!hh.c&&hh.ps!==null&&hh.ps!==CAMP_DIFF[CS.diff].strikes){ extra+=' It raced with '+hh.ps+' strikes.'; }
+    }
+    ln.textContent='Racing '+ghWho(GHA,false)+': '+ghOutcome(hh)+'.'+extra;
+  }
+}
+function ghEnd(){
+  var res=$('ov-ghres'),btn=$('ov-ghost'),l=G.labs[0];
+  if(!res){ res=document.createElement('p'); res.id='ov-ghres'; res.className='cmp-res'; res.setAttribute('role','status'); $('ov-foot').parentNode.insertBefore(res,$('ov-foot')); }
+  if(!btn){ btn=document.createElement('button'); btn.type='button'; btn.id='ov-ghost'; btn.textContent='Challenge a friend'; btn.addEventListener('click',function(){ if(GLAST){ ghCard(GLAST,null); } }); }
+  $('ov-foot').querySelector('.btns').appendChild(btn);
+  var g=ghFinish(LASTREC);
+  GLAST=g&&LASTREC.h.human&&l.human?g:null;
+  btn.hidden=!GLAST;
+  if(GLAST){ ghKeep(GLAST); ghPrime(GLAST,null); }
+  if(GHF){ campUnlock(); }
+  res.hidden=true;
+  if(!GHA){ return; }
+  var a=GHA,me=G.result&&G.result.type==='win'&&G.result.winner===l,gw=a.h.o==='win',d,msg,who=ghWho(a,false),Who=ghWho(a,true);
+  if(me&&gw){ d=a.h.t-G.t; msg=Math.abs(d)<0.05?'A dead heat with '+who+'.':(d>0?'You beat '+who+' by '+d.toFixed(1)+' s.':Who+' won by '+(-d).toFixed(1)+' s.'); }
+  else if(me){ msg='You beat '+who+': it did not finish.'; }
+  else if(gw){ msg=Who+' won: it finished in '+a.h.t.toFixed(1)+' s.'; }
+  else { d=Math.round(l.x-a.h.x); msg='Neither of you finished. '+(Math.abs(d)<1?'You stopped level with '+who+'.':(d>0?'You got '+d+' further than '+who+'.':Who+' got '+(-d)+' further.')); }
+  res.textContent=msg; res.hidden=false;
+}
+
+/* drawing: a see-through copy of the lab, a dashed outline and a name label; off screen, a marker at the edge. Called by draw() in world units */
+function ghDraw(cam,VW,FW){
+  if(!GHA||!G){return;}
+  var p=ghAt(GHA,G.t*60),U=CM?1/Z:1,u=C.RW/12,sx=p.x-cam-C.RW,lab=ghWho(GHA,true),body=COL.a,dead=p.s===3||p.s===4;
+  ctx.save(); ctx.font=FW;
+  if(sx<-C.RW-4||sx>VW+4){  /* off screen: an arrow and the distance at the edge, just over the ground */
+    var ahead=sx>VW,dist=Math.round(Math.abs(p.x-G.labs[0].x)),tx=(ahead?lab+' '+dist+' ahead >':'< '+lab+' '+dist+' behind'),tw=ctx.measureText(tx).width;
+    var ex=ahead?VW-tw-6*U:6*U,ey=GY-(CM?44:60)*U;
+    ctx.globalAlpha=0.85; ctx.fillStyle=COL.surface; ctx.fillRect(ex-3*U,ey-11*U,tw+6*U,15*U);
+    ctx.globalAlpha=1; ctx.setLineDash([3*U,2*U]); ctx.strokeStyle=COL.ink; ctx.lineWidth=U; ctx.strokeRect(ex-3*U,ey-11*U,tw+6*U,15*U); ctx.setLineDash([]);
+    ctx.fillStyle=COL.ink; ctx.fillText(tx,ex,ey);
+    ctx.restore(); ghMini(); return;
+  }
+  var y=GY-p.h-p.j-C.RW; if(p.s===3){ y=GY+(CM?6/Z:26); }
+  if(p.s===4){ body=COL.muted; }
+  if(p.h>1&&p.s!==3){ ctx.globalAlpha=0.5; ctx.setLineDash([2*U,4*U]); ctx.strokeStyle=COL.muted; ctx.lineWidth=U; ctx.strokeRect(sx+0.5*U,GY-p.h,C.RW,p.h); ctx.setLineDash([]); }  /* its height, as a faint stand */
+  ctx.globalAlpha=0.38;
+  ctx.translate(p.dir>0?sx:sx+C.RW,y+C.RW); ctx.scale(p.dir,1);
+  function P(gx,gy,gw,gh,c){ ctx.fillStyle=c; ctx.fillRect(gx*u,(gy-12)*u,gw*u+0.02,gh*u+0.02); }
+  var air=p.s===1,step=Math.floor(Math.abs(p.x)/5)%2,legs=[2,4,7,9],li;
+  for(li=0;li<4;li++){ P(legs[li],9,1,3-(air?2:((li%2)===step&&!dead&&p.s!==5?1:0)),body); }
+  P(2,1,8,1,body); P(1,2,10,6,body); P(2,8,8,1,body);
+  if(air||p.s===5){ P(0,1,1,2,body); P(11,1,1,2,body); } else { P(0,5,1,2,body); P(11,5,1,2,body); }
+  if(dead||p.s===2){ P(5,3,1,1,EYE); P(7,3,1,1,EYE); P(6,4,1,1,EYE); P(5,5,1,1,EYE); P(7,5,1,1,EYE); P(8,3,1,1,EYE); P(10,3,1,1,EYE); P(9,4,1,1,EYE); P(8,5,1,1,EYE); P(10,5,1,1,EYE); }
+  else { P(6,3,1,2,EYE); P(9,3,1,2,EYE); }
+  P(6,-2,1,3,COL.ink); P(5.5,-3.5,2,2,COL.a);  /* the antenna, as on your own lab */
+  ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));
+  ctx.globalAlpha=0.9; ctx.setLineDash([3*U,2*U]); ctx.strokeStyle=COL.ink; ctx.lineWidth=1.2*U;
+  ctx.strokeRect(sx-2*U,y-4.5*u-2*U,C.RW+4*U,C.RW+4.5*u+4*U); ctx.setLineDash([]);
+  /* the label sits above the row where lab names go, so it does not cover them */
+  var lw=ctx.measureText(lab).width,lx=CM?Math.max(sx-2,4*U):sx-2,ly=y-4.5*u-20*U;
+  ctx.globalAlpha=0.85; ctx.fillStyle=COL.surface; ctx.fillRect(lx-2*U,ly-10*U,lw+4*U,13*U);
+  ctx.globalAlpha=1; ctx.fillStyle=COL.ink; ctx.fillText(lab,lx,ly);
+  ctx.restore();
+  ghMini();
+}
+/* the ghost on the minimap: a dashed hollow square under the line (screen pixels) */
+function ghMini(){
+  if(!GHA||!G){return;}
+  var p=ghAt(GHA,G.t*60),mx0=24,mw=W-48,my=CM?12:18,x=mx0+clamp(p.x,0,G.finish)/G.finish*mw;
+  ctx.save(); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.setLineDash([2,2]); ctx.strokeStyle=COL.ink; ctx.lineWidth=1.5; ctx.strokeRect(x-4.5,my+4.5,9,9); ctx.restore();
+}
+
+/* the challenge card: a name for the ghost, the line and the link, then Share..., Copy link and Copy text */
+function ghSavedName(){ try{ return ghName(window.localStorage.getItem(GH_NAME_KEY)||''); }catch(e){ return ''; } }
+function ghPrime(g,cb){
+  var nm=ghSavedName();
+  g.h.n=nm; g.link=null; g.size=0;
+  var mine=g.ver=(g.ver||0)+1;
+  ghEncode(g,function(b){ if(g.ver!==mine){ return; } g.link=ghLink(b); g.size=b.length; if(cb){ cb(); } });
+}
+function ghCard(g,back){
+  campShow();
+  $('camp-h').textContent='Challenge a friend';
+  $('camp-body').innerHTML='<p class="note">Your friend races the same track and rivals, with a see-through ghost of your lab. The link holds your whole run, so nothing goes to a server.</p>'+
+    '<label class="gh-name" for="gh-name">Your name on the ghost <input type="text" id="gh-name" maxlength="16" placeholder="a friend" autocomplete="off" spellcheck="false"></label>'+
+    '<pre class="dly-txt" id="gh-txt"></pre><p class="note" id="gh-size"></p>'+
+    '<div class="dly-sbtn"><button type="button" class="primary" id="gh-sh" hidden>Share…</button><button type="button" id="gh-cl">Copy link</button><button type="button" id="gh-ct">Copy text</button></div>'+
+    '<p class="note" id="gh-msg" role="status" aria-live="polite"></p><div class="cmp-foot"><button type="button" id="gh-back">'+(back?'Back':'Close')+'</button></div>';
+  var line=ghShareLine(g.h),inp=$('gh-name');
+  inp.value=ghSavedName();
+  function say(m){ $('gh-msg').textContent=m; }
+  function show(){
+    $('gh-txt').textContent=line+'\n'+(g.link?'the-last-race.com (ghost link)':'Making the link…');
+    $('gh-size').textContent=g.link?'The link is '+(g.link.length/1024).toFixed(1)+' KB long.':'';
+    $('gh-cl').disabled=$('gh-ct').disabled=$('gh-sh').disabled=!g.link;
+  }
+  function text(){ return line+'\n'+g.link; }
+  show(); if(!g.link){ ghPrime(g,show); }
+  inp.addEventListener('input',function(){
+    var v=ghName(inp.value); try{ window.localStorage.setItem(GH_NAME_KEY,v); }catch(e){}
+    ghPrime(g,show); show();
+  });
+  inp.addEventListener('keydown',function(e){ e.stopPropagation(); if(e.code==='Enter'){ e.preventDefault(); inp.blur(); } });
+  $('gh-sh').hidden=!navigator.share;
+  $('gh-sh').addEventListener('click',function(){
+    if(!g.link){ return; }
+    try{ navigator.share({title:'Pacing the Frontier',text:line,url:g.link}).then(function(){ say('Shared.'); },function(e){ say(e&&e.name==='AbortError'?'Share cancelled.':'Could not open the share sheet. Try Copy link.'); }); }
+    catch(e){ say('Could not open the share sheet. Try Copy link.'); }
+  });
+  $('gh-cl').addEventListener('click',function(){ if(g.link){ dailyCopy(g.link,function(ok){ say(ok?'Link copied.':'Could not copy the link.'); }); } });
+  $('gh-ct').addEventListener('click',function(){ if(g.link){ dailyCopy(text(),function(ok){ say(ok?'Text copied.':'Could not copy the text.'); }); } });
+  $('gh-back').addEventListener('click',function(){ if(back){ back(); } else { campClose(); } });
+}
+/* the daily share preview: the best ghost kept for that day (a win beats a loss, then the higher tier, then the faster time) */
+function ghDailyBest(ds){
+  var best=null,t,g;
+  for(t=2;t>=0;t--){ g=ghStored(ds,t); if(g&&(!best||(g.h.o==='win'&&best.h.o!=='win'))){ best=g; } }
+  return best;
+}
+function ghShareBtn(b,ds,fromList){
+  var g=ghDailyBest(ds);
+  b.hidden=!g; if(!g){ return; }
+  ghPrime(g,null);
+  b.addEventListener('click',function(){ ghCard(g,function(){ dailyShare(ds,fromList); }); });
+}
+
+/* opening a link: check it, then start the same race, or say why it can't and offer free play on that seed */
+function ghOpenCard(title,msg,g){
+  campShow();
+  $('camp-h').textContent=title;
+  $('camp-body').innerHTML='<p id="gh-omsg"></p><div class="cmp-foot">'+(g?'<button type="button" class="primary" id="gh-free">Free play on that seed</button>':'')+'<button type="button" id="gh-oclose">Close</button></div>';
+  $('gh-omsg').textContent=msg;
+  $('gh-oclose').addEventListener('click',campClose);
+  if(g){ $('gh-free').addEventListener('click',function(){ campClose(); g.free=true; GH=g; start(g.h.s); }); try{ $('gh-free').focus({preventScroll:true}); }catch(e){} }
+}
+function ghSetChill(c){ var on=!!c; $('auto').checked=on; ui.auto=on; K.chill=on?1:0; showChill(); }
+function ghLaunch(g){
+  var h=g.h,who=ghWho(g,false),kx=JSON.stringify(ghSortK(h.k)),tw,exp,i;
+  g.free=false; g.pend=false;
+  ghSetChill(h.c);
+  if(h.m==='d'){
+    if(!h.d||!dailyValid(h.d)||h.ti===null){ ghOpenCard('Ghost link',who+' raced a daily this game cannot read. You can race the ghost in free play on the same track.',g); return; }
+    if(h.d>dailyToday()){ ghOpenCard('Ghost link',who+' raced the daily for '+ghDay(h.d)+', which has not started for you yet. You can race the ghost in free play on the same track.',g); return; }
+    tw=dailyTwist(dailyBrief(h.d)); exp={}; for(i in tw){ if(tw[i]!==DEF[i]){ exp[i]=tw[i]; } }
+    if(h.s!==dailySeed(h.d)||h.r.join()!==DAILY_TIERS[h.ti].roster.join()||kx!==JSON.stringify(ghSortK(exp))){
+      ghOpenCard('Ghost link','This ghost came from another version of the '+ghDay(h.d)+' daily. You can race it in free play on the same track.',g); return; }
+    GH=g;
+    if(dailyDay(h.d).brief.open){ dailyStart(h.d,h.ti); } else { g.pend=true; dailyOpen(h.d); }
+    return;
+  }
+  if(h.m==='c'){
+    var c=h.mp===null?null:CAMPAIGN[h.mp];
+    if(!c||h.ti===null||c.seed!==h.s||c.tiers[h.ti].join()!==h.r.join()||kx!=='{}'){ ghOpenCard('Ghost link',who+' raced a campaign map this game does not have. You can race the ghost in free play on the same track.',g); return; }
+    if(!campTierOpen(h.mp,h.ti)){ ghOpenCard('Ghost link','Map '+(h.mp+1)+', '+c.name+', is still locked for you. You can race '+who+' in free play on the same track.',g); return; }
+    if(!h.c&&h.ps!==null){ for(i=0;i<CAMP_DIFF.length;i++){ if(CAMP_DIFF[i].strikes===h.ps){ CS.diff=i; campSave(); } } }
+    GH=g; campStart(h.mp,h.ti); return;
+  }
+  g.free=true; GH=g; start(h.s);
+}
+var GH_HASH=location.hash||'';  /* read now: showSeed() rewrites the URL before ghBoot() runs */
+function ghBoot(){
+  var m=/^#g=(.*)$/.exec(GH_HASH||location.hash||''); GH_HASH='';
+  if(!m){ return; }
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  ghDecode(m[1],function(g,why){
+    if(!g){ ghOpenCard('Ghost link',why==='old'?'This browser cannot unpack ghost links. Try a newer browser. You can still play.':'This ghost link is broken or cut short, so there is no ghost to race. You can still play.',null); return; }
+    ghLaunch(g);
+  });
+}
+(function(){
+  /* a daily ghost waits for the briefing: once the day is open, its button starts the ghost's tier instead of the list */
+  $('camp-body').addEventListener('click',function(e){
+    var t=e.target&&e.target.closest?e.target.closest('#dly-go'):null;
+    if(!t||!GH||!GH.pend||GH.h.m!=='d'||!dailyDay(GH.h.d).brief.open){ return; }
+    e.stopPropagation(); GH.pend=false; dailyStart(GH.h.d,GH.h.ti);
+  },true);
+  window.addEventListener('hashchange',ghBoot);
+})();
+window.PF.ghost={encode:ghEncode,decode:ghDecode,plain:ghPlain,last:function(){return GLAST;},armed:function(){return GH;},drawn:function(){return GHA;},at:ghAt,link:ghLink};
+/* ---------- ghost links (end) ---------- */
+
+
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
@@ -4159,6 +4558,7 @@ newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
 requestAnimationFrame(frame);
 if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
+ghBoot();  /* #g=... opens a ghost link */
 })();
 </script>
 <script>
