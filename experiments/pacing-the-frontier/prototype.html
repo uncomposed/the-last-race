@@ -377,6 +377,8 @@ body.chill #btn-jump{display:none}
 .cmp-seg button{min-height:44px;border:0;border-radius:0;margin:0;font:600 14px var(--body);background:var(--bg);color:var(--ink)}
 .cmp-seg button+button{border-left:1px solid var(--line)}
 .cmp-seg button[aria-checked=true]{background:var(--ink);color:var(--bg)}
+.cmp-seg+.cmp-seg{margin-top:8px}
+.cmp-seg button:disabled{color:var(--muted);background:var(--bg) repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--muted) 14%,transparent) 6px 8px);cursor:not-allowed}
 .card .cmp-dl{font-size:13px;line-height:1.4}
 .card .cmp-diff .note{font-size:12px}
 .cmp-nd{font:500 11px var(--mono);color:var(--good)}
@@ -551,6 +553,7 @@ html.epi-open{overflow:hidden}
         <p id="ready-msg"></p>
         <!-- campaign (begin): difficulty picker (chill off) or the chill-star line (chill on), and the knob note -->
         <div class="cmp-diff" id="ready-diff" hidden>
+          <div class="cmp-seg" id="tier-seg" role="radiogroup" aria-label="Star level"><button type="button" role="radio" data-tier="0">Star 1</button><button type="button" role="radio" data-tier="1">Star 2</button><button type="button" role="radio" data-tier="2">Star 3</button></div>
           <div class="cmp-seg" id="diff-seg" role="radiogroup" aria-label="Difficulty"><button type="button" role="radio" data-diff="0">Easy</button><button type="button" role="radio" data-diff="1">Medium</button><button type="button" role="radio" data-diff="2">Hard</button></div>
           <p class="cmp-dl" id="diff-line"></p>
           <p class="note" id="diff-knobs"></p>
@@ -3779,8 +3782,20 @@ function campReady(){
   $('ready-h').textContent=(CAMP.i+1)+'. '+c.name;
   $('ready-msg').innerHTML=tierStar(CAMP.i,CAMP.tier)+' <b>vs</b> '+rivalsHtml(CAMP.roster)+'<br>'+esc(c.hint)+'<br><span class="note">Seed '+G.seed+' · '+esc(G.world.label)+'. Set Run or Build, your split and chill mode, then go.</span>';
   $('ready-camp').textContent='Map list';
+  campTierUI();
   campDiffUI();
 }
+/* the star level on the Ready card: switching it reloads the same map with that tier's rivals */
+function campTierUI(){
+  var bs=$('tier-seg').querySelectorAll('[data-tier]');
+  for(var k=0;k<bs.length;k++){
+    var t=+bs[k].getAttribute('data-tier'),on=t===CAMP.tier,open=campTierOpen(CAMP.i,t);
+    bs[k].setAttribute('aria-checked',on?'true':'false'); bs[k].tabIndex=on?0:-1; bs[k].disabled=!open;
+    bs[k].textContent='Star '+(t+1)+(campStarred(CAMP.i,t)?' ✓':'');
+    bs[k].setAttribute('aria-label','Star '+(t+1)+(campStarred(CAMP.i,t)?', won':'')+(open?'':', locked'));
+  }
+}
+function campSetTier(t){ if(!CAMP||running||t===CAMP.tier||!(t>=0&&t<=2)||!campTierOpen(CAMP.i,t)){return;} campStart(CAMP.i,t); var b=$('tier-seg').querySelector('[data-tier="'+t+'"]'); if(b){ b.focus(); } }
 function campDiffUI(){
   var dz=$('ready-diff'),chill=!!K.chill,d=CAMP_DIFF[CS.diff];
   dz.hidden=false;
@@ -3845,13 +3860,23 @@ function campShowEnd(i,t,res,o){
 (function(){
   campEnd();  /* the start overlay: Start run and a Campaign button in one row */
   $('ov-retry').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } });
-  $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campNextTier(n)); } });
+  /* Next map keeps the star level you were racing, if that tier is open there */
+  $('ov-next').addEventListener('click',function(){ if(CAMP&&campOpen(CAMP.i+1)){ var n=CAMP.i+1; campStart(n,campTierOpen(n,CAMP.tier)?CAMP.tier:campNextTier(n)); } });
   $('ov-up').addEventListener('click',function(){ if(CAMP&&CAMP.tier<2){ campStart(CAMP.i,CAMP.tier+1); } });
   $('ov-list').addEventListener('click',function(){ campList(); });
   $('ready-camp').addEventListener('click',function(){ if(DLY){ dailyOpen(DLY.date); return; } if(CAMP){ campTiers(CAMP.i); } else { campList(); } });
   $('btn-camp').addEventListener('click',campList);
   $('camp-close').addEventListener('click',campClose);
   $('camp').addEventListener('click',function(e){ if(e.target===this){campClose();} });
+  /* star level: the same radio-group behaviour as difficulty below */
+  var tseg=$('tier-seg');
+  tseg.addEventListener('click',function(e){ var b=e.target.closest('[data-tier]'); if(b&&!b.disabled){ campSetTier(+b.getAttribute('data-tier')); } });
+  tseg.addEventListener('keydown',function(e){
+    var d={ArrowLeft:-1,ArrowUp:-1,ArrowRight:1,ArrowDown:1}[e.code];
+    if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); return; }
+    if(!d||!CAMP){return;} e.preventDefault(); e.stopPropagation();
+    var n=CAMP.tier+d; while(n>=0&&n<=2&&!campTierOpen(CAMP.i,n)){ n+=d; } if(n>=0&&n<=2){ campSetTier(n); }
+  });
   /* difficulty: a radio group of three buttons; arrows move the choice. Keys stop here so the game's hotkeys do not fire */
   var seg=$('diff-seg');
   seg.addEventListener('click',function(e){ var b=e.target.closest('[data-diff]'); if(b){ campSetDiff(+b.getAttribute('data-diff')); b.focus(); } });
