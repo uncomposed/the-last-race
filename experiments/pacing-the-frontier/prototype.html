@@ -482,6 +482,19 @@ body.chill #btn-jump{display:none}
 .gh-line{margin:4px 0 0;font:500 13px/1.4 var(--body);padding:4px 9px;border:1px dashed var(--a);border-radius:4px;align-self:stretch}
 .gh-name{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:500 14px var(--body)}
 .gh-name input{font:400 15px var(--body);min-height:40px;padding:6px 8px;width:16ch;max-width:100%;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.lb-end{margin:8px 0 0;text-align:center}
+.lb-line{margin:0 0 6px;font-size:14px}
+.lb-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.lb-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.lb-tabs button[aria-pressed="true"]{outline:2px solid var(--a);font-weight:700}
+.lb-share{margin:8px 0;padding-left:20px;font-size:14px;line-height:1.4}
+.lb-rows{list-style:none;margin:0 0 8px;padding:0}
+.lb-row{display:grid;grid-template-columns:2.2em 1fr auto;gap:2px 8px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--line)}
+.lb-me{outline:2px solid var(--a);outline-offset:-2px;border-radius:4px}
+.lb-pl{font-weight:700;text-align:right}
+.lb-t{font-variant-numeric:tabular-nums}
+.lb-at,.lb-ac{grid-column:2 / 4}
+.lb-ac{display:flex;flex-wrap:wrap;gap:6px}
 .dly-sbtn #gh-sh{grid-column:1/-1}
 @media (orientation:landscape) and (max-height:540px){ .dly-sbtn #gh-sh{grid-column:auto} }
 /* ---- ghost links (end) ---- */
@@ -590,6 +603,7 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
         <button class="primary" id="ov-btn" type="button">Start run</button>
         <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
         <p class="cmp-res" id="ov-cres" hidden></p>
+        <div class="lb-end" id="ov-lb" hidden></div>
         <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-replay" type="button" hidden>Replay this seed</button><button id="ov-share" type="button" hidden>Share</button><button id="ov-daily" type="button">Daily</button><button id="ov-list" type="button">Campaign</button></div><p class="note" id="ov-sharemsg" role="status" aria-live="polite" hidden></p></div>
         <!-- campaign (end) -->
       </div>
@@ -4464,6 +4478,7 @@ function dailyGo(){
 }
 function dailyEnd(){
   var rec=recEnd(),h=G.labs[0],r=G.result,won=r.type==='win'&&r.winner===h;
+  ++LB_GEN; $('ov-lb').hidden=true; $('ov-lb').innerHTML='';
   $('ov-sharemsg').hidden=true; $('ov-share').hidden=true;
   $('ov-replay').hidden=!!CAMP; $('ov-daily').hidden=!!CAMP; $('ov-list').hidden=!!DLY;
   $('ov-replay').classList.remove('primary'); $('ov-daily').classList.remove('primary');
@@ -4493,6 +4508,7 @@ function dailyEnd(){
   var foot=$('ov-foot').querySelector('.btns');
   ['ov-up','ov-replay','ov-share','ov-daily'].forEach(function(id){ foot.appendChild($(id)); });
   dailyPrime(ds);
+  lbEnd(rec,ds,t);
 }
 /* the next campaign map short of three stars (and its next tier), or null when every map has all three: then a random free-play map */
 function dailyOnward(){
@@ -4520,13 +4536,14 @@ function dailyList(ds){
       '<span class="cmp-meta"><span>'+dailyLabel(r)+'</span><span>'+dailyAtt(x.att)+'</span>'+dailyBestHtml(x)+'</span></button>';
   }
   h+='</div>'+(d.brief.ok?'<p class="note dly-badge">'+BROC+' Broccoli badge: briefing right first time.</p>':'')+
-    '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button></div>';
+    '<div class="cmp-foot"><button type="button" id="dly-brief">Briefing</button><button type="button" id="dly-share">Share</button>'+(LB?'<button type="button" id="dly-lb">Leaderboard</button>':'')+'</div>';
   $('camp-h').textContent='Daily challenge'; $('camp-body').innerHTML=h;
   var bs=$('camp-body').querySelectorAll('.cmp-tier');
   for(var k=0;k<bs.length;k++){ bs[k].addEventListener('click',function(){ dailyStart(ds,+this.getAttribute('data-tier')); }); }
   if(first>=0){ bs[first].classList.add('next'); }
   $('dly-brief').addEventListener('click',function(){ dailyBriefCard(ds); });
   $('dly-share').addEventListener('click',function(){ dailyShare(ds,true); });
+  if($('dly-lb')){ $('dly-lb').addEventListener('click',function(){ lbOpen(ds); }); }
   try{ bs[first<0?0:first].focus({preventScroll:true}); }catch(e){}
   dailyPrime(ds);
 }
@@ -5132,6 +5149,208 @@ function ghBoot(){
 })();
 window.PF.ghost={encode:ghEncode,decode:ghDecode,plain:ghPlain,last:function(){return GLAST;},armed:function(){return GH;},drawn:function(){return GHA;},at:ghAt,link:ghLink};
 /* ---------- ghost links (end) ---------- */
+
+/* ---------- leaderboard (begin) ----------
+   The daily boards on the leaderboard server, a separate project. It is off until a link turns it on (?lb=prod, ?lb=local for a server
+   on this machine, ?lb=off), remembered in this browser. The game never waits on it: every call has a timeout and every failure ends
+   in one plain line, and racing, sharing and ghost links work the same without it. Nothing leaves the device unless the player
+   presses Publish on the card that lists what is sent. It talks only to the two origins named here, so a crafted link cannot send a
+   run anywhere else. The server replays a run to check its time; attempt counts are reported by the device and cannot be checked. */
+var LB_ORIGINS={prod:'https://api.the-last-race.com',local:'http://localhost:8787'};
+var LB_KEY='pf-lb',LB_TOKEN_KEY='pf-lb-token',LB_MINE_KEY='pf-lb-mine',LB_PRIV_KEY='pf-lb-private',LB_MAXLOG=16000,LB_WAIT=8000;
+var LB=lbInit(),LB_MEM=null,LB_GEN=0,LB_GONE={};  /* LB_GONE: entries removed here, hidden while the server's 30 s board cache catches up */
+function lbInit(){
+  var m=/[?&]lb=(prod|local|off)(?:&|$)/.exec(location.search),k=null;
+  try{
+    if(m){ if(m[1]==='off'){ window.localStorage.removeItem(LB_KEY); } else { window.localStorage.setItem(LB_KEY,m[1]); } }
+    k=window.localStorage.getItem(LB_KEY);
+  }catch(e){ k=m&&m[1]!=='off'?m[1]:null; }
+  return Object.prototype.hasOwnProperty.call(LB_ORIGINS,k)?LB_ORIGINS[k]:null;
+}
+/* the place for a time (whole milliseconds) against a board's times: one more than the number strictly faster, so ties share a place */
+function lbPlace(times,ms){ var f=0,i; for(i=0;i<times.length;i++){ if(Math.round(times[i]*1000)<ms){ f++; } } return f+1; }
+function lbOrd(n){ var s=n%100; if(s>=11&&s<=13){ return n+'th'; } return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th'); }
+/* Cole's rule: no entries, "the first"; under 100 entries the place only; from 100 entries the place and the total (entries plus you) */
+function lbLine(place,entries,published,board){
+  if(entries===0&&!published){ return 'You\'d be the first on '+board; }
+  var p=lbOrd(place)+(entries>=100?' of '+(entries+1):'');
+  return published?'Published: '+p:'You\'d be '+p;
+}
+function lbT(t){ return parseFloat(t.toFixed(3))+' s'; }
+function lbKindWords(k){ return k==='chair'?'lounge chair':'star'; }
+function lbKey(ds,t,k){ return ds+'/'+t+'/'+k; }
+function lbStore(key){ try{ var o=JSON.parse(window.localStorage.getItem(key)||'null'); if(o&&typeof o==='object'&&!Array.isArray(o)){ return o; } }catch(e){} return {}; }
+function lbSave(key,o){ var ks=Object.keys(o).sort(); while(ks.length>60){ delete o[ks.shift()]; } try{ window.localStorage.setItem(key,JSON.stringify(o)); }catch(e){} }
+/* a random code for this browser, so the server can tell your entries apart and let you remove one; there are no accounts */
+function lbToken(){
+  var t=null; try{ t=window.localStorage.getItem(LB_TOKEN_KEY); }catch(e){}
+  if(t&&/^[A-Za-z0-9_-]{16,128}$/.test(t)){ return t; }
+  if(LB_MEM){ return LB_MEM; }
+  if(!window.crypto||!window.crypto.getRandomValues){ return null; }
+  var u=new Uint8Array(24); window.crypto.getRandomValues(u); t=ghB64(u); LB_MEM=t;
+  try{ window.localStorage.setItem(LB_TOKEN_KEY,t); }catch(e){}
+  return t;
+}
+/* cb(err,status,json): err is set when the server could not be reached or took too long */
+function lbCall(method,path,opt,cb){
+  if(!LB||typeof fetch==='undefined'){ cb('unreachable'); return; }
+  var done=false,ctl=typeof AbortController!=='undefined'?new AbortController():null,init={method:method,headers:{},mode:'cors',credentials:'omit'},timer;
+  function fin(err,st,js){ if(done){ return; } done=true; clearTimeout(timer); cb(err,st,js); }
+  timer=setTimeout(function(){ if(ctl){ try{ ctl.abort(); }catch(e){} } fin('timeout'); },LB_WAIT);
+  if(opt&&opt.body!==undefined){ init.headers['Content-Type']='application/json'; init.body=JSON.stringify(opt.body); }
+  if(opt&&opt.token){ init.headers['X-Device-Token']=opt.token; }
+  if(ctl){ init.signal=ctl.signal; }
+  try{
+    fetch(LB+path,init).then(function(r){ return r.text().then(function(tx){ var js=null; try{ js=JSON.parse(tx); }catch(e){} fin(null,r.status,js); }); },function(){ fin('network'); });
+  }catch(e){ fin('network'); }
+}
+function lbWhy(err,st,js){
+  if(err){ return 'The leaderboard could not be reached right now. Your result is still saved on this device.'; }
+  if(st===429){ return 'Too many runs have been published from this connection. Try again later.'; }
+  if(js&&typeof js.error==='string'&&js.error){ return js.error.slice(0,200).replace(/[.!?]?$/,'.'); }
+  return 'The leaderboard answered with an error ('+st+').';
+}
+/* a published run from the server as a ghost this game can race. Everything from the server is untrusted: arrays are length-checked
+   and clamped here, and ghCheck checks the header as for a link. null when anything is off */
+function lbArr(a,n,lo,hi){
+  if(!Array.isArray(a)||a.length!==n){ throw 0; }
+  return a.map(function(v){ if(typeof v!=='number'||!isFinite(v)){ throw 0; } return clamp(Math.round(v),lo,hi); });
+}
+function lbGhost(js){
+  try{
+    var H=js.header,gh=js.ghost,n=gh.x.length,x=lbArr(gh.x,n,-500,40000);
+    if(n<1||n>GH_MAXN||js.date!==H.date||H.mode!=='daily'){ throw 0; }
+    return ghCheck({h:{v:1,s:H.seed,m:'d',d:H.date,mp:null,ti:H.tier,r:H.roster,k:H.knobs,ps:H.pstrikes,c:js.kind==='chair'?1:0,t:js.t,o:'win',x:x[n-1],n:js.name,e:gh.e,tk:gh.tk},
+      x:x,hh:lbArr(gh.h,n,0,2000),j:lbArr(gh.j,n,-100,2000),s:lbArr(gh.s,n,0,5)});
+  }catch(e){ return null; }
+}
+
+/* the daily end card: where this time would rank, and the choice to publish it. Called after a daily race ends */
+function lbEnd(rec,ds,t){
+  var box=$('ov-lb'),gen=++LB_GEN;
+  box.hidden=true; box.innerHTML='';
+  if(!LB||!rec||!rec.h.human||!rec.result.won||rec.h.mode!=='daily'){ return; }
+  var kind=rec.result.chill?'chair':'star',ms=Math.round(rec.result.t*1000),key=lbKey(ds,t,kind),mine=lbStore(LB_MINE_KEY)[key],priv=!!lbStore(LB_PRIV_KEY)[key];
+  var board=ds===dailyToday()?'today\'s board':'that day\'s board',label='Tier '+(t+1)+' '+lbKindWords(kind);
+  box.hidden=false;
+  box.innerHTML='<p class="lb-line" id="lb-line" role="status" aria-live="polite"></p><div class="lb-btns" id="lb-btns"></div>';
+  var line=$('lb-line'),btns=$('lb-btns');
+  function live(){ return gen===LB_GEN&&!!$('lb-line'); }
+  function say(s){ if(live()){ line.textContent=s; } }
+  function button(text,cls,fn){ var b=document.createElement('button'); b.type='button'; b.textContent=text; if(cls){ b.className=cls; } b.addEventListener('click',fn); btns.appendChild(b); return b; }
+  function choices(){
+    btns.innerHTML='';
+    if(mine&&mine.ms<=ms){ button('Leaderboard','',function(){ lbOpen(ds,t,kind); }); return; }
+    button(mine?'Publish this faster time':'Publish my time','primary',function(){ lbCard(rec,ds,t,kind,ms,function(res){ if(res&&live()){ mine=lbStore(LB_MINE_KEY)[key]; say(label+': '+res); choices(); } }); });
+    if(!priv){ button('Keep it private','',function(){ var o=lbStore(LB_PRIV_KEY); o[key]=1; lbSave(LB_PRIV_KEY,o); priv=true; say('Kept private. Nothing was sent.'); btns.innerHTML=''; choices(); }); }
+    button('Leaderboard','',function(){ lbOpen(ds,t,kind); });
+  }
+  if(mine&&mine.ms<=ms){ say('You have published '+lbT(mine.ms/1000)+' on this board, so this run stays here.'); choices(); return; }
+  choices();
+  if(priv){ say('Kept private. Nothing was sent.'); return; }
+  say('Checking '+board+'…');
+  lbCall('GET','/daily/'+ds+'/'+(t+1)+'/'+kind,null,function(err,st,js){
+    if(!live()){ return; }
+    if(err||st!==200||!js||!Array.isArray(js.times)){ say('Leaderboard unavailable right now.'); return; }
+    say(label+': '+lbLine(lbPlace(js.times,ms),js.times.length,false,board)+'. Nothing has been sent.');
+  });
+}
+
+/* the publish card: what is shared, a name, and Publish. cb(text) is called with the server's position line after a successful publish */
+function lbCard(rec,ds,t,kind,ms,cb){
+  campShow();
+  var x=dailyDay(ds).t[t],tok=lbToken(),att=Math.max(1,x.att),gen=CARDGEN,sent=false;
+  $('camp-h').textContent='Publish to the leaderboard';
+  $('camp-body').innerHTML='<p class="note">Check what is shared. Nothing is sent until you press Publish.</p>'+
+    '<label class="gh-name" for="lb-name">Name on the board <input type="text" id="lb-name" maxlength="16" placeholder="a name" autocomplete="off" spellcheck="false"></label>'+
+    '<ul class="lb-share"><li>Your name, as typed (16 characters at most).</li><li>Your time: <b>'+lbT(ms/1000)+'</b>, '+esc(dailyDayLabel(ds))+', tier '+(t+1)+', '+lbKindWords(kind)+' (chill '+(kind==='chair'?'on':'off')+').</li>'+
+    '<li>Your attempts on this tier today: <b>'+att+'</b>. The board shows this as reported by your device, because it cannot be checked.</li>'+
+    '<li>The record of your controls in this race, so the server can play it again and check the time.</li></ul>'+
+    '<p class="note">No account. The server keeps no address beyond a short limit on how fast one connection can publish. A random code kept in this browser lets you remove your entry later. Racing, sharing and ghost links work without any of this.</p>'+
+    '<p class="note" id="lb-msg" role="status" aria-live="polite"></p>'+
+    '<div class="cmp-foot"><button type="button" class="primary" id="lb-go">Publish</button><button type="button" id="lb-cancel">Cancel</button></div>';
+  var inp=$('lb-name'),go=$('lb-go');
+  function live(){ return gen===CARDGEN&&!!$('lb-msg'); }
+  function say(s){ if(live()){ $('lb-msg').textContent=s; } }
+  inp.value=ghSavedName();
+  inp.addEventListener('keydown',function(e){ e.stopPropagation(); if(e.code==='Enter'){ e.preventDefault(); inp.blur(); } });
+  inp.addEventListener('input',function(){ try{ window.localStorage.setItem(GH_NAME_KEY,ghName(inp.value)); }catch(e){} });
+  $('lb-cancel').addEventListener('click',function(){ if(sent){ cb(null); } campClose(); });
+  go.addEventListener('click',function(){
+    var name=ghName(inp.value);
+    if(!name){ say('Please enter a name.'); try{ inp.focus(); }catch(e){} return; }
+    if(!tok){ say('This browser cannot make the random code the leaderboard needs.'); return; }
+    if(JSON.stringify(rec).length>LB_MAXLOG){ say('This run is too large to publish.'); return; }
+    go.disabled=true; inp.disabled=true; say('Publishing… the server is checking the run.');
+    lbCall('POST','/daily/'+ds+'/'+(t+1)+'/'+kind,{body:{log:rec,name:name,deviceToken:tok,attempts:att}},function(err,st,js){
+      if(!live()){ if(!err&&(st===200||st===201)&&js){ var o0=lbStore(LB_MINE_KEY); o0[lbKey(ds,t,kind)]={id:js.id,ms:Math.round(js.t*1000),name:js.name}; lbSave(LB_MINE_KEY,o0); } return; }
+      if(!err&&(st===200||st===201)&&js&&typeof js.position==='string'){
+        var o=lbStore(LB_MINE_KEY); o[lbKey(ds,t,kind)]={id:js.id,ms:Math.round(js.t*1000),name:js.name}; lbSave(LB_MINE_KEY,o);
+        sent=true; say(js.position+(js.improved===false?'. You already had a faster time on this board, so that one stays.':'.')); go.hidden=true; $('lb-cancel').textContent='Back';
+        cb(js.position+(js.improved===false?' (your faster time stays)':'')); return;
+      }
+      go.disabled=false; inp.disabled=false; say(lbWhy(err,st,js)+(st===422||st===400?' Nothing was stored.':''));
+    });
+  });
+  try{ inp.focus({preventScroll:true}); }catch(e){}
+}
+function dailyDayLabel(ds){ return ds===dailyToday()?'today':ghDay(ds); }
+
+/* the board view: the top 50 for a tier and kind, with a ghost to race on each row and a way to remove your own */
+function lbOpen(ds,tier,kind){
+  tier=tier||0; kind=kind||'star';
+  campShow();
+  var gen=CARDGEN,mineAll=lbStore(LB_MINE_KEY),mine=mineAll[lbKey(ds,tier,kind)],i,h;
+  $('camp-h').textContent='Leaderboard';
+  h='<p class="dly-date">'+esc(dailyFmtDate(ds))+(ds===dailyToday()?', today':'')+' (UTC)</p><div class="lb-tabs" role="group" aria-label="Tier">';
+  for(i=0;i<3;i++){ h+='<button type="button" data-t="'+i+'" aria-pressed="'+(i===tier)+'">Tier '+(i+1)+'</button>'; }
+  h+='</div><div class="lb-tabs" role="group" aria-label="Kind"><button type="button" data-k="star" aria-pressed="'+(kind==='star')+'">Star</button><button type="button" data-k="chair" aria-pressed="'+(kind==='chair')+'">Lounge chair</button></div>'+
+    '<div id="lb-list" aria-live="polite"><p class="note">Loading…</p></div><p class="note" id="lb-msg" role="status" aria-live="polite"></p>'+
+    '<div class="cmp-foot"><button type="button" id="lb-back">Back</button></div>';
+  $('camp-body').innerHTML=h;
+  function live(){ return gen===CARDGEN&&!!$('lb-list'); }
+  function say(s){ if(live()){ $('lb-msg').textContent=s; } }
+  var tb=$('camp-body').querySelectorAll('.lb-tabs button');
+  for(i=0;i<tb.length;i++){ tb[i].addEventListener('click',function(){ var a=this.getAttribute('data-t'),k=this.getAttribute('data-k'); lbOpen(ds,a!==null?+a:tier,k||kind); }); }
+  $('lb-back').addEventListener('click',function(){ dailyList(ds); });
+  lbCall('GET','/daily/'+ds+'/'+(tier+1)+'/'+kind,null,function(err,st,js){
+    if(!live()){ return; }
+    if(err||st!==200||!js||!Array.isArray(js.top)||!Array.isArray(js.times)){ $('lb-list').innerHTML='<p class="note">Leaderboard unavailable right now.</p>'; return; }
+    var rows='',r,me,k,gone=0;
+    for(k=0;k<js.top.length;k++){
+      r=js.top[k]; if(!r||typeof r.name!=='string'||typeof r.t!=='number'||typeof r.id!=='string'){ continue; }
+      if(LB_GONE[r.id]){ gone++; continue; }
+      me=!!(mine&&mine.id===r.id);
+      rows+='<li class="lb-row'+(me?' lb-me':'')+'"><span class="lb-pl">'+(+r.place||0)+'</span><span class="lb-nm">'+esc(ghName(r.name))+(me?' <b>(you)</b>':'')+'</span><span class="lb-t">'+lbT(r.t)+'</span>'+
+        '<span class="lb-at note">'+(r.attempts?dailyAtt(+r.attempts)+' (self-reported)':'')+'</span>'+
+        '<span class="lb-ac"><button type="button" data-id="'+esc(r.id)+'" data-do="race">Race this ghost</button>'+(me?'<button type="button" data-id="'+esc(r.id)+'" data-do="remove">Remove my entry</button>':'')+'</span></li>';
+    }
+    $('lb-list').innerHTML=(rows?'<ol class="lb-rows">'+rows+'</ol>':'<p class="note">No times on this board yet.</p>')+
+      '<p class="note">'+Math.max(0,(+js.count||0)-gone)+((+js.count||0)-gone===1?' entry':' entries')+'. Times are checked by replaying each run. Attempt counts come from each device and are not checked.</p>'+
+      (mine&&!js.top.some(function(r){ return r&&r.id===mine.id; })?'<p class="note"><b>(you)</b> Your published time is '+lbT(mine.ms/1000)+(lbListed(js.times,mine.ms)?', which is '+lbOrd(lbPlace(js.times,mine.ms))+'.':'. The board can take up to a minute to show a new entry.')+'</p>':'');
+    var bs=$('lb-list').querySelectorAll('button[data-do]'),b;
+    for(k=0;k<bs.length;k++){ b=bs[k]; b.addEventListener('click',function(){ var id=this.getAttribute('data-id'); if(this.getAttribute('data-do')==='race'){ lbRace(id,say); } else { lbRemove(this,id,ds,tier,kind,say); } }); }
+  });
+}
+function lbListed(times,ms){ for(var i=0;i<times.length;i++){ if(Math.round(times[i]*1000)===ms){ return true; } } return false; }
+function lbRace(id,say){
+  say('Fetching the ghost…');
+  lbCall('GET','/run/'+encodeURIComponent(id),null,function(err,st,js){
+    var g=!err&&st===200&&js?lbGhost(js):null;
+    if(!g){ say(err||st!==200?lbWhy(err,st,js):'That run could not be read as a ghost.'); return; }
+    ghLaunch(g);
+  });
+}
+function lbRemove(b,id,ds,tier,kind,say){
+  if(b.getAttribute('data-sure')!=='1'){ b.setAttribute('data-sure','1'); b.textContent='Really remove it?'; say('Press again to remove your entry from the board. You can publish again later.'); return; }
+  var tok=lbToken(); if(!tok){ say('This browser has lost the code that published this entry.'); return; }
+  b.disabled=true;
+  lbCall('DELETE','/run/'+encodeURIComponent(id),{token:tok},function(err,st,js){
+    if(!err&&(st===200||st===404)){ var o=lbStore(LB_MINE_KEY); delete o[lbKey(ds,tier,kind)]; lbSave(LB_MINE_KEY,o); LB_GONE[id]=1; lbOpen(ds,tier,kind); return; }
+    b.disabled=false; say(lbWhy(err,st,js));
+  });
+}
+/* ---------- leaderboard (end) ---------- */
 
 /* ---------- achievements (begin) ----------
    Twelve achievements, each tied to a real-world story. They are judged when a race ends, from that race's events (G.ev) and result,
