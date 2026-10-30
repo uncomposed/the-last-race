@@ -1,7 +1,8 @@
 name: Pacing the Frontier checks
 # Replays a fixed set of races and compares them with check/reference.json (skipped in seconds when the simulation
 # section of the page is unchanged) and lints that section for maths that can differ between browsers, replays recorded input
-# logs at the live 1/60 s step, then checks the content tables and the logic around them. Plain Node, no install.
+# logs at the live 1/60 s step, then checks the content tables and the logic around them, and drives the multiplayer
+# server with test clients. Plain Node 22 (for the built-in WebSocket), no install.
 on:
   push:
     paths: ['experiments/pacing-the-frontier/**', '.github/workflows/pacing-check.yml']
@@ -15,6 +16,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - run: node experiments/pacing-the-frontier/check/sim-check.mjs
       - run: node experiments/pacing-the-frontier/check/replay-check.mjs
       - run: node experiments/pacing-the-frontier/check/content-check.mjs
+      - run: node experiments/pacing-the-frontier/check/mp-check.mjs

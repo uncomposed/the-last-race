@@ -163,9 +163,9 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 .ach-real:hover{text-decoration:underline}
 .ach-all{align-self:flex-start;flex:none;min-height:32px;margin-left:auto;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 12px var(--mono)}
 .ach-all:hover{color:var(--ink)}
-#ov-ach{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
-#ov-ach:hover{color:var(--ink)}
-#ov-ach[hidden]{display:none}
+#ov-ach,#ov-mp{align-self:flex-start;min-height:32px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font:500 13px var(--mono)}
+#ov-ach:hover,#ov-mp:hover{color:var(--ink)}
+#ov-ach[hidden],#ov-mp[hidden]{display:none}
 .ov-links{display:flex;flex-wrap:wrap;gap:0 18px;align-items:center}
 .achg-sum{font:400 13px/1.4 var(--body);color:var(--muted)}
 .achg-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -424,7 +424,7 @@ body.chill #btn-jump{display:none}
 .cmp-res .new{color:var(--good)}
 #ready-camp{width:100%}
 @media (max-width:600px),(orientation:landscape) and (max-height:540px){
-  #btn-camp{display:none}
+  #btn-camp,#btn-mp{display:none}
   .cmp{padding:8px}
   .cmp .card{padding:10px 12px}
   .cmp-top h2{font-size:18px}
@@ -517,6 +517,28 @@ html.epi-open{overflow:hidden}
   dialog.epi[open] .epi-in>*:nth-child(n+4){animation-delay:.3s}
 }
 @keyframes epi-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ---- multiplayer: the lobby, and the one-player controls hidden when the page comes from multiplayer/server.mjs ---- */
+body.mp #btn-pause,body.mp #btn-restart,body.mp #btn-camp,body.mp #btn-seed,body.mp .seedbox,body.mp label[for=watch],body.mp label[for=auto],
+body.mp #btn-mp,body.mp #ov-mp,body.mp #ready-btn,body.mp #ready-camp,body.mp #ready-diff,body.mp #ov-how,body.mp #ov-ach,body.mp #ov-cres,
+body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
+.mp-seats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.mp-seat{display:grid;grid-template-columns:1.1em 5.5em minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.mp-sw{width:1.1em;height:1.1em;border-radius:4px}
+.mp-who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-who.open{color:var(--muted)}
+.mp-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.mp-row input[type=text]{width:9em}
+#mp-code{width:5em;text-transform:uppercase;letter-spacing:.12em;font-weight:600}
+.mp-box{display:flex;flex-direction:column;gap:10px}
+.mp-box[hidden],#mpl [hidden]{display:none}
+.mp-roomline b{font-size:1.25em;letter-spacing:.14em}
+.mp-link{width:100%;font-size:13px;color:var(--muted)}
+.mp-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.mp-watch button{margin-left:6px}
+@media (max-width:600px){.mp-seat{grid-template-columns:1.1em 3.8em minmax(0,1fr) auto}.mp-seat .mp-act:has(button+button){grid-column:1/-1}}  /* phones: the host's two buttons get their own line, so the name stays readable */
+.mp-stand{list-style:none;margin:6px 0 0;padding:0;text-align:left;font-size:13px}
+#mp-start[disabled]{opacity:.45;cursor:default}
+#mpl .card>*{flex-shrink:0}  /* short phone screens: the card scrolls instead of squashing its rows */
 </style>
 
 <main class="wrap">
@@ -547,7 +569,7 @@ html.epi-open{overflow:hidden}
           <li><i aria-hidden="true"></i>Slow down to build sight, height and speed.</li>
           <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
         </ul>
-        <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button></div>
+        <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button><button type="button" id="ov-mp" hidden>Multiplayer</button></div>
         <p id="ov-msg" hidden></p>
         <p class="rl-line" id="ov-like" hidden></p>
         <div class="story" id="ov-story" hidden>
@@ -650,6 +672,7 @@ html.epi-open{overflow:hidden}
       <button id="btn-restart" type="button">New run</button>
       <button id="btn-mute" class="snd" type="button" aria-pressed="true">Sound: on <span class="kh">(M mutes)</span></button>
       <button id="btn-camp" type="button">Campaign</button><!-- campaign -->
+      <button id="btn-mp" type="button" hidden>Multiplayer</button>
       <label class="seedbox" for="seed-in">Seed <input type="text" id="seed-in" inputmode="numeric" autocomplete="off" aria-label="Seed"></label>
       <button id="btn-seed" type="button">Play seed</button>
     </div>
@@ -1370,6 +1393,10 @@ html.epi-open{overflow:hidden}
 (function () {
   'use strict';
 
+  /* bots are "the Sprinter"; a multiplayer player is just their name */
+  function the(n) { return /^(Sprinter|Steward|Gambler|Custom)$/.test(n) ? 'the ' + n : n; }
+  function The(n) { var t = the(n); return t.charAt(0).toUpperCase() + t.slice(1); }
+
   function mulberry32(a) {
     a = a >>> 0;
     return function () {
@@ -1615,17 +1642,17 @@ html.epi-open{overflow:hidden}
       var b = builderOf(g), who = b ? b.who : '';
       if (b && b.who === e.who) return { wall: e.human ? 'your own precedent' : 'its own precedent', topic: 'Self-Inflicted Precedent' };
       if (b && b.human) return { wall: 'your precedent', topic: 'Your Precedent' };
-      return { wall: who ? 'the ' + who + '’s precedent' : 'an old precedent', topic: who ? 'the ' + who + '’s Precedent' : 'Precedent' };
+      return { wall: who ? the(who) + '’s precedent' : 'an old precedent', topic: who ? The(who) + '’s Precedent' : 'Precedent' };
     }
     function objOf(e) {
       if (e.what === 'tower') return precName(e.gap, e);
       return barName(e.bar === undefined ? 1 : e.bar);
     }
-    function labTitle(it) { return it.human ? 'Your Lab' : 'the ' + it.who; }
+    function labTitle(it) { return it.human ? 'Your Lab' : the(it.who); }
     function noThe(s) { return s.replace(/^the /i, ''); }
     function ctxFor(e) {
       var h = e.human;
-      return { who: h ? 'you' : 'the ' + e.who, Who: h ? 'You' : 'The ' + e.who, its: h ? 'your' : 'its', was: h ? 'were' : 'was',
+      return { who: h ? 'you' : the(e.who), Who: h ? 'You' : The(e.who), its: h ? 'your' : 'its', was: h ? 'were' : 'was',
         is: h ? 'are' : 'is', has: h ? 'have' : 'has', s: h ? '' : 's' };
     }
 
@@ -1733,8 +1760,8 @@ html.epi-open{overflow:hidden}
       if (it.obj) { c.wall = it.obj.wall; c.Wall = cap(it.obj.wall); }
       c.lost = it.lost; c.odds = it.odds; c.roll = it.roll; c.n = it.n; c.of = it.of; c.cn = it.cn;
       c.committee = committee; c.Committee = cap(committee);
-      if (it.prev) c.prev = it.prev === 'You' ? 'you' : 'the ' + it.prev;
-      if (it.copy) c.prev = it.copy === 'You' ? 'you' : 'the ' + it.copy;
+      if (it.prev) c.prev = it.prev === 'You' ? 'you' : the(it.prev);
+      if (it.copy) c.prev = it.copy === 'You' ? 'you' : the(it.copy);
       var aside = null;
       switch (it.kind) {
         case 'crash':
@@ -1803,7 +1830,7 @@ html.epi-open{overflow:hidden}
     for (i = 0; i < labs.length; i++) if (labs[i].human) me = labs[i];
     for (i = 0; i < inc.length; i++) if (inc[i].human && moodOf(inc[i]) === 'bad') myBad++;
     var vt, vl, vm = 'plain', W = res.winner || '';
-    var vc = { t: secs, W: W, Winner: W ? 'The ' + W : '', winner: W ? 'the ' + W : '', committee: committee, Committee: cap(committee),
+    var vc = { t: secs, W: W, Winner: W ? The(W) : '', winner: W ? the(W) : '', committee: committee, Committee: cap(committee),
       T: cap(pick(TOPIC)), P: cap(noThe(pick(GADJ))), seed: run.seed };
     /* titles and lines step through their pools by the golden ratio on the seed, so neighbouring races spread out evenly */
     function gold(a, salt) { var f = ((run.seed || 1) * 0.6180339887 + salt) % 1; return a[Math.floor(f * a.length)]; }
@@ -2246,7 +2273,7 @@ function strike(l,what){
   l.strikes++;
   if(l.strikes>=sm){
     l.out=true; l.dissolved=true; l.v=0; l.st.ds=1; ev(l,'dissolved',{what:what,n:l.strikes});
-    log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+'). The government dissolves '+(l.human?'your lab':l.name)+'.');
+    log(l.name+' hit '+what+' (strike '+l.strikes+' of '+sm+'). The government dissolves '+(l.human&&!l.hs?'your lab':l.name)+'.');
     if(allOut()){ G.over=true; G.result={type:'allout'}; }
     return true;
   }
@@ -2499,15 +2526,16 @@ function stepLab(l,dt,inp){
 
 /* the human's controls reach the lab K.reaction seconds late once it is past the singularity gap, unless a cap has slowed it.
    Every step the live input goes into a timestamped buffer; the delayed input is the newest entry at least that old, and a jump
-   pressed in between is delivered once. */
+   pressed in between is delivered once. In a multiplayer race each human lab carries its own input and buffer in l.hs
+   (set by multiplayer/server.mjs); a one-player race keeps them on G. */
 function humanInput(l){
-  var li=G.input,e;
-  G.ibuf.push({t:G.t,pace:li.pace,w:li.w.slice(),jump:li.jump,auto:li.auto,rev:li.rev,fwd:li.fwd});
-  if(!G.eff){ G.eff={pace:li.pace,w:li.w.slice(),jump:false,auto:li.auto,rev:li.rev,fwd:li.fwd}; }
-  while(G.ibuf.length&&G.ibuf[0].t<=G.t-K.reaction+1e-9){
-    e=G.ibuf.shift(); G.eff.pace=e.pace; G.eff.w=e.w; G.eff.auto=e.auto; G.eff.rev=e.rev; G.eff.fwd=e.fwd; if(e.jump){G.eff.jump=true;}
+  var s=l.hs||G,li=s.input,e;
+  s.ibuf.push({t:G.t,pace:li.pace,w:li.w.slice(),jump:li.jump,auto:li.auto,rev:li.rev,fwd:li.fwd});
+  if(!s.eff){ s.eff={pace:li.pace,w:li.w.slice(),jump:false,auto:li.auto,rev:li.rev,fwd:li.fwd}; }
+  while(s.ibuf.length&&s.ibuf[0].t<=G.t-K.reaction+1e-9){
+    e=s.ibuf.shift(); s.eff.pace=e.pace; s.eff.w=e.w; s.eff.auto=e.auto; s.eff.rev=e.rev; s.eff.fwd=e.fwd; if(e.jump){s.eff.jump=true;}
   }
-  return (inSing(l)&&!capped(l))?G.eff:li;
+  return (inSing(l)&&!capped(l))?s.eff:li;
 }
 function stepGame(dt){
   if(G.over){return;}
@@ -2517,7 +2545,7 @@ function stepGame(dt){
     if(l.out||l.done){continue;}
     var inp=l.human?humanInput(l):botInput(l);
     stepLab(l,dt,inp);
-    if(l.human){G.input.jump=false;G.eff.jump=false;}
+    if(l.human){var hs=l.hs||G; hs.input.jump=false; hs.eff.jump=false;}
     if(G.over){break;}
   }
   if(!G.over){updatePublic();}
@@ -2569,7 +2597,7 @@ function readColors(){
   hatch=ctx.createPattern(pc,'repeat');
 }
 
-var running=false,paused=false,acc=0,last=performance.now(),lastHud=0;
+var running=false,paused=false,acc=0,last=performance.now(),lastHud=0,MP=null;  /* MP: multiplayer state, set by mpBoot */
 var ui={pace:70,w:[25,50,25],auto:true,rev:false,fwd:false},singShown=false;
 var flowHi=[0,0,0];  /* reduced motion: until when each meter is highlighted as receiving Build (set by the flow layer) */
 function leaderLab(){
@@ -3481,6 +3509,7 @@ $('ov-msg').parentNode.insertBefore(ovTour.el,$('ov-msg'));
 ovTour.el.id='ov-tour'; $('ov-how').setAttribute('aria-controls','ov-tour');
 $('ov-how').addEventListener('click',function(){ var open=ovTour.el.hidden; if(open){ ovTour.show(); } else { ovTour.hide(); } this.setAttribute('aria-expanded',open?'true':'false'); this.textContent=open?'Hide the demo':'How to play'; });
 function endScreen(){
+  if(MP){ mpEnd(); return; }
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
     if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play another'); }
@@ -3546,7 +3575,8 @@ function showSing(l){
 }
 function frame(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
-  if(running&&!paused&&!G.over){
+  if(MP){ mpFrame(now); }
+  else if(running&&!paused&&!G.over){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
@@ -3652,7 +3682,7 @@ function showPlaying(){ document.body.classList.toggle('playing',running&&!pause
 function showChill(){ document.body.classList.toggle('chill',!!K.chill); }
 $('auto').addEventListener('change',function(){ui.auto=this.checked;K.chill=this.checked?1:0;showChill();});
 showChill();
-function doJump(){ if(running&&!paused){G.input.jump=true;} }
+function doJump(){ if(MP){ if(MP.race&&!G.over){mpSend({t:'jump'});} return; } if(running&&!paused){G.input.jump=true;} }
 $('btn-jump').addEventListener('pointerdown',function(e){e.preventDefault();doJump();});
 function holdBtn(id,set){
   var b=$(id);
@@ -3662,14 +3692,14 @@ function holdBtn(id,set){
 function setRev(v){ ui.rev=v; syncInput(); showBar(); $('btn-back').style.background=v?'var(--ink)':''; $('btn-back').style.color=v?'var(--bg)':''; }
 function setFwd(v){ ui.fwd=v; syncInput(); showBar(); $('btn-fwd').style.background=v?'var(--ink)':''; $('btn-fwd').style.color=v?'var(--bg)':''; }
 holdBtn('btn-back',setRev); holdBtn('btn-fwd',setFwd);
-function setPaused(v){ if(!running){return;} paused=v; $('btn-pause').textContent=paused?'Resume':'Pause'; if(!paused){$('sing').hidden=true;} }
+function setPaused(v){ if(!running||MP){return;} paused=v; $('btn-pause').textContent=paused?'Resume':'Pause'; if(!paused){$('sing').hidden=true;} }
 $('btn-pause').addEventListener('click',function(){ setPaused(!paused); });
 $('sing-btn').addEventListener('click',function(){ setPaused(false); });
 $('pace').addEventListener('pointerup',function(){this.blur();});
 $('btn-restart').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } else if(DLY){ dailyStart(DLY.date,DLY.tier); } else { start(); } });
 $('btn-seed').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); if(n===null){$('seed-in').value=G.seed;return;} start(n); });
 $('seed-in').addEventListener('keydown',function(e){ if(e.code==='Enter'){e.preventDefault();$('btn-seed').click();} });
-$('ov-btn').addEventListener('click',function(){ var n=parseSeed($('seed-in').value); start(fresh?(n===null?G.seed:n):undefined); });
+$('ov-btn').addEventListener('click',function(){ if(MP){ $('ov').hidden=true; mpShowLobby(); return; } var n=parseSeed($('seed-in').value); start(fresh?(n===null?G.seed:n):undefined); });
 document.addEventListener('keyup',function(e){
   if(e.code==='ArrowLeft'||e.code==='KeyB'||e.code==='KeyA'){setRev(false);}
   else if(e.code==='ArrowRight'||e.code==='KeyD'){setFwd(false);}
@@ -3680,6 +3710,7 @@ document.addEventListener('keydown',function(e){
   if(e.metaKey||e.ctrlKey||e.altKey){return;}
   if(!$('achg').hidden){ if(e.code==='Escape'){e.preventDefault();achClose();} return; }  /* achievements gallery open: only Escape */
   if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose();} return; }  /* campaign list open: only Escape */
+  if(MP&&!$('mpl').hidden){ return; }  /* multiplayer lobby open: its own fields and buttons */
   if(TSET[e.code]&&!txt){ e.preventDefault(); setSplit(TSET[e.code].slice()); return; }
   if((e.code==='Enter'||e.code==='Space')&&!$('ready').hidden&&!txt&&e.target.id!=='ready-camp'&&e.target.id!=='ready-snd'){e.preventDefault(); if(!e.repeat&&performance.now()-cardAt>400){go();} return;}
   if((e.code==='Enter'||e.code==='Space')&&t!=='BUTTON'&&t!=='INPUT'&&t!=='SELECT'&&t!=='TEXTAREA'){
@@ -4368,7 +4399,7 @@ function dailyAtt(n){ return n+(n===1?' attempt':' attempts'); }
 /* sha256 of the simulation section (from `function $(id)` to `window.PF={`), the same simHash check/sim-check.mjs computes. A run's
    header carries it so a server replays the run on the simulation it was played on. sim-check fails when this is stale and
    `sim-check --write` updates it in place */
-var SIM_HASH='b99d731c72db56bb5a321672008e9cf93a2aaca7e981e106cd90a8e00ea954f0';
+var SIM_HASH='95e6012c46852e79f21e540f809e2ade14905f914b57ae8a147b67dd1bb46aa2';
 /* input log: G.input as the sim sees it each 1/60 s tick of a live race, one row [tick, field, value] per change. jump is a pulse
    (logged when it is set and the step before did not leave it set, see recAfter). The header holds what a replay needs. Headless
    run() steps at 1/30, so a replay must step at h.dt */
@@ -5320,6 +5351,271 @@ window.PF.ach={LIST:ACH_LIST,KEY:ACH_KEY,eval:achEval,state:function(){return AC
   ui:{start:start,go:go,endScreen:endScreen,tick:achTick,run:function(){return ACHRUN;},stop:function(){ running=false; }}};
 /* ---------- achievements (end) ---------- */
 
+/* ---------- multiplayer (begin) ----------
+   When multiplayer/server.mjs serves this page (it sets window.PF_MP) the server runs the race and this page is a window on it:
+   it sends your Run / Build, split, Back up, Floor it and jumps, and draws the state the server sends 30 times a second, about
+   0.1 s behind so motion stays smooth. Your lab is put first in G.labs, so the one-player drawing, HUD and recap show it as yours. */
+/* MP_SERVER is the room server for the published site (wss://…/ws); empty until it is deployed, which hides the Multiplayer buttons.
+   A page served by server.mjs itself uses that server. On a local dev page ?mpserver=ws://localhost:8080/ws points at a local
+   server; the override only works on localhost, so a shared link cannot send players to someone else's server. */
+var MP_SERVER='';
+var MP_KEY='pf-mp-name',MP_TOK='pf-mp-tok-',MP_COL=['a','d','c','b'],MP_CN=['teal','pink','purple','orange'];  /* seat colours follow the lab kinds in newGame */
+var mpDev=(function(){ var m=/[?&]mpserver=([^&#]*)/.exec(location.search),u=''; try{ u=m?decodeURIComponent(m[1]):''; }catch(e){}
+  return /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&/^wss?:\/\/[^\s]+$/.test(u)?u:''; })();
+/* ?room=CODE, read before showSeed rewrites the address */
+var mpRoomQ=(function(){ var m=/[?&]room=([a-z]{4})\b/i.exec(location.search); return m?m[1].toUpperCase():''; })();
+function mpURL(){ return window.PF_MP?(location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws':(mpDev||MP_SERVER); }
+function mpLink(code){ return location.origin+location.pathname+'?room='+code+(mpDev?'&mpserver='+encodeURIComponent(mpDev):''); }
+function mpSolo(){ location.href=location.pathname+(mpDev?'?mpserver='+encodeURIComponent(mpDev):''); }
+function mpBoot(code){
+  if(MP){ return; }
+  MP={ws:null,me:{name:'',seat:null},lobby:null,room:null,want:code||'',stop:false,buf:[],race:false,ended:false,sent:'',goAt:0};
+  running=false; paused=false;
+  document.body.classList.add('mp');
+  var d=document.createElement('div');
+  d.className='cmp'; d.id='mpl'; d.setAttribute('role','dialog'); d.setAttribute('aria-labelledby','mp-h');
+  d.innerHTML='<div class="card"><div class="cmp-top"><h2 id="mp-h">Multiplayer</h2></div>'+
+    '<p class="note" id="mp-status" role="status" aria-live="polite">Connecting…</p>'+
+    '<div class="mp-row"><label for="mp-name">Your name</label><input type="text" id="mp-name" maxlength="14" autocomplete="nickname"><button type="button" id="mp-rename" hidden>Rename</button></div>'+
+    /* not in a room yet */
+    '<div id="mp-out" class="mp-box"><button class="primary" type="button" id="mp-create">Create a room</button>'+
+    '<div class="mp-row"><label for="mp-code">Or join with a code</label><input type="text" id="mp-code" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD"><button type="button" id="mp-join">Join</button></div>'+
+    '<p class="note">A room holds four racers and up to eight watchers. Send your friends the room link or its four-letter code.</p></div>'+
+    /* in a room */
+    '<div id="mp-in" class="mp-box" hidden><div class="mp-row mp-roomline"><span>Room <b id="mp-code-show"></b></span><button type="button" id="mp-copy">Copy link</button><button type="button" id="mp-share" hidden>Share…</button></div>'+
+    '<input type="text" id="mp-link" class="mp-link" readonly aria-label="Room link">'+
+    '<ol class="mp-seats" id="mp-seats"></ol><p class="note mp-watch" id="mp-watch"></p>'+
+    '<div class="mp-row"><label for="mp-chill"><input type="checkbox" id="mp-chill">Chill mode (auto-jump)</label><label for="mp-bots"><input type="checkbox" id="mp-bots">Bots in empty seats</label>'+
+    '<label for="mp-seed">Seed <input type="text" id="mp-seed" inputmode="numeric" placeholder="random" autocomplete="off"></label></div>'+
+    '<button class="primary" type="button" id="mp-start">Start race</button>'+
+    '<p class="note" id="mp-host-note"></p>'+
+    '<div class="mp-row"><button type="button" id="mp-leave">Leave room</button></div></div>'+
+    (window.PF_MP?'':'<div class="mp-row"><button type="button" id="mp-solo">Back to one-player</button></div>')+'</div>';
+  document.body.appendChild(d);
+  var nm=''; try{ nm=localStorage.getItem(MP_KEY)||''; }catch(e){}
+  $('mp-name').value=nm; $('mp-code').value=MP.want;
+  $('mp-create').addEventListener('click',function(){ var n=mpName(); if(n){ mpSend({t:'create',name:n}); } });
+  $('mp-join').addEventListener('click',mpJoinCode);
+  $('mp-code').addEventListener('keydown',function(e){ if(e.code==='Enter'){ e.preventDefault(); mpJoinCode(); } });
+  $('mp-code').addEventListener('input',function(){ this.value=this.value.toUpperCase().replace(/[^A-Z]/g,''); });
+  $('mp-rename').addEventListener('click',function(){ var n=mpName(); if(n){ mpSend({t:'name',name:n}); } });
+  $('mp-name').addEventListener('keydown',function(e){ if(e.code==='Enter'){ e.preventDefault(); if(MP.room){ $('mp-rename').click(); } else if($('mp-code').value.length===4){ mpJoinCode(); } } });
+  $('mp-copy').addEventListener('click',mpCopy);
+  if(navigator.share){ $('mp-share').hidden=false; $('mp-share').addEventListener('click',function(){ navigator.share({title:'Pacing the Frontier',text:'Race me: room '+MP.room,url:mpLink(MP.room)}).catch(function(){}); }); }
+  $('mp-link').addEventListener('focus',function(){ this.select(); });
+  $('mp-chill').addEventListener('change',function(){ mpSend({t:'opts',chill:this.checked}); });
+  $('mp-bots').addEventListener('change',function(){ mpSend({t:'opts',bots:this.checked}); });
+  $('mp-seed').addEventListener('change',function(){ mpSend({t:'opts',seed:this.value}); });
+  $('mp-start').addEventListener('click',function(){ mpSend({t:'start'}); });
+  $('mp-leave').addEventListener('click',function(){ mpSend({t:'leave'}); });
+  if($('mp-solo')){ $('mp-solo').addEventListener('click',function(){ if(MP.room){ mpSend({t:'leave'}); } mpSolo(); }); }
+  $('mp-in').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-act]'); if(!b){ return; }
+    var act=b.getAttribute('data-act'),v=b.getAttribute('data-v');
+    if(act==='seat'){ mpSend({t:'seat',seat:v==='none'?null:+v}); }
+    else if(act==='free'){ mpSend({t:'free',id:+v}); }
+    else if(act==='remove'&&window.confirm('Remove '+b.getAttribute('data-name')+' from this room? They will not be able to come back to it.')){ mpSend({t:'remove',id:+v}); }
+  });
+  /* a hidden tab counts as away: after a minute in the lobby its seat goes to watching */
+  document.addEventListener('visibilitychange',function(){ mpSend({t:'vis',hidden:document.hidden}); });
+  $('ov').hidden=true; $('ready').hidden=true;
+  mpShowLobby(); mpConnect();
+}
+function mpConnect(){
+  var ws;
+  try{ ws=new WebSocket(mpURL()); }catch(e){ mpStatus('Could not reach the multiplayer server.'); return; }
+  MP.ws=ws;
+  ws.onopen=function(){ MP.sent=''; var c=MP.room||MP.want; if(c){ mpJoinRoom(c); } else { mpStatus('Connected. Create a room, or join one with its code.'); } };
+  ws.onmessage=function(e){ var m; try{ m=JSON.parse(e.data); }catch(x){ return; }
+    if(m.t==='lobby'){ mpLobby(m); } else if(m.t==='start'){ mpStart(m); } else if(m.t==='s'){ mpSnap(m); }
+    else if(m.t==='error'){ mpError(m); } else if(m.t==='left'){ mpOut('You left the room.'); } };
+  ws.onclose=function(){ if(MP.ws!==ws){ return; } MP.ws=null; if(MP.stop){ return; } mpStatus('Lost the connection to the server. Trying again…'); setTimeout(mpConnect,1500); };
+}
+function mpSend(o){ if(MP&&MP.ws&&MP.ws.readyState===1){ MP.ws.send(JSON.stringify(o)); } }
+function mpStatus(t){ $('mp-status').textContent=t; }
+function mpName(){
+  var n=$('mp-name').value.trim(); if(!n){ mpStatus('Type your name first.'); $('mp-name').focus(); return ''; }
+  try{ localStorage.setItem(MP_KEY,n); }catch(e){}
+  return n;
+}
+function mpJoinCode(){
+  var c=$('mp-code').value.toUpperCase();
+  if(!/^[A-Z]{4}$/.test(c)){ mpStatus('A room code is four letters.'); $('mp-code').focus(); return; }
+  if(mpName()){ mpJoinRoom(c); }
+}
+function mpJoinRoom(c){
+  var tok=''; try{ tok=localStorage.getItem(MP_TOK+c)||''; }catch(e){}
+  var n=$('mp-name').value.trim();
+  if(!n&&!tok){ MP.want=c; $('mp-code').value=c; mpStatus('Type your name, then press Join to enter room '+c+'.'); $('mp-name').focus(); return; }
+  mpSend({t:'join',room:c,name:n,token:tok});
+  if(document.hidden){ mpSend({t:'vis',hidden:true}); }
+}
+function mpCopy(){
+  var u=mpLink(MP.room),done=function(){ mpStatus('Link copied. Send it to up to three friends.'); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(u).then(done,function(){ $('mp-link').select(); mpStatus('Copy the link from the box.'); }); }
+  else { $('mp-link').select(); try{ document.execCommand('copy'); done(); }catch(e){ mpStatus('Copy the link from the box.'); } }
+}
+/* back to the "not in a room" state, with a reason */
+function mpOut(msg){
+  MP.room=null; MP.want=''; MP.lobby=null; MP.me={name:'',seat:null};
+  $('mp-in').hidden=true; $('mp-out').hidden=false; $('mp-rename').hidden=true;
+  try{ history.replaceState(null,'',location.pathname+(mpDev?'?mpserver='+encodeURIComponent(mpDev):'')); }catch(e){}
+  if(MP.race||MP.ended){ MP.race=false; running=false; $('ov').hidden=true; $('ready').hidden=true; }
+  $('mpl').hidden=false;
+  mpStatus(msg);
+}
+function mpError(m){
+  if(m.code==='removed'){ mpOut('The host removed you from that room.'); }
+  else if(m.code==='noroom'||m.code==='full'){ mpOut(m.msg); }
+  else if(m.code==='elsewhere'){ MP.stop=true; if(MP.ws){ MP.ws.close(); } mpOut('You opened this room in another tab, so this one has stopped. Reload to come back here.'); }
+  else { mpStatus(m.msg||'Something went wrong.'); }
+}
+function mpShowLobby(){ if(!MP.race){ $('mpl').hidden=false; } }
+function mpBtn(act,v,txt,title,name){
+  var b=document.createElement('button'); b.type='button'; b.setAttribute('data-act',act); b.setAttribute('data-v',String(v)); b.textContent=txt;
+  if(title){ b.title=title; } if(name){ b.setAttribute('data-name',name); } return b;
+}
+function mpLobby(m){
+  MP.lobby=m; MP.me=m.you;
+  if(MP.room!==m.room){
+    MP.room=m.room; MP.want='';
+    try{ history.replaceState(null,'','?room='+m.room+(mpDev?'&mpserver='+encodeURIComponent(mpDev):'')); }catch(e){}
+  }
+  try{ localStorage.setItem(MP_TOK+m.room,m.you.token); }catch(e){}
+  $('mp-out').hidden=true; $('mp-in').hidden=false; $('mp-rename').hidden=false;
+  $('mp-code-show').textContent=m.room; $('mp-link').value=mpLink(m.room);
+  if(document.activeElement!==$('mp-name')){ $('mp-name').value=m.you.name; }
+  var ul=$('mp-seats'),i,s,li,mine=m.you.seat,host=m.you.host&&!m.racing,mark=function(p){ return (p.id===m.host?' (host)':'')+(p.away?' (away)':''); };
+  ul.textContent='';
+  for(i=0;i<m.seats.length;i++){
+    s=m.seats[i]; li=document.createElement('li'); li.className='mp-seat';
+    var sw=document.createElement('span'); sw.className='mp-sw'; sw.style.background='var(--'+MP_COL[i]+')'; sw.title=MP_CN[i];
+    var lb=document.createElement('span'); lb.textContent='Seat '+(i+1);
+    var who=document.createElement('span'); who.className='mp-who'+(s?'':' open');
+    who.textContent=s?(s.name+(i===mine?' (you)':'')+mark(s)):(m.opts.bots?'Open (bot)':'Open');
+    var act=document.createElement('span'); act.className='mp-act';
+    if(!m.racing&&(!s||i===mine)){ act.appendChild(mpBtn('seat',i===mine?'none':i,i===mine?'Stand up':'Sit here')); }
+    else if(host&&s){
+      act.appendChild(mpBtn('free',s.id,'Free seat','Move '+s.name+' to watching. They can sit again.'));
+      act.appendChild(mpBtn('remove',s.id,'Remove','Take '+s.name+' out of this room for good.',s.name));
+    }
+    li.append(sw,lb,who,act); ul.appendChild(li);
+  }
+  var w=$('mp-watch'); w.textContent='';
+  if(m.watching.length){
+    w.appendChild(document.createTextNode('Watching: '));
+    m.watching.forEach(function(p,k){
+      var sp=document.createElement('span'); sp.className='mp-watcher';
+      sp.textContent=(k?', ':'')+p.name+(p.id===m.you.id?' (you)':'')+mark(p); w.appendChild(sp);
+      if(host&&p.id!==m.you.id){ w.appendChild(mpBtn('remove',p.id,'Remove','Take '+p.name+' out of this room for good.',p.name)); }
+    });
+  }
+  $('mp-chill').checked=!!m.opts.chill; $('mp-bots').checked=!!m.opts.bots;
+  if(document.activeElement!==$('mp-seed')){ $('mp-seed').value=m.opts.seed; }
+  ['mp-chill','mp-bots','mp-seed'].forEach(function(id){ $(id).disabled=mine===null||m.racing; });
+  $('mp-start').disabled=mine===null||m.racing;
+  $('mp-leave').disabled=false;
+  $('mp-host-note').textContent=m.you.host?'You are the host. Between races you can free a seat or remove a player. Away players lose their seat after a minute.':
+    'Any seated player can start the race. Away players lose their seat after a minute.';
+  if(m.racing){ mpStatus(mine===null?'A race is on. You can watch it and join the next one.':'Your race is on.'); }
+  else if(mine===null){ mpStatus('Pick a seat to race, or stay standing to watch.'); }
+  else { mpStatus(m.seats.filter(Boolean).length>1||m.opts.bots?'Ready when you are.':'Waiting for friends. You can also race the bots.'); }
+}
+/* lab objects from the server: yours goes first and is the human lab; other players are drawn and named like rivals */
+function mpLabs(arr){
+  var out=[],i,l;
+  for(i=0;i<arr.length;i++){
+    l=arr[i]; l.player=!!l.human; l.human=l.id===MP.me.seat&&l.player;
+    if(l.human){ l.name='You'; out.unshift(l); } else { out.push(l); }
+  }
+  return out;
+}
+function mpStart(m){
+  var k,tr=m.track;
+  rcStop(); RL=null; RLR=null; CAMP=null; DLY=null; PSTRIKES=null;
+  for(k in m.K){ if(k in K){ K[k]=m.K[k]; } }
+  ui.auto=!!K.chill; $('auto').checked=ui.auto; showChill();
+  G={seed:m.seed,t:0,labs:[],barriers:tr.barriers,gaps:tr.gaps,finish:tr.finish,world:tr.world,rolls:[],fallN:[],bd:[],maxcap:tr.maxcap,sing:tr.sing,
+     log:[],ev:[],over:false,result:null,level:0,ibuf:[],eff:null,input:{pace:ui.pace/100,w:ui.w,jump:false,auto:ui.auto,rev:false,fwd:false}};
+  MP.buf=[]; MP.race=true; MP.ended=false; MP.sent='';
+  mpSnap(m.snap);
+  running=true; paused=false; singShown=true; acc=0;
+  $('mpl').hidden=true; $('ov').hidden=true; $('sing').hidden=true;
+  $('seed-in').value=G.seed;
+  var me=G.labs[0],order=G.labs.slice().sort(function(a,b){ return b.x-a.x; }).indexOf(me)+1;
+  MP.goAt=m.wait>0?performance.now()+m.wait*1000:0;
+  if(MP.goAt){
+    $('ready-h').textContent='Get set';
+    $('ready').hidden=false; cardAt=performance.now();
+  }
+  MP.intro='Seed '+G.seed+' · '+G.world.label+'. '+(me.human?'You start '+['','first','second','third','fourth'][order]+'. Set Run or Build and your split now.':'You are watching this race.');
+  sndStarted=true; snd.unlock();
+}
+function mpSnap(s){
+  var i,g,e,now=performance.now();
+  for(i=0;i<s.bars.length&&i<G.barriers.length;i++){ G.barriers[i].pub=!!s.bars[i]; }
+  for(i=0;i<s.gaps.length&&i<G.gaps.length;i++){ g=G.gaps[i]; g.pub=!!s.gaps[i][0]; g.crossedBy=s.gaps[i][1]; g.stepH=s.gaps[i][2]; }
+  G.level=s.level; G.fallN=s.fallN;
+  if(s.log){ G.log=s.log; }
+  G.ev.length=Math.min(G.ev.length,s.evFrom);
+  for(i=0;i<s.ev.length;i++){ e=s.ev[i]; e.human=e.who===MP.me.name; if(e.human){ e.who='You'; } G.ev.push(e); }
+  var labs=mpLabs(s.labs);
+  if(s.over){
+    G.labs=labs; G.t=s.time; MP.buf=[]; MP.race=false; MP.goAt=0; $('ready').hidden=true;
+    var r=s.result||{type:'timeout'};
+    if(r.winner!==undefined){ r.winner=labs.filter(function(l){ return l.id===r.winner; })[0]||null; }
+    G.result=r; G.over=true;
+    return;
+  }
+  MP.buf.push({t:s.time,at:now,labs:labs,xs:labs.map(function(l){ return l.x; }),jys:labs.map(function(l){ return l.jy; })});
+  if(MP.buf.length>12){ MP.buf.shift(); }
+  if(!G.labs.length){ G.labs=labs; G.t=s.time; }
+}
+/* each frame: send changed controls, run the countdown, and draw the race 0.1 s (of race time, x4 once no player is still in) behind the newest snapshot */
+function mpFrame(now){
+  if(!MP.race){ return; }
+  syncInput();
+  var key=JSON.stringify([G.input.pace,G.input.w,!!G.input.rev,!!G.input.fwd]);
+  if(key!==MP.sent){ MP.sent=key; mpSend({t:'in',pace:G.input.pace,w:G.input.w,rev:!!G.input.rev,fwd:!!G.input.fwd}); }
+  if(MP.goAt){
+    var left=Math.ceil((MP.goAt-now)/1000);
+    if(left>0){ $('ready-msg').textContent=MP.intro+' Go in '+left+'…'; }
+    else { MP.goAt=0; $('ready').hidden=true; snd.sfx('go'); }
+  }
+  var b=MP.buf; if(!b.length){ return; }
+  var nw=b[b.length-1],live=nw.labs.some(function(l){ return l.player&&!l.out&&!l.done; }),sc=live?1:4;
+  var rt=nw.t+Math.min(0.25,(now-nw.at)/1000)*sc-0.1*sc,i=0,a,c,f,j,l;
+  while(i<b.length-2&&b[i+1].t<=rt){ i++; }
+  a=b[i]; c=b[Math.min(i+1,b.length-1)];
+  f=c.t>a.t?clamp((rt-a.t)/(c.t-a.t),0,1):0;
+  for(j=0;j<a.labs.length;j++){
+    l=a.labs[j];
+    l.x=a.xs[j]+((c.xs[j]===undefined?a.xs[j]:c.xs[j])-a.xs[j])*f;
+    if(l.jt>=0&&c.labs[j]&&c.labs[j].jt>=0){ l.jy=a.jys[j]+(c.jys[j]-a.jys[j])*f; }
+  }
+  G.labs=a.labs; G.t=Math.max(a.t,Math.min(rt,c.t));
+  if(i>0){ b.splice(0,i); }
+}
+function mpEnd(){
+  var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
+  if(r.type==='win'&&r.winner){ showOverlay(r.winner===h&&h.human?'You won':r.winner.name+' won',(r.winner===h&&h.human?'You':r.winner.name)+' crossed the finish first in '+t+' s.','Back to lobby'); }
+  else if(r.type==='all'){ showOverlay('Everyone is out',r.by+' fell into gap '+r.gap+' and the roll ('+r.roll+') ended the run for every lab.','Back to lobby'); }
+  else if(r.type==='allout'){ showOverlay('Nobody left','Every lab fell in or was dissolved. There is no winner.','Back to lobby'); }
+  else { showOverlay('Time limit','Nobody finished in time.','Back to lobby'); }
+  /* standings: the winner, then the labs still running by distance, then those out */
+  var labs=G.labs.slice().sort(function(a,b){ var wa=r.winner===a?1:0,wb=r.winner===b?1:0; if(wa!==wb){ return wb-wa; } if(a.out!==b.out){ return a.out?1:-1; } return b.x-a.x; });
+  var ol=document.createElement('ol'); ol.className='mp-stand';
+  labs.forEach(function(l){
+    var li=document.createElement('li');
+    li.textContent=l.name+(l.player?'':' (bot)')+': '+(r.winner===l?'first over the finish':(l.dissolved?'dissolved':(l.out?'fell into a gap':Math.round(G.finish-l.x)+' from the finish')));
+    ol.appendChild(li);
+  });
+  $('ov-msg').appendChild(ol);
+  MP.ended=true;
+  if(h.human){ tellStory(); }
+}
+/* ---------- multiplayer (end) ---------- */
+
 var qs=/[?&]skill=(\d+|rookie|pro|machine)/i.exec(location.search);
 if(qs){ var sv=/\d/.test(qs[1])?+qs[1]:PRESETS[qs[1].charAt(0).toUpperCase()+qs[1].slice(1).toLowerCase()]; K.skill=clamp(sv,0,100); $('k-skill').value=K.skill; $('o-k-skill').textContent=K.skill; }
 var qc=/[?&]chill=(0|1)/.exec(location.search);
@@ -5332,8 +5628,12 @@ var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
 requestAnimationFrame(frame);
-if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
-ghBoot();  /* #g=... opens a ghost link */
+if(window.PF_MP||(mpRoomQ&&mpURL())){ mpBoot(mpRoomQ); }
+else if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
+if(!MP){ ghBoot(); }  /* #g=... opens a ghost link */
+if(!MP&&mpURL()){ $('ov-mp').hidden=false; $('btn-mp').hidden=false; }
+$('ov-mp').addEventListener('click',function(){ mpBoot(''); });
+$('btn-mp').addEventListener('click',function(){ mpBoot(''); });
 })();
 </script>
 <script>
