@@ -8,6 +8,7 @@ A small side-scrolling racing game about AI labs racing to the frontier. You rac
 - Rules, knobs and query parameters: [`experiments/pacing-the-frontier/README.md`](experiments/pacing-the-frontier/README.md).
 - Measurements behind the bots, maps and difficulty: [`experiments/pacing-the-frontier/DESIGN-NOTES.md`](experiments/pacing-the-frontier/DESIGN-NOTES.md).
 - Check that race results did not change: `node experiments/pacing-the-frontier/check/sim-check.mjs`.
+- Check that a recorded run replays to the same result (what a leaderboard server relies on): `node experiments/pacing-the-frontier/check/replay-check.mjs`.
 
 The earlier lab-management campaign (TypeScript engine, CLI, MCP server, simulations and research notes) lives on the [`lab-campaign`](https://github.com/uncomposed/the-last-race/tree/lab-campaign) branch.
 
