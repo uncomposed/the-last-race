@@ -1,0 +1,6 @@
+60 candidates in 90.6 s -> screen/m2.json
+85 candidates in 270.9 s -> screen/m4.json
+65 candidates in 234.8 s -> screen/m5.json
+65 candidates in 202.7 s -> screen/m6.json
+80 candidates in 357.7 s -> screen/m8.json
+80 candidates in 310.8 s -> screen/m9.json

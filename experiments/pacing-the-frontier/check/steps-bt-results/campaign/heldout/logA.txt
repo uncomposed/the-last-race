@@ -1,0 +1,3 @@
+rows 32724 in 141.0 s -> heldout/main.json
+rows 13770 in 98.2 s -> heldout/plus1.json
+rows 4590 in 20.2 s -> heldout/strM1.json

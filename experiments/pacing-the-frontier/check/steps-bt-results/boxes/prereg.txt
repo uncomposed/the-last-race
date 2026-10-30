@@ -1,0 +1,7 @@
+2026-10-29 pre-registered predictions (written before each sweep runs)
+S1 one-at-a-time, cal block, feasibility under 'peak' and 'chill' timing: scrape-only share falls most with stepV down (narrower fits) and RISEFLOOR down; RISEPOW/RISEMAX move it less than 5 points; under 'window' nothing moves (already ~99% at speed).
+S2 (new rule, u25 timing, cal): stepW 110/125/140 moves the 'stop' share from ~5% to ~15/30/45% with scrape-only staying under 3% until 140; follower win falls ~5 points per 15 stepW.
+S3 (held-out win rates, pre-reg): proposal (new rule, stepW 110, BOXU .25) raises the follower's no-twist win rate by >=15 points over current on every tier, smart probe by <5.
+S4 lesson pair scan (cal offsets 0-39, proposal): every catalog pair has a positive mean gap; the follower>scout shadow pair is the weakest (<0.1).
+S5 lesson search (held-out seeds offsets 400-599): with the proposal every lesson passes on >=25% of seeds; barrier (climber>drafter) is lowest, under 15%. Current generator: all lessons lower, strike/race near 0 because 2 strikes with peak timing kills both players.
+S6 (held, proposal + step-day twists): the feasibility filter raises mean win by under 3 points (most days already pass).

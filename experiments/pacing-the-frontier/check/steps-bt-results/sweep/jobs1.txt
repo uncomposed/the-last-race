@@ -1,0 +1,8 @@
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 0 --out raw/c-ref.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --out raw/c-base.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --knobs '{"riseScale":110}' --out raw/c-r110.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --knobs '{"riseScale":120}' --out raw/c-r120.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --knobs '{"riseScale":135}' --out raw/c-r135.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --consts '{"NOWARN":0.3}' --out raw/c-n30.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --consts '{"NOWARN":0.5}' --out raw/c-n50.jsonl
+node sweep.mjs --mode campaign --start 1 --count 30 --steps 1 --consts '{"NOWARN":0.8}' --out raw/c-n80.jsonl

@@ -1,0 +1,1 @@
+Prediction (14:45, before any run): falls come mostly from floorless NOWARN boxes, so NOWARN ~0.35-0.45 with riseScale ~110 should restore ~0.1 falls/race and ~9% extinction; riseScale alone will mostly add scrapes, not falls, because rises cap at RISEMAX.

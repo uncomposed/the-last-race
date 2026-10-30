@@ -1,0 +1,12 @@
+node race.mjs --page page-combined.html --steptw '{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' --swap raw/filter-swap-strict.json --mode daily --start 900 --count 300 --steps 1 --plus 0 --out raw/D-comb3.jsonl > raw/D-comb3.log 2>&1
+node race.mjs --page page-combined.html --steptw '{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' --swap raw/filter-swap-strict.json --mode daily --start 900 --count 300 --steps 1 --plus 1 --out raw/D-comb4.jsonl > raw/D-comb4.log 2>&1
+node race.mjs --page page-combined.html --steptw '{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' --swap raw/filter-swap-relaxed.json --mode daily --start 900 --count 300 --steps 1 --plus 0 --out raw/D-comb3r.jsonl > raw/D-comb3r.log 2>&1
+node race.mjs --page page-combined.html --steptw '{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' --swap raw/filter-swap-relaxed.json --mode daily --start 900 --count 300 --steps 1 --plus 1 --out raw/D-comb4r.jsonl > raw/D-comb4r.log 2>&1
+STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$PWD/page-timing.html node filter.mjs 900 300 raw/filtertim.json > raw/filtertim.log 2>&1
+node race.mjs --page page-timing.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-tim3.jsonl > raw/C-tim3.log 2>&1
+node race.mjs --page page-timing.html --mode campaign --start 300 --count 100 --steps 1 --plus 1 --out raw/C-tim4.jsonl > raw/C-tim4.log 2>&1
+node race.mjs --page page-timing-propcamp.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-proptim3.jsonl > raw/C-proptim3.log 2>&1
+node race.mjs --page page-timing-propcamp.html --mode campaign --start 300 --count 100 --steps 1 --plus 1 --out raw/C-proptim4.jsonl > raw/C-proptim4.log 2>&1
+node race.mjs --page page-timing.html --mode free --start 5000 --count 1000 --steps 1 --plus 0 --chill 0 --out raw/F-tim3c0.jsonl > raw/F-tim3c0.log 2>&1
+PF_PAGE=$PWD/page-timing.html node feasstats.mjs free 5000 1000 u25,window raw/feas-free-tim.json > raw/feas-free-tim.log 2>&1
+PF_PAGE=$PWD/page-timing-propcamp.html node feasstats.mjs campaign 0 0 u25,window raw/feas-camp-timprop.json > raw/feas-camp-timprop.log 2>&1

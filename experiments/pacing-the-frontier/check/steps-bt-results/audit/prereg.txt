@@ -1,0 +1,35 @@
+2026-10-29 auditor pre-registered predictions (written before each run; results appended below each line after the run)
+Blocks: free seeds 5000-5999, campaign noise ids 300-399, daily offsets 900-1199 (lesson search 900-1099). None used by the four agents.
+R1 tuning, +1 player strike, campaign Medium, current page, steps forced on: lesson-probe mean paired delta (4 vs 3) is +5 to +8 pts (original +9.9 +-0.3); shrinks but stays > 3 SE.
+R2 tuning, crawl:gamble vs best lesson probe, campaign Medium 3: crawl 38-48% vs best probe ~25%; gap shrinks ~30% from 22 pts but stays > 3 SE.
+R3 tuning, snap (forced) share of box encounters, free chill on, current page: 3-4% (original 3.3%).
+R4 boxes, daily held-out follower win, twists, current -> proposed (+step twists, unfiltered): +15 to +25 pts pooled (original 8/12/12 -> 36/36/25, about +22).
+R5 boxes, lesson coverage (filter + lesson) proposed: strike/race 12-20% (orig 21.5/25), shadow ~10%, barrier/gap/singularity under 7%.
+R6 daily, steps on vs off, current page, all-probe mean win: on is 5-10% vs off 18-25%, delta -12 to -18 pts.
+R7 campaign picks (current page + proposed table, Medium 3): 7 of 9 lesson probes still beat their named worst foil at >= 3 SE; maps 2 and 4 weakest.
+C1 combined page, campaign current table, Medium 3 vs steps-off 3: lesson mean within 3 pts of steps off (timing fix alone restores most of the loss); at strikes 4 it overshoots by 3-8 pts.
+C2 combined, crawl:gamble still beats the best lesson probe in campaign, but by under half the original gap.
+C3 combined, bot stopRev max still >= 4 somewhere (p75 <= 3).
+C4 combined + proposed table: at least 3 of 9 picks lose their margin vs the named foil (BOXOV widths now pass through the new fit).
+C5 combined, free chill on: BOXU is inert with chill on, so win changes come from widths only; lesson mean within 2 pts of current steps-on.
+C6 filter, combined + step twists: strict first-seed pass 65-85% (orig 76.5%); relaxed (<=1 scrape-only) adds under 10 pts because u25 makes scrape-only rare.
+(added mid-run, before these runs) Filter result on the combined page: 0 scrape-only boxes at u25, so strict == relaxed there. Added a timing-only page (BOXU 0.25, today's generator: BOXFIT 0, stepFit 103, stepW 100; tracks verified identical to the current page).
+T1 timing-only, campaign current table Medium 3: lesson mean within 2 pts of the combined page (most of the gain is BOXU, per boxes.md cal 16->35 vs 16->20).
+T2 timing-only + proposed table: picks hold better than on the combined page (box shapes unchanged); 7+ of 9 hold.
+T3 timing-only filter: strict first-seed pass 30-50%; relaxed adds 10-25 pts (scrape-only about 1 per map at u25 is mostly the singularity).
+
+RESULTS (appended after the runs; see analysis.txt)
+R1 +9.8 +- 0.2 (orig +9.9). Prediction (+5..+8) WRONG: no shrinkage.
+R2 crawl 47.6 vs runup 24.4, gap +23.2 +- 1.0 (orig 48.5 vs 26.5). Prediction WRONG on shrinkage: none.
+R3 3.2% (orig 3.3%). Held.
+R4 follower +19.2 +- 1.7 (orig about +22). Held (about 12% shrink).
+R5 strike 21.5, race 24.0, shadow 18.5, gap 7.5, singularity 9.0, barrier 2.5. Higher than predicted; matches the original.
+R6 6.5% on vs 21.4% off, -14.9 +- 0.7. Held.
+R7 9 of 9 hold vs the named foil (z 4.1..25). Better than predicted.
+C1 WRONG: combined at 3 is already +8.5 +- 0.4 over steps off; at 4, +17.3 +- 0.4.
+C2 WRONG: crawl is now below the best probe (-6.2 +- 1.4 vs gamble).
+C3 held: lesson-probe stopRev max 7-9, rival max 6.
+C4 WRONG on the named-foil test (only map 2 fails), but 5 of 9 lessons lose top spot.
+C5 held: +0.7 +- 0.5.
+C6 held: strict 79.7%, relaxed identical (0 scrape-only boxes at u25).
+T1 held: -0.2 +- 0.3. T2 WRONG: timing-only + proposed holds 7 of 9 (maps 2 and 4 fail). T3 WRONG: strict 87.3%, relaxed 89.7%.

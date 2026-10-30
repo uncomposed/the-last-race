@@ -1,0 +1,182 @@
+
+== base  feature box 3  W 44,49,57,54 rise 39,50,63,131
+gamble    win 95 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.75 scr 0.00 t 45 | rivals C300 S0 F0
+bold      win 68 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.08 scr 0.00 t 44 | rivals C300 S0 F0
+rush      win 39 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 45 | rivals C300 S0 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.05 scr 0.00 t 49 | rivals C300 S0 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.28 scr 0.00 t 48 | rivals C300 S0 F0
+scout     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 49 | rivals C300 S0 F0
+balanced  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.44 scr 0.00 t 47 | rivals C300 S0 F0
+drafter   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 49 | rivals C300 S0 F0
+follower  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.12 scr 0.00 t 47 | rivals C300 S0 F0
+twin      win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.71 scr 0.00 t 49 | rivals C300 S0 F0
+crawl     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.92 scr 0.00 t 49 | rivals C300 S0 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.67 scr 0.00 t 45 | rivals C300 S0 F0
+
+== longLow  feature box 3  W 44,49,126,54 rise 39,50,46,131
+rush      win 36 ext 32 dis 21 | feat C 51 S 30 F 20 reach 71 | stopRev 1.82 scr 0.21 t 48 | rivals C76 S49 F117
+smart     win 26 ext 34 dis  0 | feat C 44 S  8 F 49 reach 78 | stopRev 1.73 scr 0.06 t 55 | rivals C58 S48 F137
+drafter   win 15 ext 27 dis  0 | feat C 15 S 15 F 70 reach 88 | stopRev 1.28 scr 0.13 t 53 | rivals C93 S67 F78
+runup     win 10 ext 17 dis  0 | feat C 20 S 79 F  1 reach 82 | stopRev 0.14 scr 0.65 t 51 | rivals C181 S8 F76
+gamble    win 10 ext  5 dis  7 | feat C  0 S 95 F  5 reach 97 | stopRev 0.84 scr 0.92 t 47 | rivals C256 S11 F25
+balanced  win  5 ext 16 dis  1 | feat C 31 S 63 F  7 reach 75 | stopRev 0.94 scr 0.47 t 77 | rivals C161 S26 F70
+climber   win  3 ext 28 dis  0 | feat C 54 S 16 F 30 reach 69 | stopRev 0.69 scr 0.11 t 64 | rivals C65 S58 F120
+follower  win  1 ext 28 dis  0 | feat C 62 S 29 F  9 reach 58 | stopRev 0.85 scr 0.17 t 82 | rivals C88 S47 F103
+scout     win  0 ext 20 dis  1 | feat C 89 S  5 F  5 reach 55 | stopRev 1.82 scr 0.03 t 113 | rivals C78 S63 F96
+bold      win  0 ext 33 dis  2 | feat C  0 S  2 F 98 reach 98 | stopRev 1.02 scr 0.02 t 47 | rivals C97 S69 F50
+twin      win  0 ext 18 dis  0 | feat C 30 S 68 F  3 reach 74 | stopRev 1.06 scr 0.50 t 72 | rivals C139 S36 F79
+crawl     win  0 ext 21 dis  0 | feat C 69 S 11 F 20 reach 81 | stopRev 1.72 scr 0.09 t 59 | rivals C88 S79 F95
+
+== longLowNoRun  feature box 3  W 44,49,126,54 rise 39,50,46,131
+rush      win 39 ext 36 dis  0 | feat C 53 S  0 F 47 reach 74 | stopRev 1.83 scr 0.00 t 45 | rivals C63 S52 F126
+gamble    win 16 ext 17 dis  7 | feat C 28 S 50 F 22 reach 92 | stopRev 1.21 scr 0.46 t 47 | rivals C202 S19 F45
+drafter   win 11 ext 50 dis  0 | feat C 16 S  5 F 79 reach 85 | stopRev 1.25 scr 0.04 t 49 | rivals C37 S21 F164
+bold      win  9 ext 36 dis  2 | feat C 13 S  2 F 85 reach 94 | stopRev 1.19 scr 0.02 t 48 | rivals C77 S48 F91
+runup     win  7 ext 25 dis  0 | feat C 21 S 69 F 10 reach 77 | stopRev 0.18 scr 0.53 t 52 | rivals C137 S12 F107
+twin      win  6 ext 29 dis  0 | feat C 36 S 52 F 11 reach 44 | stopRev 1.22 scr 0.23 t 116 | rivals C83 S12 F129
+scout     win  1 ext 34 dis  0 | feat C 51 S  8 F 41 reach 39 | stopRev 1.69 scr 0.03 t 132 | rivals C40 S15 F153
+climber   win  0 ext 48 dis  0 | feat C  0 S  0 F100 reach 20 | stopRev 0.57 scr 0.00 t 152 | rivals C0 S4 F187
+balanced  win  0 ext 30 dis  0 | feat C 45 S 25 F 29 reach 51 | stopRev 1.16 scr 0.13 t 109 | rivals C73 S25 F124
+follower  win  0 ext 38 dis  0 | feat C 35 S  9 F 56 reach 34 | stopRev 0.77 scr 0.03 t 129 | rivals C28 S9 F172
+crawl     win  0 ext 46 dis  0 | feat C 25 S  0 F 75 reach 63 | stopRev 1.42 scr 0.00 t 52 | rivals C40 S15 F186
+smart     win  0 ext 39 dis  0 | feat C 64 S  0 F 36 reach 61 | stopRev 1.65 scr 0.00 t 67 | rivals C79 S35 F127
+
+== longMid  feature box 3  W 44,49,83,54 rise 39,50,81,131
+gamble    win 79 ext  0 dis  0 | feat C 90 S 10 F  0 reach100 | stopRev 0.78 scr 0.10 t 45 | rivals C262 S38 F0
+bold      win 18 ext  0 dis 45 | feat C 28 S 72 F  0 reach100 | stopRev 1.24 scr 0.72 t 45 | rivals C280 S20 F0
+balanced  win  7 ext  0 dis  0 | feat C 88 S 12 F  0 reach100 | stopRev 0.47 scr 0.12 t 49 | rivals C236 S64 F0
+twin      win  3 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.71 scr 0.00 t 52 | rivals C201 S99 F0
+rush      win  2 ext  0 dis 95 | feat C  0 S100 F  0 reach100 | stopRev 1.00 scr 1.00 t 47 | rivals C275 S25 F0
+drafter   win  2 ext  0 dis  0 | feat C 86 S 14 F  0 reach100 | stopRev 1.09 scr 0.16 t 51 | rivals C206 S94 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.04 scr 0.00 t 52 | rivals C202 S98 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.50 scr 0.00 t 51 | rivals C200 S100 F0
+scout     win  0 ext  0 dis  0 | feat C 98 S  2 F  0 reach100 | stopRev 1.04 scr 0.02 t 52 | rivals C200 S100 F0
+follower  win  0 ext  0 dis  0 | feat C 95 S  5 F  0 reach100 | stopRev 0.21 scr 0.05 t 50 | rivals C217 S83 F0
+crawl     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.92 scr 0.00 t 52 | rivals C200 S100 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.67 scr 0.00 t 48 | rivals C245 S55 F0
+
+== tallNarrow  feature box 3  W 44,49,30,54 rise 39,50,112,131
+gamble    win 94 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.75 scr 0.00 t 45 | rivals C300 S0 F0
+bold      win 67 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.05 scr 0.00 t 43 | rivals C300 S0 F0
+rush      win 33 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.03 t 45 | rivals C300 S0 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.05 scr 0.00 t 49 | rivals C300 S0 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.26 scr 0.00 t 48 | rivals C300 S0 F0
+scout     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 49 | rivals C300 S0 F0
+balanced  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.44 scr 0.00 t 46 | rivals C300 S0 F0
+drafter   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 48 | rivals C300 S0 F0
+follower  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.12 scr 0.00 t 47 | rivals C300 S0 F0
+twin      win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.71 scr 0.00 t 49 | rivals C300 S0 F0
+crawl     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.92 scr 0.00 t 49 | rivals C300 S0 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.67 scr 0.00 t 45 | rivals C300 S0 F0
+
+== tallWide  feature box 3  W 44,49,59,54 rise 39,50,112,131
+gamble    win 96 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.79 scr 0.00 t 45 | rivals C300 S0 F0
+bold      win 53 ext  0 dis  0 | feat C 73 S 27 F  0 reach100 | stopRev 1.09 scr 0.27 t 44 | rivals C300 S0 F0
+rush      win 27 ext  0 dis 25 | feat C 24 S 76 F  0 reach100 | stopRev 1.00 scr 0.76 t 45 | rivals C298 S2 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.07 scr 0.00 t 49 | rivals C294 S6 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.31 scr 0.00 t 49 | rivals C297 S3 F0
+scout     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.02 scr 0.00 t 49 | rivals C295 S5 F0
+balanced  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.44 scr 0.00 t 47 | rivals C300 S0 F0
+drafter   win  0 ext  0 dis  0 | feat C 95 S  5 F  0 reach100 | stopRev 1.00 scr 0.05 t 48 | rivals C297 S3 F0
+follower  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.13 scr 0.00 t 47 | rivals C300 S0 F0
+twin      win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.71 scr 0.00 t 49 | rivals C295 S5 F0
+crawl     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.92 scr 0.00 t 49 | rivals C295 S5 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.67 scr 0.00 t 45 | rivals C300 S0 F0
+
+== pitNowarn  feature box 3  W 44,49,184,54 rise 39,50,35,131
+runup     win  0 ext 59 dis  0 | feat C  0 S  0 F100 reach 58 | stopRev 0.35 scr 0.00 t 77 | rivals C0 S0 F210
+climber   win  0 ext 49 dis  0 | feat C  0 S  0 F100 reach 23 | stopRev 0.58 scr 0.00 t 145 | rivals C0 S0 F193
+gamble    win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 90 | stopRev 1.24 scr 0.00 t 48 | rivals C0 S0 F196
+scout     win  0 ext 41 dis  0 | feat C  0 S  0 F100 reach  2 | stopRev 1.85 scr 0.00 t 192 | rivals C0 S0 F179
+balanced  win  0 ext 49 dis  0 | feat C  0 S  0 F100 reach 19 | stopRev 1.25 scr 0.00 t 152 | rivals C0 S0 F192
+bold      win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 98 | stopRev 1.02 scr 0.00 t 47 | rivals C0 S0 F188
+rush      win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 75 | stopRev 1.82 scr 0.00 t 47 | rivals C0 S0 F211
+drafter   win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 83 | stopRev 1.27 scr 0.00 t 51 | rivals C0 S0 F203
+follower  win  0 ext 42 dis  0 | feat C  0 S  0 F100 reach  9 | stopRev 0.91 scr 0.00 t 179 | rivals C0 S0 F182
+twin      win  0 ext 47 dis  0 | feat C  0 S  0 F100 reach 15 | stopRev 1.46 scr 0.00 t 161 | rivals C0 S0 F189
+crawl     win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 63 | stopRev 1.54 scr 0.00 t 54 | rivals C0 S0 F223
+smart     win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 65 | stopRev 1.62 scr 0.00 t 44 | rivals C0 S0 F221
+
+== barBefore  feature box 3  W 44,49,80,54 rise 39,50,63,131
+crawl     win 47 ext 50 dis  0 | feat C  6 S 94 F  0 reach 50 | stopRev 2.43 scr 0.47 t 63 | rivals C0 S3 F234
+smart     win 18 ext 58 dis  0 | feat C  0 S 28 F 72 reach 65 | stopRev 1.30 scr 0.18 t 41 | rivals C0 S0 F221
+bold      win  5 ext 61 dis  1 | feat C  0 S  8 F 92 reach 83 | stopRev 1.27 scr 0.07 t 36 | rivals C2 S3 F200
+scout     win  1 ext 60 dis  0 | feat C  2 S  5 F 94 reach 62 | stopRev 1.11 scr 0.03 t 41 | rivals C4 S4 F219
+runup     win  0 ext 62 dis  0 | feat C  0 S  0 F100 reach 53 | stopRev 0.03 scr 0.00 t 40 | rivals C0 S6 F227
+climber   win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 53 | stopRev 0.01 scr 0.00 t 39 | rivals C0 S4 F229
+gamble    win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 75 | stopRev 1.07 scr 0.00 t 37 | rivals C0 S0 F211
+balanced  win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 84 | stopRev 0.44 scr 0.00 t 36 | rivals C0 S0 F202
+rush      win  0 ext 61 dis 12 | feat C  0 S 13 F 87 reach 95 | stopRev 1.00 scr 0.12 t 36 | rivals C0 S4 F194
+drafter   win  0 ext 63 dis  0 | feat C  0 S  0 F100 reach 71 | stopRev 1.00 scr 0.00 t 37 | rivals C0 S0 F215
+follower  win  0 ext 62 dis  0 | feat C  0 S  0 F100 reach 80 | stopRev 0.17 scr 0.00 t 39 | rivals C0 S0 F205
+twin      win  0 ext 62 dis  0 | feat C  0 S  0 F100 reach 63 | stopRev 0.73 scr 0.00 t 39 | rivals C0 S4 F219
+
+== pairClose  feature box 3,4  W 44,49,43,44,56 rise 39,50,104,138,162
+gamble    win 45 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.90 scr 0.00 t 47 | rivals C598 S2 F0
+bold      win 17 ext  4 dis  0 | feat C 90 S  0 F 10 reach100 | stopRev 1.02 scr 0.00 t 45 | rivals C576 S0 F0
+twin      win 10 ext  8 dis  0 | feat C100 S  0 F  0 reach 92 | stopRev 0.73 scr 0.00 t 50 | rivals C529 S16 F23
+rush      win  5 ext  8 dis  0 | feat C 86 S  0 F 14 reach100 | stopRev 1.00 scr 0.09 t 46 | rivals C552 S0 F0
+runup     win  2 ext  8 dis  0 | feat C100 S  0 F  0 reach 92 | stopRev 0.15 scr 0.00 t 50 | rivals C529 S17 F22
+climber   win  0 ext 14 dis  0 | feat C100 S  0 F  0 reach 86 | stopRev 0.12 scr 0.00 t 48 | rivals C482 S28 F34
+scout     win  0 ext  8 dis  0 | feat C100 S  0 F  0 reach 92 | stopRev 1.18 scr 0.00 t 50 | rivals C532 S13 F23
+balanced  win  0 ext  0 dis  0 | feat C100 S  1 F  0 reach100 | stopRev 0.46 scr 0.02 t 48 | rivals C600 S0 F0
+drafter   win  0 ext  3 dis  0 | feat C100 S  0 F  0 reach 97 | stopRev 1.02 scr 0.00 t 50 | rivals C571 S8 F9
+follower  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.17 scr 0.00 t 48 | rivals C598 S1 F1
+crawl     win  0 ext  8 dis  0 | feat C100 S  0 F  0 reach 81 | stopRev 0.92 scr 0.00 t 51 | rivals C529 S14 F25
+smart     win  0 ext  1 dis  0 | feat C 78 S 21 F  2 reach100 | stopRev 1.09 scr 0.42 t 47 | rivals C594 S0 F0
+
+== longSing  feature box 4  W 44,49,57,78 rise 39,50,63,131
+gamble    win 92 ext  0 dis  0 | feat C 94 S  6 F  0 reach100 | stopRev 1.18 scr 0.06 t 47 | rivals C144 S54 F0
+rush      win 38 ext  0 dis  9 | feat C 36 S 64 F  0 reach100 | stopRev 1.00 scr 0.64 t 46 | rivals C167 S52 F0
+bold      win 29 ext  0 dis  6 | feat C 29 S 71 F  0 reach100 | stopRev 1.09 scr 0.71 t 44 | rivals C173 S27 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 92 | stopRev 0.05 scr 0.00 t 51 | rivals C200 S100 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 28 | stopRev 0.38 scr 0.00 t 50 | rivals C198 S100 F0
+scout     win  0 ext  0 dis  0 | feat C 99 S  1 F  0 reach100 | stopRev 1.01 scr 0.01 t 51 | rivals C200 S100 F0
+balanced  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.77 scr 0.00 t 49 | rivals C200 S66 F0
+drafter   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 96 | stopRev 1.00 scr 0.00 t 51 | rivals C200 S100 F0
+follower  win  0 ext  0 dis  0 | feat C 96 S  4 F  0 reach100 | stopRev 0.28 scr 0.04 t 50 | rivals C199 S93 F0
+twin      win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.71 scr 0.00 t 51 | rivals C200 S100 F0
+crawl     win  0 ext  0 dis  0 | feat C  0 S  0 F  0 reach  1 | stopRev 0.92 scr 0.00 t 51 | rivals C200 S100 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.05 scr 0.00 t 48 | rivals C200 S55 F0
+
+== singShortRun  feature box 4  W 44,49,57,46 rise 39,50,63,131
+gamble    win 89 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.75 scr 0.00 t 44 | rivals C193 S0 F0
+bold      win 46 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.05 scr 0.00 t 42 | rivals C198 S0 F0
+rush      win 45 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 1.00 scr 0.00 t 44 | rivals C199 S0 F0
+runup     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 72 | stopRev 0.04 scr 0.00 t 47 | rivals C298 S0 F0
+climber   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 28 | stopRev 0.34 scr 0.00 t 47 | rivals C288 S0 F0
+scout     win  0 ext  1 dis  0 | feat C100 S  0 F  0 reach 90 | stopRev 1.00 scr 0.00 t 47 | rivals C255 S0 F1
+balanced  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.44 scr 0.00 t 45 | rivals C202 S0 F0
+drafter   win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 95 | stopRev 1.00 scr 0.00 t 47 | rivals C252 S0 F0
+follower  win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.12 scr 0.00 t 46 | rivals C214 S0 F0
+twin      win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach 95 | stopRev 0.71 scr 0.00 t 47 | rivals C284 S0 F0
+crawl     win  0 ext  0 dis  0 | feat C  0 S  0 F  0 reach  1 | stopRev 0.92 scr 0.00 t 47 | rivals C300 S0 F0
+smart     win  0 ext  0 dis  0 | feat C100 S  0 F  0 reach100 | stopRev 0.67 scr 0.00 t 44 | rivals C245 S0 F0
+
+== mixed  feature box 1,2,3  W 30,108,56,54 rise 67,36,112,131
+gamble    win 39 ext  5 dis  5 | feat C 66 S 30 F  4 reach 92 | stopRev 0.81 scr 0.82 t 48 | rivals C792 S14 F35
+smart     win 23 ext 28 dis  0 | feat C 63 S 17 F 20 reach 73 | stopRev 1.64 scr 0.38 t 46 | rivals C472 S34 F151
+rush      win 17 ext 19 dis 28 | feat C 84 S 12 F  4 reach 76 | stopRev 1.91 scr 0.28 t 49 | rivals C533 S27 F137
+scout     win 16 ext 21 dis  3 | feat C 90 S  5 F  4 reach 83 | stopRev 1.86 scr 0.13 t 50 | rivals C500 S72 F128
+drafter   win 15 ext 22 dis  0 | feat C 61 S  3 F 36 reach 72 | stopRev 1.21 scr 0.07 t 50 | rivals C528 S72 F97
+climber   win  9 ext 22 dis  0 | feat C 84 S  2 F 14 reach 77 | stopRev 0.63 scr 0.04 t 51 | rivals C498 S74 F125
+twin      win  7 ext 20 dis  0 | feat C 80 S 16 F  4 reach 86 | stopRev 1.10 scr 0.42 t 48 | rivals C536 S43 F122
+bold      win  4 ext 20 dis  3 | feat C 51 S  3 F 46 reach 68 | stopRev 1.08 scr 0.07 t 48 | rivals C543 S77 F67
+crawl     win  2 ext 17 dis  0 | feat C100 S  0 F  0 reach 89 | stopRev 2.13 scr 0.01 t 53 | rivals C494 S91 F122
+follower  win  1 ext 20 dis  0 | feat C 74 S 17 F  9 reach 82 | stopRev 0.79 scr 0.42 t 50 | rivals C549 S42 F119
+runup     win  0 ext 18 dis  0 | feat C 70 S 29 F  1 reach 87 | stopRev 0.11 scr 0.76 t 47 | rivals C593 S11 F116
+balanced  win  0 ext 21 dis  0 | feat C 76 S 15 F  9 reach 82 | stopRev 0.90 scr 0.37 t 48 | rivals C582 S42 F102
+
+== longLowStrikeFree  feature box 3  W 44,49,126,54 rise 39,50,46,131
+rush      win 56 ext 32 dis  0 | feat C 51 S 30 F 20 reach 71 | stopRev 1.82 scr 0.21 t 46 | rivals C77 S49 F117
+drafter   win 15 ext 27 dis  0 | feat C 15 S 15 F 70 reach 88 | stopRev 1.28 scr 0.13 t 51 | rivals C93 S67 F78
+runup     win 10 ext 17 dis  0 | feat C 20 S 78 F  1 reach 83 | stopRev 0.14 scr 0.65 t 49 | rivals C182 S8 F76
+gamble    win 10 ext  5 dis  0 | feat C  0 S 95 F  5 reach 97 | stopRev 0.84 scr 0.92 t 47 | rivals C257 S10 F25
+climber   win  3 ext 28 dis  0 | feat C 54 S 16 F 30 reach 69 | stopRev 0.67 scr 0.11 t 64 | rivals C65 S58 F120
+bold      win  2 ext 32 dis  0 | feat C  0 S  2 F 98 reach 98 | stopRev 1.02 scr 0.02 t 45 | rivals C100 S68 F48
+scout     win  0 ext 20 dis  0 | feat C 91 S  5 F  5 reach 65 | stopRev 1.82 scr 0.03 t 89 | rivals C88 S63 F96
+balanced  win  0 ext 16 dis  0 | feat C 31 S 63 F  7 reach 75 | stopRev 0.96 scr 0.47 t 76 | rivals C161 S26 F70
+follower  win  0 ext 28 dis  0 | feat C 65 S 27 F  8 reach 62 | stopRev 0.89 scr 0.17 t 72 | rivals C93 S46 F103
+twin      win  0 ext 18 dis  0 | feat C 35 S 63 F  3 reach 80 | stopRev 1.06 scr 0.50 t 58 | rivals C145 S36 F79
+crawl     win  0 ext 21 dis  0 | feat C 80 S  0 F 20 reach 81 | stopRev 1.61 scr 0.00 t 57 | rivals C88 S79 F95
+smart     win  0 ext 34 dis  0 | feat C 44 S  8 F 49 reach 78 | stopRev 1.73 scr 0.06 t 54 | rivals C58 S48 F137

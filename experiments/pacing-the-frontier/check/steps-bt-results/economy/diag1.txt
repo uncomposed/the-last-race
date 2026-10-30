@@ -1,0 +1,35 @@
+base       rush     hfrac 0.96 vface 60.48 CSF 40 0 0 win 1 | stopped:h0/m0 moving:h15/m33 capped:h29/m0 spill:h121/m0
+base       bold     hfrac 0.94 vface 65.50 CSF 40 0 0 win 4 | stopped:h3/m3 moving:h41/m42 capped:h21/m0 spill:h100/m0
+base       gamble   hfrac 0.97 vface 65.47 CSF 40 0 0 win 10 | stopped:h3/m4 moving:h79/m126 spill:h78/m1 capped:h3/m0
+base       climber  hfrac 0.98 vface 43.72 CSF 32 0 0 win 0 | stopped:h0/m0 moving:h128/m24 capped:h2/m0 spill:h28/m0
+base       smart    hfrac 0.93 vface 83.60 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h106/m66 spill:h71/m0 capped:h2/m0
+nobars     rush     hfrac 0.62 vface 61.95 CSF 29 2 9 win 0 | stopped:h7/m0 moving:h14/m26 capped:h23/m0 spill:h28/m0
+nobars     bold     hfrac 0.70 vface 67.97 CSF 32 2 6 win 1 | stopped:h10/m3 moving:h37/m40 capped:h14/m0 spill:h42/m0
+nobars     gamble   hfrac 0.93 vface 66.22 CSF 40 0 0 win 9 | stopped:h3/m4 moving:h111/m129 spill:h49/m0 rev:h1/m1 capped:h3/m0
+nobars     climber  hfrac 0.98 vface 44.15 CSF 33 0 0 win 0 | stopped:h0/m0 moving:h138/m26 capped:h2/m0 spill:h21/m0
+nobars     smart    hfrac 0.85 vface 79.70 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h133/m80 spill:h45/m0
+bar100     rush     hfrac 0.71 vface 61.73 CSF 30 3 7 win 0 | stopped:h0/m0 moving:h-11/m23 capped:h30/m0 spill:h63/m0
+bar100     bold     hfrac 0.70 vface 67.78 CSF 34 0 6 win 0 | stopped:h5/m3 moving:h49/m41 capped:h9/m0 spill:h34/m0
+bar100     gamble   hfrac 0.93 vface 67.92 CSF 40 0 0 win 9 | stopped:h3/m4 moving:h111/m128 spill:h29/m0 rev:h1/m1 capped:h3/m0
+bar100     climber  hfrac 0.98 vface 43.23 CSF 31 0 0 win 0 | stopped:h0/m0 moving:h133/m23 capped:h2/m0 spill:h21/m0
+bar100     smart    hfrac 0.85 vface 79.78 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h137/m78 spill:h18/m0
+bar70      rush     hfrac 0.63 vface 61.85 CSF 29 2 9 win 0 | stopped:h4/m0 moving:h15/m26 capped:h23/m0 spill:h34/m0
+bar70      bold     hfrac 0.70 vface 67.97 CSF 32 2 6 win 0 | stopped:h10/m3 moving:h39/m41 capped:h10/m0 spill:h32/m0
+bar70      gamble   hfrac 0.93 vface 67.92 CSF 40 0 0 win 9 | stopped:h3/m4 moving:h111/m128 spill:h29/m0 rev:h1/m1 capped:h3/m0
+bar70      climber  hfrac 0.98 vface 43.23 CSF 31 0 0 win 0 | stopped:h0/m0 moving:h133/m23 capped:h2/m0 spill:h21/m0
+bar70      smart    hfrac 0.85 vface 79.78 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h137/m78 spill:h18/m0
+bar40      rush     hfrac 0.62 vface 61.95 CSF 29 2 9 win 0 | stopped:h7/m0 moving:h14/m26 capped:h23/m0 spill:h28/m0
+bar40      bold     hfrac 0.70 vface 67.97 CSF 32 2 6 win 0 | stopped:h10/m3 moving:h39/m41 capped:h10/m0 spill:h27/m0
+bar40      gamble   hfrac 0.93 vface 67.92 CSF 40 0 0 win 9 | stopped:h3/m4 moving:h111/m128 spill:h29/m0 rev:h1/m1 capped:h3/m0
+bar40      climber  hfrac 0.98 vface 43.23 CSF 31 0 0 win 0 | stopped:h0/m0 moving:h133/m23 capped:h2/m0 spill:h21/m0
+bar40      smart    hfrac 0.85 vface 79.78 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h137/m78 spill:h18/m0
+spill0     rush     hfrac 0.68 vface 63.22 CSF 18 0 0 win 0 | stopped:h0/m0 moving:h25/m44 capped:h43/m0
+spill0     bold     hfrac 0.77 vface 65.14 CSF 27 1 0 win 1 | stopped:h4/m4 moving:h56/m45 capped:h46/m0 rev:h2/m2
+spill0     gamble   hfrac 0.85 vface 63.25 CSF 40 0 0 win 7 | stopped:h3/m4 moving:h115/m127 capped:h38/m0
+spill0     climber  hfrac 0.95 vface 43.19 CSF 32 0 0 win 0 | stopped:h0/m0 moving:h161/m22 capped:h2/m0
+spill0     smart    hfrac 0.81 vface 82.22 CSF 40 0 0 win 0 | stopped:h6/m3 moving:h125/m63 capped:h23/m0
+bar40sp0   rush     hfrac 0.46 vface 60.37 CSF 25 10 2 win 0 | stopped:h45/m1 moving:h41/m41 capped:h23/m0
+bar40sp0   bold     hfrac 0.43 vface 70.28 CSF 27 6 7 win 0 | stopped:h11/m3 moving:h44/m37 capped:h10/m0 rev:h1/m0
+bar40sp0   gamble   hfrac 0.77 vface 64.65 CSF 36 1 0 win 4 | stopped:h5/m5 moving:h127/m127 capped:h4/m0 rev:h2/m2
+bar40sp0   climber  hfrac 0.96 vface 43.23 CSF 31 0 0 win 0 | stopped:h0/m0 moving:h156/m21 capped:h2/m0
+bar40sp0   smart    hfrac 0.76 vface 85.08 CSF 40 0 0 win 0 | stopped:h7/m6 moving:h150/m77

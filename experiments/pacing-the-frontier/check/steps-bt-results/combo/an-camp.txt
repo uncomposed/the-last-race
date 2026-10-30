@@ -1,0 +1,27 @@
+map 1
+  base: lesson runup 68±6 rank 1 best runup 68 2nd scout 22 ext 2 srP75 1
+  var : lesson runup 15±5 rank 6 best twin 57 2nd follower 22 ext 2 srP75 0
+map 2
+  base: lesson climber 50±6 rank 1 best climber 50 2nd scout 43 ext 25 srP75 2
+  var : lesson climber 50±6 rank 1 best climber 50 2nd scout 47 ext 3 srP75 1
+map 3
+  base: lesson gamble 78±5 rank 1 best gamble 78 2nd runup 40 ext 5 srP75 1
+  var : lesson gamble 38±6 rank 1 best gamble 38 2nd scout 33 ext 2 srP75 1
+map 4
+  base: lesson scout 63±6 rank 3 best twin 80 2nd runup 72 ext 6 srP75 4
+  var : lesson scout 22±5 rank 4 best balanced 85 2nd gamble 42 ext 1 srP75 2
+map 5
+  base: lesson balanced 57±6 rank 2 best gamble 73 2nd balanced 57 ext 5 srP75 1
+  var : lesson balanced 25±6 rank 4 best runup 48 2nd twin 47 ext 2 srP75 1
+map 6
+  base: lesson bold 60±6 rank 2 best gamble 78 2nd bold 60 ext 9 srP75 2
+  var : lesson bold 25±6 rank 4 best balanced 57 2nd climber 43 ext 1 srP75 2
+map 7
+  base: lesson rush 53±6 rank 1 best rush 53 2nd follower 47 ext 23 srP75 3
+  var : lesson rush 2±2 rank 10 best twin 43 2nd scout 40 ext 14 srP75 1
+map 8
+  base: lesson follower 63±6 rank 2 best runup 78 2nd follower 63 ext 2 srP75 2
+  var : lesson follower 12±4 rank 4 best balanced 48 2nd runup 33 ext 1 srP75 0
+map 9
+  base: lesson climber 60±6 rank 1 best climber 60 2nd scout 57 ext 4 srP75 3
+  var : lesson climber 13±4 rank 8 best balanced 63 2nd runup 53 ext 1 srP75 1

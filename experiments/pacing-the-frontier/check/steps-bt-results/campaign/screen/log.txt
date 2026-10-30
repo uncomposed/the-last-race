@@ -1,0 +1,9 @@
+72 candidates in 266.9 s -> screen/s1.json
+72 candidates in 225.7 s -> screen/s7.json
+72 candidates in 170.4 s -> screen/s2.json
+72 candidates in 203.0 s -> screen/s3.json
+72 candidates in 207.8 s -> screen/s4.json
+72 candidates in 150.6 s -> screen/s5.json
+72 candidates in 149.9 s -> screen/s6.json
+72 candidates in 259.6 s -> screen/s8.json
+72 candidates in 198.6 s -> screen/s9.json

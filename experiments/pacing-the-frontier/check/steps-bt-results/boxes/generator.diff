@@ -1,0 +1,98 @@
+--- prototype.html	2026-10-29 11:52:18
++++ check/steps-bt-results/boxes/proto-patched.html	2026-10-29 12:57:34
+@@ -1893,10 +1893,10 @@
+ /* ---------- constants and knobs ---------- */
+ var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220,260,300],ACC:40,DEC:15.6,TOP0:50,SINGUP:40,GATE:[16,4],SIGHT0:80,MAXCAP:300,TLIMIT:300,COYOTE:0.1,JBUF:0.15,
+   HREF0:25,HREF1:18,WREF0:84,WREF1:30,
+-  RISEMIN:0.3,RISEMAX:0.975,WIDMIN:0.62,WIDMAX:2.15,TWMAX:1.15,TWKEEP:0.28,LEAN:2,GUARDD:6,RISEPOW:1.57,RISEFLOOR:0.9,NOWARN:0.12};
++  RISEMIN:0.3,RISEMAX:0.975,WIDMIN:0.62,WIDMAX:2.15,TWMAX:1.15,TWKEEP:0.28,LEAN:2,GUARDD:6,RISEPOW:1.57,RISEFLOOR:0.9,NOWARN:0.12,WIDLO:0.6,WIDHI:1.0,BOXU:0.5,BOXFIT:1};
+ /* step gaps: a box's rise is RISEMIN..RISEMAX of the level's ceiling and its width WIDMIN..WIDMAX of the clean width at that level; tallness t and wideness w are drawn per gap
+    (tall and wide together, t+w past TWMAX, is squashed unless a TWKEEP roll keeps it); LEAN is how hard a map tilts to tall-narrow or wide-low; GUARDD: gap between the guard and the wall */  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
+-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
++var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:125};
+ /* RISEPOW (>1) pulls rises toward the low end. A box has no wall: a lab that reaches its face below the rise enters through the side and sinks across it at the arc's fall rate (a scrape at the far edge, a fall at the ground). A tower (barrier) stands before a box only if a lab stopped in front of it and built: see installBarrier.
+    stepGaps: 1 moves every gap above the ground, a box g.rise tall that a lab can enter through the side (it sinks across, scraping or falling); riseScale scales the rises (%). 0 is the old behaviour exactly */
+ /* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
+@@ -2027,6 +2027,8 @@
+   for(q=0;q<22;q++){ m=(lo+hi)/2; if(flightAlt(vr,cp,m,0.5)>=rise){lo=m;} else {hi=m;} }
+   return lo;
+ }
++/* the widest box a lab with height cp clears cleanly at speed v, jump peak at the face (as cleanW) */
++function boxFit(cp,rise,v){ var lo=0,hi=1500,m,q; for(q=0;q<22;q++){ m=(lo+hi)/2; if(flightAlt(v,cp,m,0.5)>=rise){lo=m;} else {hi=m;} } return lo; }
+ /* tallness and wideness of one gap: the map's lean tilts them (lean 1: wide and low, -1: tall and narrow), and a box that would be tall and wide is squashed unless the keep roll spares it */
+ function shapeTW(a,b,keep,lean){
+   var e=Math.exp(1.2*C.LEAN*lean),t=Math.pow(a,e),w=Math.pow(b,1/e),s=t+w;
+@@ -2050,8 +2052,23 @@
+     if(g.nowarn){ tw={t:0.3*a,w:0.8+0.2*b}; }
+     if(BOXOV&&BOXOV[i]){ tw={t:BOXOV[i].t,w:BOXOV[i].w}; }  /* a campaign map's own box shape for this gap (the draws above are still made, so no stream moves) */
+     g.t=tw.t; g.wd=tw.w; g.rise=riseOf(T,i,g,tw.t);
+-    var hcap=Math.min(C.RISEMAX*cp,cp+0.5*C.JUMP),wref=cleanW(cp,Math.round(hcap)),wc=cleanW(cp,g.rise),wt=(C.WIDMIN+(C.WIDMAX-C.WIDMIN)*tw.w)*wref*K.stepW/100;
+-    var nw=Math.max(30,Math.round(Math.min(wt,wc*K.stepFit/100))),d,fi;
++    var hcap=Math.min(C.RISEMAX*cp,cp+0.5*C.JUMP),nw,d,fi;
++    if(C.BOXFIT){
++      /* width = WIDLO..WIDHI (by w) of the box's own fit, times the width knobs; the fit is the widest box a lab at its ceiling clears cleanly at the
++         run-up speed it can reach after stopping in front of this box (from the back limit: the last barrier or the previous box), never past
++         K.stepV percent of full speed. So a lab that stops and builds can always clear it, and stepW, gapScale and singGap scale it up to K.stepFit percent of the fit */
++      var lim=-60; for(j=0;j<T.bars.length;j++){ if(T.bars[j].x<g.x){ lim=Math.max(lim,T.bars[j].x+C.BW+2); } }
++      if(i>0){ lim=Math.max(lim,T.gaps[i-1].x+T.gaps[i-1].W+10); }
++      var vrun=Math.min(C.TOP0+0.85*cp*K.stepV/100,Math.sqrt(2*C.ACC*Math.max(g.x-lim-8,0))),ks=K.stepW/100*K.gapScale/100*(g.sing?K.singGap/100:1);
++      var fitW=function(r){ return boxFit(cp,r,vrun); };
++      var wf=C.WIDLO+(C.WIDHI-C.WIDLO)*tw.w,fw=fitW(g.rise);
++      nw=Math.max(30,Math.floor(Math.min(wf*fw*ks,fw*K.stepFit/100)));
++      if(C.RISEFLOOR>0&&!g.sing&&!g.nowarn){
++        for(fi=0;fi<2;fi++){ g.rise=Math.round(Math.min(Math.max(g.rise,C.RISEFLOOR*nw),hcap)); fw=fitW(g.rise); nw=Math.max(30,Math.floor(Math.min(wf*fw*ks,fw*K.stepFit/100))); }
++      }
++    } else {
++    var wref=cleanW(cp,Math.round(hcap)),wc=cleanW(cp,g.rise),wt=(C.WIDMIN+(C.WIDMAX-C.WIDMIN)*tw.w)*wref*K.stepW/100;
++    nw=Math.max(30,Math.round(Math.min(wt,wc*K.stepFit/100)));
+     /* RISEFLOOR (0 is off): a box is at least that fraction of its width tall, so a wide box is never a near-flat pit; the width is refitted to the taller rise (twice, since a taller rise narrows it) */
+     if(C.RISEFLOOR>0&&!g.sing&&!g.nowarn){
+       for(fi=0;fi<2;fi++){
+@@ -2059,6 +2076,7 @@
+         nw=Math.max(30,Math.round(Math.min(wt,wc*K.stepFit/100)));
+       }
+     }
++    }
+     d=nw-g.W;
+     /* everything past this gap moves with its new width, so the gaps keep their 40 of ground after the box */
+     if(d){
+@@ -2118,7 +2136,7 @@
+ }
+ function reachX(v,h){ var jd=jumpDur(v); return v*(0.5*jd+h/sinkRate(jd)); }
+ function stepNeed(h,rise,w,vlim){
+-  var lo=1,hi=500,i,vc,kind=function(v){ var a=flightAlt(v,h,w,0.5); return a>=rise?2:(a>0?1:0); };
++  var lo=1,hi=500,i,vc,kind=function(v){ var a=flightAlt(v,h,w,C.BOXU); return a>=rise?2:(a>0?1:0); };
+   function find(level){ if(kind(hi)<level){return Infinity;} lo=1; var hh=hi; for(i=0;i<24;i++){ var m=(lo+hh)/2; if(kind(m)>=level){hh=m;} else {lo=m;} } return hh; }
+   vc=find(2);
+   if(vc<=vlim){ return vc; }
+@@ -2136,7 +2154,7 @@
+ function boxOutcome(l,g){
+   var v=Math.max(l.v,1),h=heightOf(l),w=gapWidth(l,g),jd,u0,a0,alt;
+   if(l.jt>=0){ jd=l.jd; u0=l.jt/jd; a0=h+l.jy; v=Math.max(l.v,1); }
+-  else { jd=jumpDur(v); u0=K.chill?Math.min(1,Math.max(0.3,6/v)/jd):0.5; a0=h+arcY(u0); }
++  else { jd=jumpDur(v); u0=K.chill?Math.min(1,Math.max(0.3,6/v)/jd):C.BOXU; a0=h+arcY(u0); }
+   if(a0>=g.rise){ alt=flightAltJ(v,h,w,u0,jd); }
+   else { alt=a0-sinkRate(jd)*w/v; }
+   return alt>=g.rise?0:(alt>0?1:2);
+@@ -2251,10 +2269,10 @@
+ 
+ function jumpDur(v){ return clamp(0.56+38/Math.max(v,20),0.5,1.6); }
+ /* a bot without assist presses jump when the time to the obstacle falls to half a jump, plus a timing error drawn once per attempt */
+-function botPress(l,d,key){
++function botPress(l,d,key,uf){
+   if(l.jt>=0||l.v<=1||d<=0){return;}
+   if(l.jkey!==key){ l.jkey=key; l.jerr=sloppy(l)*HANDS.jumpSD*handsN(l,4,l.jn++); }
+-  if(d/l.v<=0.5*jumpDur(l.v)+l.jerr){startJump(l);}
++  if(d/l.v<=(uf===undefined?0.5:uf)*jumpDur(l.v)+l.jerr){startJump(l);}
+ }
+ function startJump(l){
+   if(l.jt>=0){return;}
+@@ -2572,7 +2590,7 @@
+       var gd2=g.x-l.x,gw2=gapWidth(l,g);
+       if(!l.gx){
+         if(assist&&l.jt<0&&l.v>1&&gd2>0&&gd2<=Math.max(l.v*0.3,6)){startJump(l);}
+-        if(!assist&&!l.human){botPress(l,gd2,'g'+l.gi);}
++        if(!assist&&!l.human){botPress(l,gd2,'g'+l.gi,C.BOXU);}
+         if(nx>=g.x){
+           var a0=h+(l.jt>=0?l.jy:0),side=a0<g.rise;
+           /* below the rise at the face there is no wall: the lab goes in through the side, loses the rest of its arc and sinks across from where it is, at the arc's fall rate */

@@ -1,0 +1,11 @@
+== raw/off-base.jsonl races 14400
+ext 12.8±1.2  lab0 dis 18.3±0.8
+class win fast 4.6±0.5  build 21.8±0.9  careful 27.4±1.1  gamble 23.8±1.6
+lesson stopRev p50/p75/p90/max 1/2/2/7  >3: 0.9%
+probe win runup 29 climber 9 gamble 24 scout 18 balanced 35 bold 10 rush 3 drafter 1 follower 36 twin 22 crawl 24 smart 26
+== raw/off-k4.jsonl races 14400
+ext 3.2±0.6  lab0 dis 8.7±0.4
+class win fast 11.9±1.1  build 21.8±0.9  careful 17.8±0.9  gamble 29.9±1.6
+lesson stopRev p50/p75/p90/max 1/1/1/4  >3: 0.0%
+probe win runup 5 climber 6 gamble 30 scout 10 balanced 36 bold 17 rush 11 drafter 7 follower 16 twin 10 crawl 33 smart 43
+delta raw/off-k4.jsonl - raw/off-base.jsonl: ext -9.7±1.1 dis -9.6±0.7 fast 7.3±1.1 build -0.0±1.2? careful -9.6±1.6 gamble 6.1±2.3?

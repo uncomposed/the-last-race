@@ -1,0 +1,56 @@
+== raw/run15bar-cal.jsonl  races 14400  ext 9%  lab0 dis 11%
+fast boxes C/S/F 88/9/2  class win% build 7 gamble 38 careful 13 fast 18  best-class share gamble 36 fast 29 careful 24 build 12  probes ever best 12  eff 7.5  split-half class agree 57%
+runup    h 0.99 v  67 CSF 99/1/0 win 10 dis 0
+climber  h 0.96 v  74 CSF 99/1/0 win  9 dis 0
+gamble   h 0.87 v  97 CSF 95/4/1 win 38 dis 5
+scout    h 0.86 v  85 CSF 96/3/0 win 11 dis 4
+balanced h 0.93 v  94 CSF 97/3/0 win 18 dis 1
+bold     h 0.73 v 101 CSF 87/10/3 win 16 dis 37
+rush     h 0.73 v  92 CSF 86/12/3 win 13 dis 56
+drafter  h 0.80 v  87 CSF 92/7/1 win 25 dis 10
+follower h 0.97 v  84 CSF 100/0/0 win 13 dis 0
+twin     h 0.95 v  79 CSF 98/2/0 win 10 dis 1
+crawl    h 0.99 v  43 CSF 99/1/0 win  3 dis 0
+smart    h 0.83 v 107 CSF 90/8/2 win  4 dis 19
+== raw/base-held.jsonl  races 14400  ext 3%  lab0 dis 39%
+fast boxes C/S/F 89/10/1  class win% build 20 gamble 31 careful 21 fast 13  best-class share careful 25 build 38 gamble 22 fast 15  probes ever best 12  eff 9.5  split-half class agree 52%
+runup    h 0.99 v  70 CSF 96/4/0 win 23 dis 19
+climber  h 0.98 v  53 CSF 95/5/0 win 22 dis 12
+gamble   h 0.96 v  74 CSF 89/10/1 win 31 dis 54
+scout    h 0.95 v  63 CSF 95/5/0 win 22 dis 26
+balanced h 0.96 v  79 CSF 90/10/1 win 20 dis 49
+bold     h 0.91 v  73 CSF 88/11/1 win 12 dis 76
+rush     h 0.91 v  62 CSF 89/11/0 win  4 dis 92
+drafter  h 0.93 v  56 CSF 91/8/1 win 24 dis 21
+follower h 0.97 v  78 CSF 94/6/0 win 21 dis 32
+twin     h 0.97 v  70 CSF 94/5/0 win 20 dis 27
+crawl    h 0.99 v  44 CSF 95/5/1 win 27 dis 10
+smart    h 0.94 v  86 CSF 98/2/0 win  7 dis 51
+== raw/bar-held.jsonl  races 14400  ext 9%  lab0 dis 12%
+fast boxes C/S/F 84/13/3  class win% build 13 gamble 39 careful 16 fast 11  best-class share careful 24 build 26 gamble 41 fast 10  probes ever best 12  eff 6.8  split-half class agree 56%
+runup    h 0.98 v  72 CSF 98/2/0 win 23 dis 1
+climber  h 0.97 v  50 CSF 98/2/0 win  9 dis 1
+gamble   h 0.87 v  86 CSF 91/7/1 win 39 dis 13
+scout    h 0.90 v  63 CSF 95/4/0 win 16 dis 4
+balanced h 0.92 v  91 CSF 94/5/1 win 19 dis 5
+bold     h 0.75 v  78 CSF 78/17/5 win 12 dis 43
+rush     h 0.75 v  69 CSF 78/19/3 win  8 dis 61
+drafter  h 0.82 v  54 CSF 94/6/1 win 12 dis 4
+follower h 0.97 v  82 CSF 99/1/0 win 11 dis 1
+twin     h 0.94 v  73 CSF 96/4/0 win 16 dis 2
+crawl    h 0.99 v  43 CSF 98/2/0 win 12 dis 0
+smart    h 0.85 v  91 CSF 93/6/1 win  8 dis 11
+== raw/run30bar-held.jsonl  races 14400  ext 6%  lab0 dis 11%
+fast boxes C/S/F 90/8/2  class win% build 6 gamble 30 careful 9 fast 20  best-class share build 10 fast 45 gamble 26 careful 19  probes ever best 12  eff 7.9  split-half class agree 48%
+runup    h 0.99 v  65 CSF 100/0/0 win  6 dis 0
+climber  h 0.96 v  92 CSF 100/0/0 win  9 dis 0
+gamble   h 0.88 v 103 CSF 97/3/0 win 30 dis 3
+scout    h 0.84 v 101 CSF 96/4/0 win 10 dis 6
+balanced h 0.94 v  95 CSF 99/1/0 win 14 dis 1
+bold     h 0.74 v 119 CSF 90/7/2 win 19 dis 37
+rush     h 0.73 v 110 CSF 90/8/2 win 14 dis 56
+drafter  h 0.78 v 108 CSF 90/8/1 win 28 dis 19
+follower h 0.98 v  84 CSF 100/0/0 win  7 dis 0
+twin     h 0.95 v  83 CSF 99/1/0 win  7 dis 0
+crawl    h 0.99 v  43 CSF 100/0/0 win  2 dis 0
+smart    h 0.83 v 123 CSF 94/5/1 win  6 dis 11

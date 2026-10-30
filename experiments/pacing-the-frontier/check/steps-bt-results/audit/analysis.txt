@@ -1,0 +1,152 @@
+
+## Free play (seeds 5000-5999, chill on unless c0)
+F-ref            lesson 19.0 ± 0.5 | best balanced 35.4 | crawl 31.1 ± 1.5 (dis 16.3) | smart 27.8 ± 1.4 | dis 14.0 | scr 0.16 | fall 0.084 | ext/race 12.4 | ext/fall 28.2 (4414) | stopRev p50/p75/max 1/2/6 (>3: 0.7%) | rival max p75/max 2/7 (>3: 1.0%) | snap 0.0% (player 0.0%)
+F-cur3           lesson 18.1 ± 0.4 | best gamble 27.7 | crawl 27.9 ± 1.4 (dis 5.0) | smart 5.1 ± 0.7 | dis 38.1 | scr 0.40 | fall 0.020 | ext/race 3.7 | ext/fall 52.4 (712) | stopRev p50/p75/max 1/2/6 (>3: 2.2%) | rival max p75/max 2/5 (>3: 1.0%) | snap 3.2% (player 3.7%)
+F-cur4           lesson 24.9 ± 0.5 | best gamble 37.1 | crawl 30.9 ± 1.5 (dis 1.8) | smart 11.0 ± 1.0 | dis 23.8 | scr 0.46 | fall 0.023 | ext/race 3.7 | ext/fall 51.6 (717) | stopRev p50/p75/max 2/2/6 (>3: 4.5%) | rival max p75/max 2/6 (>3: 0.8%) | snap 3.2% (player 4.1%)
+F-comb3          lesson 18.9 ± 0.4 | best gamble 33.2 | crawl 25.4 ± 1.4 (dis 3.8) | smart 4.5 ± 0.7 | dis 35.7 | scr 0.34 | fall 0.017 | ext/race 2.6 | ext/fall 42.1 (630) | stopRev p50/p75/max 1/2/6 (>3: 1.6%) | rival max p75/max 2/5 (>3: 0.7%) | snap 2.4% (player 2.4%)
+F-comb4          lesson 25.7 ± 0.5 | best gamble 45.2 | crawl 28.5 ± 1.4 (dis 0.7) | smart 10.1 ± 1.0 | dis 20.8 | scr 0.38 | fall 0.016 | ext/race 2.6 | ext/fall 42.0 (624) | stopRev p50/p75/max 1/2/7 (>3: 3.5%) | rival max p75/max 2/5 (>3: 0.6%) | snap 2.5% (player 2.8%)
+F-refc0          lesson 19.3 ± 0.5 | best balanced 37.0 | crawl 27.6 ± 1.4 (dis 25.2) | smart 27.0 ± 1.4 | dis 18.1 | scr 0.16 | fall 0.080 | ext/race 12.8 | ext/fall 28.7 (4464) | stopRev p50/p75/max 1/2/6 (>3: 0.8%) | rival max p75/max 2/6 (>3: 1.4%) | snap 0.0% (player 0.0%)
+F-cur3c0         lesson 12.6 ± 0.5 | best runup 21.3 | crawl 31.5 ± 1.5 (dis 20.4) | smart 15.3 ± 1.1 | dis 46.7 | scr 0.80 | fall 0.171 | ext/race 15.2 | ext/fall 25.1 (6054) | stopRev p50/p75/max 1/2/7 (>3: 1.8%) | rival max p75/max 2/5 (>3: 1.0%) | snap 10.7% (player 14.9%)
+F-comb3c0        lesson 18.5 ± 0.4 | best gamble 32.0 | crawl 21.2 ± 1.3 (dis 7.4) | smart 3.3 ± 0.6 | dis 36.3 | scr 0.24 | fall 0.011 | ext/race 1.9 | ext/fall 43.5 (446) | stopRev p50/p75/max 1/2/6 (>3: 1.5%) | rival max p75/max 2/5 (>3: 0.7%) | snap 1.6% (player 1.8%)
+F-comb4c0        lesson 25.7 ± 0.5 | best gamble 44.4 | crawl 25.8 ± 1.4 (dis 2.7) | smart 7.4 ± 0.8 | dis 21.2 | scr 0.27 | fall 0.011 | ext/race 1.8 | ext/fall 43.0 (428) | stopRev p50/p75/max 1/2/6 (>3: 3.1%) | rival max p75/max 2/5 (>3: 0.6%) | snap 1.7% (player 2.2%)
+F-tim3c0         lesson 19.1 ± 0.4 | best gamble 34.2 | crawl 25.5 ± 1.4 (dis 9.6) | smart 4.5 ± 0.7 | dis 38.8 | scr 0.32 | fall 0.014 | ext/race 3.0 | ext/fall 53.4 (566) | stopRev p50/p75/max 1/2/6 (>3: 1.7%) | rival max p75/max 2/5 (>3: 0.6%) | snap 2.1% (player 2.4%)
+
+## Campaign Medium (noise 300-399), current table
+C-ref            lesson 22.7 ± 0.2 | best runup 42.7 | crawl 34.1 ± 0.9 (dis 44.9) | smart 16.9 ± 0.7 | dis 25.0 | scr 0.20 | fall 0.099 | ext/race 9.4 | ext/fall 28.6 (8834) | stopRev p50/p75/max 1/2/7 (>3: 5.2%) | rival max p75/max 2/6 (>3: 8.0%) | snap 0.0% (player 0.0%)
+C-cur3           lesson 12.8 ± 0.3 | best runup 24.4 | crawl 47.6 ± 1.0 (dis 31.8) | smart 25.7 ± 0.8 | dis 49.5 | scr 0.86 | fall 0.227 | ext/race 9.8 | ext/fall 14.4 (18317) | stopRev p50/p75/max 2/2/8 (>3: 5.4%) | rival max p75/max 2/7 (>3: 3.1%) | snap 9.2% (player 10.5%)
+C-cur4           lesson 22.6 ± 0.4 | best runup 35.7 | crawl 55.4 ± 1.0 (dis 22.0) | smart 32.4 ± 0.9 | dis 31.9 | scr 0.97 | fall 0.254 | ext/race 10.4 | ext/fall 15.1 (18468) | stopRev p50/p75/max 2/3/9 (>3: 8.9%) | rival max p75/max 2/7 (>3: 3.5%) | snap 9.1% (player 10.3%)
+C-tim3           lesson 31.4 ± 0.5 | best gamble 47.6 | crawl 41.8 ± 0.9 (dis 21.0) | smart 13.7 ± 0.7 | dis 43.8 | scr 0.43 | fall 0.002 | ext/race 0.1 | ext/fall 50.7 (73) | stopRev p50/p75/max 2/2/8 (>3: 8.6%) | rival max p75/max 2/6 (>3: 7.5%) | snap 1.7% (player 2.6%)
+C-tim4           lesson 39.2 ± 0.5 | best gamble 55.6 | crawl 50.0 ± 1.0 (dis 12.0) | smart 15.1 ± 0.7 | dis 32.9 | scr 0.51 | fall 0.002 | ext/race 0.2 | ext/fall 48.4 (95) | stopRev p50/p75/max 2/3/9 (>3: 12.9%) | rival max p75/max 2/6 (>3: 7.4%) | snap 1.9% (player 2.9%)
+C-comb3          lesson 31.1 ± 0.4 | best gamble 48.4 | crawl 42.1 ± 1.0 (dis 15.5) | smart 20.6 ± 0.8 | dis 37.5 | scr 0.21 | fall 0.002 | ext/race 0.1 | ext/fall 57.4 (54) | stopRev p50/p75/max 2/2/7 (>3: 8.2%) | rival max p75/max 2/6 (>3: 9.6%) | snap 1.3% (player 1.6%)
+C-comb4          lesson 40.0 ± 0.4 | best gamble 59.3 | crawl 49.4 ± 1.0 (dis 8.1) | smart 22.0 ± 0.8 | dis 24.3 | scr 0.25 | fall 0.002 | ext/race 0.1 | ext/fall 59.3 (59) | stopRev p50/p75/max 2/3/8 (>3: 12.9%) | rival max p75/max 2/6 (>3: 9.1%) | snap 1.4% (player 2.0%)
+
+## Campaign Medium, proposed table
+C-propref        lesson 24.4 ± 0.3 | best runup 42.7 | crawl 41.9 ± 0.9 (dis 41.9) | smart 29.3 ± 0.9 | dis 22.5 | scr 0.20 | fall 0.105 | ext/race 9.6 | ext/fall 26.3 (9858) | stopRev p50/p75/max 1/2/6 (>3: 4.1%) | rival max p75/max 2/6 (>3: 6.1%) | snap 0.0% (player 0.0%)
+C-propcur3       lesson 30.0 ± 0.3 | best runup 45.3 | crawl 55.3 ± 1.0 (dis 12.6) | smart 18.1 ± 0.7 | dis 36.3 | scr 0.53 | fall 0.022 | ext/race 0.5 | ext/fall 20.2 (729) | stopRev p50/p75/max 2/2/7 (>3: 8.6%) | rival max p75/max 2/8 (>3: 10.6%) | snap 4.4% (player 4.5%)
+C-proptim3       lesson 38.3 ± 0.4 | best gamble 61.6 | crawl 45.3 ± 1.0 (dis 3.5) | smart 23.4 ± 0.8 | dis 24.5 | scr 0.09 | fall 0.002 | ext/race 0.1 | ext/fall 56.5 (69) | stopRev p50/p75/max 1/2/7 (>3: 9.4%) | rival max p75/max 2/7 (>3: 10.0%) | snap 0.9% (player 0.7%)
+C-proptim4       lesson 45.3 ± 0.5 | best gamble 70.8 | crawl 47.6 ± 1.0 (dis 0.6) | smart 31.8 ± 0.9 | dis 12.5 | scr 0.11 | fall 0.002 | ext/race 0.1 | ext/fall 57.4 (68) | stopRev p50/p75/max 1/2/7 (>3: 11.5%) | rival max p75/max 2/7 (>3: 9.0%) | snap 0.9% (player 0.9%)
+C-propcomb3      lesson 36.3 ± 0.4 | best gamble 55.1 | crawl 39.3 ± 0.9 (dis 5.1) | smart 25.2 ± 0.8 | dis 26.9 | scr 0.07 | fall 0.002 | ext/race 0.2 | ext/fall 56.9 (72) | stopRev p50/p75/max 1/2/7 (>3: 5.4%) | rival max p75/max 2/6 (>3: 6.6%) | snap 0.7% (player 0.6%)
+C-propcomb4      lesson 44.7 ± 0.4 | best gamble 64.5 | crawl 43.4 ± 1.0 (dis 0.8) | smart 29.4 ± 0.9 | dis 13.5 | scr 0.08 | fall 0.002 | ext/race 0.2 | ext/fall 56.9 (72) | stopRev p50/p75/max 1/2/7 (>3: 8.2%) | rival max p75/max 2/6 (>3: 5.7%) | snap 0.7% (player 0.7%)
+
+## Daily (offsets 900-1199, chill off)
+D-ref            lesson 21.4 ± 0.6 | best follower 46.4 | crawl 13.2 ± 1.1 (dis 59.8) | smart 24.1 ± 1.4 | dis 38.8 | scr 0.44 | fall 0.205 | ext/race 9.1 | ext/fall 23.4 (3513) | stopRev p50/p75/max 2/3/9 (>3: 13.2%) | rival max p75/max 3/8 (>3: 13.0%) | snap 0.0% (player 0.0%)
+D-cur3           lesson 6.5 ± 0.4 | best follower 14.4 | crawl 20.7 ± 1.4 (dis 55.2) | smart 13.6 ± 1.1 | dis 61.3 | scr 1.01 | fall 0.263 | ext/race 9.1 | ext/fall 18.5 (4442) | stopRev p50/p75/max 2/2/8 (>3: 4.8%) | rival max p75/max 2/6 (>3: 1.5%) | snap 6.3% (player 5.8%)
+D-prop3unf       lesson 19.9 ± 0.7 | best follower 33.7 | crawl 36.2 ± 1.6 (dis 35.9) | smart 12.0 ± 1.1 | dis 62.1 | scr 0.55 | fall 0.047 | ext/race 2.3 | ext/fall 29.0 (710) | stopRev p50/p75/max 2/2/7 (>3: 7.8%) | rival max p75/max 2/5 (>3: 2.6%) | snap 1.5% (player 1.6%)
+D-comb3          lesson 19.3 ± 0.7 | best runup 33.9 | crawl 37.1 ± 1.6 (dis 36.6) | smart 10.3 ± 1.0 | dis 64.0 | scr 0.54 | fall 0.044 | ext/race 2.2 | ext/fall 29.0 (686) | stopRev p50/p75/max 2/3/7 (>3: 8.7%) | rival max p75/max 2/5 (>3: 2.8%) | snap 1.3% (player 1.4%)
+D-comb4          lesson 30.9 ± 0.8 | best follower 48.1 | crawl 51.4 ± 1.7 (dis 20.8) | smart 22.9 ± 1.4 | dis 47.9 | scr 0.66 | fall 0.049 | ext/race 2.4 | ext/fall 29.1 (729) | stopRev p50/p75/max 2/3/8 (>3: 14.6%) | rival max p75/max 2/5 (>3: 2.4%) | snap 1.4% (player 1.6%)
+D-comb3r         lesson 19.3 ± 0.7 | best runup 33.9 | crawl 37.1 ± 1.6 (dis 36.6) | smart 10.3 ± 1.0 | dis 64.0 | scr 0.54 | fall 0.044 | ext/race 2.2 | ext/fall 29.0 (686) | stopRev p50/p75/max 2/3/7 (>3: 8.7%) | rival max p75/max 2/5 (>3: 2.8%) | snap 1.3% (player 1.4%)
+D-comb4r         lesson 30.9 ± 0.8 | best follower 48.1 | crawl 51.4 ± 1.7 (dis 20.8) | smart 22.9 ± 1.4 | dis 47.9 | scr 0.66 | fall 0.049 | ext/race 2.4 | ext/fall 29.1 (729) | stopRev p50/p75/max 2/3/8 (>3: 14.6%) | rival max p75/max 2/5 (>3: 2.4%) | snap 1.4% (player 1.6%)
+D-tim3           lesson 21.8 ± 0.7 | best follower 37.3 | crawl 36.7 ± 1.6 (dis 38.9) | smart 13.1 ± 1.1 | dis 62.8 | scr 0.58 | fall 0.033 | ext/race 1.5 | ext/fall 29.3 (468) | stopRev p50/p75/max 2/3/8 (>3: 8.4%) | rival max p75/max 2/6 (>3: 2.6%) | snap 1.5% (player 1.5%)
+D-tim3r          lesson 21.7 ± 0.7 | best follower 36.9 | crawl 35.9 ± 1.6 (dis 39.7) | smart 13.2 ± 1.1 | dis 63.1 | scr 0.59 | fall 0.033 | ext/race 1.5 | ext/fall 29.1 (474) | stopRev p50/p75/max 2/2/8 (>3: 8.4%) | rival max p75/max 2/6 (>3: 2.3%) | snap 1.5% (player 1.6%)
+D-tim4r          lesson 33.3 ± 0.8 | best follower 50.7 | crawl 50.6 ± 1.7 (dis 23.0) | smart 27.3 ± 1.5 | dis 46.9 | scr 0.71 | fall 0.039 | ext/race 1.8 | ext/fall 30.1 (525) | stopRev p50/p75/max 2/3/8 (>3: 14.2%) | rival max p75/max 2/6 (>3: 2.0%) | snap 1.7% (player 1.8%)
+  D-ref by tier lesson 30.4 / 18.5 / 15.3 | follower 86.7 / 28.7 / 24.0 | crawl 18.0 / 12.3 / 9.3
+  D-cur3 by tier lesson 4.4 / 7.3 / 8.0 | follower 10.7 / 14.7 / 18.0 | crawl 13.0 / 23.7 / 25.3
+  D-prop3unf by tier lesson 21.0 / 21.4 / 17.4 | follower 38.0 / 38.0 / 25.0 | crawl 31.7 / 38.7 / 38.3
+  D-comb3 by tier lesson 19.2 / 20.7 / 18.0 | follower 35.0 / 34.3 / 23.7 | crawl 30.7 / 40.3 / 40.3
+  D-comb4 by tier lesson 32.0 / 31.9 / 28.9 | follower 59.0 / 49.3 / 36.0 | crawl 50.0 / 54.7 / 49.7
+  D-tim3r by tier lesson 21.2 / 22.1 / 21.6 | follower 39.3 / 39.0 / 32.3 | crawl 31.0 / 39.3 / 37.3
+  D-tim4r by tier lesson 33.5 / 33.5 / 32.9 | follower 57.7 / 50.0 / 44.3 | crawl 49.3 / 53.7 / 48.7
+
+## Paired deltas (lesson-probe mean win, b minus a)
+  free: +1 strike, current page           +6.8 ± 0.3   crawl +3.0 ± 0.5   smart +5.9 ± 0.7
+  free: steps on vs off, current          -0.9 ± 0.6 ?   crawl -3.2 ± 2.1 ?   smart -22.7 ± 1.6
+  free: combined 3 vs steps off           -0.2 ± 0.6 ?   crawl -5.7 ± 2.1 ?   smart -23.3 ± 1.6
+  free: combined 4 vs steps off           +6.7 ± 0.7   crawl -2.6 ± 2.1 ?   smart -17.7 ± 1.7
+  free: combined vs current, 3            +0.7 ± 0.5 ?   crawl -2.5 ± 1.6 ?   smart -0.6 ± 0.8 ?
+  free: +1 strike, combined               +6.8 ± 0.3   crawl +3.1 ± 0.5   smart +5.6 ± 0.7
+  free chill off: current 3 vs off        -6.7 ± 0.7   crawl +3.9 ± 2.1 ?   smart -11.7 ± 1.8
+  free chill off: combined 3 vs off       -0.8 ± 0.6 ?   crawl -6.4 ± 2.0   smart -23.7 ± 1.5
+  free chill off: combined 4 vs off       +6.5 ± 0.7   crawl -1.8 ± 2.1 ?   smart -19.6 ± 1.6
+  campaign: +1 strike, current page       +9.8 ± 0.2   crawl +7.7 ± 0.5   smart +6.6 ± 0.5
+  campaign: steps on vs off, current      -9.8 ± 0.4   crawl +13.5 ± 1.0   smart +8.9 ± 1.1
+  campaign: combined 3 vs off             +8.5 ± 0.4   crawl +8.0 ± 1.5   smart +3.8 ± 0.9
+  campaign: combined 4 vs off             +17.3 ± 0.4   crawl +15.3 ± 1.6   smart +5.2 ± 0.9
+  campaign: +1, combined                  +8.9 ± 0.2   crawl +7.3 ± 0.5   smart +1.4 ± 0.2
+  campaign prop: combined 3 vs off        +12.0 ± 0.5   crawl -2.6 ± 1.4 ?   smart -4.1 ± 1.1
+  campaign prop: combined 4 vs off        +20.4 ± 0.5   crawl +1.6 ± 1.5 ?   smart +0.0 ± 1.1 ?
+  campaign prop: combined vs current gen  +6.3 ± 0.4   crawl -16.0 ± 1.0   smart +7.1 ± 0.8
+  daily: steps on vs off, current         -14.9 ± 0.7   crawl +7.4 ± 1.7   smart -10.6 ± 1.8
+  daily: combined 3 (filter) vs off       -2.1 ± 0.8 ?   crawl +23.9 ± 1.9   smart -13.8 ± 1.7
+  daily: combined 4 (filter) vs off       +9.5 ± 0.9   crawl +38.2 ± 2.0   smart -1.2 ± 1.8 ?
+  daily: +1, combined                     +11.6 ± 0.4   crawl +14.3 ± 1.2   smart +12.6 ± 1.1
+  daily: strict filter vs none            -0.6 ± 0.5 ?   crawl +0.9 ± 1.1 ?   smart -1.7 ± 0.8 ?
+  daily: relaxed vs strict filter         +0.0 ± 0.0   crawl +0.0 ± 0.0   smart +0.0 ± 0.0
+  free chill off: timing-only 3 vs off    -0.2 ± 0.6 ?   crawl -2.1 ± 2.1 ?   smart -22.5 ± 1.6
+  campaign: timing-only 3 vs off          +8.7 ± 0.5   crawl +7.7 ± 1.5   smart -3.2 ± 0.9
+  campaign: timing-only 4 vs off          +16.5 ± 0.5   crawl +15.9 ± 1.5   smart -1.8 ± 0.9 ?
+  campaign: combined vs timing-only, 3    -0.2 ± 0.3 ?   crawl +0.4 ± 1.1 ?   smart +7.0 ± 0.5
+  campaign prop: timing-only 3 vs off     +13.9 ± 0.5   crawl +3.4 ± 1.4 ?   smart -5.9 ± 1.1
+  campaign prop: timing-only 4 vs off     +21.0 ± 0.5   crawl +5.7 ± 1.4   smart +2.4 ± 1.2 ?
+  daily: timing-only 3 (relaxed) vs off   +0.2 ± 0.8 ?   crawl +22.7 ± 1.9   smart -10.9 ± 1.7
+  daily: timing-only 4 (relaxed) vs off   +11.9 ± 0.9   crawl +37.3 ± 2.0   smart +3.2 ± 1.8 ?
+  daily timing: relaxed vs strict         -0.1 ± 0.2 ?   crawl -0.8 ± 0.4 ?   smart +0.1 ± 0.2 ?
+  daily follower, current -> proposed unfiltered: +19.2 ± 1.7 ; runup +22.0 ± 1.8
+
+## Crawl vs best lesson probe (crawl minus each run's top probe, paired)
+  C-cur3       crawl 47.6 vs runup 24.4: 23.2 ± 1.0 (best probe picked on this block: biased toward the probe)
+  C-cur4       crawl 55.4 vs runup 35.7: 19.6 ± 1.0 (best probe picked on this block: biased toward the probe)
+  C-comb3      crawl 42.1 vs gamble 48.4: -6.2 ± 1.4 (best probe picked on this block: biased toward the probe)
+  C-comb4      crawl 49.4 vs gamble 59.3: -9.9 ± 1.5 (best probe picked on this block: biased toward the probe)
+  C-propcomb3  crawl 39.3 vs gamble 55.1: -15.8 ± 1.3 (best probe picked on this block: biased toward the probe)
+  C-propcomb4  crawl 43.4 vs gamble 64.5: -21.0 ± 1.3 (best probe picked on this block: biased toward the probe)
+  F-cur3       crawl 27.9 vs gamble 27.7: 0.2 ± 2.2 (best probe picked on this block: biased toward the probe)
+  F-comb3      crawl 25.4 vs gamble 33.2: -7.8 ± 2.3 (best probe picked on this block: biased toward the probe)
+  F-comb4      crawl 28.5 vs gamble 45.2: -16.7 ± 2.4 (best probe picked on this block: biased toward the probe)
+  D-comb3      crawl 37.1 vs runup 33.9: 3.2 ± 2.0 (best probe picked on this block: biased toward the probe)
+  D-comb4      crawl 51.4 vs follower 48.1: 3.3 ± 2.2 (best probe picked on this block: biased toward the probe)
+  C-tim3       crawl 41.8 vs gamble 47.6: -5.8 ± 1.4 (best probe picked on this block: biased toward the probe)
+  C-tim4       crawl 50.0 vs gamble 55.6: -5.6 ± 1.4 (best probe picked on this block: biased toward the probe)
+  D-tim3r      crawl 35.9 vs follower 36.9: -1.0 ± 2.1 (best probe picked on this block: biased toward the probe)
+  D-tim4r      crawl 50.6 vs follower 50.7: -0.1 ± 2.2 (best probe picked on this block: biased toward the probe)
+
+## Campaign picks
+C-propcur3
+  map 1 climber  win 86.7 vs runup   14.7 margin 72.0 (z 25.3) rank 1 (top climber 86.7) crawl 79.7 smart 0.3 | stopRev lesson p75/max 2/3 dis 9.0  HOLDS
+  map 2 climber  win 37.7 vs gamble  19.0 margin 18.7 (z 5.1) rank 2 (top runup 57.3) crawl 85.0 smart 45.3 | stopRev lesson p75/max 2/2 dis 0.0  HOLDS
+  map 3 gamble   win 68.0 vs balanced19.3 margin 48.7 (z 13.7) rank 2 (top bold 80.7) crawl 80.0 smart 33.3 | stopRev lesson p75/max 2/3 dis 14.0  HOLDS
+  map 4 scout    win 59.7 vs climber 43.3 margin 16.3 (z 4.1) rank 3 (top runup 86.7) crawl 14.7 smart 0.0 | stopRev lesson p75/max 6/6 dis 30.0  HOLDS
+  map 5 balanced win 63.3 vs climber 40.3 margin 23.0 (z 7.3) rank 1 (top balanced 63.3) crawl 0.0 smart 8.7 | stopRev lesson p75/max 2/2 dis 5.0  HOLDS
+  map 6 bold     win 76.0 vs balanced9.3 margin 66.7 (z 21.2) rank 1 (top bold 76.0) crawl 93.0 smart 33.3 | stopRev lesson p75/max 3/3 dis 21.3  HOLDS
+  map 7 rush     win 85.3 vs balanced33.0 margin 52.3 (z 18.1) rank 2 (top gamble 85.7) crawl 69.7 smart 38.0 | stopRev lesson p75/max 1/1 dis 11.0  HOLDS
+  map 8 follower win 54.3 vs bold    8.0 margin 46.3 (z 14.4) rank 1 (top follower 54.3) crawl 41.7 smart 3.7 | stopRev lesson p75/max 2/2 dis 7.3  HOLDS
+  map 9 climber  win 50.0 vs balanced1.0 margin 49.0 (z 16.9) rank 3 (top runup 63.3) crawl 34.3 smart 0.0 | stopRev lesson p75/max 2/4 dis 42.3  HOLDS
+C-proptim3
+  map 1 climber  win 86.7 vs runup   14.0 margin 72.7 (z 25.0) rank 1 (top climber 86.7) crawl 64.3 smart 2.7 | stopRev lesson p75/max 1/2 dis 5.7  HOLDS
+  map 2 climber  win 12.0 vs gamble  85.0 margin -73.0 (z -28.4) rank 9 (top gamble 85.0) crawl 65.0 smart 34.3 | stopRev lesson p75/max 0/1 dis 0.0  FAILS
+  map 3 gamble   win 93.3 vs balanced25.7 margin 67.7 (z 25.0) rank 1 (top gamble 93.3) crawl 64.3 smart 33.3 | stopRev lesson p75/max 2/3 dis 0.0  HOLDS
+  map 4 scout    win 41.3 vs climber 34.3 margin 7.0 (z 1.9) rank 6 (top follower 61.7) crawl 4.0 smart 0.0 | stopRev lesson p75/max 6/7 dis 15.0  FAILS
+  map 5 balanced win 90.3 vs climber 53.0 margin 37.3 (z 12.8) rank 2 (top gamble 91.0) crawl 0.0 smart 68.3 | stopRev lesson p75/max 1/1 dis 0.0  HOLDS
+  map 6 bold     win 72.3 vs balanced31.7 margin 40.7 (z 10.7) rank 2 (top gamble 92.0) crawl 88.0 smart 37.3 | stopRev lesson p75/max 2/3 dis 20.7  HOLDS
+  map 7 rush     win 85.3 vs balanced24.7 margin 60.7 (z 21.5) rank 2 (top gamble 93.7) crawl 33.0 smart 33.3 | stopRev lesson p75/max 2/2 dis 0.0  HOLDS
+  map 8 follower win 66.7 vs bold    18.7 margin 48.0 (z 13.9) rank 1 (top follower 66.7) crawl 4.3 smart 1.3 | stopRev lesson p75/max 0/2 dis 6.0  HOLDS
+  map 9 climber  win 65.0 vs balanced40.3 margin 24.7 (z 6.0) rank 3 (top runup 85.7) crawl 84.3 smart 0.0 | stopRev lesson p75/max 2/4 dis 6.3  HOLDS
+C-proptim4
+  map 1 climber  win 91.7 vs runup   33.7 margin 58.0 (z 17.8) rank 1 (top climber 91.7) crawl 85.0 smart 17.0 | stopRev lesson p75/max 2/2 dis 0.3  HOLDS
+  map 2 climber  win 12.0 vs gamble  85.7 margin -73.7 (z -28.9) rank 10 (top gamble 85.7) crawl 65.0 smart 34.3 | stopRev lesson p75/max 0/1 dis 0.0  FAILS
+  map 3 gamble   win 93.3 vs balanced25.7 margin 67.7 (z 25.0) rank 1 (top gamble 93.3) crawl 64.3 smart 33.3 | stopRev lesson p75/max 2/3 dis 0.0  HOLDS
+  map 4 scout    win 48.0 vs climber 38.7 margin 9.3 (z 2.7) rank 6 (top gamble 74.3) crawl 4.7 smart 0.0 | stopRev lesson p75/max 6/7 dis 4.3  FAILS
+  map 5 balanced win 90.3 vs climber 53.0 margin 37.3 (z 12.8) rank 2 (top gamble 91.0) crawl 0.0 smart 68.3 | stopRev lesson p75/max 1/1 dis 0.0  HOLDS
+  map 6 bold     win 91.7 vs balanced31.7 margin 60.0 (z 21.2) rank 2 (top gamble 92.0) crawl 88.0 smart 37.3 | stopRev lesson p75/max 2/3 dis 0.0  HOLDS
+  map 7 rush     win 38.3 vs balanced24.7 margin 13.7 (z 4.1) rank 3 (top gamble 93.7) crawl 33.0 smart 33.3 | stopRev lesson p75/max 1/1 dis 26.3  HOLDS
+  map 8 follower win 68.7 vs bold    31.0 margin 37.7 (z 10.1) rank 1 (top follower 68.7) crawl 4.3 smart 12.0 | stopRev lesson p75/max 0/2 dis 0.0  HOLDS
+  map 9 climber  win 68.0 vs balanced79.3 margin -11.3 (z -3.1) rank 7 (top runup 92.0) crawl 84.3 smart 50.3 | stopRev lesson p75/max 3/4 dis 1.7  FAILS
+C-propcomb3
+  map 1 climber  win 77.7 vs runup   23.7 margin 54.0 (z 16.0) rank 1 (top climber 77.7) crawl 69.3 smart 0.0 | stopRev lesson p75/max 1/3 dis 6.0  HOLDS
+  map 2 climber  win 9.3 vs gamble  83.0 margin -73.7 (z -28.9) rank 8 (top gamble 83.0) crawl 45.3 smart 33.3 | stopRev lesson p75/max 0/1 dis 0.0  FAILS
+  map 3 gamble   win 93.0 vs balanced24.7 margin 68.3 (z 25.0) rank 1 (top gamble 93.0) crawl 38.7 smart 33.3 | stopRev lesson p75/max 2/3 dis 0.0  HOLDS
+  map 4 scout    win 38.7 vs climber 25.3 margin 13.3 (z 3.5) rank 3 (top runup 81.0) crawl 0.0 smart 0.0 | stopRev lesson p75/max 5/6 dis 40.3  HOLDS
+  map 5 balanced win 91.3 vs climber 60.7 margin 30.7 (z 11.0) rank 2 (top gamble 92.0) crawl 0.0 smart 80.3 | stopRev lesson p75/max 1/1 dis 0.0  HOLDS
+  map 6 bold     win 72.0 vs balanced38.0 margin 34.0 (z 9.2) rank 2 (top gamble 93.3) crawl 77.3 smart 46.7 | stopRev lesson p75/max 2/3 dis 20.7  HOLDS
+  map 7 rush     win 82.7 vs balanced24.3 margin 58.3 (z 20.5) rank 2 (top gamble 93.7) crawl 40.3 smart 33.3 | stopRev lesson p75/max 2/2 dis 0.0  HOLDS
+  map 8 follower win 65.0 vs bold    17.0 margin 48.0 (z 13.8) rank 1 (top follower 65.0) crawl 4.3 smart 0.0 | stopRev lesson p75/max 0/2 dis 5.3  HOLDS
+  map 9 climber  win 64.7 vs balanced16.0 margin 48.7 (z 13.8) rank 3 (top runup 81.3) crawl 78.3 smart 0.0 | stopRev lesson p75/max 3/4 dis 10.7  HOLDS
+C-propcomb4
+  map 1 climber  win 79.3 vs runup   42.7 margin 36.7 (z 9.9) rank 3 (top drafter 88.7) crawl 92.7 smart 11.0 | stopRev lesson p75/max 1/3 dis 0.0  HOLDS
+  map 2 climber  win 9.3 vs gamble  83.0 margin -73.7 (z -28.9) rank 8 (top gamble 83.0) crawl 45.3 smart 33.3 | stopRev lesson p75/max 0/1 dis 0.0  FAILS
+  map 3 gamble   win 93.0 vs balanced24.7 margin 68.3 (z 25.0) rank 1 (top gamble 93.0) crawl 38.7 smart 33.3 | stopRev lesson p75/max 2/3 dis 0.0  HOLDS
+  map 4 scout    win 49.0 vs climber 36.0 margin 13.0 (z 3.2) rank 4 (top runup 82.0) crawl 8.3 smart 0.0 | stopRev lesson p75/max 6/7 dis 19.7  HOLDS
+  map 5 balanced win 91.3 vs climber 60.7 margin 30.7 (z 11.0) rank 2 (top gamble 92.0) crawl 0.0 smart 80.3 | stopRev lesson p75/max 1/1 dis 0.0  HOLDS
+  map 6 bold     win 90.3 vs balanced38.0 margin 52.3 (z 17.9) rank 2 (top gamble 93.3) crawl 77.3 smart 46.7 | stopRev lesson p75/max 2/3 dis 0.7  HOLDS
+  map 7 rush     win 35.7 vs balanced24.3 margin 11.3 (z 3.0) rank 4 (top gamble 93.7) crawl 40.3 smart 33.3 | stopRev lesson p75/max 1/1 dis 40.0  HOLDS
+  map 8 follower win 65.7 vs bold    28.0 margin 37.7 (z 9.9) rank 1 (top follower 65.7) crawl 4.3 smart 24.0 | stopRev lesson p75/max 0/2 dis 0.0  HOLDS
+  map 9 climber  win 72.3 vs balanced26.7 margin 45.7 (z 12.7) rank 5 (top twin 92.3) crawl 84.0 smart 2.3 | stopRev lesson p75/max 3/4 dis 1.3  HOLDS

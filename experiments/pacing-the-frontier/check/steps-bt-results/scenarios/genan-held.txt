@@ -1,0 +1,38 @@
+
+== base: seeds 300, long share 0%, ext/race 3%, seeds nobody-probe-won 16
+   per-seed best: distinct 12, top gamble 17%, effective N 10.38 :: gamble 17, crawl 15, drafter 11, runup 9, climber 9, balanced 9, scout 7, follower 7, twin 6, bold 5, smart 2, rush 2
+   win rate: gamble 30, crawl 28, drafter 27, runup 24, scout 24, climber 22, follower 20, twin 19, balanced 18, bold 11, smart 8, rush 5
+   fast (rush+bold) boxes: short C88 S11 F1 (n3705) | long C0 S0 F0 (n1)   all probes: short C95 S5 F0 (n27417) | long C0 S0 F0 (n1)
+
+== midLong: seeds 300, long share 26%, ext/race 4%, seeds nobody-probe-won 26
+   per-seed best: distinct 12, top crawl 18%, effective N 10.30 :: crawl 18, runup 12, gamble 12, climber 11, balanced 9, drafter 8, follower 8, scout 7, bold 5, twin 5, smart 2, rush 1
+   win rate: crawl 32, runup 24, gamble 24, scout 23, climber 23, drafter 22, follower 21, balanced 19, twin 18, bold 10, smart 8, rush 3
+   fast (rush+bold) boxes: short C91 S9 F1 (n2359) | long C35 S62 F3 (n809)   all probes: short C94 S5 F1 (n19671) | long C79 S20 F1 (n6670)
+
+== mixLong+strikeGap: seeds 300, long share 24%, ext/race 12%, seeds nobody-probe-won 30
+   per-seed best: distinct 12, top gamble 16%, effective N 10.77 :: gamble 16, crawl 14, follower 10, runup 9, balanced 9, twin 8, drafter 8, scout 8, climber 7, bold 6, rush 3, smart 2
+   win rate: gamble 29, crawl 21, follower 20, balanced 20, scout 19, twin 18, runup 18, drafter 17, climber 14, bold 11, smart 6, rush 5
+   fast (rush+bold) boxes: short C91 S8 F1 (n2538) | long C30 S35 F34 (n810)   all probes: short C95 S5 F0 (n19036) | long C61 S24 F16 (n5748)
+
+== mixLong: seeds 300, long share 24%, ext/race 12%, seeds nobody-probe-won 56
+   per-seed best: distinct 12, top crawl 18%, effective N 10.64 :: crawl 18, runup 12, climber 10, gamble 10, follower 9, balanced 9, twin 8, drafter 7, scout 7, bold 5, smart 3, rush 2
+   win rate: crawl 24, gamble 19, runup 19, follower 17, scout 17, twin 17, climber 17, balanced 16, drafter 15, bold 9, smart 7, rush 3
+   fast (rush+bold) boxes: short C91 S9 F1 (n2248) | long C27 S37 F35 (n724)   all probes: short C95 S5 F0 (n18180) | long C60 S24 F16 (n5495)
+
+## base classes: best-class share gamble 45, careful 25, build 23, fast 8 (decided 262) | split-half agree 54% vs chance 30% (n201)
+   seeds with 0 long boxes: careful 21%, gamble 30%, fast 14%, build 18% (races 7200)
+
+## midLong classes: best-class share gamble 37, build 32, careful 26, fast 5 (decided 243) | split-half agree 49% vs chance 29% (n184)
+   seeds with 0 long boxes: careful 24%, gamble 36%, fast 18%, build 15% (races 2520)
+   seeds with 1 long boxes: careful 20%, gamble 26%, fast 10%, build 21% (races 2592)
+   seeds with 2+ long boxes: careful 20%, gamble 7%, fast 7%, build 26% (races 2088)
+
+## mixLong+strikeGap classes: best-class share gamble 47, careful 25, build 22, fast 6 (decided 244) | split-half agree 48% vs chance 30% (n179)
+   seeds with 0 long boxes: careful 22%, gamble 47%, fast 20%, build 10% (races 2520)
+   seeds with 1 long boxes: careful 19%, gamble 25%, fast 8%, build 17% (races 2664)
+   seeds with 2+ long boxes: careful 12%, gamble 11%, fast 3%, build 13% (races 2016)
+
+## mixLong classes: best-class share gamble 36, build 30, careful 28, fast 5 (decided 230) | split-half agree 51% vs chance 29% (n159)
+   seeds with 0 long boxes: careful 24%, gamble 36%, fast 18%, build 15% (races 2520)
+   seeds with 1 long boxes: careful 18%, gamble 16%, fast 6%, build 18% (races 2664)
+   seeds with 2+ long boxes: careful 9%, gamble 4%, fast 2%, build 11% (races 2016)

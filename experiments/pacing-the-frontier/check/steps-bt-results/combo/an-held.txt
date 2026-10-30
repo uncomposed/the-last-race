@@ -1,0 +1,15 @@
+== raw/v4-held.jsonl races 14400
+ext 10.6±1.0  lab0 dis 18.5±1.0
+fast boxes C 76.2±0.9 S 17.2±0.8 F 6.5±0.5
+class win fast 12.1±1.0  build 16.9±1.1  careful 20.7±1.0  gamble 30.4±1.8
+h rush+bold 0.74  v 93
+lesson stopRev p50/p75/p90/max 1/1/2/6  >3: 0.2%
+probe win runup 25 climber 13 gamble 30 scout 19 balanced 22 bold 11 rush 7 drafter 18 follower 22 twin 20 crawl 12 smart 17
+== ../economy/raw/run15bar-held.jsonl races 14400
+ext 9.4±1.1  lab0 dis 11.3±0.7
+fast boxes C 87.6±0.5 S 9.9±0.5 F 2.6±0.3
+class win fast 18.3±1.1  build 6.8±0.8  careful 13.9±1.1  gamble 34.1±1.7
+h rush+bold 0.73  v 95
+probe win runup 10 climber 8 gamble 34 scout 14 balanced 18 bold 16 rush 14 drafter 25 follower 12 twin 12 crawl 5 smart 4
+delta raw/v4-held.jsonl - raw/base-held.jsonl: ext 8.0±1.1 dis -20.4±1.5 fast -1.1±1.1? build -2.9±1.5? careful 0.2±1.6? gamble -0.2±2.5?
+delta raw/v4-held.jsonl - ../economy/raw/run15bar-held.jsonl: ext 1.2±0.9? dis 7.2±0.7 fast -6.2±0.9 build 10.0±1.1 careful 6.8±1.1 gamble -3.7±2.1?

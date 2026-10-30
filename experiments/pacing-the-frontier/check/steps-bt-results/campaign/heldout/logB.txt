@@ -1,0 +1,4 @@
+rows 18180 in 115.1 s -> heldout/ladder.json
+rows 4590 in 31.2 s -> heldout/nw06.json
+rows 4590 in 30.8 s -> heldout/nw20.json
+rows 4590 in 26.7 s -> heldout/strP1.json

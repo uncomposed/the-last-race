@@ -1,0 +1,54 @@
+map 1 seed 1823 lesson climber: held-out 0.84±0.02 (n 300) worst foil runup 0.18 diff 0.66±0.03 z 20.46; rank 1 (top climber 0.84, drafter 0.56, scout 0.52)
+   shipped noise 0: 1 (n 3) worst foil runup 0
+   stopRev {"p50":1,"p75":2,"max":3} gap-only {"p50":0,"p75":0,"max":1} wins {"p50":1,"p75":2,"max":3} winsNoGapStop 0.79; scrapes 0.59 falls 0 barrierCrashes 2.03 dissolved 0.08 extinct 0
+   all probes: {"stopRev":{"p50":2,"p75":2,"max":4},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0,"dissolved":0.7}; lesson per tier 0.82,0.81,0.9 probe mean per tier 0.2,0.24,0.3; mechanism {"climber":0.84,"climb0":0.84,"rush":0,"rush1":0}
+   ladder E/M/H 0.92/0.84/0.45; +1 strike (5/4/3) 0.92 (d 0.37±0.05) / 0.92 (d 0.44±0.05) / 0.88 (d 0.71±0.05)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.88 d 0.71±0.05 runup; nw06 0.88 d 0.71±0.05 runup; nw20 0.88 d 0.71±0.05 runup; strM1 0.32 d 0.31±0.04 runup; strP1 0.45 d 0.25±0.05 runup
+map 2 seed 1784 lesson climber: held-out 0.37±0.03 (n 300) worst foil gamble 0.18 diff 0.19±0.04 z 5.02; rank 2 (top runup 0.5, climber 0.37, twin 0.28)
+   shipped noise 0: 0 (n 3) worst foil balanced 0.33
+   stopRev {"p50":1,"p75":2,"max":2} gap-only {"p50":0,"p75":1,"max":1} wins {"p50":2,"p75":2,"max":2} winsNoGapStop 0.14; scrapes 0.77 falls 0 barrierCrashes 0.61 dissolved 0.02 extinct 0
+   all probes: {"stopRev":{"p50":1,"p75":2,"max":3},"stopRevGap":{"p50":0,"p75":0,"max":2},"extinct":0.02,"dissolved":0.29}; lesson per tier 0.96,0.01,0.15 probe mean per tier 0.24,0.24,0.15; mechanism {"climber":0.37,"climb0":0.36,"rush":0,"rush1":0}
+   ladder E/M/H 0.38/0.37/0.03; +1 strike (5/4/3) 0.41 (d -0.18±0.06) / 0.41 (d 0±0.06) / 0.4 (d 0.21±0.05)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.4 d 0.21±0.05 balanced; nw06 0.4 d 0.21±0.05 balanced; nw20 0.4 d 0.21±0.05 balanced; strM1 0.09 d -0.03±0.03 balanced; strP1 0.33 d 0.01±0.06 gamble
+map 3 seed 676 lesson gamble: held-out 0.59±0.03 (n 300) worst foil balanced 0.15 diff 0.44±0.04 z 11.75; rank 2 (top bold 0.82, gamble 0.59, rush 0.25)
+   shipped noise 0: 0.67 (n 3) worst foil climber 0
+   stopRev {"p50":2,"p75":2,"max":3} gap-only {"p50":0,"p75":0,"max":1} wins {"p50":2,"p75":2,"max":3} winsNoGapStop 0.86; scrapes 0.73 falls 0 barrierCrashes 1.12 dissolved 0.22 extinct 0
+   all probes: {"stopRev":{"p50":1,"p75":2,"max":3},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0,"dissolved":0.12}; lesson per tier 0.64,0.46,0.66 probe mean per tier 0.2,0.29,0.2; mechanism {"climber":0,"climb0":0,"rush":0.25,"rush1":0.01}
+   ladder E/M/H 0.77/0.59/0.28; +1 strike (5/4/3) 0.82 (d 0.67±0.04) / 0.82 (d 0.67±0.04) / 0.64 (d 0.52±0.05)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.64 d 0.52±0.05 balanced; nw06 0.64 d 0.52±0.05 balanced; nw20 0.64 d 0.52±0.05 balanced; strM1 0.25 d -0.08±0.05 balanced; strP1 0.82 d 0.68±0.04 balanced
+map 4 seed 717 lesson scout: held-out 0.55±0.03 (n 300) worst foil climber 0.38 diff 0.17±0.04 z 4.39; rank 3 (top runup 0.87, twin 0.67, scout 0.55)
+   shipped noise 0: 0.33 (n 3) worst foil climber 0.33
+   stopRev {"p50":5,"p75":6,"max":6} gap-only {"p50":1,"p75":1,"max":1} wins {"p50":5,"p75":6,"max":6} winsNoGapStop 0.07; scrapes 0.32 falls 0 barrierCrashes 2.46 dissolved 0.36 extinct 0
+   all probes: {"stopRev":{"p50":3,"p75":4,"max":7},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0,"dissolved":0.62}; lesson per tier 0.75,0.45,0.44 probe mean per tier 0.38,0.26,0.29; mechanism {"climber":0.38,"climb0":0.24,"rush":0,"rush1":0}
+   ladder E/M/H 0.69/0.55/0.25; +1 strike (5/4/3) 0.83 (d 0.09±0.04) / 0.71 (d 0.1±0.05) / 0.57 (d 0.22±0.05)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.57 d 0.22±0.05 climber; nw06 0.57 d 0.22±0.05 climber; nw20 0.57 d 0.22±0.05 climber; strM1 0.31 d 0.22±0.04 climber; strP1 0.76 d 0.32±0.05 climber
+map 5 seed 2972 lesson balanced: held-out 0.59±0.03 (n 300) worst foil climber 0.41 diff 0.18±0.03 z 5.67; rank 2 (top runup 0.71, balanced 0.59, drafter 0.57)
+   shipped noise 0: 0.33 (n 3) worst foil scout 0.33
+   stopRev {"p50":1,"p75":2,"max":2} gap-only {"p50":1,"p75":1,"max":1} wins {"p50":1,"p75":2,"max":2} winsNoGapStop 0.27; scrapes 0.43 falls 0 barrierCrashes 0.54 dissolved 0.03 extinct 0
+   all probes: {"stopRev":{"p50":2,"p75":2,"max":3},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0,"dissolved":0.25}; lesson per tier 0.93,0.37,0.46 probe mean per tier 0.69,0.27,0.29; mechanism {"climber":0.41,"climb0":0.38,"rush":0,"rush1":0}
+   ladder E/M/H 0.62/0.59/0.53; +1 strike (5/4/3) 0.64 (d -0.06±0.05) / 0.64 (d 0.24±0.04) / 0.6 (d 0.2±0.04)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.6 d 0.2±0.04 climber; nw06 0.54 d 0.16±0.04 climber; nw20 0.6 d 0.2±0.04 climber; strM1 0.71 d 0.33±0.05 climber; strP1 0.71 d 0.3±0.04 scout
+map 6 seed 625 lesson bold: held-out 0.76±0.02 (n 300) worst foil balanced 0.1 diff 0.66±0.03 z 21.4; rank 1 (top bold 0.76, gamble 0.6, runup 0.45)
+   shipped noise 0: 1 (n 3) worst foil climber 0
+   stopRev {"p50":3,"p75":3,"max":3} gap-only {"p50":0,"p75":0,"max":0} wins {"p50":3,"p75":3,"max":3} winsNoGapStop 1; scrapes 0.92 falls 0 barrierCrashes 1.28 dissolved 0.21 extinct 0
+   all probes: {"stopRev":{"p50":1,"p75":2,"max":3},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0,"dissolved":0.15}; lesson per tier 0.76,0.68,0.85 probe mean per tier 0.28,0.35,0.22; mechanism {"climber":0,"climb0":0,"rush":0.17,"rush1":0}
+   ladder E/M/H 0.88/0.76/0; +1 strike (5/4/3) 0.88 (d 0.75±0.04) / 0.88 (d 0.75±0.04) / 0.74 (d 0.65±0.04)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.74 d 0.65±0.04 balanced; nw06 0.74 d 0.65±0.04 balanced; nw20 0.74 d 0.65±0.04 balanced; strM1 0.01 d -0.12±0.03 climber; strP1 0.89 d 0.75±0.04 balanced
+map 7 seed 2565 lesson rush: held-out 0.84±0.02 (n 300) worst foil balanced 0.32 diff 0.52±0.03 z 17.76; rank 2 (top gamble 0.85, rush 0.84, drafter 0.59)
+   shipped noise 0: 1 (n 3) worst foil climber 0
+   stopRev {"p50":1,"p75":1,"max":1} gap-only {"p50":0,"p75":0,"max":0} wins {"p50":1,"p75":1,"max":1} winsNoGapStop 1; scrapes 0.11 falls 0 barrierCrashes 2.01 dissolved 0.11 extinct 0
+   all probes: {"stopRev":{"p50":1,"p75":1,"max":3},"stopRevGap":{"p50":0,"p75":0,"max":1},"extinct":0.01,"dissolved":0.04}; lesson per tier 1,1,0.51 probe mean per tier 0.59,0.44,0.23; mechanism {"climber":0.24,"climb0":0.15,"rush":0.84,"rush1":0}
+   ladder E/M/H 0.06/0.84/0.79; +1 strike (5/4/3) 0.4 (d 0.1±0.04) / 0.07 (d -0.24±0.05) / 0.83 (d 0.54±0.04)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.83 d 0.54±0.04 balanced; nw06 0.83 d 0.54±0.04 balanced; nw20 0.83 d 0.54±0.04 balanced; strM1 0.82 d 0.56±0.05 climber; strP1 0.07 d -0.22±0.04 balanced
+map 8 seed 23 lesson follower: held-out 0.56±0.03 (n 300) worst foil bold 0.04 diff 0.52±0.03 z 17.11; rank 1 (top follower 0.56, balanced 0.51, scout 0.43)
+   shipped noise 0: 0.67 (n 3) worst foil bold 0
+   stopRev {"p50":1,"p75":1,"max":3} gap-only {"p50":0,"p75":0,"max":2} wins {"p50":1,"p75":1,"max":3} winsNoGapStop 0.78; scrapes 0.38 falls 0 barrierCrashes 2.15 dissolved 0.13 extinct 0
+   all probes: {"stopRev":{"p50":1,"p75":2,"max":4},"stopRevGap":{"p50":0,"p75":0,"max":2},"extinct":0,"dissolved":0.41}; lesson per tier 0.58,0.44,0.67 probe mean per tier 0.34,0.26,0.35; mechanism {"climber":0.42,"climb0":0.29,"rush":0,"rush1":0}
+   ladder E/M/H 0.6/0.56/0.31; +1 strike (5/4/3) 0.62 (d 0.05±0.06) / 0.62 (d 0.33±0.05) / 0.59 (d 0.56±0.04)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.59 d 0.56±0.04 bold; nw06 0.59 d 0.56±0.04 bold; nw20 0.59 d 0.56±0.04 bold; strM1 0.17 d 0.17±0.03 bold; strP1 0.62 d 0.33±0.05 bold
+map 9 seed 2785 lesson climber: held-out 0.43±0.03 (n 300) worst foil balanced 0.01 diff 0.42±0.03 z 14.43; rank 4 (top runup 0.6, twin 0.53, drafter 0.53)
+   shipped noise 0: 0 (n 3) worst foil balanced 0
+   stopRev {"p50":2,"p75":2,"max":4} gap-only {"p50":1,"p75":1,"max":1} wins {"p50":2,"p75":2,"max":4} winsNoGapStop 0.14; scrapes 0.56 falls 0 barrierCrashes 1.55 dissolved 0.47 extinct 0
+   all probes: {"stopRev":{"p50":3,"p75":4,"max":7},"stopRevGap":{"p50":0,"p75":1,"max":1},"extinct":0,"dissolved":0.73}; lesson per tier 0.5,0.42,0.37 probe mean per tier 0.28,0.23,0.2; mechanism {"climber":0.43,"climb0":0.21,"rush":0,"rush1":0}
+   ladder E/M/H 0.68/0.43/0.22; +1 strike (5/4/3) 0.88 (d 0.52±0.04) / 0.64 (d 0.5±0.05) / 0.4 (d 0.4±0.04)
+   sensitivity (noise 0,100-149, Medium; lesson win, diff vs worst foil): base50 0.4 d 0.4±0.04 balanced; nw06 0.4 d 0.4±0.04 balanced; nw20 0.4 d 0.4±0.04 balanced; strM1 0.12 d 0.12±0.03 balanced; strP1 0.57 d 0.41±0.05 balanced

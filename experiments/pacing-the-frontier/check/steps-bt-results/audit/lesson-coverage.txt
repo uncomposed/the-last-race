@@ -1,0 +1,13 @@
+barrier      n 200 | lesson alone 2.5 | filter strict 92.5 relaxed 92.5 | coverage strict 2.5 ± 1.1 relaxed 2.5 ± 1.1 | scrape-only per map 0.00
+strike       n 200 | lesson alone 22.0 | filter strict 92.5 relaxed 92.5 | coverage strict 21.5 ± 2.9 relaxed 21.5 ± 2.9 | scrape-only per map 0.00
+race         n 200 | lesson alone 25.0 | filter strict 92.5 relaxed 92.5 | coverage strict 24.0 ± 3.0 relaxed 24.0 ± 3.0 | scrape-only per map 0.00
+gap          n 200 | lesson alone 19.5 | filter strict 50.5 relaxed 50.5 | coverage strict 7.5 ± 1.9 relaxed 7.5 ± 1.9 | scrape-only per map 0.00
+shadow       n 200 | lesson alone 20.5 | filter strict 92.5 relaxed 92.5 | coverage strict 18.5 ± 2.7 relaxed 18.5 ± 2.7 | scrape-only per map 0.00
+singularity  n 200 | lesson alone 13.5 | filter strict 65.5 relaxed 65.5 | coverage strict 9.0 ± 2.0 relaxed 9.0 ± 2.0 | scrape-only per map 0.00
+--- timing-only
+barrier      n 200 | lesson alone 2.5 | filter strict 86.0 relaxed 88.0 | coverage strict 2.5 ± 1.1 relaxed 2.5 ± 1.1 | scrape-only per map 0.04
+strike       n 200 | lesson alone 18.5 | filter strict 86.0 relaxed 88.0 | coverage strict 18.0 ± 2.7 relaxed 18.5 ± 2.7 | scrape-only per map 0.04
+race         n 200 | lesson alone 21.5 | filter strict 86.0 relaxed 88.0 | coverage strict 21.0 ± 2.9 relaxed 21.5 ± 2.9 | scrape-only per map 0.04
+gap          n 200 | lesson alone 20.5 | filter strict 87.0 relaxed 88.0 | coverage strict 18.0 ± 2.7 relaxed 18.0 ± 2.7 | scrape-only per map 0.04
+shadow       n 200 | lesson alone 25.0 | filter strict 86.0 relaxed 88.0 | coverage strict 23.0 ± 3.0 relaxed 23.5 ± 3.0 | scrape-only per map 0.04
+singularity  n 200 | lesson alone 14.5 | filter strict 87.0 relaxed 88.0 | coverage strict 14.5 ± 2.5 relaxed 14.5 ± 2.5 | scrape-only per map 0.03

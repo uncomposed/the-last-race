@@ -1,0 +1,33 @@
+STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$PWD/page-combined.html node filter.mjs 900 300 raw/filter.json > raw/filter.log 2>&1
+node race.mjs --page ../../../prototype.html --mode campaign --start 300 --count 100 --steps 0 --plus 0 --out raw/C-ref.jsonl > raw/C-ref.log 2>&1
+node race.mjs --page ../../../prototype.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-cur3.jsonl > raw/C-cur3.log 2>&1
+node race.mjs --page ../../../prototype.html --mode campaign --start 300 --count 100 --steps 1 --plus 1 --out raw/C-cur4.jsonl > raw/C-cur4.log 2>&1
+node race.mjs --page page-combined.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-comb3.jsonl > raw/C-comb3.log 2>&1
+node race.mjs --page page-combined.html --mode campaign --start 300 --count 100 --steps 1 --plus 1 --out raw/C-comb4.jsonl > raw/C-comb4.log 2>&1
+node race.mjs --page page-current-propcamp.html --mode campaign --start 300 --count 100 --steps 0 --plus 0 --out raw/C-propref.jsonl > raw/C-propref.log 2>&1
+node race.mjs --page page-current-propcamp.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-propcur3.jsonl > raw/C-propcur3.log 2>&1
+node race.mjs --page page-combined-propcamp.html --mode campaign --start 300 --count 100 --steps 1 --plus 0 --out raw/C-propcomb3.jsonl > raw/C-propcomb3.log 2>&1
+node race.mjs --page page-combined-propcamp.html --mode campaign --start 300 --count 100 --steps 1 --plus 1 --out raw/C-propcomb4.jsonl > raw/C-propcomb4.log 2>&1
+node race.mjs --page ../../../prototype.html --mode free --start 5000 --count 1000 --steps 0 --plus 0 --out raw/F-ref.jsonl > raw/F-ref.log 2>&1
+node race.mjs --page ../../../prototype.html --mode free --start 5000 --count 1000 --steps 1 --plus 0 --out raw/F-cur3.jsonl > raw/F-cur3.log 2>&1
+node race.mjs --page ../../../prototype.html --mode free --start 5000 --count 1000 --steps 1 --plus 1 --out raw/F-cur4.jsonl > raw/F-cur4.log 2>&1
+node race.mjs --page page-combined.html --mode free --start 5000 --count 1000 --steps 1 --plus 0 --out raw/F-comb3.jsonl > raw/F-comb3.log 2>&1
+node race.mjs --page page-combined.html --mode free --start 5000 --count 1000 --steps 1 --plus 1 --out raw/F-comb4.jsonl > raw/F-comb4.log 2>&1
+node race.mjs --page ../../../prototype.html --mode free --start 5000 --count 1000 --steps 0 --plus 0 --chill 0 --out raw/F-refc0.jsonl > raw/F-refc0.log 2>&1
+node race.mjs --page ../../../prototype.html --mode free --start 5000 --count 1000 --steps 1 --plus 0 --chill 0 --out raw/F-cur3c0.jsonl > raw/F-cur3c0.log 2>&1
+node race.mjs --page page-combined.html --mode free --start 5000 --count 1000 --steps 1 --plus 0 --chill 0 --out raw/F-comb3c0.jsonl > raw/F-comb3c0.log 2>&1
+node race.mjs --page page-combined.html --mode free --start 5000 --count 1000 --steps 1 --plus 1 --chill 0 --out raw/F-comb4c0.jsonl > raw/F-comb4c0.log 2>&1
+node race.mjs --page ../../../prototype.html --mode daily --start 900 --count 300 --steps 0 --plus 0 --out raw/D-ref.jsonl > raw/D-ref.log 2>&1
+node race.mjs --page ../../../prototype.html --mode daily --start 900 --count 300 --steps 1 --plus 0 --out raw/D-cur3.jsonl > raw/D-cur3.log 2>&1
+node race.mjs --page page-combined.html --steptw '{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' --mode daily --start 900 --count 300 --steps 1 --plus 0 --out raw/D-prop3unf.jsonl > raw/D-prop3unf.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search barrier 900 200 $OLDPWD/raw/lesson-barrier.json '{}' '{}' u25 > $OLDPWD/raw/lesson-barrier.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search strike 900 200 $OLDPWD/raw/lesson-strike.json '{}' '{}' u25 > $OLDPWD/raw/lesson-strike.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search race 900 200 $OLDPWD/raw/lesson-race.json '{}' '{}' u25 > $OLDPWD/raw/lesson-race.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search gap 900 200 $OLDPWD/raw/lesson-gap.json '{}' '{}' u25 > $OLDPWD/raw/lesson-gap.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search shadow 900 200 $OLDPWD/raw/lesson-shadow.json '{}' '{}' u25 > $OLDPWD/raw/lesson-shadow.log 2>&1
+cd ../boxes && STEPTW='{"Wider Gaps":{"gapScale":110},"Wider Singularity":{"singGap":115},"Rivals Copy You More":{"shareRiv":80}}' PF_PAGE=$OLDPWD/page-combined.html node lesson.mjs search singularity 900 200 $OLDPWD/raw/lesson-singularity.json '{}' '{}' u25 > $OLDPWD/raw/lesson-singularity.log 2>&1
+PF_PAGE=$PWD/page-combined.html node feasstats.mjs free 5000 1000 u25,peak,window raw/feas-free-comb.json > raw/feas-free-comb.log 2>&1
+PF_PAGE=$PWD/../../../prototype.html node feasstats.mjs free 5000 1000 peak,u25 raw/feas-free-cur.json > raw/feas-free-cur.log 2>&1
+PF_PAGE=$PWD/page-combined.html node feasstats.mjs campaign 0 0 u25,peak,window raw/feas-camp-combcur.json > raw/feas-camp-combcur.log 2>&1
+PF_PAGE=$PWD/page-combined-propcamp.html node feasstats.mjs campaign 0 0 u25,peak,window raw/feas-camp-combprop.json > raw/feas-camp-combprop.log 2>&1
+PF_PAGE=$PWD/page-current-propcamp.html node feasstats.mjs campaign 0 0 peak,u25 raw/feas-camp-curprop.json > raw/feas-camp-curprop.log 2>&1

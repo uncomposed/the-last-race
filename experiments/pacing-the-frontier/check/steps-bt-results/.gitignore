@@ -1,0 +1,10 @@
+*
+!*/
+!.gitignore
+!*.md
+!*.mjs
+!*.js
+!*.diff
+!*.txt
+!*.sh
+jobs/
