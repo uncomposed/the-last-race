@@ -568,7 +568,7 @@ html.epi-open{overflow:hidden}
         <button class="primary" id="ov-btn" type="button">Start run</button>
         <!-- campaign (begin): result lines and buttons; the script moves #ov-btn into this row -->
         <p class="cmp-res" id="ov-cres" hidden></p>
-        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-replay" type="button" hidden>Replay this seed</button><button id="ov-share" type="button" hidden>Share</button><button id="ov-daily" type="button">Daily</button><button id="ov-list" type="button">Campaign</button></div><p class="note" id="ov-sharemsg" role="status" aria-live="polite" hidden></p></div>
+        <div class="ov-foot" id="ov-foot"><div class="btns"><button id="ov-retry" type="button" class="primary" hidden>Retry</button><button id="ov-next" type="button" hidden>Next map</button><button id="ov-up" type="button" hidden>Try 2 stars</button><button id="ov-replay" type="button" hidden>Replay this map</button><button id="ov-share" type="button" hidden>Share</button><button id="ov-daily" type="button">Daily</button><button id="ov-list" type="button">Campaign</button></div><p class="note" id="ov-sharemsg" role="status" aria-live="polite" hidden></p></div>
         <!-- campaign (end) -->
       </div>
     </div>
@@ -3468,7 +3468,7 @@ function endScreen(){
   achEnd();  /* achievements: what this run earned, saved before the recap opens with it */
   tellStory();
   campEnd();  /* campaign: stars, best time and the Retry / Next map / Map list buttons (free play: a Campaign button) */
-  dailyEnd();  /* every run: Replay this seed and the input log; daily: the tier result, Next tier and Share */
+  dailyEnd();  /* every run: Replay this map and the input log; daily: the tier result, Next tier and Share */
   ghEnd();  /* every run: the ghost result line and Challenge a friend */
 }
 var fresh=true;
@@ -4169,7 +4169,7 @@ function campShowEnd(i,t,res,o){
   cres.innerHTML=parts.join(' '); cres.hidden=false;
   /* loss: Retry, Map list. Win: Next map (if open), Retry, Try n+1 stars (if there is a next tier), Map list */
   var nx=res.won&&i+1<CAMPAIGN.length&&campOpen(i+1),up=res.won&&t<2&&campTierOpen(i,t+1);
-  $('ov-btn').hidden=true; $('ov-retry').hidden=false; $('ov-retry').textContent='Replay this seed'; $('ov-next').hidden=!nx; $('ov-up').hidden=!up;
+  $('ov-btn').hidden=true; $('ov-retry').hidden=false; $('ov-retry').textContent='Replay this map'; $('ov-next').hidden=!nx; $('ov-up').hidden=!up;
   $('ov-up').textContent='Try '+(t+2)+' stars';
   var pri=nx?'ov-next':(up?'ov-up':'ov-retry'),foot=$('ov-foot').querySelector('.btns');
   ['ov-next','ov-retry','ov-up','ov-list'].forEach(function(id){ $(id).classList.toggle('primary',id===pri); foot.appendChild($(id)); });
@@ -4396,11 +4396,13 @@ function dailyGo(){
   var x=dailyDay(DLY.date).t[DLY.tier]; x.att++; DLY.att=x.att; dailySave();
   DLY.chillUsed=!!K.chill;
 }
+var RANDOM_NEXT=false;  /* the daily's replay button is currently "Play another": a new random map instead of the same tier */
 function dailyEnd(){
   var rec=recEnd(),h=G.labs[0],r=G.result,won=r.type==='win'&&r.winner===h;
   $('ov-sharemsg').hidden=true; $('ov-share').hidden=true;
   $('ov-replay').hidden=!!CAMP; $('ov-daily').hidden=!!CAMP; $('ov-list').hidden=!!DLY;
   $('ov-replay').classList.remove('primary'); $('ov-daily').classList.remove('primary');
+  $('ov-replay').textContent='Replay this map'; RANDOM_NEXT=false;
   if(!DLY){ if(!CAMP){ var ff=$('ov-foot').querySelector('.btns'); ['ov-replay','ov-daily','ov-list'].forEach(function(id){ ff.appendChild($(id)); }); } return; }
   var ds=DLY.date,t=DLY.tier,d=dailyDay(ds),x=d.t[t],chill=!!(DLY.chillUsed||K.chill),had=dailyRes(x),bk=chill?'bc':'bs',prev=x[bk],parts=[],tm=Math.round(G.t*10)/10;
   if(won){ if(chill){ x.chair=true; } else { x.star=true; } if(x[bk]===null||tm<x[bk]){ x[bk]=tm; } if(x.best===null||tm<x.best){ x.best=tm; } }
@@ -4422,6 +4424,9 @@ function dailyEnd(){
   var up=won&&t<2,on=won&&t===2?dailyOnward():null;  /* top tier won: point onward to the campaign, or a random map once every campaign star is in */
   $('ov-btn').hidden=true; $('ov-retry').hidden=true; $('ov-next').hidden=true; $('ov-up').hidden=!(up||on); $('ov-up').textContent=on?on.label:'Try tier '+(t+2);
   if(on){ up=true; }
+  /* the top tier won for a star: nothing is left to replay for, so that button deals a new random map (and "Play a random map" above would only repeat it) */
+  var done=won&&!chill&&t===2;
+  if(done){ RANDOM_NEXT=true; $('ov-replay').textContent='Play another'; if(on&&on.i<0){ $('ov-up').hidden=true; up=false; } }
   $('ov-share').hidden=false;
   $('ov-up').classList.toggle('primary',up); $('ov-replay').classList.toggle('primary',!up);
   var foot=$('ov-foot').querySelector('.btns');
@@ -4664,7 +4669,7 @@ function dailyShare(ds,fromList){
   dailyPoster(ds,function(c){ if(!c||!c.toBlob){ ready(null); return; } try{ c.toBlob(function(bl){ if(DSHARE&&DSHARE.ds===ds&&DSHARE.key===txt){ DSHARE.blob=bl; } ready(bl); },'image/png'); }catch(e){ ready(null); } });
 }
 (function(){
-  $('ov-replay').addEventListener('click',function(){ if(DLY){ dailyStart(DLY.date,DLY.tier); } else if(CAMP){ campStart(CAMP.i,CAMP.tier); } else { start(G.seed); } });
+  $('ov-replay').addEventListener('click',function(){ if(DLY&&RANDOM_NEXT){ start(); } else if(DLY){ dailyStart(DLY.date,DLY.tier); } else if(CAMP){ campStart(CAMP.i,CAMP.tier); } else { start(G.seed); } });
   $('ov-daily').addEventListener('click',function(){ dailyOpen(DLY?DLY.date:dailyToday()); });
   $('ov-share').addEventListener('click',function(){ if(DLY){ dailyShare(DLY.date,false); } });
   $('ov-up').addEventListener('click',function(){ if(!DLY||CAMP){ return; } if(DLY.tier<2){ dailyStart(DLY.date,DLY.tier+1); return; }
