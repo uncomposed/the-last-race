@@ -1896,7 +1896,7 @@ var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220
   RISEMIN:0.3,RISEMAX:0.975,WIDMIN:0.62,WIDMAX:2.15,TWMAX:1.15,TWKEEP:0.28,LEAN:2,GUARDD:6,RISEPOW:1.57,RISEFLOOR:0.9,NOWARN:0.12,WIDLO:0.6,WIDHI:1.0,BOXU:0.25,BOXFIT:0,SEEANG:0.15};
 /* step gaps: a box's rise is RISEMIN..RISEMAX of the level's ceiling and its width WIDMIN..WIDMAX of the clean width at that level; tallness t and wideness w are drawn per gap
    (tall and wide together, t+w past TWMAX, is squashed unless a TWKEEP roll keeps it); LEAN is how hard a map tilts to tall-narrow or wide-low; GUARDD: gap between the guard and the wall */  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,capSecs:5,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:33,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,capSecs:5,peek:1,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
 /* RISEPOW (>1) pulls rises toward the low end. A box has no wall: a lab that reaches its face below the rise enters through the side and sinks across it at the arc's fall rate (a scrape at the far edge, a fall at the ground). A tower (barrier) stands before a box only if a lab stopped in front of it and built: see installBarrier.
    stepGaps: 1 moves every gap above the ground, a box g.rise tall that a lab can enter through the side (it sinks across, scraping or falling); riseScale scales the rises (%). 0 is the old behaviour exactly */
 /* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
@@ -2186,8 +2186,10 @@ function log(msg){ G.log.unshift({t:G.t,msg:msg}); if(G.log.length>40){G.log.pop
    A lab ahead casts a sight shadow. Eye level is height plus body. A lab no taller than the one ahead sees
    nothing past it. A taller lab sees over it, but only from where its line of sight over the other
    lab's head meets the ground. */
-function shadows(l){
-  var out=[],sr=sightRange(l),eye=heightOf(l)+C.RW;
+/* JUMP PEEK: in the air the eye is at the jump height, so a lab can look over a rival ahead. stand=1 is the eye on the ground (the width check) */
+function eyeOf(l,stand){ return heightOf(l)+C.RW+(!stand&&K.peek&&l.jt>=0?l.jy:0); }
+function shadows(l,stand){
+  var out=[],sr=sightRange(l),eye=eyeOf(l,stand);
   if(!K.occlude){return out;}
   for(var i=0;i<G.labs.length;i++){
     var m=G.labs[i],db=m.x-l.x;
@@ -2211,15 +2213,26 @@ function seenW(l,g,sh){
   return clamp(Math.min((eye-g.rise)/C.SEEANG-d,sr-d),0,g.W);
 }
 function farEdgeInView(l,g,sh){ if(seenW(l,g,sh)<g.W-1e-9){ return false; } return g.x-l.x<=0||inView(l,g.x+g.W,sh); }
-function knowsWidth(l,i){ var g=G.gaps[i]; return !!g&&(g.wpub||l.gi>i||!!l.wseen[i]||farEdgeInView(l,g,shadows(l))); }
+function knowsWidth(l,i){ var g=G.gaps[i]; return !!g&&(g.wpub||l.gi>i||!!l.wseen[i]||farEdgeInView(l,g,shadows(l,1))); }
 /* a box face is seen through a rival's shadow when its top stands above the sight line over that rival's head */
 function inViewTop(l,x,top,sh){
   var d=x-l.x; if(d>sightRange(l)){return false;}
-  var eye=heightOf(l)+C.RW,i,rt,line;
+  var eye=eyeOf(l),i,rt,line;
   for(i=0;i<sh.length;i++){ if(d>sh[i].a&&d<sh[i].b){ rt=heightOf(sh[i].by)+C.RW; line=eye+(rt-eye)*d/sh[i].a; if(top<line){return false;} } }
   return true;
 }
 function gapInView(l,g,sh){ return stepOn(g)?inViewTop(l,g.x,g.rise,sh):inView(l,g.x,sh); }
+/* JUMP PEEK for bots: shadowed by a rival and the next box not yet seen, hop to look; at the top of the hop remember how far it saw (l.peekTo),
+   and hop again only when that frontier comes within braking distance. Never next to a known barrier, whose own jump comes first */
+function botPeek(l,inp){
+  if(!K.peek){ return inp; }
+  if(l.jt>=0){ if(l.jy>=0.9*C.JUMP){ l.peekTo=Math.max(l.peekTo===undefined?-1e9:l.peekTo,l.x+sightRange(l)); } return inp; }
+  if(inp.jump||inp.rev||l.gx||l.bounce||l.out||l.done||l.v<0){ return inp; }
+  if(!G.gaps[l.gi]||knowsGap(l,l.gi)||!shadows(l,1).length){ return inp; }
+  if(G.barriers[l.bi]&&knowsBar(l,l.bi)&&G.barriers[l.bi].x-l.x<Math.max(l.v,0)*jumpDur(l.v)+30){ return inp; }
+  if(l.peekTo!==undefined&&l.x+l.v*l.v/(2*C.DEC)+40<l.peekTo){ return inp; }
+  return Object.assign({},inp,{jump:true});
+}
 function knowsGap(l,i){var g=G.gaps[i];return !!g&&(g.pub||l.gi>i||!!l.seenG[i]||gapInView(l,g,shadows(l)));}
 /* each step: a lab remembers everything it has had in view. A feature is public once two labs
    have it in view at the same time while within sight of each other. */
@@ -2230,7 +2243,8 @@ function updatePublic(){
     l=G.labs[i]; if(l.out||l.done){continue;}
     s=shadows(l);
     for(j=l.bi;j<nb&&G.barriers[j].x-l.x<=sightRange(l);j++){ if(inView(l,G.barriers[j].x,s)){l.seenB[j]=true;sb[j].push(l);} }
-    for(j=l.gi;j<ng&&G.gaps[j].x-l.x<=sightRange(l);j++){ if(gapInView(l,G.gaps[j],s)){l.seenG[j]=true;sg[j].push(l);} if(!l.wseen[j]&&farEdgeInView(l,G.gaps[j],s)){l.wseen[j]=true;} }
+    var s0=shadows(l,1);  /* width: standing eye (no peeking at it) */
+    for(j=l.gi;j<ng&&G.gaps[j].x-l.x<=sightRange(l);j++){ if(gapInView(l,G.gaps[j],s)){l.seenG[j]=true;sg[j].push(l);} if(!l.wseen[j]&&farEdgeInView(l,G.gaps[j],s0)){l.wseen[j]=true;} }
   }
   for(j=0;j<nb;j++){ if(!G.barriers[j].pub&&mutual(sb[j])){G.barriers[j].pub=true;} }
   for(j=0;j<ng;j++){ if(!G.gaps[j].pub&&mutual(sg[j])){ G.gaps[j].pub=true; log('Gap '+(j+1)+' is now public: two labs in sight of each other saw it at once.'); } }
@@ -2702,7 +2716,7 @@ function stepGame(dt){
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i];
     if(l.out||l.done){continue;}
-    var inp=l.human?humanInput(l):((globalThis.CTRL&&globalThis.CTRL(l,G))||botInput(l));
+    var inp=l.human?humanInput(l):botPeek(l,(globalThis.CTRL&&globalThis.CTRL(l,G))||botInput(l));
     stepLab(l,dt,inp);
     if(l.human){G.input.jump=false;G.eff.jump=false;}
     if(G.over){break;}
@@ -2726,7 +2740,7 @@ function run(seed,kind,roster){
     world:{shape:G.world.shape,sig:G.world.sig,A:G.world.A,n:G.world.n,finish:G.finish},
     pub:{b:nb,nb:G.barriers.length,g:ng,ng:G.gaps.length}};
 }
-window.PF={setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap,knowsWidth:knowsWidth,farEdgeInView:farEdgeInView,seenW:seenW,shadows:shadows,setBoxes:function(b){BOXOV=b||null;}};
+window.PF={setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap,knowsWidth:knowsWidth,farEdgeInView:farEdgeInView,seenW:seenW,shadows:shadows,eyeOf:eyeOf,setBoxes:function(b){BOXOV=b||null;}};
 
 /* ---------- UI ---------- */
 /* the canvas buffer follows its CSS box; the ground sits a fixed band above the bottom edge.

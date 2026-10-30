@@ -1,5 +1,5 @@
 // One hand-written segment with one box of hidden width, three labs, three postures. Bot play only.
-//   node hidden.mjs [--n 20] [--rise 0.7] [--wlo 0.6] [--whi 1.6] [--bars 0.4,0.5] [--L 300] [--fin 150] [--occlude 0] [--out results.md]
+//   node hidden.mjs [--n 20] [--rise 0.7] [--wlo 0.6] [--whi 1.6] [--bars 0.4,0.5] [--L 300] [--fin 150] [--occlude 0] [--peek 1] [--out results.md]
 //   [--trace z [--tracep build]]: print lab 0's state twice a second (to stderr) for width index z when slot 0 plays that posture
 // Track: gate, two barriers, one box (rise = --rise of the level ceiling, width = wf x the stop-and-build fit, wf evenly spaced over
 // --wlo..--whi across the n draws), then --fin of flat ground to the finish. No singularity. Every lab has the same cruise policy
@@ -23,6 +23,7 @@ for (let i = 0; i < argv.length; i++) if (argv[i].startsWith('--')) A[argv[i].sl
 const N = +(A.n ?? 20), RISE = +(A.rise ?? 0.7), WLO = +(A.wlo ?? 0.6), WHI = +(A.whi ?? 1.6), OUT = A.out ?? join(HERE, 'results.md');
 const BARS = (A.bars ?? '0.4,0.5').split(',').map(Number);
 const SEGL = +(A.L ?? 300), FIN = +(A.fin ?? 150);
+const PEEK = +(A.peek ?? 1);  // 1: a lab in the air sees box faces over a rival's head, and bots hop to peek (patch.mjs 8); 0: off
 const OCC = +(A.occlude ?? 0);  // 1: labs ahead cast the sight shadow (the game's rule); 0: off, so every posture gets its own look at the box
 const STANDOFF = () => C.STEPD + 120;  // where build and wait stop: just outside the zone where a standing lab leaves a barrier at the face  // flat ground from the box to the finish  // flat ground between the gate and the run-up to the box  // barrier heights before the box, as fractions of the generator's reference barrier
 const POSTURES = ['rush', 'build', 'wait'];
@@ -117,12 +118,12 @@ const POST = {
 // ---- one race ----
 function race(z, wf, assign) {  // assign: posture per lab slot [lab0, lab1, lab2]
   const seed = 7000 + z;
-  configure({seed, steps: 1, roster: ['steward', 'gambler'], chill: 0, player: 'balanced', strikesYou: null, knobs: {occlude: OCC}});
+  configure({seed, steps: 1, roster: ['steward', 'gambler'], chill: 0, player: 'balanced', strikesYou: null, knobs: {occlude: OCC, peek: PEEK}});
   for (const k of ['probe', 'steward', 'gambler']) { PF.POL[k] = Object.assign({}, CRUISE, {w: CRUISE.w.slice()}); PF.SKILL[k] = 100; }
   PF.KINDS.probe = {name: 'Probe', col: 'a', w: CRUISE.w.map(x => x / 100)};
   globalThis.SCEN = (T, X) => buildTrack(T, X, wf);
   PF.newGame(seed, 'probe', ['steward', 'gambler']);
-  const G = PF.G(), st = G.labs.map(() => ({})), face = G.labs.map(() => null), commit = G.labs.map(() => null), g = G.gaps[0];
+  const G = PF.G(), st = G.labs.map(() => ({})), face = G.labs.map(() => null), saw = G.labs.map(() => null), hops = G.labs.map(() => 0), commit = G.labs.map(() => null), g = G.gaps[0];
   const slotOf = l => G.labs.indexOf(l);
   globalThis.CTRL = (l, GG) => { const gg = boxIsNext(GG, l); if (!gg) return null; const s = slotOf(l); return POST[assign[s]](GG, l, gg, st[s][l.gi] || (st[s][l.gi] = {})); };
   let guard = 0; const TR = A.trace !== undefined && +A.trace === z && assign[0] === (A.tracep || 'build');
@@ -130,6 +131,7 @@ function race(z, wf, assign) {  // assign: posture per lab slot [lab0, lab1, lab
     PF.step(1 / 30);
     if (TR && guard % 15 === 0) { const l0 = G.labs[0], s0 = st[0][0] || {}; console.error('t', (G.t).toFixed(1), 'x', Math.round(l0.x), 'd', Math.round(g.x - l0.x), 'v', Math.round(l0.v), 'h', Math.round(l0.pts[1]), 'sp', Math.round(l0.pts[2]), 'knowsW', PF.knowsWidth(l0, 0), 'go', !!s0.go, 'ref', !!s0.refused, 'cap', capOn(l0), 'bl', Math.round(PFX.backLimit(l0)), 'gx', !!l0.gx, 'out', l0.out, 'bi', l0.bi, 'tower', PFX.towerOf(l0, g)); }
     for (const l of G.labs) { const s = slotOf(l); if (!commit[s] && !l.gx && !l.out && l.gi === 0 && l.v > 1 && g.x - l.x > 0 && l.v * l.v / (2 * C.DEC) >= g.x - l.x - 6) commit[s] = {knew: !!(l.wseen[0] || g.wpub), h: Math.round(l.pts[1]), v: Math.round(l.v), d: Math.round(g.x - l.x), t: Math.round(G.t * 10) / 10}; }
+    for (const l of G.labs) { const s = slotOf(l); if (saw[s] === null && l.gi === 0 && l.seenG[0]) saw[s] = Math.round(g.x - l.x); if (l.jt >= 0 && l.jt < 1 / 30 + 1e-9 && l.gi === 0 && g.x - l.x > 120) hops[s]++; }
     for (const l of G.labs) if (l.gx && !face[slotOf(l)]) face[slotOf(l)] = {h: Math.round(l.pts[1]), v: Math.round(l.gx.vf), knew: !!(l.wseen[0] || g.wpub), t: Math.round(G.t * 10) / 10, side: !!l.gx.side};
   }
   globalThis.CTRL = null; globalThis.SCEN = null;
@@ -138,7 +140,7 @@ function race(z, wf, assign) {  // assign: posture per lab slot [lab0, lab1, lab
     const ev = G.ev.filter(e => e.id === l.id && e.gap === 1);
     const out = ev.some(e => e.type === 'fall') ? 'F' : ev.some(e => e.type === 'scrape' || e.type === 'drop') ? 'S' : ev.some(e => e.type === 'first' || e.type === 'cross') ? 'C' : '-';
     return {z, wf: Math.round(wf * 100) / 100, W: g.W, fit: g.fit, rise: g.rise, slot: s, post: assign[s], out, win: res.type === 'win' && res.winner === l ? 1 : 0,
-      first: g.crossedBy === l.id ? 1 : 0, refused: st[s][0] && st[s][0].refused ? 1 : 0, face: face[s], commit: commit[s], barrier: G.ev.some(e => e.id === l.id && e.type === 'barrier') ? 1 : 0, dis: l.dissolved ? 1 : 0, ext: ext ? 1 : 0, t: Math.round(G.t * 10) / 10, result: res.type};
+      first: g.crossedBy === l.id ? 1 : 0, refused: st[s][0] && st[s][0].refused ? 1 : 0, face: face[s], saw: saw[s], hops: hops[s], commit: commit[s], barrier: G.ev.some(e => e.id === l.id && e.type === 'barrier') ? 1 : 0, dis: l.dissolved ? 1 : 0, ext: ext ? 1 : 0, t: Math.round(G.t * 10) / 10, result: res.type};
   });
   resetAll(); delete PF.POL.probe; delete PF.KINDS.probe;
   return rows;
@@ -157,13 +159,13 @@ const byPost = p => all.filter(r => r.post === p);
 const L = [];
 L.push(`# Hidden width: one box, three postures`);
 L.push(``);
-L.push(`[[ai gen]] ${new Date().toISOString().slice(0, 10)}. Bot play only, perfect hands, BOXU ${C.BOXU}. ${N} widths x 3 posture rotations = ${N * 3} races, ${ms} ms a race. Sight shadow ${OCC ? 'on' : 'off'}. Segment length ${SEGL}, barriers before the box at ${BARS.join(' and ')} of the reference barrier. Box rise ${all[0].rise} (${RISE} of ceiling ${C.CAPS[0]}), stop-and-build fit ${all[0].fit}, widths ${all[0].W} to ${all[all.length - 1].W} (${WLO} to ${WHI} x fit). Page: page-hidden.html (see patch.mjs). Runner: hidden.mjs.`);
+L.push(`[[ai gen]] ${new Date().toISOString().slice(0, 10)}. Bot play only, perfect hands, BOXU ${C.BOXU}. ${N} widths x 3 posture rotations = ${N * 3} races, ${ms} ms a race. Sight shadow ${OCC ? 'on' : 'off'}, jump peek ${PEEK ? 'on' : 'off'}. Segment length ${SEGL}, barriers before the box at ${BARS.join(' and ')} of the reference barrier. Box rise ${all[0].rise} (${RISE} of ceiling ${C.CAPS[0]}), stop-and-build fit ${all[0].fit}, widths ${all[0].W} to ${all[all.length - 1].W} (${WLO} to ${WHI} x fit). Page: page-hidden.html (see patch.mjs). Runner: hidden.mjs.`);
 L.push(``);
-L.push(`| Posture | Races | Clean | Scrape | Fall | Refused | Went blind | Height at face | Speed at face | Left a barrier | First across | Won | Extinction (races) |`);
-L.push(`|---|---|---|---|---|---|---|---|---|---|---|---|---|`);
+L.push(`| Posture | Races | Clean | Scrape | Fall | Refused | Went blind | Height at face | Speed at face | Saw the box at | Hops | Left a barrier | First across | Won | Extinction (races) |`);
+L.push(`|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|`);
 for (const p of POSTURES) {
   const rs = byPost(p), n = rs.length, f = rs.filter(r => r.face);
-  L.push(`| ${p} | ${n} | ${pct(sum(rs, r => r.out === 'C'), n)}% | ${pct(sum(rs, r => r.out === 'S'), n)}% | ${pct(sum(rs, r => r.out === 'F'), n)}% | ${pct(sum(rs, r => r.refused), n)}% | ${pct(sum(f, r => (r.commit ? r.commit.knew : r.face.knew) ? 0 : 1), f.length)}% | ${f.length ? Math.round(sum(f, r => r.face.h) / f.length) : '-'} | ${f.length ? Math.round(sum(f, r => r.face.v) / f.length) : '-'} | ${pct(sum(rs, r => r.barrier), n)}% | ${pct(sum(rs, r => r.first), n)}% | ${pct(sum(rs, r => r.win), n)}% | ${pct(sum(rs, r => r.ext), n)}% |`);
+  L.push(`| ${p} | ${n} | ${pct(sum(rs, r => r.out === 'C'), n)}% | ${pct(sum(rs, r => r.out === 'S'), n)}% | ${pct(sum(rs, r => r.out === 'F'), n)}% | ${pct(sum(rs, r => r.refused), n)}% | ${pct(sum(f, r => (r.commit ? r.commit.knew : r.face.knew) ? 0 : 1), f.length)}% | ${f.length ? Math.round(sum(f, r => r.face.h) / f.length) : '-'} | ${f.length ? Math.round(sum(f, r => r.face.v) / f.length) : '-'} | ${(() => { const q = rs.filter(r => r.saw !== null); return q.length ? Math.round(sum(q, r => r.saw) / q.length) : '-'; })()} | ${(sum(rs, r => r.hops) / n).toFixed(1)} | ${pct(sum(rs, r => r.barrier), n)}% | ${pct(sum(rs, r => r.first), n)}% | ${pct(sum(rs, r => r.win), n)}% | ${pct(sum(rs, r => r.ext), n)}% |`);
 }
 L.push(``);
 L.push(`"Refused": knew the width and stood to the time limit because a fall was certain even at the ceiling and top speed. "Went blind": passed the point where it could still stop short of the face (or reached the face from a standstill) without knowing the width. "Extinction" is the share of that posture's races in which anyone's fall ended the run.`);
