@@ -61,6 +61,73 @@ canvas{display:block;width:100%;aspect-ratio:2/1;border:1px solid var(--line);bo
 .hint-x{margin-left:10px;color:var(--muted);font-weight:600}
 .hint-how{align-self:flex-start;min-height:32px;padding:4px 0;background:none;border:0;color:var(--a);text-decoration:underline;font-size:13px}
 .hint-note{font-size:12.5px;color:var(--muted)}
+/* ---- tutorial (begin): the start-card pill, the coach over the track, the run cue, the finish card ---- */
+.tut-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:5px 14px 5px 11px;font:600 13.5px var(--mono);color:var(--ink);
+  background:color-mix(in srgb,var(--a) 14%,var(--surface));border:1.5px solid var(--a);border-radius:999px;position:relative}
+.tut-btn:hover{border-color:var(--a);background:color-mix(in srgb,var(--a) 24%,var(--surface))}
+.tut-btn[hidden]{display:none}
+.tut-play{width:0;height:0;border-left:8px solid var(--a);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.tut-min{font-weight:400;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){ .tut-btn.new{animation:tut-glow 1.8s ease-in-out infinite} }
+@keyframes tut-glow{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--a) 45%,transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--a) 0%,transparent)}}
+.ready-tut{align-self:flex-start;min-height:32px;padding:4px 0;background:none;border:0;color:var(--a);text-decoration:underline;font:600 13px var(--mono)}
+.ready-tut[hidden]{display:none}
+.tut{--tc:var(--a);position:absolute;right:12px;top:72px;z-index:2;width:min(390px,calc(100% - 24px));padding:9px 12px 10px;display:flex;flex-direction:column;gap:3px;
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tc);border-radius:6px;box-shadow:0 2px 12px color-mix(in srgb,var(--ink) 20%,transparent)}
+.tut[hidden]{display:none}
+.tut-top{display:flex;align-items:center;gap:8px;font:500 11.5px var(--mono);color:var(--muted)}
+.tut-dots{display:flex;gap:3px}
+.tut-dots i{display:block;width:14px;height:5px;border-radius:2px;background:var(--line)}
+.tut-dots i.ok{background:var(--muted)} .tut-dots i.cur{background:var(--tc)}
+.tut-n,.tut-wait{white-space:nowrap}
+.tut-wait{padding:1px 6px;border-radius:3px;font-weight:600;color:var(--bg);background:var(--ink)}
+.tut-wait[hidden]{display:none}
+@media (prefers-reduced-motion:no-preference){ .tut-wait{animation:tut-blink 1.2s ease-in-out infinite} }
+@keyframes tut-blink{50%{opacity:.55}}
+.tut-skip{margin-left:auto;min-height:28px;padding:2px 0;background:none;border:0;color:var(--muted);text-decoration:underline;font:500 12px var(--mono)}
+.tut-skip:hover{color:var(--ink)}
+.tut-h{font:700 17px/1.25 var(--display);margin-top:2px}
+.tut-p{font:400 14px/1.4 var(--body)}
+.tut-p b,.tut-do b{font-weight:600}
+.tut-do{list-style:none;margin:3px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;font:500 13px/1.35 var(--mono)}
+.tut-do:empty{display:none}
+.tut-do li{display:flex;align-items:center;gap:8px}
+.tut-do li::before{content:'';flex:none;width:13px;height:13px;border:1.5px solid var(--ink);border-radius:3px;font:700 11px/13px var(--mono);text-align:center}
+.tut-do li.ok{color:var(--muted)}
+.tut-do li.ok::before{content:'\2713';color:var(--bg);background:var(--muted);border-color:var(--muted)}
+.tut-bar{position:relative;height:18px;margin-top:4px;background:var(--bg);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.tut-bar[hidden]{display:none}
+.tut-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--tc);opacity:.85}
+.tut-bar b{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--ink)}
+.tut-bar span{position:absolute;left:3px;top:50%;transform:translateY(-50%);padding:0 5px;border-radius:2px;font:600 11.5px/15px var(--mono);color:var(--ink);background:var(--surface)}
+.tut-k{font:400 11.5px var(--mono);color:var(--muted)}
+.tut-k:empty{display:none}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){
+  .tut{left:6px;right:auto;top:50px;width:calc(100% - 62px);padding:6px 9px 7px;gap:2px}
+  .tut-h{font-size:15px} .tut-p{font-size:12.5px;line-height:1.35} .tut-do{font-size:12px} .tut-k{display:none}
+  .tut-dots{display:none}  /* "2 of 5" says it; the room goes to the header on one line */
+}
+@media (orientation:portrait) and (max-width:600px){ .tut{position:relative;left:auto;top:auto;width:auto;margin:6px 0 0;min-height:150px} .tut-dots{display:flex} }  /* tall phones: under the track, so it never covers your lab; a steady height keeps the bar from moving under your thumb */
+/* the cue toward Run: the arrow sits on the Build side of the handle and points to Run (right on the bar, up on the landscape throttle) */
+body.cue-run .rb-cue,body.cue-run .th-cue{display:block}
+body.cue-run .rb,body.cue-run .th-track{box-shadow:0 0 0 2px var(--ink)}
+body.cue-run .rb-cue{margin:-7px 0 0 16px;border-right:0;border-left:10px solid var(--ink)}
+body.cue-run .th-cue{margin:0 0 16px -7px;border-top:0;border-bottom:10px solid var(--ink)}
+@media (prefers-reduced-motion:no-preference){
+  body.cue-run .rb-cue{animation:cue-xr .9s ease-in-out infinite}
+  body.cue-run .th-cue{animation:cue-y .9s ease-in-out infinite}
+  body.cue-run .rb,body.cue-run .th-track{animation:cue-ring 1.2s ease-in-out infinite}
+}
+@keyframes cue-xr{0%,100%{transform:translateX(-2px)}50%{transform:translateX(5px)}}
+.tut-sum{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font:400 14.5px/1.35 var(--body)}
+.tut-sum li{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:center}
+.tut-sum b{font-weight:600}
+.tut-sum i{display:block;width:18px;height:18px;border-radius:4px}
+.ts-run{background:linear-gradient(90deg,var(--run) 0 55%,var(--bg) 55%);border:1px solid var(--line)}
+.ts-s{background:var(--a)}.ts-h{background:var(--c)}.ts-m{background:var(--b)}
+#tut-end .btns{margin-top:4px}
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){ .tut-sum{font-size:12.5px;gap:4px} }
+/* ---- tutorial (end) ---- */
 @media (max-width:600px),(orientation:landscape) and (max-height:540px){.hint{top:52px;left:calc(50% - 26px);padding:6px 10px;font-size:12.5px;max-width:calc(100% - 68px)}}  /* phones: clear of the sound button on the right */
 @media (prefers-reduced-motion:reduce){.hint,.hint[hidden]{transition:none;transform:translate(-50%,0)}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;max-width:460px;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px}
@@ -574,6 +641,14 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
     <button id="snd-mini" class="snd-mini" type="button" aria-pressed="true" aria-label="Sound on"><svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M3 7h3l4-3v12l-4-3H3z" fill="currentColor"/><path class="w" d="M13 7c1.3 1.6 1.3 4.4 0 6M15.5 5c2.6 2.8 2.6 7.2 0 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="x" d="M13 7l5 6M18 7l-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <canvas id="cv" width="720" height="360" role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."></canvas>
     <p class="hint" id="hint" role="status" aria-live="polite" hidden></p>
+    <!-- tutorial coach: one step at a time over the track; the script fills it -->
+    <div class="tut" id="tut" hidden>
+      <div class="tut-top"><span class="tut-dots" id="tut-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="tut-n" id="tut-n"></span><span class="tut-wait" id="tut-wait" hidden>Your move</span><button type="button" class="tut-skip" id="tut-skip">Skip</button></div>
+      <div role="status" aria-live="polite"><p class="tut-h" id="tut-h"></p><p class="tut-p" id="tut-p"></p></div>
+      <ul class="tut-do" id="tut-do"></ul>
+      <div class="tut-bar" id="tut-bar" hidden><i id="tut-fill"></i><b id="tut-mark"></b><span id="tut-lbl"></span></div>
+      <p class="tut-k" id="tut-k"></p>
+    </div>
     <div class="ov" id="ov">
       <div class="card">
         <h2 id="ov-title">Pacing the Frontier</h2>
@@ -582,7 +657,7 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
           <li><i aria-hidden="true"></i>Slow down to build sight, height and speed.</li>
           <li><i aria-hidden="true"></i>Jump the gaps. Don't fall in.</li>
         </ul>
-        <div class="ov-links"><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button><button type="button" id="ov-mp" hidden>Multiplayer</button></div>
+        <div class="ov-links"><button type="button" id="ov-tut" class="tut-btn"><span class="tut-play" aria-hidden="true"></span>Tutorial<span class="tut-min">2 min</span></button><button type="button" id="ov-how" aria-expanded="false" aria-controls="ov-msg">How to play</button><button type="button" id="ov-ach" aria-haspopup="dialog">Achievements</button><button type="button" id="ov-mp" hidden>Multiplayer</button></div>
         <p id="ov-msg" hidden></p>
         <p class="rl-line" id="ov-like" hidden></p>
         <div class="story" id="ov-story" hidden>
@@ -631,6 +706,19 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
         <p id="sing-w"></p>
         <p id="sing-msg"></p>
         <button class="primary" id="sing-btn" type="button">Resume</button>
+      </div>
+    </div>
+    <div class="ov" id="tut-end" hidden>
+      <div class="card" role="dialog" aria-labelledby="tut-end-h">
+        <h2 id="tut-end-h">You're ready</h2>
+        <ul class="tut-sum">
+          <li><i class="ts-run" aria-hidden="true"></i><span><b>Run</b> moves you. <b>Build</b> grows your meters.</span></li>
+          <li><i class="ts-s" aria-hidden="true"></i><span><b>Sight</b> shows danger while you can still stop.</span></li>
+          <li><i class="ts-h" aria-hidden="true"></i><span><b>Height</b> gets you over walls.</span></li>
+          <li><i class="ts-m" aria-hidden="true"></i><span><b>Max speed</b> carries you across wide gaps.</span></li>
+        </ul>
+        <p>A real race has three rival labs. While you Build, they pull ahead. Rush a gap you can't see and you may fall, and a fall can end it for everyone.</p>
+        <div class="btns"><button class="primary" id="tut-go" type="button">Start your first race</button><button id="tut-again" type="button">Replay tutorial</button></div>
       </div>
     </div>
   </div>
@@ -2612,6 +2700,7 @@ function readColors(){
 }
 
 var running=false,paused=false,acc=0,last=performance.now(),lastHud=0,MP=null;  /* MP: multiplayer state, set by mpBoot */
+var TUT={on:false,hold:false};  /* the tutorial: on while it runs; hold freezes the race until the player moves the control a step asks for */
 var ui={pace:70,w:[25,50,25],auto:true,rev:false,fwd:false},singShown=false;
 var flowHi=[0,0,0];  /* reduced motion: until when each meter is highlighted as receiving Build (set by the flow layer) */
 function leaderLab(){
@@ -2754,10 +2843,15 @@ function draw(){
   ctx.strokeStyle=COL.line; ctx.setLineDash([12,12]); ctx.lineDashOffset=cam%24;
   ctx.beginPath(); ctx.moveTo(0,GY+(CM?4*U:10)); ctx.lineTo(VW,GY+(CM?4*U:10)); ctx.stroke();
   ctx.setLineDash([]); ctx.lineDashOffset=0;
-  if(CM&&tgt===human){  /* phones: fog the track past your sight; what you know of it is drawn on top */
-    var fx0=tgt.x-cam+sightRange(tgt),fg=ctx.createLinearGradient(fx0,0,fx0+48*U,0),fc=parseInt(COL.surface.slice(1),16),frgb=(fc>>16)+','+(fc>>8&255)+','+(fc&255);
-    fg.addColorStop(0,'rgba('+frgb+',0)'); fg.addColorStop(1,'rgba('+frgb+',0.7)');
-    ctx.fillStyle=fg; ctx.fillRect(fx0,GY-GY/Z,48*U,H/Z); ctx.fillStyle='rgba('+frgb+',0.7)'; ctx.fillRect(fx0+48*U,GY-GY/Z,VW,H/Z);
+  if((CM||TUT.on)&&tgt===human){  /* phones (and the tutorial everywhere): fog the track past your sight; what you know of it is drawn on top */
+    var fx0=tgt.x-cam+sightRange(tgt),fg=ctx.createLinearGradient(fx0,0,fx0+48*U,0),fc=parseInt(COL.surface.slice(1),16),frgb=(fc>>16)+','+(fc>>8&255)+','+(fc&255),fa=TUT.on?0.9:0.7;
+    fg.addColorStop(0,'rgba('+frgb+',0)'); fg.addColorStop(1,'rgba('+frgb+','+fa+')');
+    ctx.fillStyle=fg; ctx.fillRect(fx0,GY-GY/Z,48*U,H/Z); ctx.fillStyle='rgba('+frgb+','+fa+')'; ctx.fillRect(fx0+48*U,GY-GY/Z,VW,H/Z);
+    if(TUT.on){  /* the tutorial marks where sight ends, so growing Sight visibly pushes the fog back */
+      ctx.strokeStyle=COL.a; ctx.lineWidth=(1/Z)*1.5; ctx.setLineDash([4*U,4*U]);
+      ctx.beginPath(); ctx.moveTo(fx0,GY); ctx.lineTo(fx0,GY-C.JUMP-20); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle=COL.muted; ctx.font=(11/Z).toFixed(2)+'px "IBM Plex Mono",monospace'; ctx.fillText('fog',fx0+12*U,GY-12*U);
+    }
   }
   // reach line for the lab being watched
   var reach=heightOf(tgt)+C.JUMP;
@@ -3516,7 +3610,7 @@ var ovTour=makeTour();
 function showOverlay(title,msg,btn){
   rcStop(); $('ov-story').hidden=true;
   $('ov-title').textContent=title; $('ov-msg').textContent=msg; $('ov-btn').textContent=btn; $('ov').hidden=false; cardAt=performance.now();
-  ovTour.hide(); $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false; $('ov-like').hidden=true;  /* end screens: the result line, not the start card's short lines */
+  ovTour.hide(); $('ov-lead').hidden=true; $('ov-how').hidden=true; $('ov-tut').hidden=true; $('ov-ach').hidden=true; $('ov-msg').hidden=false; $('ov-like').hidden=true;  /* end screens: the result line, not the start card's short lines */
 }
 /* the start card: three short lines; "How to play" shows and hides the animation */
 $('ov-msg').parentNode.insertBefore(ovTour.el,$('ov-msg'));
@@ -3524,6 +3618,7 @@ ovTour.el.id='ov-tour'; $('ov-how').setAttribute('aria-controls','ov-tour');
 $('ov-how').addEventListener('click',function(){ var open=ovTour.el.hidden; if(open){ ovTour.show(); } else { ovTour.hide(); } this.setAttribute('aria-expanded',open?'true':'false'); this.textContent=open?'Hide the demo':'How to play'; });
 function endScreen(){
   if(MP){ mpEnd(); return; }
+  if(TUT.on){ TUT.over(); return; }  /* the tutorial ends on its own card, and a fall there is a retry */
   var r=G.result,h=G.labs[0],t=G.t.toFixed(1);
   if(r.type==='win'){
     if(r.winner===h&&h.human){ showOverlay('You won','You crossed the finish first in '+t+' s.','Play another'); }
@@ -3551,6 +3646,7 @@ function showSeed(){
 /* camp (from campStart) makes it a campaign race: that map's seed and tier roster, always played by you. Without it this is free play */
 /* daily (from dailyStart) makes it a daily race: that day's seed, the tier's roster and today's twist on the default knobs */
 function start(seed,camp,daily){
+  if(TUT.on){ TUT.stop(); }  /* any new run leaves the tutorial and gives back the player's knobs, chill mode and bar */
   rcStop();  /* a new run stops the recap: its frame loop and any babble still queued */
   RL=null; RLR=null;
   CAMP=camp||null; DLY=daily||null;
@@ -3590,7 +3686,7 @@ function showSing(l){
 function frame(now){
   var dt=Math.min(0.05,(now-last)/1000); last=now;
   if(MP){ mpFrame(now); }
-  else if(running&&!paused&&!G.over){
+  else if(running&&!paused&&!G.over&&!TUT.hold){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
@@ -3773,6 +3869,7 @@ document.addEventListener('keydown',function(e){
   el.addEventListener('pointerdown',function(e){ e.preventDefault(); hide(); });
   function tick(now){
     var dt=Math.min(0.1,(now-prev)/1000); prev=now;
+    if(TUT.on){ hG=G; if(cur){ hide(); } q=[]; requestAnimationFrame(tick); return; }  /* the tutorial coaches instead, and owns the cues */
     if(G!==hG){ hG=G; began=false; q=[]; hide(); grew=[0,0,0]; gPrev=null; cueB=false; cueT=-1; }
     var l=G.labs[0],live=running&&!paused&&!G.over&&l.human&&!l.out&&!l.done;
     if(running&&!began){ began=true; note.hidden=true; if(l.human){ want('invest'); } }
@@ -3812,6 +3909,204 @@ document.addEventListener('keydown',function(e){
   how.addEventListener('click',function(){ seen={}; save(); try{ localStorage.removeItem(KEY); }catch(e){} note.hidden=false; if(tour.el.hidden){ tour.show(); } else { tour.hide(); } how.textContent=tour.el.hidden?'How to play':'Hide the demo'; how.setAttribute('aria-expanded',tour.el.hidden?'false':'true'); });
   how.setAttribute('aria-expanded','false');
   $('ready-btn').parentNode.insertBefore(how,$('ready-btn')); $('ready-btn').parentNode.insertBefore(note,$('ready-btn')); $('ready-btn').parentNode.insertBefore(tour.el,$('ready-btn'));
+})();
+
+/* tutorial: five short steps on a hand-built practice track, one idea each. Run; Build into Height (a wall); Sight (a gap hidden in the fog);
+   Max speed (a gap too wide to jump); then Run and Build at once (a wall you can grow over without stopping). Each step opens with the race
+   held (TUT.hold) until the player moves the control it names, ticked off in a checklist while a cue pulses on that control; then the race
+   runs and the coach shows the payoff. Solo, chill mode on, no strikes. A fall is a retry: every roll is set so a fall never ends the run,
+   and TUT.over puts the lab back before the gap with its meters kept. Knobs are locked to the defaults as in a campaign (start() gives
+   them back); chill mode and the bar are given back by TUT.stop. A finish shows its own card and remembers the tutorial is done. */
+(function(){
+  var KEY='pf-tut-done',el=$('tut'),fin=$('tut-end'),S=null,saved=null,shown='',prev=performance.now();
+  var TR={gate:240,stop3:440,gap:740,gw:60,wall:1250,finish:1460};
+  var NAMES=['Run','Height','Sight','Max speed','Both'],COLS=['var(--run)','var(--c)','var(--a)','var(--b)','var(--ink)'],TC=['var(--a)','var(--c)','var(--b)'];
+  var TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
+  var rt=document.createElement('button');  /* on the Ready card until the tutorial has been finished once */
+  function isDone(){ try{ return !!localStorage.getItem(KEY); }catch(e){ return false; } }
+  function badge(){ var d=isDone(); $('ov-tut').classList.toggle('new',!d); rt.hidden=d; }
+  function share(i){ var w=ui.w,t=w[0]+w[1]+w[2]||1; return w[i]/t; }
+  function runPct(){ return ui.fwd&&!ui.rev?100:ui.pace; }
+  function barName(){ return $('lcol').offsetParent!==null?'Lever':'Bar'; }  /* landscape phones have the throttle instead of the bar */
+  function reach(l){ return heightOf(l)+C.JUMP; }
+  function jumpOf(l){ return topSpeed(l,true)*airT(l); }  /* what a jump at top speed covers */
+  function go(k,ph){ S.k=k; S.ph=ph; S.t=0; S.bonk=false; }
+  function cue(b,t){
+    document.body.classList.toggle('cue-run',b==='run'); document.body.classList.toggle('cue-build',b==='build');
+    var c=$('tri-cue');
+    if(t>=0){ c.setAttribute('cx',TV[t][0]); c.setAttribute('cy',TV[t][1]); c.style.stroke=TC[t]; }
+    c.setAttribute('visibility',t>=0?'visible':'hidden');
+  }
+  function track(){
+    newGame(9090,undefined,[]);
+    G.barriers=[{x:TR.gate,h:C.JUMP+18,pub:true,gate:true,seg:0},{x:TR.wall,h:C.JUMP+30,pub:false,seg:1}];
+    /* the second gap is never reached: draw and sound expect a singularity gap to exist */
+    G.gaps=[{x:TR.gap,W:TR.gw,crossedBy:-1,stepH:0,pub:false,sing:false},{x:1e6,W:40,crossedBy:-1,stepH:0,pub:false,sing:true}];
+    G.sing=1; G.finish=TR.finish; G.maxcap=C.CAPS[1]; G.rolls=[[.999,.999,.999,.999],[.999,.999,.999,.999]];
+    G.world={gaps:G.gaps,bars:G.barriers,finish:TR.finish,shape:0,A:0,sig:'',n:1,sing:1,x0:TR.finish,ni:0,label:'Tutorial'};
+    G.log=[]; log('Tutorial started.');
+  }
+  TUT.start=function(){
+    if(MP){ return; }
+    if(!TUT.on){ saved={seed:G.seed,chill:K.chill,pace:ui.pace,w:ui.w.slice()}; }
+    rcStop(); RL=null; RLR=null; CAMP=null; DLY=null; GHF=null; GHA=null; REC=null;
+    campLock(); PSTRIKES=0; ghSetChill(true);
+    track();
+    ui.pace=0; ui.w=[34,33,33]; ui.rev=false; ui.fwd=false; $('pace').value=0; showBar(); drawTri();
+    $('ov').hidden=true; $('ready').hidden=true; $('sing').hidden=true; fin.hidden=true; el.hidden=false;
+    TUT.on=true; TUT.hold=true; S={k:0,ph:'do',t:0,note:'',nt:0,bonk:false}; shown='';
+    running=true; paused=false; acc=0; singShown=true; last=performance.now(); $('btn-pause').textContent='Pause';
+    sndStarted=true; snd.unlock(); snd.sfx('go');
+  };
+  TUT.stop=function(){
+    TUT.on=false; TUT.hold=false; S=null; el.hidden=true; fin.hidden=true; cue(null,-1);
+    if(saved){ ghSetChill(!!saved.chill); ui.pace=saved.pace; ui.w=saved.w; $('pace').value=ui.pace; showBar(); saved=null; }
+  };
+  TUT.over=function(){
+    var r=G.result,l=G.labs[0];
+    if(r&&r.type==='win'&&r.winner===l){
+      try{ localStorage.setItem(KEY,new Date().toISOString().slice(0,10)); }catch(e){}
+      badge(); TUT.hold=false; el.hidden=true; cue(null,-1); fin.hidden=false; cardAt=performance.now();
+      try{ $('tut-go').focus({preventScroll:true}); }catch(e){}
+      return;
+    }
+    /* a fall: back before the gap, meters kept, and the gap step again */
+    var g=G.gaps[0];
+    l.out=false; l.fellAt=undefined; l.v=0; l.x=g.x-210; l.jt=-1; l.jy=0; l.crash=0; l.bounce=false; l.sag=null; l.still=0; l.capUntil=-1e9;
+    G.over=false; G.result=null; G.fallN=[]; running=true;
+    go(3,'do'); S.note='You fell. In a race, that can end it for every lab. Try again.'; S.nt=7;
+  };
+  /* one frame of the coach: o collects the step's words, its checklist (the first unticked item gets the cue), a progress bar and the hold */
+  function tick(now){
+    var dt=Math.min(0.1,(now-prev)/1000); prev=now;
+    requestAnimationFrame(tick);
+    if(!TUT.on||!S||!fin.hidden||!running||paused){ return; }
+    S.t+=dt; if(S.nt>0&&!TUT.hold){ S.nt-=dt; if(S.nt<=0){ S.note=''; } }
+    var l=G.labs[0],g=G.gaps[0],r=runPct(),B=barName(),o={h:'',p:'',list:[],bar:null,cb:null,ct:-1,hold:false,k:''},a,b,k0=S.k,ph0=S.ph;
+    function need(txt,ok,cb,ct){ o.list.push([txt,ok]); if(!ok&&!o.cb&&o.ct<0){ if(cb){ o.cb=cb; } else { o.ct=ct; } } return ok; }
+    function toBuild(){ return need(B+' all the way to Build',r<=15,'build'); }
+    function keep(ok,txt,cb,ct){ if(!ok){ need(txt,false,cb,ct); } }  /* while a meter grows, an undone choice comes back unticked */
+    function meter(v,target,txt){ o.bar={f:v/(target*1.25),txt:txt,mark:true}; }  /* the target sits at 80% of the bar */
+    if(S.k===0){
+      if(S.ph==='do'){
+        o.hold=true; o.h='This bar is your engine.'; o.p='Slide the '+B.toLowerCase()+' all the way to <b>Run</b>.'; o.k='Keys: Up arrow.';
+        if(need(B+' to Run',r>=85,'run')){ go(0,'go'); }
+      } else {
+        o.h='Run moves you.'; o.p='The more Run, the faster you go, and the less is left to Build.';
+        if(l.x>=TR.gate-125){ go(1,'do'); }
+      }
+    } else if(S.k===1){
+      var gh=G.barriers[0].h;
+      if(S.ph==='do'){
+        o.hold=true; o.h='A wall. Too tall to jump.'; o.p='To get taller, you have to <b>Build</b>.'; o.k='Keys: Down arrow, then 2.';
+        a=toBuild(); b=need('Dot to Height',share(1)>=0.55,null,1);
+        if(a&&b){ go(1,'grow'); }
+      } else if(S.ph==='grow'){
+        if(l.crash>0){ S.bonk=true; }
+        o.h='Build grows your meters.';
+        o.p=S.bonk?'Bonk! Not tall enough yet. Build a little more Height.':'You slow down, and <b>Height</b> climbs. Your reach is the dotted line.';
+        keep(r<=15,'Keep the '+B.toLowerCase()+' on Build','build'); keep(share(1)>=0.4,'Keep the dot near Height',null,1);
+        meter(heightOf(l),gh-C.JUMP,'Height '+Math.floor(heightOf(l))+' · need '+(gh-C.JUMP));
+        if(reach(l)>=gh){ go(1,'clear'); }
+      } else if(S.ph==='clear'){
+        o.h='Tall enough!'; o.p='Back to <b>Run</b>. Your lab jumps by itself.';
+        need(B+' to Run',r>=70,'run');
+        if(l.bi>0){ go(1,'pay'); }
+      } else {
+        o.h='Height gets you over walls.'; o.p='But while you Build, you barely move. That is the trade.';
+        if(S.t>4&&r<50){ need(B+' back to Run',false,'run'); }
+        if(l.x>=TR.stop3){ go(2,'do'); }
+      }
+    } else if(S.k===2){
+      if(knowsGap(l,0)){  /* sized as it comes into view: wider than your jump now, so Max speed is always the answer, and inside what full meters cover */
+        g.W=Math.round(clamp(jumpOf(l)*1.4,TR.gw,0.8*(C.TOP0+0.85*l.cap)*airT(l)));
+        G.barriers[1].x=g.x+g.W+640; G.finish=G.barriers[1].x+210;  /* the last wall moves with the gap's far edge, out of sight */
+        go(3,'do');
+      }
+      else if(S.ph==='do'){
+        o.hold=true; o.h='Fog ahead.'; o.p='You only see as far as your <b>Sight</b>. A gap could be hiding in there.'; o.k='Keys: Down arrow, then 1.';
+        a=toBuild(); b=need('Dot to Sight',share(0)>=0.55,null,0);
+        if(a&&b){ go(2,'grow'); }
+      } else {
+        o.h='Push back the fog.'; o.p='<b>Sight</b> shows danger while there is still room to stop.';
+        keep(r<=15,'Keep the '+B.toLowerCase()+' on Build','build'); keep(share(0)>=0.4,'Keep the dot near Sight',null,0);
+        o.bar={f:sightRange(l)/400,txt:'You see '+Math.round(sightRange(l))+' ahead'};
+      }
+    } else if(S.k===3){
+      var gw=Math.round(gapWidth(l,g)),J=jumpOf(l),nj=gw*1.1;
+      if(l.gi>0&&S.ph!=='pay'){
+        go(3,'pay');
+        if(l.sag){ S.note='Scraped across: you made it, but lost Height.'; S.nt=5; }  /* a scrape: the sim sags the lab by the height it lost */
+      }
+      if(S.ph==='do'){
+        if(J>=nj){ go(3,'go'); }
+        else {
+          o.hold=true; o.h='There it is: a gap.'; o.p='Too wide. At top speed your jump covers <b>'+Math.round(J)+'</b>. The gap is <b>'+gw+'</b>.'; o.k='Keys: Down arrow, then 3.';
+          a=toBuild(); b=need('Dot to Max speed',share(2)>=0.55,null,2);
+          if(a&&b){ go(3,'grow'); }
+        }
+      } else if(S.ph==='grow'){
+        o.h='Max speed stretches your jump.'; o.p='The faster you hit the edge, the further you fly.';
+        keep(r<=15,'Keep the '+B.toLowerCase()+' on Build','build'); keep(share(2)>=0.4,'Keep the dot near Max speed',null,2);
+        meter(J,nj,'Jump '+Math.round(J)+' · gap '+gw);
+        if(J>=nj){ go(3,'go'); }
+      } else if(S.ph==='go'){
+        o.h='Fast enough.'; o.p='Now <b>Run</b> at it. You jump at the edge by yourself.';
+        need(B+' to Run',r>=70,'run');
+      } else {
+        o.h='Over!'; o.p='<b>Max speed</b> carries you across gaps. In a real race, a fall can end it for every lab.';
+        if(S.t>3&&r<50){ need(B+' back to Run',false,'run'); }
+        if(S.t>=2.5&&l.x>=g.x+g.W+60){
+          var wb=G.barriers[1]; wb.h=Math.round(Math.max(wb.h,reach(l)+12)); wb.pub=true;  /* always a little taller than you */
+          go(4,'do');
+        }
+      }
+    } else {
+      var wh=G.barriers[1].h;
+      if(S.ph==='do'){
+        o.hold=true; o.h='Now do both at once.'; o.p='Another wall. No need to stop: keep moving and grow.'; o.k='Keys: Up and Down arrows, then 2.';
+        a=need(B+' near the middle',r>=30&&r<=65,r>65?'build':'run'); b=need('Dot to Height',share(1)>=0.5,null,1);
+        if(a&&b){ go(4,'grow'); }
+      } else if(S.ph==='grow'){
+        if(l.crash>0){ S.bonk=true; }
+        o.h='Run and Build together.';
+        o.p=S.bonk?'Bonk. Too much Run to grow in time. Try a little more Build.':'Slower, but still moving, and <b>Height</b> keeps growing.';
+        meter(heightOf(l),wh-C.JUMP,'Height '+Math.floor(heightOf(l))+' · need '+Math.round(wh-C.JUMP));
+        if(l.bi>1){ go(4,'pay'); }
+      } else {
+        o.h='That is the race.'; o.p='Run when the way is clear. Build when it is not. Point the dot at what comes next.';
+        if(r<50){ need(B+' to Run for the finish',false,'run'); }
+      }
+    }
+    if(S.k!==k0||S.ph!==ph0){ return; }  /* a step or phase just changed: its words come next frame */
+    TUT.hold=o.hold;
+    el.style.setProperty('--tc',COLS[S.k]);
+    var dots=$('tut-dots').children,i;
+    for(i=0;i<dots.length;i++){ dots[i].className=i<S.k?'ok':(i===S.k?'cur':''); }
+    var p=(S.note?'<b>'+S.note+'</b> ':'')+o.p,
+        li=o.list.map(function(d){ return '<li'+(d[1]?' class="ok"':'')+'>'+d[0]+(d[1]?'<span class="sr-only"> (done)</span>':'')+'</li>'; }).join(''),
+        key=S.k+o.h+p+li+o.hold;
+    if(key!==shown){
+      shown=key;
+      $('tut-n').textContent=(S.k+1)+' of 5 · '+NAMES[S.k];
+      $('tut-wait').hidden=!o.hold;
+      $('tut-h').innerHTML=o.h; $('tut-p').innerHTML=p; $('tut-do').innerHTML=li; $('tut-k').textContent=TOUCH?'':o.k;
+    }
+    $('tut-bar').hidden=!o.bar;
+    if(o.bar){ $('tut-fill').style.width=(clamp(o.bar.f,0,1)*100)+'%'; $('tut-lbl').textContent=o.bar.txt; $('tut-mark').style.left='80%'; $('tut-mark').hidden=!o.bar.mark; }
+    cue(o.cb,o.ct);
+  }
+  requestAnimationFrame(tick);
+  function leave(){ var s=saved&&fresh?saved.seed:undefined; start(s); }  /* back to a normal race: the page's own seed if no race has started yet */
+  function noKeys(b){ b.addEventListener('keydown',function(e){ if(e.code==='Enter'||e.code==='Space'){ e.stopPropagation(); } }); }
+  $('ov-tut').addEventListener('click',TUT.start); noKeys($('ov-tut'));
+  $('tut-again').addEventListener('click',TUT.start);
+  $('tut-go').addEventListener('click',leave);
+  $('tut-skip').addEventListener('click',leave);
+  rt.type='button'; rt.className='ready-tut'; rt.textContent='New here? Play the tutorial'; noKeys(rt);
+  rt.addEventListener('click',TUT.start);
+  $('ready-btn').parentNode.insertBefore(rt,$('ready-btn').parentNode.querySelector('.hint-how')||$('ready-btn'));
+  badge();
 })();
 
 /* investment flow: while your lab is investing (the sim's l.ivr and l.ivw, read only), small dots leave the Build part of the bar,
@@ -5843,6 +6138,7 @@ var qr=/[?&]rivals=([a-z,]+)/i.exec(location.search);
 if(qr){ G_ROSTER=qr[1].toLowerCase().split(',').filter(function(k){return POL[k]&&k!=='custom';}); }
 /* ?daily=YYYY-MM-DD opens that day's challenge (a future or bad date opens today); read before showSeed rewrites the URL */
 var qd=/[?&]daily=([^&#]*)/.exec(location.search);
+var qt=/[?&]tutorial(=1)?(&|$)/.test(location.search);  /* ?tutorial=1 opens the tutorial (for playtests) */
 var q0=/[?&]seed=(\d+)/.exec(location.search),s0=q0?parseSeed(q0[1]):null;
 newGame(s0===null?(Math.random()*4294967295)>>>0:s0);
 showSeed(); $('pace').value=ui.pace;
@@ -5850,6 +6146,7 @@ requestAnimationFrame(frame);
 if(window.PF_MP||(mpRoomQ&&mpURL())){ mpBoot(mpRoomQ); }
 else if(qd){ var dd=''; try{ dd=decodeURIComponent(qd[1]); }catch(e){} dd=dailyClampDate(dd); try{ history.replaceState(null,'','?daily='+dd); }catch(e){} dailyOpen(dd); }
 if(!MP){ ghBoot(); }  /* #g=... opens a ghost link */
+if(!MP&&!qd&&qt){ TUT.start(); }
 if(!MP&&mpURL()){ $('ov-mp').hidden=false; $('btn-mp').hidden=false; }
 $('ov-mp').addEventListener('click',function(){ mpBoot(''); });
 $('btn-mp').addEventListener('click',function(){ mpBoot(''); });
