@@ -64,7 +64,7 @@ PF.SEGS.forEach((seg, i) => {
   if (A.grid) {
     const rowsG = [], breaks = [];
     let held = ok ? 1 : 0, total = 1;
-    for (const r of PF.RULES) for (const v of [r.lo, r.hi]) {
+    for (const r of PF.RULES.filter(r => !r.exp)) for (const v of [r.lo, r.hi]) {
       if (BASE[r.key] === v) continue;
       const rs = Object.assign({}, BASE, {[r.key]: v}), sg = score(seg, table(i + 1, seg, rs)), okg = sg >= seg.claim.need;
       total++; if (okg) held++; else breaks.push(`${r.key} ${v}`);
