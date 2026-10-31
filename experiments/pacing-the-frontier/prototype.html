@@ -119,6 +119,13 @@ body.cue-run .th-cue{margin:0 0 16px -7px;border-top:0;border-bottom:10px solid 
   body.cue-run .rb,body.cue-run .th-track{animation:cue-ring 1.2s ease-in-out infinite}
 }
 @keyframes cue-xr{0%,100%{transform:translateX(-2px)}50%{transform:translateX(5px)}}
+/* "all the way": a chequered finish stripe at the end of the control the step asks for (the Run end or the Build end), so a half-move reads as short of the line */
+.rb-goal,.th-goal{display:none;position:absolute;pointer-events:none;background:repeating-linear-gradient(0deg,var(--ink) 0 4px,var(--surface) 4px 8px)}
+.rb-goal{top:0;bottom:0;width:8px}
+.th-goal{left:0;right:0;height:8px;background:repeating-linear-gradient(90deg,var(--ink) 0 4px,var(--surface) 4px 8px)}
+body.goal.cue-run .rb-goal{display:block;right:0;border-left:1.5px solid var(--ink)} body.goal.cue-build .rb-goal{display:block;left:0;border-right:1.5px solid var(--ink)}
+body.goal.cue-run .th-goal{display:block;top:0;border-bottom:1.5px solid var(--ink)} body.goal.cue-build .th-goal{display:block;bottom:0;border-top:1.5px solid var(--ink)}
+@media (prefers-reduced-motion:no-preference){ body.goal .rb-goal,body.goal .th-goal{animation:tut-blink 1.2s ease-in-out infinite} }
 .tut-sum{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font:400 14.5px/1.35 var(--body)}
 .tut-sum li{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:center}
 .tut-sum b{font-weight:600}
@@ -632,7 +639,7 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
   <div class="lcol" id="lcol">
     <div class="throttle" id="throttle" role="slider" aria-label="Run or Build" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="Run 70 percent, Build 30 percent">
       <span class="th-lbl">Build<output id="th-bv">30%</output></span>
-      <div class="th-track" id="th-track"><div class="th-run"></div><div class="th-split" id="th-build"><i id="th-s0"></i><i id="th-s1"></i><i id="th-s2"></i></div><div class="th-knob"></div><div class="th-cue"></div></div>
+      <div class="th-track" id="th-track"><div class="th-run"></div><div class="th-split" id="th-build"><i id="th-s0"></i><i id="th-s1"></i><i id="th-s2"></i></div><div class="th-knob"></div><div class="th-cue"></div><div class="th-goal"></div></div>
       <span class="th-lbl"><output id="th-rv">70%</output>Run</span>
     </div>
   </div>
@@ -643,7 +650,7 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
     <p class="hint" id="hint" role="status" aria-live="polite" hidden></p>
     <!-- tutorial coach: one step at a time over the track; the script fills it -->
     <div class="tut" id="tut" hidden>
-      <div class="tut-top"><span class="tut-dots" id="tut-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="tut-n" id="tut-n"></span><span class="tut-wait" id="tut-wait" hidden>Your move</span><button type="button" class="tut-skip" id="tut-skip">Skip</button></div>
+      <div class="tut-top"><span class="tut-dots" id="tut-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="tut-n" id="tut-n"></span><span class="tut-wait" id="tut-wait" hidden>Paused: your move</span><button type="button" class="tut-skip" id="tut-skip">Skip</button></div>
       <div role="status" aria-live="polite"><p class="tut-h" id="tut-h"></p><p class="tut-p" id="tut-p"></p></div>
       <ul class="tut-do" id="tut-do"></ul>
       <div class="tut-bar" id="tut-bar" hidden><i id="tut-fill"></i><b id="tut-mark"></b><span id="tut-lbl"></span></div>
@@ -732,7 +739,7 @@ body.mp #ov-foot .btns>:not(#ov-btn),body.mp .panel:has(#knobs){display:none}
           <div class="rb-split" id="rb-build"><i id="rb-s0"></i><i id="rb-s1"></i><i id="rb-s2"></i></div>
           <span class="rb-lbl" id="rb-lr" aria-hidden="true"><span class="w">Run </span><b id="rb-rv">70%</b></span>
           <span class="rb-lbl" id="rb-lb" aria-hidden="true"><span class="w">Build </span><b id="rb-bv">30%</b></span>
-          <div class="rb-h"></div><div class="rb-cue"></div>
+          <div class="rb-h"></div><div class="rb-cue"></div><div class="rb-goal"></div>
           <input type="range" id="pace" min="0" max="100" value="70" aria-label="Run or Build" aria-valuetext="Run 70 percent, Build 30 percent">
         </div>
       </div>
@@ -3918,7 +3925,7 @@ document.addEventListener('keydown',function(e){
    and TUT.over puts the lab back before the gap with its meters kept. Knobs are locked to the defaults as in a campaign (start() gives
    them back); chill mode and the bar are given back by TUT.stop. A finish shows its own card and remembers the tutorial is done. */
 (function(){
-  var KEY='pf-tut-done',el=$('tut'),fin=$('tut-end'),S=null,saved=null,shown='',prev=performance.now();
+  var KEY='pf-tut-done',el=$('tut'),fin=$('tut-end'),S=null,saved=null,shown='',prev=performance.now(),lastR=-1,still=0;  /* lastR, still: the bar's last value and for how long it has sat there */
   var TR={gate:240,stop3:440,gap:740,gw:60,wall:1250,finish:1460};
   var NAMES=['Run','Height','Sight','Max speed','Both'],COLS=['var(--run)','var(--c)','var(--a)','var(--b)','var(--ink)'],TC=['var(--a)','var(--c)','var(--b)'];
   var TOUCH=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
@@ -3931,8 +3938,8 @@ document.addEventListener('keydown',function(e){
   function reach(l){ return heightOf(l)+C.JUMP; }
   function jumpOf(l){ return topSpeed(l,true)*airT(l); }  /* what a jump at top speed covers */
   function go(k,ph){ S.k=k; S.ph=ph; S.t=0; S.bonk=false; }
-  function cue(b,t){
-    document.body.classList.toggle('cue-run',b==='run'); document.body.classList.toggle('cue-build',b==='build');
+  function cue(b,t,far){  /* far: the step wants the bar all the way to that end, so that end gets its finish stripe */
+    document.body.classList.toggle('cue-run',b==='run'); document.body.classList.toggle('cue-build',b==='build'); document.body.classList.toggle('goal',!!b&&!!far);
     var c=$('tri-cue');
     if(t>=0){ c.setAttribute('cx',TV[t][0]); c.setAttribute('cy',TV[t][1]); c.style.stroke=TC[t]; }
     c.setAttribute('visibility',t>=0?'visible':'hidden');
@@ -3954,7 +3961,7 @@ document.addEventListener('keydown',function(e){
     track();
     ui.pace=0; ui.w=[34,33,33]; ui.rev=false; ui.fwd=false; $('pace').value=0; showBar(); drawTri();
     $('ov').hidden=true; $('ready').hidden=true; $('sing').hidden=true; fin.hidden=true; el.hidden=false;
-    TUT.on=true; TUT.hold=true; S={k:0,ph:'do',t:0,note:'',nt:0,bonk:false}; shown='';
+    TUT.on=true; TUT.hold=true; S={k:0,ph:'do',t:0,note:'',nt:0,bonk:false}; shown=''; lastR=-1; still=0;
     running=true; paused=false; acc=0; singShown=true; last=performance.now(); $('btn-pause').textContent='Pause';
     sndStarted=true; snd.unlock(); snd.sfx('go');
   };
@@ -3982,15 +3989,22 @@ document.addEventListener('keydown',function(e){
     requestAnimationFrame(tick);
     if(!TUT.on||!S||!fin.hidden||!running||paused){ return; }
     S.t+=dt; if(S.nt>0&&!TUT.hold){ S.nt-=dt; if(S.nt<=0){ S.note=''; } }
-    var l=G.labs[0],g=G.gaps[0],r=runPct(),B=barName(),o={h:'',p:'',list:[],bar:null,cb:null,ct:-1,hold:false,k:''},a,b,k0=S.k,ph0=S.ph;
-    function need(txt,ok,cb,ct){ o.list.push([txt,ok]); if(!ok&&!o.cb&&o.ct<0){ if(cb){ o.cb=cb; } else { o.ct=ct; } } return ok; }
+    var l=G.labs[0],g=G.gaps[0],r=runPct(),B=barName(),o={h:'',p:'',list:[],bar:null,cb:null,ct:-1,hold:false,k:'',far:false},a,b,k0=S.k,ph0=S.ph;
+    if(r!==lastR){ lastR=r; still=0; } else { still+=dt; }
+    /* part: the item asks for a place on the bar, not an end of it (no finish stripe, no "now" reading). An end gets the player's current value, so a half-move shows how far short it is */
+    function need(txt,ok,cb,ct,part){
+      if(cb&&!part&&!ok){ txt+=' (now '+Math.round(cb==='run'?r:100-r)+'%)'; }
+      o.list.push([txt,ok]);
+      if(!ok&&!o.cb&&o.ct<0){ if(cb){ o.cb=cb; o.far=!part; } else { o.ct=ct; } }
+      return ok;
+    }
     function toBuild(){ return need(B+' all the way to Build',r<=15,'build'); }
-    function keep(ok,txt,cb,ct){ if(!ok){ need(txt,false,cb,ct); } }  /* while a meter grows, an undone choice comes back unticked */
+    function keep(ok,txt,cb,ct){ if(!ok){ need(txt,false,cb,ct,true); } }  /* while a meter grows, an undone choice comes back unticked */
     function meter(v,target,txt){ o.bar={f:v/(target*1.25),txt:txt,mark:true}; }  /* the target sits at 80% of the bar */
     if(S.k===0){
       if(S.ph==='do'){
         o.hold=true; o.h='This bar is your engine.'; o.p='Slide the '+B.toLowerCase()+' all the way to <b>Run</b>.'; o.k='Keys: Up arrow.';
-        if(need(B+' to Run',r>=85,'run')){ go(0,'go'); }
+        if(need(B+' all the way to Run',r>=85,'run')){ go(0,'go'); }
       } else {
         o.h='Run moves you.'; o.p='The more Run, the faster you go, and the less is left to Build.';
         if(l.x>=TR.gate-125){ go(1,'do'); }
@@ -4010,11 +4024,11 @@ document.addEventListener('keydown',function(e){
         if(reach(l)>=gh){ go(1,'clear'); }
       } else if(S.ph==='clear'){
         o.h='Tall enough!'; o.p='Back to <b>Run</b>. Your lab jumps by itself.';
-        need(B+' to Run',r>=70,'run');
+        need(B+' all the way to Run',r>=70,'run');
         if(l.bi>0){ go(1,'pay'); }
       } else {
         o.h='Height gets you over walls.'; o.p='But while you Build, you barely move. That is the trade.';
-        if(S.t>4&&r<50){ need(B+' back to Run',false,'run'); }
+        if(S.t>4&&r<50){ need(B+' all the way back to Run',false,'run'); }
         if(l.x>=TR.stop3){ go(2,'do'); }
       }
     } else if(S.k===2){
@@ -4052,10 +4066,10 @@ document.addEventListener('keydown',function(e){
         if(J>=nj){ go(3,'go'); }
       } else if(S.ph==='go'){
         o.h='Fast enough.'; o.p='Now <b>Run</b> at it. You jump at the edge by yourself.';
-        need(B+' to Run',r>=70,'run');
+        need(B+' all the way to Run',r>=70,'run');
       } else {
         o.h='Over!'; o.p='<b>Max speed</b> carries you across gaps. In a real race, a fall can end it for every lab.';
-        if(S.t>3&&r<50){ need(B+' back to Run',false,'run'); }
+        if(S.t>3&&r<50){ need(B+' all the way back to Run',false,'run'); }
         if(S.t>=2.5&&l.x>=g.x+g.W+60){
           var wb=G.barriers[1]; wb.h=Math.round(Math.max(wb.h,reach(l)+12)); wb.pub=true;  /* always a little taller than you */
           go(4,'do');
@@ -4065,7 +4079,7 @@ document.addEventListener('keydown',function(e){
       var wh=G.barriers[1].h;
       if(S.ph==='do'){
         o.hold=true; o.h='Now do both at once.'; o.p='Another wall. No need to stop: keep moving and grow.'; o.k='Keys: Up and Down arrows, then 2.';
-        a=need(B+' near the middle',r>=30&&r<=65,r>65?'build':'run'); b=need('Dot to Height',share(1)>=0.5,null,1);
+        a=need(B+' near the middle',r>=30&&r<=65,r>65?'build':'run',-1,true); b=need('Dot to Height',share(1)>=0.5,null,1);
         if(a&&b){ go(4,'grow'); }
       } else if(S.ph==='grow'){
         if(l.crash>0){ S.bonk=true; }
@@ -4075,15 +4089,17 @@ document.addEventListener('keydown',function(e){
         if(l.bi>1){ go(4,'pay'); }
       } else {
         o.h='That is the race.'; o.p='Run when the way is clear. Build when it is not. Point the dot at what comes next.';
-        if(r<50){ need(B+' to Run for the finish',false,'run'); }
+        if(r<50){ need(B+' all the way to Run for the finish',false,'run'); }
       }
     }
     if(S.k!==k0||S.ph!==ph0){ return; }  /* a step or phase just changed: its words come next frame */
     TUT.hold=o.hold;
+    /* a held step with the bar left partway: the race looks stuck, so say what is missing */
+    var nudge=o.hold&&o.far&&still>2.5&&r>5&&r<95?'Not all the way yet. Keep going to '+(o.cb==='run'?'Run':'Build')+'.':'';
     el.style.setProperty('--tc',COLS[S.k]);
     var dots=$('tut-dots').children,i;
     for(i=0;i<dots.length;i++){ dots[i].className=i<S.k?'ok':(i===S.k?'cur':''); }
-    var p=(S.note?'<b>'+S.note+'</b> ':'')+o.p,
+    var p=(nudge?'<b>'+nudge+'</b> ':S.note?'<b>'+S.note+'</b> ':'')+o.p,
         li=o.list.map(function(d){ return '<li'+(d[1]?' class="ok"':'')+'>'+d[0]+(d[1]?'<span class="sr-only"> (done)</span>':'')+'</li>'; }).join(''),
         key=S.k+o.h+p+li+o.hold;
     if(key!==shown){
@@ -4094,7 +4110,7 @@ document.addEventListener('keydown',function(e){
     }
     $('tut-bar').hidden=!o.bar;
     if(o.bar){ $('tut-fill').style.width=(clamp(o.bar.f,0,1)*100)+'%'; $('tut-lbl').textContent=o.bar.txt; $('tut-mark').style.left='80%'; $('tut-mark').hidden=!o.bar.mark; }
-    cue(o.cb,o.ct);
+    cue(o.cb,o.ct,o.far);
   }
   requestAnimationFrame(tick);
   function leave(){ var s=saved&&fresh?saved.seed:undefined; start(s); }  /* back to a normal race: the page's own seed if no race has started yet */
