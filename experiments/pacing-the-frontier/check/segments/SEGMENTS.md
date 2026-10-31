@@ -51,6 +51,14 @@ These came out of building the segments. Each is a rule interaction, not a segme
 4. **Height is nearly free while cruising.** Cruising fills height and speed automatically, so box widths had to be set against a lab's full reach (the f factor) to bite at all.
 5. **First across dominates.** The first lab across gets the next ceiling, and the others get 40%. In bot play this beats the laggard refill (up to 3x) every time.
 
+## Jump peek (added 2026-10-31)
+
+The segments now build on the hidden-width page with the jump peek from PR 28: in the air your eye rises, so you can see a box face over a rival, but never its width. Bots hop to peek when shadowed. `results.md` was rerun with peek on (seeds 1 to 40).
+
+1. **Segment 2 does not change.** Extinction stays at 48% for Build and Wait. Peek gives you information, and the rushers' falls do not depend on what you know.
+2. **Segment 3 flips for Rush, but it is a bot artefact.** Rush went from 45% wins to 0%, falling 45% of the time. The rush bot now hops near the box without using what it saw, and follows Rush into wide boxes. The bot peek rule ignores posture; until it doesn't, this row says nothing about people.
+3. **Everything else moves by a few points at most.** Peek is a mechanism for the player, so bots are a poor measure of it.
+
 ## Limits
 
 - Bots are not people. A bot either sees the box or it does not; a person guesses, hesitates and second-guesses. The table shows the segments are not degenerate. It does not show they teach anything.

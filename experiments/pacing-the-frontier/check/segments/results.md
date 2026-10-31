@@ -6,23 +6,23 @@
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 55% | 45% | 0% | 10% | 10% | 0.33 | 10.7 s |
-| build | 0% | 0% | 0% | 5% | 13% | 0.45 | - |
-| wait | 0% | 0% | 0% | 5% | 13% | 0.47 | - |
+| rush | 55% | 45% | 0% | 10% | 10% | 0.40 | 10.7 s |
+| build | 3% | 0% | 0% | 5% | 13% | 0.45 | 20.6 s |
+| wait | 0% | 0% | 0% | 5% | 13% | 0.45 | - |
 
 ## 2. Everyone Else Is Rushing
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 0% | 35% | 0% | 63% | 20% | 1.85 | - |
-| build | 18% | 0% | 8% | 48% | 18% | 1.85 | 31.6 s |
-| wait | 18% | 0% | 0% | 48% | 18% | 1.85 | 38.9 s |
+| rush | 5% | 38% | 0% | 63% | 20% | 1.88 | 16.7 s |
+| build | 23% | 0% | 8% | 48% | 18% | 1.90 | 25.6 s |
+| wait | 23% | 0% | 0% | 48% | 18% | 1.90 | 30.7 s |
 
 ## 3. Tailgating in Fog
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 45% | 0% | 0% | 18% | 0% | 0.63 | 12.2 s |
+| rush | 0% | 45% | 0% | 28% | 0% | 0.63 | - |
 | build | 0% | 0% | 0% | 18% | 0% | 0.63 | - |
 | wait | 0% | 0% | 0% | 18% | 0% | 0.63 | - |
 
@@ -30,7 +30,7 @@
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 23% | 78% | 0% | 20% | 10% | 0.03 | 8.4 s |
+| rush | 23% | 78% | 0% | 20% | 10% | 0.00 | 8.4 s |
 | build | 88% | 0% | 0% | 0% | 13% | 0.00 | 13.9 s |
 | wait | 0% | 0% | 0% | 0% | 13% | 0.00 | - |
 
@@ -47,7 +47,7 @@
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 8% | 93% | 0% | 33% | 5% | 0.50 | 14.1 s |
+| rush | 8% | 93% | 0% | 35% | 5% | 0.55 | 14.1 s |
 | build | 43% | 0% | 0% | 33% | 5% | 1.45 | 24.5 s |
 | wait | 10% | 0% | 0% | 33% | 5% | 1.45 | 15.6 s |
 
@@ -55,9 +55,9 @@
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 0% | 78% | 8% | 58% | 5% | 1.50 | - |
-| build | 35% | 25% | 0% | 55% | 3% | 1.63 | 25.6 s |
-| wait | 8% | 33% | 0% | 55% | 8% | 1.80 | 25.5 s |
+| rush | 0% | 78% | 0% | 48% | 23% | 1.80 | - |
+| build | 30% | 30% | 0% | 55% | 5% | 1.77 | 26.3 s |
+| wait | 5% | 35% | 0% | 58% | 8% | 1.77 | 26.2 s |
 
 ## 8. Clean Record
 
@@ -65,13 +65,13 @@
 |---|---|---|---|---|---|---|---|
 | rush | 0% | 100% | 0% | 33% | 0% | 0.00 | - |
 | build | 100% | 0% | 0% | 0% | 0% | 0.00 | 37.5 s |
-| wait | 100% | 0% | 0% | 0% | 0% | 0.00 | 38.6 s |
+| wait | 93% | 0% | 0% | 0% | 0% | 0.00 | 38.7 s |
 
 ## 9. The Breakthrough Wall
 
 | You play | You win | You fall | You dissolved | Extinction | No winner | Rival falls | Your time |
 |---|---|---|---|---|---|---|---|
-| rush | 100% | 0% | 0% | 0% | 0% | 0.00 | 15.2 s |
+| rush | 100% | 0% | 0% | 0% | 0% | 0.00 | 15.7 s |
 | build | 0% | 0% | 0% | 0% | 0% | 0.00 | - |
 | wait | 0% | 0% | 0% | 0% | 0% | 0.00 | - |
 
