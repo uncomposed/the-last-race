@@ -27,7 +27,7 @@ Each map has a claim: a formula over bot win rates, written by the agent before 
 | 5 | see-early-bravo | 35 (15) | 13 of 13 | 75% | 100% | **couldn't judge the landing; too hard to brake** |
 | 6 | see-early-pack | 33 (15) | 13 of 13 | **100%** | 98% | **max-out wins; doesn't teach** |
 | 7 | sr-landing | 95 (30) | 13 of 13 | 3% | 95% | fine |
-| 8 | sr-odds | 45 (30) | 13 of 13 | 40% | 65% | fine |
+| 8 | sr-odds | 45 (30) | 13 of 13 | 40% | 65% | not played |
 | 9 | sr-lastbox | 57 (30) | 10 of 13; breaks at sight 70, 130, strikes 2 | **100%** | 100% | fun |
 | 10 | steward-minefield | 40 (20) | 8 of 13; breaks at share 20, narrow 50, sight 130, build 10, strikes 2 | 0% | 55% | fun |
 
