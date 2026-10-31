@@ -43,17 +43,23 @@ function row(idx, you, rules) {
   return {win: pct(win, N), fall: pct(fall, N), diss: pct(diss, N), ext: pct(ext, N), none: pct(none, N), rf: +(rf / N).toFixed(2), t: win ? +(tsum / win).toFixed(1) : null, variants: notes.size};
 }
 function table(idx, seg, rules) { const t = {}; for (const p of seg.postures || ['rush', 'build', 'wait']) t[p] = row(idx, p, rules); return t; }
+// maxout (lessons-sim.js) is the simple strategy a player found: build height and speed while running, never look. Not part of any claim
+const MAXOUT = 'maxout';
 function score(seg, t) { try { return Math.round(seg.claim.score(t)); } catch (e) { return NaN; } }
 
 const out = ['# Lesson maps: bot check', '', `[[ai gen]] Bot play only, seeds ${START} to ${START + N - 1}${A.rules ? ', rules ' + A.rules : ''}. "You" is a bot playing the row's posture; the rivals play their map postures. Status: verified (this script reproduces it), nothing human_validated.`, ''];
 let fails = 0;
 PF.SEGS.forEach((seg, i) => {
   if (A.map && seg.key !== A.map) return;
-  const t = table(i + 1, seg, BASE), s = score(seg, t), ok = s >= seg.claim.need, vars = Math.max(...Object.values(t).map(x => x.variants));
+  const t = table(i + 1, seg, BASE), s = score(seg, t), mo = (seg.postures || []).includes(MAXOUT) ? t[MAXOUT] : row(i + 1, MAXOUT, BASE), ok = s >= seg.claim.need, vars = Math.max(...Object.values(t).map(x => x.variants));
   if (!ok) fails++;
   out.push(`## ${seg.key}: ${seg.title}`, '', `Claim: ${seg.claim.text}. Score ${s}, needs ${seg.claim.need}: **${ok ? 'holds' : 'fails'}**. Variants seen: ${vars}.`, '',
     '| You play | Win | Fall | Dissolved | Extinction | No winner | Rival falls | Win time |', '|---|---|---|---|---|---|---|---|');
   for (const [p, x] of Object.entries(t)) out.push(`| ${p} | ${x.win}% | ${x.fall}% | ${x.diss}% | ${x.ext}% | ${x.none}% | ${x.rf} | ${x.t === null ? '-' : x.t + ' s'} |`);
+  if (!t[MAXOUT]) out.push(`| *maxout* | ${mo.win}% | ${mo.fall}% | ${mo.diss}% | ${mo.ext}% | ${mo.none}% | ${mo.rf} | ${mo.t === null ? '-' : mo.t + ' s'} |`);
+  const best = Object.entries(t).filter(([p]) => p !== MAXOUT).sort((a, b) => b[1].win - a[1].win)[0];
+  out.push('', `Max-out check: building height and speed while running, never looking, wins ${mo.win}%; the best posture above (${best[0]}) wins ${best[1].win}%. ` +
+    (mo.win >= best[1].win ? '**Max-out does as well or better: the map does not need its lesson.**' : `The lesson beats max-out by ${best[1].win - mo.win} points.`));
   out.push('');
   if (A.grid) {
     const rowsG = [], breaks = [];

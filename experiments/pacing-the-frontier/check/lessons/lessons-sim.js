@@ -22,3 +22,8 @@ var LESSONS=[];
 var SGC={},NOPEEK={rush:1};
 /* ?rules=share:70,odds:150 (page) or check.mjs: set rule knobs by key; returns the canonical query fragment */
 function rulesApply(o){ var out=[],i,r; for(i=0;i<RULES.length;i++){ r=RULES[i]; if(o[r.key]!==undefined){ K[r.k]=+o[r.key]; out.push(r.key+':'+(+o[r.key])); } } return out.join(','); }
+/* maxout: the strategy Cole found by playing (2026-10-31). Split Run 70 / Build 30 into height and speed only, never sight; once both are
+   at the ceiling, floor it. It never stops and never looks. check.mjs runs it on every map: a lesson map should beat it */
+SGC.maxout=function(l){ var full=l.pts[1]>=l.cap-0.01&&l.pts[2]>=l.cap-0.01; return sgInp(full?1:0.7,[0,50,50],full?{fwd:true}:{}); };
+SGP.maxout=function(l,g,st){ return SGC.maxout(l); };
+NOPEEK.maxout=1;

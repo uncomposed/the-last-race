@@ -51,6 +51,7 @@ node check.mjs --only <your-lesson> --heldout --grid
 
 - Tune on seeds 1 to 40 (the default). Report the held-out block (`--heldout`, seeds 1001 to 1040) too, and never tune on it.
 - One map takes about 10 seconds for the full grid.
+- Every map is also run against **maxout** (in `lessons-sim.js`): build height and speed while running, never look, then floor it. Cole found it by playing, and it beat two maps' lessons. If maxout wins as often as your lesson's strategy, the map doesn't teach it.
 - To play: serve `check/` over http (`python3 -m http.server 8765 --directory experiments/pacing-the-frontier/check`) and open `/lessons/<your-lesson>/page.html?map=<key>`. Add `&rules=share:70` to play under a rule variant.
 
 ## What to hand back

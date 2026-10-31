@@ -1,5 +1,5 @@
 // Builds a lesson page from the segments page (../segments/segments.html, as committed; rebuild that first if segments-sim.js changed):
-//   1. sim: two rule knobs the segments page lacks (K.oddsX scales every box's own fall odds, K.sightX scales sight per point); postures in
+//   1. sim: four bot fixes (below), two rule knobs the segments page lacks (K.oddsX scales every box's own fall odds, K.sightX scales sight per point); postures in
 //      NOPEEK never hop to peek (rush would not use what it saw; in segment 3 the hop alone made it fall); SGC adds cruise behaviour
 //   2. lessons-sim.js and the lesson maps (<lesson>/maps.js, which push onto LESSONS), injected before window.PF; the maps replace SEGS
 //   3. the page: ?map=<key> picks a map (?seg=N still works), ?rules=share:70,odds:150 sets rule knobs, and the header says which lesson
@@ -25,6 +25,18 @@ rep('function sightRange(l){return C.SIGHT0+4.4*l.pts[0];}', 'function sightRang
 rep('if(g.odds!==undefined){return g.odds;}', 'if(g.odds!==undefined){return clamp(g.odds*K.oddsX/100,0,95);}');
 rep('if(!K.peek){ return inp; }', 'if(!K.peek||(l.post&&NOPEEK[l.post])){ return inp; }');
 rep("  if(!g){\n    if(p==='tail'){", "  if(!g){\n    if(SGC[p]){ return SGC[p](l); }\n    if(p==='tail'){");
+// bot fixes the lesson agents found in the segments postures (lessons only: on the segments page they would change rivals Cole has played)
+//   a barrier before a box hid the box from the plan, so build reached it at full speed; once it can see the box, the plan acts on it
+rep('function sgBoxNext(l){ var g=G.gaps[l.gi]; if(!g||!stepOn(g)||l.gx||l.out||l.done){return null;} var b=G.barriers[l.bi]; if(b&&b.x<g.x){return null;} ', 'function sgBoxNext(l){ var g=G.gaps[l.gi]; if(!g||!stepOn(g)||l.gx||l.out||l.done){return null;} ');
+//   seeing a box too late to stop, build and wait braked into it; now they commit at full speed, as the page's own bots do
+rep('function sgHold(l,g,w){', 'function sgLate(l,g,st){ if(st.go||l.v*l.v/(2*C.DEC)<=g.x-l.x-8){ return null; } st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }\nfunction sgHold(l,g,w){');
+rep('  build:function(l,g,st){\n    var atCap', '  build:function(l,g,st){\n    var late=sgLate(l,g,st); if(late){ return late; }\n    var atCap');
+rep('  wait:function(l,g,st){\n    if(st.go||knowsWidth(l,l.gi)){ return sgPlanKnown', '  wait:function(l,g,st){\n    var late=sgLate(l,g,st); if(late){ return late; }\n    if(st.go||knowsWidth(l,l.gi)){ return sgPlanKnown');
+//   build crept blind to 8 short of the face, where a slow lab's jump press fires and it falls in; it now stops 25 short
+rep('    if(d<=8){ return sgInp(0,[0,100,0]); }\n    var vmax=Math.sqrt(2*C.DEC*Math.max(d-6,1));', '    if(d<=27){ return sgInp(0,[0,100,0]); }\n    var vmax=Math.sqrt(2*C.DEC*0.7*Math.max(d-25,0));');
+//   the slowest clean speed was a bisection, but jump time is not monotonic at low speed, so it could return a speed that falls; step down instead
+rep('var T=Math.max(T0,1),lo=1,hi=T,i,m; if(sgClearAt(l,g,T)!==0){return Infinity;} for(i=0;i<20;i++){ m=(lo+hi)/2; if(sgClearAt(l,g,m)===0){hi=m;} else {lo=m;} } return hi*1.04;',
+  'var T=Math.max(T0,1),s=Math.max(0.5,T/240),v=T; if(sgClearAt(l,g,T)!==0){return Infinity;} while(v-s>=1&&sgClearAt(l,g,v-s)===0){ v-=s; } return v*1.04;');
 
 // 2. lessons and maps
 rep('\nwindow.PF={segUse:segUse,SEGS:SEGS,', '\n' + readFileSync(join(HERE, 'lessons-sim.js'), 'utf8') + '\n' + MAPS +

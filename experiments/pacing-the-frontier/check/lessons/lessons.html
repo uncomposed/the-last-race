@@ -2890,9 +2890,9 @@ function segPost(GG){
 /* ---- postures (as the hidden-width page's, with patience and tailing added) ---- */
 function sgInp(pace,w,x){ return Object.assign({pace:pace,w:w,jump:false,auto:true,rev:false,fwd:false},x||{}); }
 function sgClearAt(l,g,v){ var h=heightOf(l),w=gapWidth(l,g),jd=jumpDur(v),u0=C.BOXU,a0=h+arcY(u0),alt=a0>=g.rise?flightAlt(v,h,w,u0):a0-sinkRate(jd)*w/v; return alt>=g.rise?0:(alt>0?1:2); }
-function sgCleanSpeed(l,g,T0){ var T=Math.max(T0,1),lo=1,hi=T,i,m; if(sgClearAt(l,g,T)!==0){return Infinity;} for(i=0;i<20;i++){ m=(lo+hi)/2; if(sgClearAt(l,g,m)===0){hi=m;} else {lo=m;} } return hi*1.04; }
+function sgCleanSpeed(l,g,T0){ var T=Math.max(T0,1),s=Math.max(0.5,T/240),v=T; if(sgClearAt(l,g,T)!==0){return Infinity;} while(v-s>=1&&sgClearAt(l,g,v-s)===0){ v-=s; } return v*1.04; }
 function sgStand(){ return C.STEPD+120; }
-function sgBoxNext(l){ var g=G.gaps[l.gi]; if(!g||!stepOn(g)||l.gx||l.out||l.done){return null;} var b=G.barriers[l.bi]; if(b&&b.x<g.x){return null;} if(towerOf(l,g)&&heightOf(l)+C.JUMP<g.stepH+2){return null;} if(!(g.pub||l.seenG[l.gi])){return null;} return g; }
+function sgBoxNext(l){ var g=G.gaps[l.gi]; if(!g||!stepOn(g)||l.gx||l.out||l.done){return null;} if(towerOf(l,g)&&heightOf(l)+C.JUMP<g.stepH+2){return null;} if(!(g.pub||l.seenG[l.gi])){return null;} return g; }
 function sgPlanKnown(l,g,st){
   var d=g.x-l.x,T=Math.max(topSpeed(l),1),TM=Math.max((C.TOP0+0.85*l.cap)*(inSing(l)?K.singSpeed:1),1),atCap=l.pts[1]>=l.cap-0.01,acc=accOf(l)*0.9,reach=Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*acc*Math.max(d-8,0));
   var vcl=sgCleanSpeed(l,g,TM),target=vcl<=TM*1.04?Math.min(vcl,TM):(sgClearAt(l,g,TM)===1?TM:Infinity);  /* the 4% margin never asks for more than top speed */
@@ -2905,18 +2905,21 @@ function sgPlanKnown(l,g,st){
   if(d<need&&sgClearAt(l,g,Math.min(T,reach))===2){ st.refused=true; return sgInp(0,[0,0,100]); }
   st.go=true; return sgInp(1,[20,50,30],{fwd:true});
 }
+function sgLate(l,g,st){ if(st.go||l.v*l.v/(2*C.DEC)<=g.x-l.x-8){ return null; } st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }
 function sgHold(l,g,w){ var d=g.x-l.x,brake=l.v*l.v/(2*C.DEC); if(d-brake>sgStand()+10){ return sgInp(l.basePace,w); } return sgInp(0,w); }
 var SGP={
   read:function(l,g,st){ var i,tall=false; for(i=1;i<l.bi;i++){ if(G.barriers[i].h>60){tall=true;} } return tall?SGP.build(l,g,st):SGP.rush(l,g,st); },
   rush:function(l,g,st){ return sgInp(1,[20,50,30],{fwd:true}); },
   build:function(l,g,st){
+    var late=sgLate(l,g,st); if(late){ return late; }
     var atCap=l.pts[1]>=l.cap-0.01,d=g.x-l.x;
     if(!atCap&&!st.go){ return sgHold(l,g,[0,100,0]); }
     if(st.go||knowsWidth(l,l.gi)){ return sgPlanKnown(l,g,st); }
-    if(d<=8){ return sgInp(0,[0,100,0]); }
-    var vmax=Math.sqrt(2*C.DEC*Math.max(d-6,1)); return sgInp(Math.min(0.25,vmax/Math.max(topSpeed(l),1)),[0,100,0]);
+    if(d<=27){ return sgInp(0,[0,100,0]); }
+    var vmax=Math.sqrt(2*C.DEC*0.7*Math.max(d-25,0)); return sgInp(Math.min(0.25,vmax/Math.max(topSpeed(l),1)),[0,100,0]);
   },
   wait:function(l,g,st){
+    var late=sgLate(l,g,st); if(late){ return late; }
     if(st.go||knowsWidth(l,l.gi)){ return sgPlanKnown(l,g,st); }
     st.t=(st.t||0)+1/60; if(st.t>l.pat){ return SGP.build(l,g,st); }
     return sgHold(l,g,[0,0,100]);
@@ -2976,6 +2979,11 @@ var LESSONS=[];
 var SGC={},NOPEEK={rush:1};
 /* ?rules=share:70,odds:150 (page) or check.mjs: set rule knobs by key; returns the canonical query fragment */
 function rulesApply(o){ var out=[],i,r; for(i=0;i<RULES.length;i++){ r=RULES[i]; if(o[r.key]!==undefined){ K[r.k]=+o[r.key]; out.push(r.key+':'+(+o[r.key])); } } return out.join(','); }
+/* maxout: the strategy Cole found by playing (2026-10-31). Split Run 70 / Build 30 into height and speed only, never sight; once both are
+   at the ceiling, floor it. It never stops and never looks. check.mjs runs it on every map: a lesson map should beat it */
+SGC.maxout=function(l){ var full=l.pts[1]>=l.cap-0.01&&l.pts[2]>=l.cap-0.01; return sgInp(full?1:0.7,[0,50,50],full?{fwd:true}:{}); };
+SGP.maxout=function(l,g,st){ return SGC.maxout(l); };
+NOPEEK.maxout=1;
 
 /* ---- lesson: close-race ---- */
 /* ---- close-race: A close race leaves no slack. ---- */
@@ -3170,10 +3178,12 @@ function srPaced(l,f){
 SGC['sr-fast']=function(l){ return sgInp(1,[20,50,30]); };
 SGP['sr-fast']=function(l,g,st){ return sgInp(1,[20,50,30],{fwd:true}); };
 SGC['sr-pace']=function(l){ return srPaced(l,1); };
+/* the plan now sees a box with a barrier still before it (harness fix 2026-10-31); until that barrier is passed, keep pacing for it */
+function srBarFirst(l,g){ var b=G.barriers[l.bi]; return !!b&&b.x<g.x; }
 /* at the box: hold speed while still in the air from the barrier (speeding up mid-air stretches the landing past the face), then floor it */
-SGP['sr-pace']=function(l,g,st){ if(l.jt>=0){ return sgInp(Math.min(1,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(1,[20,50,30],{fwd:true}); };
+SGP['sr-pace']=function(l,g,st){ if(srBarFirst(l,g)){ return srPaced(l,1); } if(l.jt>=0){ return sgInp(Math.min(1,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(1,[20,50,30],{fwd:true}); };
 SGC['sr-steady']=function(l){ return srPaced(l,0.85); };
-SGP['sr-steady']=function(l,g,st){ if(l.jt>=0){ return sgInp(Math.min(0.85,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(0.85,[20,50,30]); };
+SGP['sr-steady']=function(l,g,st){ if(srBarFirst(l,g)){ return srPaced(l,0.85); } if(l.jt>=0){ return sgInp(Math.min(0.85,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(0.85,[20,50,30]); };
 NOPEEK['sr-fast']=1; NOPEEK['sr-pace']=1; NOPEEK['sr-steady']=1;
 
 /* sight-safe cruising: never faster than it could stop within what it can see clearly ahead (sight range, or the nearest rival's shadow),

@@ -22,10 +22,12 @@ function srPaced(l,f){
 SGC['sr-fast']=function(l){ return sgInp(1,[20,50,30]); };
 SGP['sr-fast']=function(l,g,st){ return sgInp(1,[20,50,30],{fwd:true}); };
 SGC['sr-pace']=function(l){ return srPaced(l,1); };
+/* the plan now sees a box with a barrier still before it (harness fix 2026-10-31); until that barrier is passed, keep pacing for it */
+function srBarFirst(l,g){ var b=G.barriers[l.bi]; return !!b&&b.x<g.x; }
 /* at the box: hold speed while still in the air from the barrier (speeding up mid-air stretches the landing past the face), then floor it */
-SGP['sr-pace']=function(l,g,st){ if(l.jt>=0){ return sgInp(Math.min(1,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(1,[20,50,30],{fwd:true}); };
+SGP['sr-pace']=function(l,g,st){ if(srBarFirst(l,g)){ return srPaced(l,1); } if(l.jt>=0){ return sgInp(Math.min(1,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(1,[20,50,30],{fwd:true}); };
 SGC['sr-steady']=function(l){ return srPaced(l,0.85); };
-SGP['sr-steady']=function(l,g,st){ if(l.jt>=0){ return sgInp(Math.min(0.85,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(0.85,[20,50,30]); };
+SGP['sr-steady']=function(l,g,st){ if(srBarFirst(l,g)){ return srPaced(l,0.85); } if(l.jt>=0){ return sgInp(Math.min(0.85,l.v/Math.max(topSpeed(l),1)),[20,50,30]); } return sgInp(0.85,[20,50,30]); };
 NOPEEK['sr-fast']=1; NOPEEK['sr-pace']=1; NOPEEK['sr-steady']=1;
 
 /* sight-safe cruising: never faster than it could stop within what it can see clearly ahead (sight range, or the nearest rival's shadow),
