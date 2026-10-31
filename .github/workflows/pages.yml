@@ -5,6 +5,7 @@ name: Publish Pacing the Frontier
 # Only pull requests opened by the owner from a branch in this repository get a preview; forks and other authors are skipped,
 # so outside code is never hosted on the site. PREVIEW_AUTHORS is the allowlist. A closed pull request's preview goes at the next deploy.
 # A branch that carries the hidden-width check page (check/hidden-width/page-hidden.html) also gets it at /preview/pr-<number>/hidden.html.
+# A branch that carries the race segments page (check/segments/segments.html) also gets it at /preview/pr-<number>/segments.html.
 on:
   push:
     branches: [main]
@@ -52,9 +53,13 @@ jobs:
                 { echo '<meta name="robots" content="noindex">'; cat hidden.html; } > "_site/preview/pr-$num/hidden.html"
                 echo "Hidden-width preview for PR $num from $ref"
               fi
+              if git show "origin/$ref:experiments/pacing-the-frontier/check/segments/segments.html" > segments.html 2>/dev/null; then
+                { echo '<meta name="robots" content="noindex">'; cat segments.html; } > "_site/preview/pr-$num/segments.html"
+                echo "Segments preview for PR $num from $ref"
+              fi
             fi
           done
-          rm -f page.html hidden.html
+          rm -f page.html hidden.html segments.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deployment

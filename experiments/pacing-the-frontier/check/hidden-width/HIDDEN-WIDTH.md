@@ -63,6 +63,24 @@ By width: rush wins every race up to 1.44 times the fit (clean to 1.13, scrapes 
 
 Cole played the hidden box by hand and called it "almost precisely what I was hoping for": it makes you want to invest in sight. Not every map should have it. One problem: following the pack closely, the rivals' sight shadow hid the box, so he could not brake. His answer was to get in front by investing in speed and height, then dump everything into sight so he could see the box in time to stop. That saved him and the Steward; a pack that stays together dives into the box together. That is the leader's shadow doing what Cole's occlusion rule says it should, and in play it reads as "do not tailgate into the unknown".
 
+## Jump peek (2026-10-30, Cole's call; `verified`, not `human_validated`)
+
+Cole's problem in play was the pack: behind a rival of equal height the box face stays hidden until it is too late to brake. Rule added (`patch.mjs` section 8, knob `K.peek`, on by default): in the air a lab's eye is at its jump height, so it sees box faces (and barriers) over a rival's head. Width is still judged from the standing eye, so a peek says "a box, this tall" and never how wide. Cole agreed to face-only. Humans can jump anywhere already, so nothing changes in the controls.
+
+Bots peek too, with a delay set by their sight (Cole's addition): shadowed, and the next box not yet seen, they hop. At the top of the hop they remember how far they could see (`l.peekTo` = position + sight range), and they hop again only when that point comes within their braking distance plus 40. Low sight means frequent peeks, high sight means rare ones. They never hop next to a known barrier.
+
+One-box track, sight shadow on, 60 races each (`results-peek0.md` off, `results-peek1.md` on; `node hidden.mjs --n 20 --wlo 0.6 --whi 2.6 --L 60 --occlude 1 --peek 0|1`):
+
+| Posture | Fall, off → on | Went blind, off → on | Saw the box at, off → on | Won, off → on |
+|---|---|---|---|---|
+| rush | 55% → 55% | 100% → 100% | 113 → 138 | 37% → 45% |
+| build | 17% → 0% | 45% → 0% | 99 → 138 | 3% → 5% |
+| wait | 17% → 0% | 42% → 0% | 82 → 138 | 22% → 20% |
+
+The careful postures stop running blind into the box behind a rival; they match the shadow-off table. Rush still floors it, so it is unchanged. Each lab averages about 2.7 extra hops a race ("Hops" counts barrier jumps too). Everyone sees the box at the same distance with the peek on, because a peek and a rival's look at the same moment make the face public (the existing two-labs-in-sight rule). So a peek helps the whole pack, not only the hopper.
+
+Not tested: the crawl-at-the-face occlusion trick (a peek over a lab crawling within about 21 of the face should still miss it, by geometry); whether a human hops nonstop instead of timing a peek; whether a rival mid-jump should cast a taller shadow (it does not: only the viewer's eye rises). Checked in the browser: standing 25 behind an equal-height rival the face is hidden, at the top of a jump it is in view and the width is still unknown; a full race on Cole's seed ran with no errors, bots peeked 2 to 4 times each.
+
 ## What would show this wrong
 
 - A human rusher who slows when the far edge is out of view. Then rush is not rush, and the blind commit disappears.
