@@ -2,14 +2,14 @@
 //   readiness  how often maxout reaches a box with height and speed both at the ceiling (the "max everything, then go" problem)
 //   adversary  each simple play-to-win strategy in ADV (lessons-sim.js) plus maxout; the best of them is what a player who plays to win gets
 //   lesson     the lesson map's own strategy (LESSON below), and its margin over the best adversary
-// Bot play only.   node build.mjs --all && node exp.mjs [--rules brake:256,space:70] [--start 1] [--n 40] [--out file.json]
+// Bot play only.   node build.mjs --all && node exp.mjs [--map key] [--page <lesson>/page.html] [--rules brake:256,space:70] [--start 1] [--n 40] [--out file.json]
 import {writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2), A = {};
 for (let i = 0; i < argv.length; i++) if (argv[i].startsWith('--')) A[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : '1';
-process.env.PF_PAGE = join(HERE, 'all.html');
+process.env.PF_PAGE = A.page ? (A.page.startsWith('/') ? A.page : join(process.cwd(), A.page)) : join(HERE, 'all.html');  // --page <lesson>/page.html: a designer's own build (node build.mjs --only <lesson>)
 const {PF, configure, resetAll} = await import('../hidden-width/bt.mjs');
 const N = +(A.n ?? 40), START = +(A.start ?? 1);
 const LESSON = {'close-footsteps': 'crMirror', 'close-wall': 'crPlant', 'close-spend': 'crSave', 'see-early-brake': 'seeearly', 'see-early-bravo': 'seeearly',
@@ -41,7 +41,7 @@ PF.SEGS.forEach((seg, i) => {
   adv.maxout = run(i + 1, 'maxout', ready);
   for (const p of PF.ADV) if (p !== 'adv-hs-go') adv[p] = run(i + 1, p, null);
   const best = Object.entries(adv).sort((a, b) => b[1] - a[1])[0];
-  const lp = LESSON[seg.key], lw = lp ? run(i + 1, lp, null) : null;
+  const lp = seg.strategy || LESSON[seg.key], lw = lp ? run(i + 1, lp, null) : null;
   maps.push({key: seg.key, title: seg.title, lesson: lp || null, ready: ready.n ? Math.round(100 * ready.full / ready.n) : null, boxes: ready.n,
     maxout: adv.maxout, best: best[0], bestWin: best[1], lessonWin: lw, margin: lw === null ? null : lw - best[1], adv});
   process.stderr.write('.');

@@ -18,7 +18,11 @@ function rep(a, b) { const n = S.split(a).length - 1; if (n !== 1) throw new Err
 const dirs = readdirSync(HERE, {withFileTypes: true}).filter(d => d.isDirectory() && existsSync(join(HERE, d.name, 'maps.js'))).map(d => d.name).sort();
 const pick = ONLY ? dirs.filter(d => d === ONLY) : dirs.filter(d => d !== 'example');
 if (ONLY && !pick.length) throw new Error('no ' + ONLY + '/maps.js');
-const MAPS = pick.map(d => '/* ---- lesson: ' + d + ' ---- */\n' + readFileSync(join(HERE, d, 'maps.js'), 'utf8')).join('\n');
+// each lesson's maps carry their folder name as dir (judge.mjs --only <lesson>)
+const MAPS = pick.map(d => '/* ---- lesson: ' + d + ' ---- */\n' + readFileSync(join(HERE, d, 'maps.js'), 'utf8') + `\nLESSONS.forEach(function(m){ if(!m.dir){ m.dir='${d}'; } });`).join('\n');
+// adversary/*.js: strategies written by adversaries (not designers) to beat lesson maps; each file pushes its posture names onto ADV
+const ADIR = join(HERE, 'adversary');
+const POOL = existsSync(ADIR) ? readdirSync(ADIR).filter(f => f.endsWith('.js')).sort().map(f => '\n/* ---- adversary: ' + f + ' ---- */\n' + readFileSync(join(ADIR, f), 'utf8')).join('') : '';
 
 // 1. sim
 rep('peek:1,stepGaps:0', 'peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,space:100,wallStop:0,stepGaps:0');
@@ -43,7 +47,7 @@ rep('var T=Math.max(T0,1),lo=1,hi=T,i,m; if(sgClearAt(l,g,T)!==0){return Infinit
   'var T=Math.max(T0,1),s=Math.max(0.5,T/240),v=T; if(sgClearAt(l,g,T)!==0){return Infinity;} while(v-s>=1&&sgClearAt(l,g,v-s)===0){ v-=s; } return v*1.04;');
 
 // 2. lessons and maps
-rep('\nwindow.PF={segUse:segUse,SEGS:SEGS,', '\n' + readFileSync(join(HERE, 'lessons-sim.js'), 'utf8') + '\n' + MAPS +
+rep('\nwindow.PF={segUse:segUse,SEGS:SEGS,', '\n' + readFileSync(join(HERE, 'lessons-sim.js'), 'utf8') + POOL + '\n' + MAPS +
   (ALL ? '\nSEGS=SEGS.concat(LESSONS);' : '\nif(LESSONS.length){ SEGS=LESSONS; }') + '\nwindow.PF={segUse:segUse,SEGS:SEGS,RULES:RULES,LESSONS:LESSONS,rulesApply:rulesApply,ADV:ADV,SGC:SGC,SGP:SGP,');
 
 // 3. the page

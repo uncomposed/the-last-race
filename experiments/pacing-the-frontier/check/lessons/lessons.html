@@ -3031,6 +3031,213 @@ Object.keys(ADV_SPLITS).forEach(function(sk){
 });
 ADV.push('rush','build','wait');
 
+/* ---- adversary: a.js ---- */
+/* adversary a (round 2, 2026-10-31): strategies written to beat the see-early and small-risks lesson maps. Only what a player sees:
+   meters, positions of labs in view, barriers and box faces in view, widths once shown, and what the map header says. */
+function xFull(l,k){ var i; for(i=0;i<k.length;i++){ if(l.pts[k[i]]<l.cap-0.01){ return false; } } return true; }
+/* the next barrier, if it is known (in view or passed) and still ahead */
+function xBarAhead(l){ var b=G.barriers[l.bi]; return (b&&b.x>l.x&&knowsBar(l,l.bi))?b:null; }
+/* brake so as to stand at x; returns pace */
+function xStopAt(l,x){ var e=x-l.x; if(e<=1){ return 0; } return Math.min(1,Math.sqrt(2*decOf(l)*e)/Math.max(topSpeed(l),1)); }
+/* the top speed at the ceiling, and the run-up it needs */
+function xTop(l){ return Math.max((C.TOP0+0.85*l.cap)*(inSing(l)?K.singSpeed:1),1); }
+function xRunUp(l){ var TM=xTop(l); return TM*TM/(2*accOf(l)*0.9)+15; }
+/* reach speed target at the face of g: go if it can, else back up for the run-up (as far as the track allows), then go */
+function xRun(l,g,st,target){
+  var d=g.x-l.x,T=Math.max(topSpeed(l),1),acc=accOf(l)*0.9,reach=Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*acc*Math.max(d-8,0));
+  if(st.go){ return sgInp(1,[0,50,50],{fwd:true}); }
+  if(reach>=Math.min(target,T)){ st.go=true; return sgInp(1,[0,50,50],{fwd:true}); }
+  if(d<target*target/(2*acc)+15&&l.x>backLimit(l)+2){ return sgInp(0,[0,0,100],{rev:true}); }
+  st.go=true; return sgInp(1,[0,50,50],{fwd:true});
+}
+
+/* x-se-ready (see-early-brake): never meet a box half-built, never look. Cruise filling height and speed (maxout's split). A low painted
+   line in view is where you stand: brake to stop before it. Standing there, fill height, then speed, then take the longest run-up and
+   floor it. No sight at all, so it never knows the width */
+SGC['x-se-ready']=function(l){
+  var b=xBarAhead(l),inp=SGC.maxout(l);
+  if(b&&b.h<=15&&!l.sst_go){ var p=xStopAt(l,b.x-12); if(p*Math.max(topSpeed(l),1)<l.v+0.5||p<inp.pace){ inp=sgInp(Math.min(inp.pace,p),[0,50,50]); } }
+  return inp;
+};
+SGP['x-se-ready']=function(l,g,st){
+  var b=xBarAhead(l);
+  if(!st.go&&!xFull(l,[1,2])){
+    var sx=b&&b.h<=15&&b.x<g.x?b.x-12:g.x-xRunUp(l),p=xStopAt(l,sx);
+    if(l.v*l.v/(2*decOf(l))>g.x-l.x-6){ st.go=true; return sgInp(1,[0,50,50],{fwd:true}); }
+    return sgInp(p,xFull(l,[1])?[0,0,100]:[0,100,0]);
+  }
+  return xRun(l,g,st,Math.max(topSpeed(l)-1,1));
+};
+NOPEEK['x-se-ready']=1;
+ADV.push('x-se-ready');
+
+/* x-fill: fill first, then go. Whenever height or speed is short of the ceiling, stand still and build them (height
+   first); once both are full, floor it and take the longest run-up you can to each box. Never puts anything into sight, never waits for a
+   rival, never looks at a width. The most obvious "max everything, then go" a player tries after max-out */
+function xFillIn(l,w){ return xFull(l,[1])?[0,0,100]:[0,100,0]; }
+SGC['x-fill']=function(l){
+  if(!xFull(l,[1,2])){ return sgInp(0,xFillIn(l)); }  /* no box count: a player is not told how many boxes there are */
+  return sgInp(1,[0,50,50],{fwd:true});
+};
+SGP['x-fill']=function(l,g,st){
+  if(!st.go&&!xFull(l,[1,2])){
+    if(l.v*l.v/(2*decOf(l))>g.x-l.x-6){ st.go=true; return sgInp(1,[0,50,50],{fwd:true}); }
+    return sgInp(0,xFillIn(l));
+  }
+  return xRun(l,g,st,Math.max(topSpeed(l)-1,1));
+};
+NOPEEK['x-fill']=1;
+ADV.push('x-fill');
+
+/* EARLY JUMP (jumping by hand, chill mode off, as in the harness): a barrier only needs your height plus the jump's lift at the moment you
+   pass it, and the lift is nearly full for most of the arc. So press jump early, pass the barrier near the end of the arc, land just past
+   it, and you have a fresh jump for a box right behind it, at full speed. xHop adds that press to any input. It uses only what is on screen:
+   the barrier's distance and height, your height and your speed */
+function xHopU(l,b){ var need=b.h-heightOf(l)+2; if(need<=0){ return -1; } if(need>=C.JUMP){ return 0; } return 1-Math.asin(need/(2.2*C.JUMP))/Math.PI; }
+function xHop(l,inp,late){
+  var b=xBarAhead(l); if(!b||l.jt>=0||l.gx||l.v<5||inp.rev){ return inp; }
+  var um=xHopU(l,b); if(um<0||um<0.55){ return inp; }  /* no jump needed, or the lift is too short to jump early */
+  var u=Math.max(0.5,um-(late||0.06)),d=b.x-l.x,v=Math.max(l.v,1);
+  if(d>0&&d<=u*jumpDur(v)*v){ return Object.assign({},inp,{jump:true}); }
+  return inp;
+}
+/* a person behind a rival of the same height cannot see the road; a hop lifts the eye over it (the page's own peek). Hop when shadowed and
+   the road this hop lands on has not been seen yet; remember how far the top of the hop showed */
+function xPeek(l,inp){
+  if(l.jt>=0){ if(l.jy>=0.9*C.JUMP){ l.xpk=Math.max(l.xpk===undefined?-1e9:l.xpk,l.x+sightRange(l)); } return inp; }
+  if(inp.jump||inp.rev||l.gx||l.v<5||l.bounce){ return inp; }
+  if(!shadows(l,1).length||xBarAhead(l)){ return inp; }
+  if(l.xpk!==undefined&&l.x+Math.max(l.v,1)*jumpDur(l.v)+40<l.xpk){ return inp; }
+  return Object.assign({},inp,{jump:true});
+}
+function xCruise(l,pace,w){ return xFull(l,[1,2])?sgInp(1,w,{fwd:true}):sgInp(pace,w); }
+/* x-hop: cruise at 85% filling height and speed (floor it once both are full), jump each barrier early, never brake */
+SGC['x-hop']=function(l){ return xPeek(l,xHop(l,xCruise(l,0.85,[0,60,40]))); };
+SGP['x-hop']=function(l,g,st){ return SGC['x-hop'](l); };
+NOPEEK['x-hop']=1; ADV.push('x-hop');
+/* x-hopfast: the same, flat out (no investing at top speed) */
+SGC['x-hopfast']=function(l){ return xPeek(l,xHop(l,sgInp(1,[0,60,40],{fwd:xFull(l,[1,2])}))); };
+SGP['x-hopfast']=SGC['x-hopfast'];
+NOPEEK['x-hopfast']=1; ADV.push('x-hopfast');
+/* x-hopclean: x-hop, but a box with no barrier in front of it is never taken as a near miss: once its width is known, plan a clean crossing
+   (build height, back up for the run-up); if its width is unknown, stop and build until it is seen */
+SGC['x-hopclean']=SGC['x-hop'];
+SGP['x-hopclean']=function(l,g,st){
+  var b=G.barriers[l.bi]; if(b&&b.x<g.x){ return SGC['x-hop'](l); }
+  if(st.go){ return sgInp(1,[0,50,50],{fwd:true}); }
+  if(!knowsWidth(l,l.gi)){ var late=sgLate(l,g,st); if(late){ return late; } return sgInp(xStopAt(l,g.x-40),[30,70,0]); }
+  return sgPlanKnown(l,g,st);
+};
+NOPEEK['x-hopclean']=1; ADV.push('x-hopclean');
+
+/* x-steady<v>: never look at a width. Cross every box at the same speed v with height at the ceiling; at full height that speed clears
+   most boxes and only scrapes the rest. After each box, brake at once and stand to refill height (and speed, until top speed passes v),
+   then run up to v (backing up if the run-up is short) and cross. Accepts a scrape on a wide box: strikes are a budget */
+function xReady(l,v){ return xFull(l,[1])&&(topSpeed(l,true)>=v+5||xFull(l,[2])); }
+function xSteadyW(l){ return xFull(l,[1])?[0,0,100]:[0,100,0]; }
+function xRunV(l,g,st,v){
+  v=Math.min(v,topSpeed(l,true)-1); var d=g.x-l.x,T=Math.max(topSpeed(l),1),acc=accOf(l)*0.9,reach=Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*acc*Math.max(d-8,0));
+  if(!st.go){
+    if(reach>=v||l.v*l.v/(2*decOf(l))>d-8){ st.go=true; }  /* fast enough, or too close to stop: go */
+    else if(l.x>backLimit(l)+2){ return sgInp(0,xSteadyW(l),{rev:true}); }
+    else { st.go=true; }
+  }
+  return sgInp(Math.min(1,(v+3)/T),[0,50,50]);
+}
+[110,115,120].forEach(function(v){
+  var nm='x-steady'+v;
+  SGC[nm]=function(l){ if(G.gaps[l.gi]&&!xReady(l,v)){ return sgInp(0,xSteadyW(l)); } return sgInp(Math.min(1,v/Math.max(topSpeed(l),1)),xSteadyW(l)); };
+  SGP[nm]=function(l,g,st){
+    if(!st.go&&!xReady(l,v)){
+      if(l.v*l.v/(2*decOf(l))>g.x-l.x-3){ st.go=true; return sgInp(1,[0,50,50],{fwd:true}); }  /* stopping right at the face is fine: there is room to back up */
+      return sgInp(0,xSteadyW(l));
+    }
+    return xRunV(l,g,st,v);
+  };
+  NOPEEK[nm]=1; ADV.push(nm);
+});
+/* tried and dropped (bot play, see NOTES-a.md): x-tall (never stop, fill on the move), x-ready (stand and fill before every box), other
+   x-steady speeds (80 to 140, and no cap), x-speed (speed instead of height), x-draft (wait at each box for a rival to cross first: the
+   rivals stop behind a waiting lab instead, and the race times out) */
+
+/* ---- adversary: b.js ---- */
+/* adversary b (round 2, 2026-10-31) [[ai gen]] Claude: strategies written to beat the close-race and steward-pack lesson maps.
+   Only what a player sees: own meters, lab positions (canvas and minimap), box faces in view, widths once shown, the map header.
+   Wrapped in a function so nothing here collides with another file. Every posture is pushed onto ADV. */
+(function(){
+  function hFull(l){ return l.pts[1]>=l.cap-0.01; }
+  function hsFull(l){ return l.pts[1]>=l.cap-0.01&&l.pts[2]>=l.cap-0.01; }
+  function topAtCap(l){ return C.TOP0+0.85*l.cap; }
+  function runUp(l){ var TM=topAtCap(l); return TM*TM/(2*accOf(l)*0.9)+15; }
+  /* the nearest lab behind l (positions are on the minimap) */
+  function behind(l){ var b=null,i,o; for(i=0;i<G.labs.length;i++){ o=G.labs[i]; if(o!==l&&!o.out&&!o.done&&o.x<l.x&&(!b||o.x>b.x)){ b=o; } } return b; }
+
+  /* y-pace (close-footsteps): stay just ahead of the rival and never brake hard. While a lab is within 350 behind, hold about 25 ahead of
+     it and never below 36, building height first, then speed. Your height is the taller, so you hide the box from it: it never floors.
+     Floor it once height and speed are full, or once the box face is in view and only a run-up is left. Nobody close: cruise at 62,
+     braking only to stand a run-up short of a box you have seen, and floor it when full */
+  function pace(l,st){
+    var top=Math.max(topSpeed(l),1),full=hsFull(l),w=hFull(l)?[0,0,100]:[0,100,0],FL=sgInp(1,[0,50,50],{fwd:true});
+    if(st.go){ return FL; }
+    var g=G.gaps[l.gi],d=g?g.x-l.x:Infinity,seen=!!g&&!l.gx&&knowsGap(l,l.gi);
+    var TM=topAtCap(l),acc=accOf(l)*0.9,need=Math.max(0,(TM*TM-l.v*l.v)/(2*acc))+15,r=behind(l);
+    if(r&&l.x-r.x<350){
+      if(full||(seen&&d<need+5)){ st.go=true; return FL; }
+      return sgInp(clamp(Math.max(36,r.v+(25-(l.x-r.x)))/top,0,1),w);
+    }
+    if(!seen){ return full?FL:sgInp(clamp(62/top,0,1),w); }
+    if(full){ if(d<TM*TM/(2*acc)+15&&l.x>backLimit(l)+2&&l.v<1){ return sgInp(0,[0,0,100],{rev:true}); } st.go=true; return FL; }
+    if(l.v*l.v/(2*decOf(l))>d-8){ st.go=true; return FL; }
+    var vs=Math.sqrt(2*decOf(l)*Math.max(d-TM*TM/(2*acc)-15,0));
+    return sgInp(clamp(Math.min(62,vs)/top,0,1),w);
+  }
+  SGC['y-pace']=function(l){ return pace(l,l.ypace||(l.ypace={})); };
+  SGP['y-pace']=function(l,g,st){ return pace(l,st); };
+  NOPEEK['y-pace']=1;
+
+  /* y-look (close-wall): stop to look. Brake to stand 200 short of the face building height; once height is full and you have stood 0.4 s,
+     creep in at 0.3 until the far edge shows, then plan the run-up as Build does. Written to test whether a natural look-first play
+     reaches the lesson's wall without meaning to */
+  SGP['y-look']=function(l,g,st){
+    if(st.go||knowsWidth(l,l.gi)){ return sgPlanKnown(l,g,st); }
+    var d=g.x-l.x,top=Math.max(topSpeed(l),1),hF=hFull(l);
+    if(!st.creep&&l.still>=0.4&&hF){ st.creep=true; }
+    if(!st.creep){ return sgInp(Math.min(1,Math.sqrt(2*decOf(l)*Math.max(d-200,0))/top),[0,100,0]); }
+    if(d<=8){ return sgInp(0,[0,0,100]); }
+    return sgInp(Math.min(0.3,Math.sqrt(2*decOf(l)*Math.max(d-8,1))/top),hF?[0,0,100]:[0,100,0]);
+  };
+  NOPEEK['y-look']=1;
+
+  /* y-run40 (close-spend): max-out with the Run slider at 40. Cruise at 0.4 putting half into height and half into speed; floor it once
+     both are full. It never stops and never looks */
+  function run40(l,st){ if(st.go||hsFull(l)){ st.go=true; return sgInp(1,[0,50,50],{fwd:true}); } return sgInp(0.4,[0,50,50]); }
+  SGC['y-run40']=function(l){ return run40(l,{}); };
+  SGP['y-run40']=function(l,g,st){ return run40(l,st); };
+  NOPEEK['y-run40']=1;
+
+  /* y-prep (steward-minefield): stop and build at every box, ignore the pack. Cruise at 0.9 (sight 30, height 40, speed 30), never faster
+     than you can stop on road you have seen (own sight, or what the last hop showed). At a box face: if the width is known and a full
+     run clears it clean, plan as Build does; else brake to stand a run-up short filling height then speed, and floor it when full */
+  function clearTo(l){ var sh=shadows(l),a=Infinity,i; for(i=0;i<sh.length;i++){ a=Math.min(a,sh[i].a); } var own=a===Infinity?sightRange(l):a; return Math.max(own,(l.peekTo===undefined?-1e9:l.peekTo)-l.x); }
+  SGC['y-prep']=function(l){
+    var b=G.barriers[l.bi],g=G.gaps[l.gi];
+    if(b&&(!g||b.x<g.x)&&knowsBar(l,l.bi)&&heightOf(l)+C.JUMP<b.h+2){ return null; }
+    var top=Math.max(topSpeed(l),1),v=Math.min(0.9*top,Math.sqrt(2*decOf(l)*Math.max(clearTo(l)-12,0)));
+    return sgInp(clamp(v/top,0,1),[30,40,30]);
+  };
+  SGP['y-prep']=function(l,g,st){
+    var d=g.x-l.x,TM=topAtCap(l),hF=hFull(l),FL=sgInp(1,[20,50,30],{fwd:true});
+    if(st.go){ return FL; }
+    if(knowsWidth(l,l.gi)&&sgClearAt(l,g,TM)===0){ return sgPlanKnown(l,g,st); }
+    var late=sgLate(l,g,st); if(late){ return late; }
+    var R=runUp(l);
+    if(hsFull(l)){ if(d<R&&l.x>backLimit(l)+2){ return sgInp(0,[0,0,100],{rev:true}); } st.go=true; return FL; }
+    return sgInp(Math.min(1,Math.sqrt(2*decOf(l)*Math.max(d-R,0))/Math.max(topSpeed(l),1)),hF?[0,0,100]:[0,100,0]);
+  };
+
+  ADV.push('y-pace','y-look','y-run40','y-prep');
+})();
+
 /* ---- lesson: close-race ---- */
 /* ---- close-race: A close race leaves no slack. ---- */
 /* crRacer (a rival): cruises until it is 250 from the box face, then decides once: a box whose width it does not know, it floors (the gamble);
@@ -3038,9 +3245,16 @@ ADV.push('rush','build','wait');
 SGP.crRacer=function(l,g,st){
   if(st.go===undefined&&g.x-l.x>250){ return sgInp(l.basePace,POL[l.kind].w); }
   if(st.go===undefined&&!knowsWidth(l,l.gi)){ st.go=true; }
+  var late=sgLate(l,g,st); if(late){ return late; }  /* round 2: a racer that learns the width too late to stop goes, as the page's bots do */
   return st.go?sgInp(1,[20,50,30],{fwd:true}):sgPlanKnown(l,g,st);
 };
 NOPEEK.crRacer=1;
+/* crRival (Footsteps' rival): a crRacer that pounces. When a lab ahead of it, in its sight, brakes hard or stands (under 35), it floors it at
+   once, at the box or before it. A rival on your tail takes the moment you hesitate */
+function crSlowAhead(l){ var i,o,sr=sightRange(l); for(i=0;i<G.labs.length;i++){ o=G.labs[i]; if(o!==l&&!o.out&&!o.done&&o.x>l.x&&o.x-l.x<sr&&o.x>60&&o.v<35){ return true; } } return false; }
+SGC.crRival=function(l){ return crSlowAhead(l)?sgInp(1,[0,0,100],{fwd:true}):null; };
+SGP.crRival=function(l,g,st){ if(crSlowAhead(l)){ st.go=true; } return SGP.crRacer(l,g,st); };
+NOPEEK.crRival=1;
 /* nearest rival behind l, as a distance */
 function crBehind(l){ var m=Infinity,i,o; for(i=0;i<G.labs.length;i++){ o=G.labs[i]; if(o!==l&&!o.out&&!o.done&&o.x<l.x){ m=Math.min(m,l.x-o.x); } } return m; }
 /* crLook (you): the careful lab, as quick as care gets. Width unknown: brake to stop about 180 short of the face (room for most of a run-up),
@@ -3053,60 +3267,90 @@ SGP.crLook=function(l,g,st){
   if(d<=8){ return sgInp(0,[0,0,100]); }
   var vmax=Math.sqrt(2*decOf(l)*Math.max(d-8,1)); return sgInp(Math.min(0.3,vmax/Math.max(topSpeed(l),1)),[0,0,100]);
 };
-/* crMirror (you): look in the mirror once, when the box comes into view. A rival within 200 behind: rush. Otherwise: look */
+/* crPrep (you): stop and build, then go. Brake to stop about 180 short of the face while filling height and speed, stand until both are at
+   the ceiling, back up if it stopped short of the run-up top speed needs, then floor it. It never needs to see the far edge: a full lab
+   clears or scrapes every box Footsteps draws */
+SGP.crPrep=function(l,g,st,stopAt){
+  var sa=stopAt||180,d=g.x-l.x,full=l.pts[1]>=l.cap-0.01&&l.pts[2]>=l.cap-0.01;
+  if(st.go){ return sgInp(1,[20,50,30],{fwd:true}); }
+  var late=sgLate(l,g,st); if(late){ return late; }
+  if(full){ var tm=C.TOP0+0.85*l.cap; if(d<tm*tm/(2*accOf(l)*0.9)+15&&l.x>backLimit(l)+2){ return sgInp(0,[0,0,100],{rev:true}); } st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }
+  var vs=Math.sqrt(2*decOf(l)*Math.max(d-sa,0)); return sgInp(Math.min(l.basePace,vs/Math.max(topSpeed(l),1)),[0,50,50]);
+};
+/* crGo (you): go now. Keep running and put everything into speed, floor it once speed is at the ceiling (as adv-s-go does) */
+SGP.crGo=function(l,g,st){ return sgInp(1,[0,0,100]); };  /* at the box: floor it, still putting what it can into speed */
+SGC.crGo=function(l){ return advCruise(l,[0,0,100]); };
+NOPEEK.crGo=1;
+/* crMirror (you): check the mirror. While cruising, a rival within 200 behind means go: build speed as crGo does (otherwise the page's own
+   cruise). When the box comes into view, decide once: a rival within 200 behind, go now (crGo); otherwise stop and build (crPrep) */
+SGC.crMirror=function(l){ return crBehind(l)<200?advCruise(l,[0,0,100]):null; };
 SGP.crMirror=function(l,g,st){
   if(st.close===undefined){ st.close=crBehind(l)<200; }
-  return st.close?SGP.rush(l,g,st):SGP.crLook(l,g,st);
+  return st.close?SGP.crGo(l,g,st):SGP.crPrep(l,g,st);
 };
 
-LESSONS.push({key:'close-footsteps',lesson:'A close race leaves no slack',title:'Footsteps',
-  q:'A rival races behind you. Sometimes it is right on your tail, sometimes far back. The box ahead could be any width. Do you stop to look?',
-  meta:'A lead is time you can spend on safety. A rival on your tail takes that time away.',
-  look:'Racer floors it at any box it cannot size. Stop with Racer far back and you can look and still cross first. Stop with Racer on your tail and it goes in ahead of you.',
-  labs:[{x:0,pts:[30,50,40]},RIV('crRacer','Racer',-20,[30,50,40])],
+LESSONS.push({key:'close-footsteps',lesson:'A close race leaves no slack',title:'Footsteps',strategy:'crMirror',
+  q:'A rival as strong as you can get is behind you: sometimes on your tail, sometimes far back. The box ahead could be any width, and the finish is just past it. Do you stop to look?',
+  meta:'A lead is time you can spend on safety. A rival on your tail takes that time away, and the race makes the gamble the winning move.',
+  look:'Racer is fully built and floors it at any box it cannot size, and it gets across. Stop with Racer far back and you can look and still cross first. Stop with Racer on your tail and it goes in ahead of you, and the finish is too close to catch it.',
+  labs:[{x:0,pts:[50,50,40]},RIV('crRival','Racer',-60,[50,70,70],{pace:0.55})],
   /* the variant moves Racer: track(r) runs before the labs are placed (segScen, then segPost), so it can set where Racer starts */
-  track:function(r){ var close=r()<0.5,wide=r()<0.35,far=1000; this.labs[1].x=close?-20:-far;
+  track:function(r){ var close=r()<0.5,wide=r()<0.5,far=900; this.labs[1].x=close?-60:-far;
     var g=segBox(520,49,wide?1.19+0.05*r():0.97+0.13*r(),{odds:40});
-    return {bars:[],gaps:[g],finish:g.x+g.W+200,note:(close?'Racer starts on your tail (20 back). ':'Racer starts far back ('+far+'). ')+'The box: '+segSay(g,70)+' Falls roll 40%.'}; },
-  postures:['rush','crLook','crMirror'],
-  claim:{text:'Checking the mirror wins most: it looks when Racer is far and rushes when it is close', score:function(t){ return t.crMirror.win-Math.max(t.rush.win,t.crLook.win); }, need:10}});
+    return {bars:[],gaps:[g],finish:g.x+g.W+100,note:(close?'Racer starts on your tail (60 back). ':'Racer starts far back ('+far+'). ')+'The box: '+segSay(g,70)+' Falls roll 40%.'}; },
+  postures:['crMirror','rush','crLook','adv-hs-wait','maxout'],
+  claim:{text:'Checking the mirror wins at least 15 points more than the best of rushing, looking, waiting and max-out', score:function(t){ return t.crMirror.win-Math.max(t.rush.win,t.crLook.win,t['adv-hs-wait'].win,t.maxout.win); }, need:15}});
 
-/* crPlant (you): stop about 230 short of the face, stand a moment, then ease forward: the stop leaves a barrier of your height at the box
-   edge (installBarrier), before you have looked. Then look and cross as crLook does */
+/* crDash (a pack rival): cruises until it is 250 from the box face, then floors it, whatever it knows. The racer that never stops */
+SGP.crDash=function(l,g,st){ if(!st.go&&g.x-l.x>250){ return sgInp(l.basePace,POL[l.kind].w); } st.go=true; return sgInp(1,[0,0,100],{fwd:true}); };
+NOPEEK.crDash=1;
+/* crPlant (you), round 2: pull up inside the box's edge zone (the sim plants a stopped lab's wall only within 260 of the face) as soon as the
+   box is seen, building height as you brake; stand a moment and roll forward a touch: that leaves a wall of your height at the edge
+   (installBarrier: one wall per lab per box, at the height you have when you first move off). Then stand there and fill height and speed,
+   and floor it from where you are: 230 is room enough to reach top speed */
 SGP.crPlant=function(l,g,st){
-  var d=g.x-l.x;
+  var d=g.x-l.x,top=Math.max(topSpeed(l),1),full=l.pts[1]>=l.cap-0.01&&l.pts[2]>=l.cap-0.01;
   if(!st.planted){
-    if(g.stepH>0||l.stepDone[l.gi]){ st.planted=true; }
-    else if(st.nudge||l.still>=0.4){ st.nudge=true; return sgInp(0.15,[0,50,50]); }
-    else { var vs=Math.sqrt(2*decOf(l)*Math.max(d-230,0)); return sgInp(Math.min(l.basePace,vs/Math.max(topSpeed(l),1)),[0,50,50]); }
+    if(l.stepDone[l.gi]){ st.planted=true; }
+    else if(st.nudge||(l.still>=0.35&&d<=255)){ st.nudge=true; return sgInp(0.1,[0,100,0]); }
+    else { var vs=Math.sqrt(2*decOf(l)*Math.max(d-230,0)); return sgInp(Math.min(l.basePace,vs/top),[0,100,0]); }
   }
-  return SGP.crLook(l,g,st);
+  if(st.go||full){ st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }
+  return sgInp(0,l.pts[1]<l.cap-0.01?[0,100,0]:[0,0,100]);
 };
 
-LESSONS.push({key:'close-wall',lesson:'A close race leaves no slack',title:'The Leader’s Wall',
-  q:'You spent on height and sight; the pack behind you spent on speed, and it is closing. A box is ahead, and it could be any width. Can you afford to stop?',
-  meta:'Nobody can stop alone, unless they are far enough ahead. A tall leader that stops at the edge holds the others back while it looks.',
-  look:'A lab that stops in front of a box leaves a barrier of its own height there. The pack cannot jump yours until it builds up. Rushers behind you cannot see past you.',
-  labs:[{x:0,pts:[80,90,60],cap:90,pace:0.6},RIV('crRacer','Racer 1',-200,[20,25,60],{cap:90,w:[10,15,75]}),RIV('crRacer','Racer 2',-215,[20,25,60],{cap:90,w:[10,15,75]}),RIV('crRacer','Racer 3',-230,[20,25,60],{cap:90,w:[10,15,75]})],
-  track:function(r){ var wide=r()<0.5,g=segBox(520,54,wide?1.17+0.08*r():0.95+0.15*r(),{odds:30,cap:90});
-    return {bars:[],gaps:[g],finish:g.x+g.W+200,note:'The box: '+segSay(g,90)+' Falls roll 30%.'}; },
-  postures:['rush','build','crPlant'],
-  claim:{text:'Stopping at the edge wins more than rushing or stopping back', score:function(t){ return Math.min(t.crPlant.win-t.rush.win,t.crPlant.win-t.build.win); }, need:20}});
+LESSONS.push({key:'close-wall',lesson:'A close race leaves no slack',title:'The Leader’s Wall',strategy:'crPlant',
+  q:'Three racers are on your heels. They spent everything on speed and floor it at any box. A tall box is ahead, too wide to cross without building. Where do you stop?',
+  meta:'Nobody can stop alone, unless they lead. A leader that pulls up at the very edge leaves a wall the pack cannot jump; one that stops back where the box first shows holds nobody.',
+  look:'A lab that stops within 260 of a box face leaves a wall of its own height at the edge when it moves off again. The racers are short: they cannot jump a wall as tall as you. Stop back at 280 and they stream past you and gamble.',
+  labs:[{x:0,pts:[70,45,25]},RIV('crDash','Racer 1',-260,[20,5,50],{pace:0.9,w:[10,5,85]}),RIV('crDash','Racer 2',-275,[20,5,50],{pace:0.9,w:[10,5,85]}),RIV('crDash','Racer 3',-290,[20,5,50],{pace:0.9,w:[10,5,85]})],
+  track:function(r){ var g=segBox(450,56,0.92+0.13*r(),{odds:40});
+    return {bars:[],gaps:[g],finish:g.x+g.W+200,note:'The box: '+segSay(g,70)+' Falls roll 40%.'}; },
+  postures:['crPlant','build','adv-hs-wait','rush','maxout'],
+  claim:{text:'Pulling up at the edge wins at least 15 points more than the best of stopping back, waiting, rushing and max-out', score:function(t){ return t.crPlant.win-Math.max(t.build.win,t['adv-hs-wait'].win,t.rush.win,t.maxout.win); }, need:15}});
 
-/* crSave (you): Aschenbrenner's plan with a lead in hand. Floor it at the first box (cheap if you fall: 5%) and keep the lead, then spend it at
-   the second: look before crossing, as crLook does */
-SGP.crSave=function(l,g,st){ return l.gi===0?SGP.rush(l,g,st):SGP.crLook(l,g,st); };
+/* crPacer (Spend It Once's racers): competent, not reckless. At a cheap box (falls roll 10% or less) it cruises to 250 from the face and
+   floors it; at a dear box it stops and builds, as crPrep does. The same line the lesson asks of you */
+SGP.crPacer=function(l,g,st){
+  if(g.odds<=10){ if(!st.go&&g.x-l.x>250){ return sgInp(l.basePace,POL[l.kind].w); } st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }
+  return SGP.crPrep(l,g,st,275);
+};
+NOPEEK.crPacer=1;
+/* crSpend (you): spend the lead once. At a cheap box (falls roll 10% or less) floor it without looking; at the dear box stop, build, go (crPrep) */
+SGP.crSpend=function(l,g,st){ return g.odds<=10?sgInp(1,[20,50,30],{fwd:true}):SGP.crPrep(l,g,st,275); };
+NOPEEK.crSpend=1;
 
-LESSONS.push({key:'close-spend',lesson:'A close race leaves no slack',title:'Spend It Once',
-  q:'You start well ahead of two racers. Falling into the first box rolls 5% for everyone; falling into the second rolls 40%. Every careful stop lets them close in. Where do you spend your lead?',
-  meta:'A lead is slack, and slack runs out. One argument says: race hard where it is cheap, and spend the lead where it counts. It only works if you know which box is which.',
-  look:'Taking care at a box costs time: you slow, look, back up and take a run-up. Racer floors it at any box it cannot size, and closes on you every time you stop.',
-  labs:[{x:0,pts:[30,50,40]},RIV('crRacer','Racer 1',-1400,[30,50,40]),RIV('crRacer','Racer 2',-1415,[30,50,40])],
-  track:function(r){ var g1=segBox(450,49,0.8+0.4*r(),{odds:5}),wide=r()<0.5,x2=g1.x+g1.W+700,g2=segBox(x2,54,wide?1.17+0.08*r():0.95+0.15*r(),{odds:40,cap:90});
-    return {bars:[],gaps:[g1,g2],finish:g2.x+g2.W+200,note:'Box 1: '+segSay(g1,70)+' Falls roll 5%. Box 2: '+segSay(g2,90)+' Falls roll 40%.'}; },
-  postures:['rush','crLook','crSave'],
-  claim:{text:'Rushing the cheap box and spending the lead on the dear one wins more than rushing both or taking care at both', score:function(t){ return t.crSave.win-Math.max(t.rush.win,t.crLook.win); }, need:15}});
+LESSONS.push({key:'close-spend',lesson:'A close race leaves no slack',title:'Spend It Once',strategy:'crSpend',
+  q:'You start ahead of two racers who know their business: they race the cheap box and stop to build at the dear one. Falling into box 1 rolls 5%; falling into box 2 rolls 40%. Your lead buys one stop. Where do you spend it?',
+  meta:'A lead is slack, and slack runs out. Spend it where a fall would cost the world, and race where it would not. Spend it twice and the pack is past you.',
+  look:'Box 1 is narrow: a lab at cruising speed clears it without looking. Box 2 is wide and tall: only a lab that stops to fill height and speed gets across, and even it scrapes. The racers start 1050 back and catch up fast: labs far behind build up to three times quicker.',
+  labs:[{x:0,pts:[30,50,40]},RIV('crPacer','Racer 1',-1050,[30,50,50],{pace:0.8,w:[0,50,50]}),RIV('crPacer','Racer 2',-1050-15,[30,50,50],{pace:0.8,w:[0,50,50]})],
+  track:function(r){ var g1=segBox(450,49,0.66+0.08*r(),{odds:5}),x2=g1.x+g1.W+600,g2=segBox(x2,56,1.18+0.08*r(),{odds:40,cap:90}); g1.pub=true; g2.pub=true;
+    return {bars:[],gaps:[g1,g2],finish:g2.x+g2.W+150,note:'Box 1: '+segSay(g1,70)+' Falls roll 5%. Box 2: '+segSay(g2,90)+' Falls roll 40%.'}; },
+  postures:['crSpend','adv-hs-wait','build','rush','maxout'],
+  claim:{text:'Racing the cheap box and stopping once at the dear one wins at least 15 points more than waiting, building at both, rushing both or max-out', score:function(t){ return t.crSpend.win-Math.max(t['adv-hs-wait'].win,t.build.win,t.rush.win,t.maxout.win); }, need:15}});
 
+LESSONS.forEach(function(m){ if(!m.dir){ m.dir='close-race'; } });
 /* ---- lesson: see-early ---- */
 /* ---- see-early: See before you need to. ---- */
 /* The lesson posture, seeearly: put everything into sight while cruising (SGC). Once a box is next and its face is seen (SGP):
@@ -3128,6 +3372,20 @@ function seRun(l,g,st,target){
   st.go=true; return sgInp(1,[20,50,30],{fwd:true});
 }
 function seHold(l,g,w){ var d=g.x-l.x; if(d<=8){ return sgInp(0,w); } var vmax=Math.sqrt(2*decOf(l)*Math.max(d-10,1)); return sgInp(Math.min(l.basePace,vmax/Math.max(topSpeed(l),1)),w); }
+/* the run-up a crossing at the ceiling's top speed needs */
+function seRunUp(l){ var TM=seTop(l); return TM*TM/(2*accOf(l)*0.9)+15; }
+/* where to stand while looking: short of a marker barrier just before the box (past it there is no backing up for a run-up), or else a
+   run-up's length short of the face */
+function seStopX(l,g){ var b=G.barriers[l.bi]; if(b&&b.x<g.x&&g.x-b.x<300&&knowsBar(l,l.bi)){ return b.x-12; } return g.x-seRunUp(l); }
+/* width unknown: slow so as to stop at that point; there, build height (to see over the box), then sight, until the far edge shows; with both
+   full and still blind, creep in */
+function seLook(l,g){
+  var e=seStopX(l,g)-l.x;
+  if(e>5){ var vmax=Math.sqrt(2*decOf(l)*Math.max(e,0)); return sgInp(Math.min(l.basePace,vmax/Math.max(topSpeed(l),1)),[50,50,0]); }
+  if(l.pts[1]<l.cap-0.01){ return sgInp(0,[0,100,0]); }
+  if(l.pts[0]<l.cap-0.01){ return sgInp(0,[100,0,0]); }
+  return seHold(l,g,[100,0,0]);
+}
 function seKnown(l,g,st){
   var d=g.x-l.x; if(!st.go&&l.v*l.v/(2*decOf(l))>d-6){ st.go=true; }  /* too close to stop: commit at full speed */
   if(!st.go&&l.pts[1]<l.cap-0.01&&sgClearAt(l,g,seTop(l))!==0){ return sgInp(0,[0,100,0]); }
@@ -3147,9 +3405,13 @@ SGP.seeearly=function(l,g,st){
     return seRun(l,g,st,Math.min(seTop(l),Math.max(v0,v1*1.02)));
   }
   if(st.go||knowsWidth(l,l.gi)){ return seKnown(l,g,st); }
-  return seHold(l,g,[50,50,0]);
+  return seLook(l,g);
 };
-SGC.seeearly=function(l){ return sgInp(l.basePace,[100,0,0]); };
+/* cruising: a line it has seen (a low marker barrier with the next box beyond it) is where it means to stand and look, so it keeps to a speed it
+   can stop from before the line, even before the box itself is in view */
+function seLine(l,inp){ var b=G.barriers[l.bi],g=G.gaps[l.gi]; if(!b||!g||b.x>g.x||g.x-b.x>=300||!knowsBar(l,l.bi)||knowsWidth(l,l.gi)){ return inp; }
+  var e=b.x-12-l.x; if(e<=5){ return inp; } var vmax=Math.sqrt(2*decOf(l)*e); inp.pace=Math.min(inp.pace,vmax/Math.max(topSpeed(l),1)); if(inp.fwd&&l.v>vmax){ inp.fwd=false; } return inp; }
+SGC.seeearly=function(l){ return seLine(l,sgInp(l.basePace,[100,0,0])); };
 NOPEEK.seeearly=1;
 /* seemax: a foil for The Box Behind the Box. Braces for the worst without looking: at every box it fills height and speed to the ceiling,
    then takes the longest run-up it can and crosses at full speed */
@@ -3165,18 +3427,21 @@ SGP.seecreep=SGP.build;
 LESSONS.push({key:'see-early-brake',lesson:'See before you need to',title:'Too Late to Brake',
   q:'The road is fast and you see only a short way ahead. By the time a box comes into view, can you still stop?',
   meta:'Evidence about a risk arrives late. If you only start looking when it is in front of you, you are already committed.',
-  look:'Everyone runs fast here. A lab that stops investing in sight until the box is in view finds it cannot brake in time.',
-  labs:[{x:0,pts:[5,50,40],pace:0.8,w:[0,100,0]},RIV('build','Build',-200,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('wait','Wait',-220,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('rush','Rush',-300,[5,50,40],{pace:0.8,w:[0,100,0]})],
-  track:function(r){ var wide=r()<0.5,g=segBox(900,30,wide?1.04+0.06*r():0.7,{odds:5}); return {bars:[],gaps:[g],finish:g.x+g.W+200,note:(wide?'A wide box. ':'A narrow box. ')+'The box: '+segSay(g,70)+' Falls roll 5%.'}; },
-  postures:['seeearly','rush','build','seecreep'],
-  claim:{text:'Seeing early wins more than rushing, late care, or slowing down blind', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seecreep.win); }, need:15}});
+  look:'A low line is painted 150 before the box. It is easy to drive over, but past it there is no backing up, so no room for a run-up. You lead, and see only a short way. The Looker behind you stops at the line and looks. Half the seeds have a wide box that needs a full run-up from behind the line.',
+  strategy:'seeearly',
+  labs:[{x:0,pts:[25,30,40],pace:0.6,w:[0,100,0]},RIV('seeearly','Looker',-200,[25,30,40],{pace:0.6,w:[0,100,0]}),RIV('rush','Rush',-300,[25,30,40],{pace:0.6,w:[0,0,100]})],
+  track:function(r){ var wide=r()<0.5,g=segBox(600,30,wide?1.07+0.05*r():0.7,{odds:5}),line=segBar(g.x-150,10);
+    return {bars:[line],gaps:[g],finish:g.x+g.W+120,note:(wide?'A wide box. ':'A narrow box. ')+'A line 150 before it; past the line there is no backing up. The box: '+segSay(g,70)+' Falls roll 5%.'}; },
+  postures:['seeearly','rush','build','seecreep','seemax'],
+  claim:{text:'Stopping at the line to look wins more than rushing, late care, slowing down blind, or bracing for the worst', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seecreep.win,t.seemax.win); }, need:15}});
 
 LESSONS.push({key:'see-early-bravo',lesson:'See before you need to',title:'The Box Behind the Box',
   q:'A small box you can see clearly. Is that all there is?',
   meta:'Once you take a step, you are committed to whatever comes right after it. The estimate that matters is of the thing you cannot see yet.',
   look:'There is a second box just past the first, with no room to stop between them. A wide second box needs you to hit the first one at full speed and height, so the choice is made before the first box. From there, only a lab that has invested in sight can see how wide the second one is.',
+  strategy:'seeearly',
   labs:[{x:0,pts:[20,50,40],pace:0.7,w:[0,100,0]},RIV('build','Build',-150,[20,50,40],{pace:0.7,w:[0,100,0]}),RIV('wait','Wait',-170,[20,50,40],{pace:0.7,w:[0,100,0]}),RIV('rush','Rush',-250,[20,50,40],{pace:0.7,w:[0,100,0]})],
-  track:function(r){ var wide=r()<0.5,g1=segBox(1000,30,0.55,{odds:5}),g2=segBox(g1.x+g1.W+70,30,wide?1.04+0.06*r():0.7,{odds:5});
+  track:function(r){ var wide=r()<0.5,g1=segBox(500,30,0.55,{odds:5}),g2=segBox(g1.x+g1.W+70,30,wide?1.04+0.06*r():0.7,{odds:5});
     return {bars:[],gaps:[g1,g2],finish:g2.x+g2.W+200,note:(wide?'A wide second box. ':'A narrow second box. ')+'Box 1: '+segSay(g1,70)+' Box 2: '+segSay(g2,70)+' Falls roll 5%.'}; },
   postures:['seeearly','rush','build','seemax'],
   claim:{text:'Looking past the first box wins more than rushing, careful box-by-box play, or bracing for the worst at every box', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seemax.win); }, need:15}});
@@ -3194,11 +3459,13 @@ LESSONS.push({key:'see-early-pack',lesson:'See before you need to',title:'The Pa
   q:'You are in the middle of a pack, and the lab in front hides the road. Something is ahead. Do you stay in the pack?',
   meta:'Nobody in a pack sees further than the lab in front. If it cannot see the danger in time, neither can anyone following it.',
   look:'The Lead is careful but has little sight, and it hides the road from everyone behind it. The tailers keep close. To see the box in time you have to get out in front first, then look.',
+  strategy:'seebreak',
   labs:[{x:0,pts:[5,50,40],pace:0.8,w:[0,100,0]},RIV('late','Lead',40,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('tail','Tail 1',-30,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('tail','Tail 2',-60,[5,50,40],{pace:0.8,w:[0,100,0]})],
   track:function(r){ var wide=r()<0.5,g=segBox(1400,30,wide?1.04+0.06*r():0.7,{odds:5}); return {bars:[],gaps:[g],finish:g.x+g.W+200,note:(wide?'A wide box. ':'A narrow box. ')+'The box: '+segSay(g,70)+' Falls roll 5%.'}; },
   postures:['seebreak','tail','build','rush','seeearly','seeblind'],
   claim:{text:'Breaking out of the pack and then looking wins more than staying in it, dropping back, rushing, looking from inside it, or breaking out without looking', score:function(t){ return t.seebreak.win-Math.max(t.tail.win,t.build.win,t.rush.win,t.seeearly.win,t.seeblind.win); }, need:15}});
 
+LESSONS.forEach(function(m){ if(!m.dir){ m.dir='see-early'; } });
 /* ---- lesson: small-risks ---- */
 /* ---- small-risks: Small risks add up to ruin (Taleb et al. 2014; disputed by Sunstein 2005). See NOTES.md. ---- */
 /* postures (prefix sr-):
@@ -3208,8 +3475,12 @@ LESSONS.push({key:'see-early-pack',lesson:'See before you need to',title:'The Pa
      sr-look   cruise no faster than it could stop within clear sight; stop at a box until it can see the width; build height if
                flooring it would not clear clean; never takes a near miss on purpose
      sr-care   as sr-look, cruising a little faster (the Careful rival)
-     sr-early  as sr-care, but while two or more strikes are left it floors any box that is unseen or would be a scrape
-     sr-last   as sr-care, but at the last box, with two or more strikes left and a scrape (not a fall) in reach, it floors it */
+     sr-pcare  sr-pace at barrier-and-box pairs; at any other box, floor it only if that clears clean, else build and back up for a
+               run-up (the Careful rival on The Last Box; caution everywhere)
+     sr-early  as sr-pcare, but while two or more strikes are left it floors any box that is unseen or would be a scrape
+     sr-last   as sr-pcare, but at the last box, with two or more strikes left and a scrape (not a fall) in reach, it floors it */
+/* the widest box a lab of height h clears clean at speed v (the sim's own flight rule) */
+function srReach(h,v,rise){ var w=1; while(w<1500&&segOut(v,h,w,rise)===0){ w++; } return w-1; }
 function srLandV(D){ /* the fastest speed whose barrier jump (pressed so the peak is over the barrier) lands 3 before a box D past it */
   var v=200; while(v>20&&0.5*jumpDur(v)*v>D-3){ v-=0.5; } return v; }
 function srNextPair(l){ /* the next barrier, and the box right behind it if there is one (face within 80 of the barrier) */
@@ -3242,32 +3513,64 @@ function srSightPace(l,f,margin){
 function srStop(l,g,dstop,w){ var d=g.x-l.x-dstop,top=Math.max(topSpeed(l),1); if(d<=1){ return sgInp(0,w); } return sgInp(Math.min(0.9,0.95*Math.sqrt(2*decOf(l)*d)/top),w); }
 /* sr-look: cruise sight-safe; at a box whose width it cannot see yet, brake to stand 15 short and build height until it can see (or a rival
    shows it); once it knows the width, plan the crossing (sgPlanKnown: the speed a clean cross needs, or build and take a run-up) */
-SGC['sr-look']=function(l){ return srSightPace(l,0.9,120); };
-SGP['sr-look']=function(l,g,st){
+/* the round 1 looker, kept for sr-care, sr-last and sr-early */
+function srLookOld(l,g,st){
   if(!st.go&&!knowsWidth(l,l.gi)){ return srStop(l,g,15,[30,70,0]); }
   /* too wide to clear clean at its top speed as it stands: stop and build height first (cheaper than speed), then plan */
   if(!st.go&&sgClearAt(l,g,Math.max(topSpeed(l,true),1))!==0&&heightOf(l)<l.cap-0.01){ return srStop(l,g,40,[0,100,0]); }
   return sgPlanKnown(l,g,st);
-};
-/* sr-care: as sr-look, cruising faster (it expects to see widths early). sr-last: as sr-care, except at the last box, if a strike is
-   to spare (two or more left) and flooring it would be a scrape rather than a fall, it floors it and takes the scrape */
+}
+/* sr-look (round 2): never jump a box it has not sized. Cruise no faster than it could stop 15 short of anything at the edge of clear
+   sight; at a box whose far edge it cannot see, brake to stand 15 short and build height until it can; once it knows the width, slow at
+   once to the speed a clean cross needs and roll in at it (not flat out, so it can still stop for the next box), or stop and build (height first) until a clean cross
+   is in reach. f is the cruise pace; the rivals use slower ones */
+function srLookCruise(l,f){
+  var sh=shadows(l),a=sightRange(l),i,top=Math.max(topSpeed(l),1); for(i=0;i<sh.length;i++){ a=Math.min(a,sh[i].a-10); }
+  return sgInp(Math.min(f,Math.sqrt(2*decOf(l)*Math.max(a-15,0))/top),[40,60,0]);
+}
+function srLookBox(l,g,st,f){
+  var T=Math.max(topSpeed(l),1),TM=Math.max(C.TOP0+0.85*l.cap,1);
+  if(!st.go&&!knowsWidth(l,l.gi)){ if(l.v*l.v/(2*decOf(l))>g.x-l.x-8){ st.go=true; return sgInp(1,[20,50,30],{fwd:true}); } return srStop(l,g,15,[30,70,0]); }
+  if(!st.go&&sgClearAt(l,g,TM)!==0&&heightOf(l)<l.cap-0.01){ return srStop(l,g,40,[0,100,0]); }
+  var inp=sgPlanKnown(l,g,st);
+  if(inp.fwd){ var vcl=sgCleanSpeed(l,g,TM); if(vcl<Infinity&&vcl<=T){ return sgInp(Math.min(1,vcl/T),[30,70,0]); } }
+  return inp;
+}
+SGC['sr-look']=function(l){ return srLookCruise(l,0.9); };
+SGP['sr-look']=function(l,g,st){ return srLookBox(l,g,st,0.9); };
+/* sr-lookslow: sr-look cruising at 75% (the Careful rival on Six Unknown Boxes) */
+SGC['sr-lookslow']=function(l){ return srLookCruise(l,0.75); };
+SGP['sr-lookslow']=function(l,g,st){ return srLookBox(l,g,st,0.75); };
+/* sr-care: the round 1 looker (sight-safe cruise, stop to see, build height first). Kept as a posture on Six Unknown Boxes */
 SGC['sr-care']=function(l){ return srSightPace(l,0.95,40); };
-SGP['sr-care']=SGP['sr-look'];
-SGC['sr-last']=SGC['sr-care'];
+SGP['sr-care']=srLookOld;
+/* sr-pcare: sr-pace at every barrier and the box behind it; at a box with no barrier before it, floor it only if that clears clean,
+   otherwise build and take a run-up for a clean crossing (never a near miss it can avoid). The Careful rival on The Last Box */
+function srPcare(l,g,st){
+  if(srBarFirst(l,g)){ return srPaced(l,1); }
+  if(l.jt>=0&&!st.go){ return sgInp(Math.min(1,l.v/Math.max(topSpeed(l),1)),[20,50,30]); }
+  if(st.go||sgClearAt(l,g,Math.max(topSpeed(l,true),1))===0){ st.go=true; return sgInp(1,[20,50,30],{fwd:true}); }
+  return sgPlanKnown(l,g,st);
+}
+SGC['sr-pcare']=SGC['sr-pace']; SGP['sr-pcare']=srPcare; NOPEEK['sr-pcare']=1;
+/* sr-last: as sr-pcare, except at the last box, with two or more strikes left and a scrape (not a fall) in reach, it floors it */
+SGC['sr-last']=SGC['sr-pace'];
 SGP['sr-last']=function(l,g,st){
   var last=l.gi===G.gaps.length-1,spare=strikesOf(l)-l.strikes>=2;
-  if(st.spend||(last&&spare&&knowsWidth(l,l.gi)&&sgClearAt(l,g,Math.max(topSpeed(l,true),1))===1)){ st.spend=true; return sgInp(1,[20,50,30],{fwd:true}); }
-  return SGP['sr-care'](l,g,st);
+  if(st.spend||(last&&spare&&!srBarFirst(l,g)&&knowsWidth(l,l.gi)&&sgClearAt(l,g,Math.max(topSpeed(l,true),1))===1)){ st.spend=true; return sgInp(1,[20,50,30],{fwd:true}); }
+  return srPcare(l,g,st);
 };
+NOPEEK['sr-last']=1;
 /* sr-early: spends its spare strikes early, at unseen boxes and at boxes it would scrape */
-SGC['sr-early']=SGC['sr-care'];
+SGC['sr-early']=SGC['sr-last'];
 SGP['sr-early']=function(l,g,st){
   var spare=strikesOf(l)-l.strikes>=2,unknown=!knowsWidth(l,l.gi);
   if(st.spend||(spare&&(unknown||sgClearAt(l,g,Math.max(topSpeed(l,true),1))===1))){ st.spend=true; return sgInp(1,[20,50,30],{fwd:true}); }
-  return SGP['sr-care'](l,g,st);
+  return srPcare(l,g,st);
 };
+NOPEEK['sr-early']=1;
 
-LESSONS.push({key:'sr-landing',lesson:'Small risks add up to ruin',title:'Still in the Air',
+LESSONS.push({key:'sr-landing',lesson:'Small risks add up to ruin',title:'Still in the Air',strategy:'sr-pace',
   q:'Four barriers, each with a narrow box just behind it. Every box looks easy. Do you slow down for any of them?',
   meta:'A near miss you can survive, taken again and again, is a ruin you cannot.',
   look:'Fly a barrier fast and you are still in the air when the box arrives, with no jump left: a scrape. Slow down and you land, jump again and clear it.',
@@ -3278,46 +3581,61 @@ LESSONS.push({key:'sr-landing',lesson:'Small risks add up to ruin',title:'Still 
   postures:['sr-fast','sr-pace','rush','build'],
   claim:{text:'Pacing wins and rushing dissolves',score:function(t){ return t['sr-pace'].win-t['sr-fast'].win; },need:30}});
 
-LESSONS.push({key:'sr-odds',lesson:'Small risks add up to ruin',title:'Six Unknown Boxes',
-  q:'Six boxes of the same height. Most are narrow. Now and then one is wide. You cannot tell which until you are close and tall enough to see.',
+LESSONS.push({key:'sr-odds',lesson:'Small risks add up to ruin',title:'Six Unknown Boxes',strategy:'sr-look',
+  q:'Six boxes. Most are narrow; about one in five is wide. You cannot tell which until you are close and standing tall. Careful and Build are behind you and both look before they jump.',
   meta:'One in five is a small risk. Six of them in a row is not.',
-  look:'Rush floors it at every box and is blind every time. Slowing to see costs a second a box. Count the boxes before you decide.',
-  labs:[{x:0,pts:[30,35,70]},RIV('sr-fast','Rush',-12,[30,35,70]),RIV('sr-fast','Dash',-24,[30,35,70])],
+  look:'Each box is probably narrow, so jumping blind usually works, once. Six times, it usually does not. Slow down near each box until you can see its far edge, cross the narrow ones at once, and stop to build for the wide one.',
+  /* round 2 (2026-10-31): You lead, so no rival crosses first to narrow a box or show its width. Each box rises 25 below the ceiling
+     a lab has when it reaches it, so the far edge shows only from close up at full height (a lab holding back 270 to wait cannot see
+     it). Widths are fractions of the widest clean crossing at full height and speed min(top, 130): narrow 70 to 78%, wide (one in
+     five) 95 to 98%, which needs a stop to build. Boxes 420 apart. The rivals look too: Careful (sr-lookslow) 60 behind, Build (the
+     stock build posture) 90 behind */
+  labs:[{x:0,pts:[30,40,50]},RIV('sr-lookslow','Careful',-60,[10,50,70]),RIV('build','Build',-90,[10,50,70])],
   track:function(r){ var gaps=[],x=330,k,ws=[];
-    for(k=0;k<6;k++){ var wide=r()<0.2,g=segBox(x,45,1,{odds:5}); g.W=Math.round(wide?95+8*r():44+18*r()); g.f=wide?'wide':'narrow'; gaps.push(g); ws.push(g.W); x=g.x+g.W+450; }
-    return {bars:[],gaps:gaps,finish:x-270,note:'Widths: '+ws.join(', ')}; },
-  postures:['sr-fast','sr-look','sr-care'],
+    for(k=0;k<6;k++){ var cp=C.CAPS[k],rise=cp-25,R=srReach(cp,Math.min(C.TOP0+0.85*cp,130),rise),wide=r()<0.2;
+      var g=segBox(x,rise,1,{odds:5,cap:cp}); g.W=Math.round(R*(wide?0.95+0.03*r():0.7+0.08*r())); g.f=wide?'wide':'narrow'; gaps.push(g); ws.push(g.W+(wide?' wide':'')); x=g.x+g.W+420; }
+    return {bars:[],gaps:gaps,finish:x-420+180,note:'Widths: '+ws.join(', ')}; },
+  postures:['sr-fast','sr-look','build'],
   claim:{text:'Looking wins more than rushing, and rushing rarely survives all six',score:function(t){ return t['sr-look'].win-t['sr-fast'].win; },need:30}});
 
-LESSONS.push({key:'sr-lastbox',lesson:'Small risks add up to ruin',title:'The Last Box',
-  q:'Five boxes. Careful is just ahead of you and stops whenever it cannot clear clean. Rushing every box is ruin. Is any near miss worth taking?',
+LESSONS.push({key:'sr-lastbox',lesson:'Small risks add up to ruin',title:'The Last Box',strategy:'sr-last',
+  q:'Four barriers, each with a small box just behind it, then one last wide box with the finish right behind it. Careful starts just ahead of you, fully built, and never takes a near miss it can avoid. Is any near miss worth taking?',
   meta:'A near miss costs you because the race goes on. When nothing is left to repeat, the same risk is a different bet.',
-  look:'A scrape costs height and a strike. Early on, you pay for both again at the next box. At the last box there is no next box.',
-  labs:[{x:0,pts:[60,35,70]},RIV('sr-care','Careful',40,[60,35,70]),RIV('sr-fast','Rush',-12,[60,35,70])],
-  track:function(r){ var gaps=[],x=400,k,ws=[];
-    for(k=0;k<5;k++){ var g=segBox(x,45,1,{odds:5,shown:k===4}); g.W=Math.round(k<4?72+6*r():104+6*r()); gaps.push(g); ws.push(g.W); x=g.x+g.W+(k<3?450:550); }
-    return {bars:[],gaps:gaps,finish:gaps[4].x+gaps[4].W+40,note:'Widths: '+ws.join(', ')}; },
-  postures:['sr-fast','sr-care','sr-early','sr-last'],
-  claim:{text:'Spending one near miss at the last box wins; caution everywhere loses to Careful; rushing everywhere is ruin',score:function(t){ return Math.min(t['sr-last'].win-t['sr-care'].win,t['sr-last'].win-t['sr-fast'].win); },need:30}});
+  look:'Fly a barrier fast and you scrape the box behind it, and scrapes add up to ruin. The last box is too wide to clear clean without stopping, backing up and building speed. You can see a scrape is in reach, and there is no next box.',
+  /* round 2 (2026-10-31): boxes 1 to 4 are Still in the Air pairs (the near misses that compound); the last box is shown, sits 800
+     past the fourth so a run-up fits, and is sized from a lab at height 145 and speed meter 90 (what a paced lab arrives with): 40% of the
+     way from the widest clean crossing to the widest scrape. Careful (sr-pcare) starts 40 ahead with speed already at the ceiling */
+  labs:[{x:0,pts:[20,70,60]},RIV('sr-pcare','Careful',40,[20,70,70]),RIV('sr-fast','Rush',-12,[20,70,60])],
+  track:function(r){ var bars=[],gaps=[],x=300,k,says=[];
+    for(k=0;k<4;k++){ var cp=C.CAPS[k],D=Math.round(38+8*r()),g=segBox(x+D,cp-12,1,{odds:5,cap:cp}); g.W=Math.round(15+15*r()); bars.push(segBar(x,cp+2)); gaps.push(g); says.push(D+'/'+g.W); x=g.x+g.W+300; }
+    x+=500;
+    var c5=C.CAPS[4],rise=c5-25,vr=C.TOP0+0.85*90,c=srReach(145,vr,rise),sv=c; while(sv<1500&&segOut(vr,145,sv,rise)<2){ sv++; }
+    var g5=segBox(x,rise,1,{odds:5,cap:c5,shown:true}); g5.W=Math.round(c+0.4*(sv-c)); gaps.push(g5); says.push('last '+g5.W);
+    return {bars:bars,gaps:gaps,finish:g5.x+g5.W+40,note:'Barrier-to-box / box width: '+says.join(', ')}; },
+  postures:['sr-fast','sr-pcare','sr-early','sr-last'],
+  claim:{text:'Spending one near miss at the last box wins; caution everywhere loses to Careful; rushing everywhere is ruin',score:function(t){ return Math.min(t['sr-last'].win-t['sr-pcare'].win,t['sr-last'].win-t['sr-fast'].win); },need:30}});
 
+LESSONS.forEach(function(m){ if(!m.dir){ m.dir='small-risks'; } });
 /* ---- lesson: steward-pack ---- */
-/* ---- steward-pack: The Steward in the pack. [[ai gen]] Claude, 2026-10-31. See NOTES.md.
+/* ---- steward-pack: The Steward in the pack. [[ai gen]] Claude, 2026-10-31 (round 2). See NOTES.md.
    Source: Karnofsky, "Racing through a minefield" (2022): cautious actors must move fast enough not to be overpowered and slowly
    enough not to cause the disaster.
-   Postures added here (names prefixed with the lesson key):
-     steward-pack-steward  stays close to the lab ahead, hops to peek over it, and caps its speed so it can stop before the road it has
-                           seen. Once a box face is seen it brakes to a speed it can stop from; once the width is known (its own eye, or a
-                           rival crossing or falling) it plans the jump as the segment bots do, building only if it has to.
-     steward-pack-tail     the same brain at the box, but it tails the lab ahead closely at that lab's speed and never peeks: it brakes
-                           only on what it sees, and behind an equal-height rival it sees nothing.
-     steward-pack-stop     the "stop and fall behind" foil: it hangs 150 behind the lab ahead, stops 270 short of every box until its
-                           height is full, then creeps up to look. Written here because the segments' build posture fell at boxes that sit
-                           behind a barrier (the shared next-box helper skips a box while a barrier comes first).
+   The lesson strategy, posture steward-pack-steward (written before round 2's tuning, then the follow distance was set from the foils):
+     Stay in the race a stopping distance behind the leaders, never faster than you can stop on road you have seen (hop to look over
+     them). At a box nobody has sized, stand one run-up short and build. Go the moment someone shows you the width. If nobody is left
+     to show you, creep up and look yourself. Don't park and wait, and don't tail the leaders blind.
+   Other postures here (all prefixed with the lesson key):
+     steward-pack-close   the same brain, but it runs 45 behind the front instead of 250. The rival Eager plays it.
+     steward-pack-far5    the same brain, 500 behind the front: falling well back.
+     steward-pack-tail    tails the front at 35 and never hops to look; the same brain at a box it has seen.
+     steward-pack-lurkv   cruises at 0.7 building sight only, floors it once sight is full, never hops; the same brain at a box. The
+                          strongest strategy found outside the adversary pool (see NOTES.md).
    Wrapped in a function so nothing here collides with another lesson's maps. ---- */
 (function(){
-  var P='steward-pack-',ST=P+'steward',TL=P+'tail',SP=P+'stop';
-  /* the nearest lab still racing ahead of l, within range */
-  function ahead(l,range){ var a=null,i,m; for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m===l||m.out||m.done||m.x<=l.x||m.x-l.x>range){continue;} if(!a||m.x<a.x){a=m;} } return a; }
+  var P='steward-pack-',ST=P+'steward',CLOSE=P+'close',FAR5=P+'far5',TAIL=P+'tail',LURKV=P+'lurkv';
+  /* the frontmost lab still racing ahead of l, within range */
+  function front(l,range){ var f=null,i,m; for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m===l||m.out||m.done||m.x<=l.x||m.x-l.x>range){continue;} if(!f||m.x>f.x){f=m;} } return f; }
+  function anyAhead(l,range){ var i,m; for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m!==l&&!m.out&&!m.done&&m.x>l.x&&m.x-l.x<=range){ return true; } } return false; }
   /* a barrier comes before the next box and the lab can't clear it: leave it to the page's own bot plan */
   function barFirst(l){ var b=G.barriers[l.bi],g=G.gaps[l.gi]; return b&&(!g||b.x<g.x)&&knowsBar(l,l.bi)&&heightOf(l)+C.JUMP<b.h+2; }
   /* how far ahead the road is known to be free of a box face: own sight when nobody shadows it, else what the last peek showed */
@@ -3326,35 +3644,30 @@ LESSONS.push({key:'sr-lastbox',lesson:'Small risks add up to ruin',title:'The La
     var own=a===Infinity?sightRange(l):a;
     return Math.max(own,(l.peekTo===undefined?-1e9:l.peekTo)-l.x);
   }
-  /* cruise: follow the lab ahead at gap D, never faster than it can stop before the road it has seen. A careful lab passes a lab that has
-     stopped or is crawling (it is not racing), but only as fast as the road it has seen allows */
-  function follow(l,D,careful){
-    if(barFirst(l)){ return null; }
-    var top=Math.max(topSpeed(l),1),a=ahead(l,Math.max(sightRange(l),160)),v=l.basePace*top;
-    if(a&&!(careful&&(a.still>1||a.v<0.4*v))){ v=Math.max(0,a.v+0.8*(a.x-l.x-D)); }
-    if(careful){
-      var vs=Math.sqrt(2*decOf(l)*Math.max(clearTo(l)-12,0)),g=G.gaps[l.gi];
-      /* a box it has seen beyond a barrier: keep a speed it can stop from before the face, unless it already knows it clears it clean */
-      if(g&&!l.gx&&knowsGap(l,l.gi)&&!(knowsWidth(l,l.gi)&&cleanFrom(l,g,top)<=top)){ vs=Math.min(vs,Math.sqrt(2*decOf(l)*Math.max(g.x-l.x-12,0))); }
-      v=Math.min(v,vs);
-    }
-    return sgInp(clamp(v/top,0,1),careful?[30,50,20]:[15,50,35]);
-  }
   /* the least speed from which every faster speed up to vt still clears the box clean (a downward scan: the flight rules are not monotonic at low speed) */
   function cleanFrom(l,g,vt){ var v=Math.floor(vt); if(sgClearAt(l,g,v)!==0){ return Infinity; } while(v>2&&sgClearAt(l,g,v-1)===0){ v--; } return v; }
   /* the run-up from a standstill to full speed at its ceiling */
   function runUp(l){ var TM=C.TOP0+0.85*l.cap; return TM*TM/(2*accOf(l)*0.9)+15; }
+  /* cruise: as fast as the road it has seen allows, but no closer than D behind the front of the pack */
+  function cruise(l,D,w){
+    if(barFirst(l)){ return null; }
+    var top=Math.max(topSpeed(l),1),f=front(l,Math.max(sightRange(l),240)),v=top;
+    if(f){ v=Math.max(0,f.v+0.8*(f.x-l.x-D)); }
+    var vs=Math.sqrt(2*decOf(l)*Math.max(clearTo(l)-12,0)),g=G.gaps[l.gi];
+    /* a box it has seen: keep a speed it can stop from before the face, unless it already knows it clears it clean */
+    if(g&&!l.gx&&knowsGap(l,l.gi)&&!(knowsWidth(l,l.gi)&&cleanFrom(l,g,top)<=top)){ vs=Math.min(vs,Math.sqrt(2*decOf(l)*Math.max(g.x-l.x-12,0))); }
+    return sgInp(clamp(Math.min(v,vs)/top,0,1),w);
+  }
   /* the width is known: if it can't cross clean even at full speed, stand and fill height first (the segments' planner would take the scrape) */
   function known(l,g,st){
     var atCap=l.pts[1]>=l.cap-0.01,TM=Math.max(C.TOP0+0.85*l.cap,1),d=g.x-l.x;
     if(!st.go&&!atCap&&sgClearAt(l,g,TM)!==0&&l.v*l.v/(2*decOf(l))<d-6){ return sgInp(0,[0,100,0]); }
-    var res=sgPlanKnown(l,g,st),T=Math.max(topSpeed(l),1),vcl=cleanFrom(l,g,TM);
-    /* go at the speed a clean cross needs, not flat out, so it can still brake for whatever comes next */
-    if(res.fwd&&isFinite(vcl)&&vcl*1.08<T){ return sgInp(vcl*1.08/T,[20,50,30]); }
-    return res;
+    /* then the segments' planner: the run-up a clean cross needs, flat out over the face. (Round 1 crossed at the least clean speed instead;
+       a box narrowed behind a lab that later falls widens again, and a lab floating over it slowly fell in) */
+    return sgPlanKnown(l,g,st);
   }
   /* at a box whose face it has seen but whose width it doesn't know: brake to stand a full run-up short of the face (if it saw the face too
-     late for that, at the face), filling the speed meter, ready to go the moment the width is known. After 2 s standing with nobody
+     late for that, at the face), filling height then speed, ready to go the moment the width is known. After 2 s standing with nobody
      ahead to show it, it creeps forward to look for itself */
   function atBox(l,g,st){
     var d=g.x-l.x,top=Math.max(topSpeed(l),1),atCap=l.pts[1]>=l.cap-0.01;
@@ -3362,48 +3675,40 @@ LESSONS.push({key:'sr-lastbox',lesson:'Small risks add up to ruin',title:'The La
     var R=runUp(l),brake=l.v*l.v/(2*decOf(l));
     if(st.mark===undefined){ st.mark=brake<d-R-4?R:8; }
     var w=atCap?[10,10,80]:[0,100,0],stand=Math.max(st.mark,8);
-    if(st.creep||(l.still>2&&!ahead(l,d+20))){ st.creep=true; stand=8; }
+    if(st.creep||(l.still>2&&!anyAhead(l,d+20))){ st.creep=true; stand=8; }
     if(d<=stand+2){ return sgInp(0,w); }
     var vmax=Math.sqrt(2*decOf(l)*Math.max(d-stand,0));
-    return sgInp(Math.min(l.basePace,(st.creep?Math.min(vmax,0.25*top):vmax)/top),w);
+    return sgInp(Math.min(1,(st.creep?Math.min(vmax,0.25*top):vmax)/top),w);
   }
-  /* stop: the segments' build at the box (stand 270 short, fill height, creep until the far edge is in view), with the same known-width
-     plan as the steward; while cruising it hangs 150 behind the lab ahead and brakes for what it has seen */
-  function stopAtBox(l,g,st){
-    var atCap=l.pts[1]>=l.cap-0.01,d=g.x-l.x;
-    if(!atCap&&!st.go){ return sgHold(l,g,[0,100,0]); }
-    if(st.go||knowsWidth(l,l.gi)){ return known(l,g,st); }
-    if(d<=8){ return sgInp(0,[0,100,0]); }
-    var vmax=Math.sqrt(2*decOf(l)*Math.max(d-6,1)); return sgInp(Math.min(0.25,vmax/Math.max(topSpeed(l),1)),[0,100,0]);
-  }
-  SGP[SP]=stopAtBox; SGC[SP]=function(l){ return follow(l,150,true); };
-  SGP[ST]=atBox; SGP[TL]=atBox;
-  SGC[ST]=function(l){ return follow(l,45,true); };
-  /* tail: keep 35 behind the front of the pack (the frontmost lab within 220 ahead), at its speed, passing anyone slower on the way */
-  SGC[TL]=function(l){
-    if(barFirst(l)){ return null; }
-    var top=Math.max(topSpeed(l),1),f=null,i,m; for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m===l||m.out||m.done||m.x<=l.x||m.x-l.x>220){continue;} if(!f||m.x>f.x){f=m;} }
-    var v=f?Math.max(0,f.v+0.8*(f.x-l.x-35)):l.basePace*top; return sgInp(clamp(v/top,0,1),[15,50,35]);
-  };
-  NOPEEK[TL]=1;
+  var WL=[10,70,20];
+  SGP[ST]=atBox; SGC[ST]=function(l){ return cruise(l,250,WL); };
+  SGP[CLOSE]=atBox; SGC[CLOSE]=function(l){ return cruise(l,45,WL); };
+  SGP[FAR5]=atBox; SGC[FAR5]=function(l){ return cruise(l,500,WL); };
+  SGP[TAIL]=atBox; NOPEEK[TAIL]=1;
+  SGC[TAIL]=function(l){ if(barFirst(l)){ return null; } var top=Math.max(topSpeed(l),1),f=front(l,240); var v=f?Math.max(0,f.v+0.8*(f.x-l.x-35)):top; return sgInp(clamp(v/top,0,1),WL); };
+  SGP[LURKV]=atBox; NOPEEK[LURKV]=1;
+  SGC[LURKV]=function(l){ return sgInp(l.pts[0]>=l.cap-0.01?1:0.7,[100,0,0]); };
 
-  var YOU=[ST,TL,SP];
   function edge(t,a,b){ return t[a].win-t[b].win; }
 
-  LESSONS.push({key:'steward-minefield',lesson:'The Steward in the pack',title:'The Minefield',
-    q:'Two rushers lead you into three boxes. They are as tall as you, so you cannot see past them. Keep up, or hang back?',
-    meta:'A careful lab cannot just stop: it has to stay close enough to take the lead when the reckless ones stumble, and slow enough not to fall with them.',
-    look:'Hop to look over the pack: in the air you see a box’s face, never its width. When a rusher crosses or falls, everyone learns the width, and a crossed box shrinks behind it.',
-    labs:[{x:0,pts:[20,50,30]},RIV('rush','Rush A',40,[15,45,40],{pace:0.85,w:[10,30,60]}),RIV('rush','Rush B',20,[15,45,40],{pace:0.85,w:[10,30,60]}),RIV(ST,'Steward',-60,[20,50,30])],
+  LESSONS.push({key:'steward-minefield',lesson:'The Steward in the pack',title:'The Minefield',strategy:ST,
+    q:'Two rushers lead you into three boxes, and Eager, another careful lab, runs right on their heels. You cannot see past them. Keep up, hang back, or stop and wait?',
+    meta:'A careful lab cannot just stop: it has to stay in the race, close enough to take over when the reckless ones fall, and slow enough not to fall with them.',
+    look:'Hop to look over the pack: in the air you see a box’s face, never its width. When a rusher crosses or falls, everyone learns the width. Most boxes here are wider than a full lab can clear clean, and a rusher who meets one falls.',
+    labs:[{x:0,pts:[20,50,30]},RIV('rush','Rush A',40,[15,35,45],{pace:0.85,w:[10,20,70]}),RIV('rush','Rush B',20,[15,35,45],{pace:0.85,w:[10,20,70]}),RIV(CLOSE,'Eager',-60,[20,50,30])],
+    /* per box two draws: u picks wide (60%) or narrow, v places it in the band. Wide is 1.02 to 1.10 of a full lab's clean reach: a full
+       lab scrapes through, a rusher falls. Narrow is 0.60 to 0.80: everyone clears it */
     track:function(r){ var gaps=[],bars=[],says=[],x=420,k,cp=[70,90,115],f;
-      for(k=0;k<3;k++){ f=r()<0.5?0.85:1.08; var g=segBox(x,0.6*cp[k],f,{odds:8,cap:cp[k]}); gaps.push(g); says.push('Box '+(k+1)+': '+segSay(g,cp[k])); bars.push(segBar(x-220,0.4*cp[k])); x=g.x+g.W+520; }
-      return {bars:bars,gaps:gaps,finish:x-320,note:says.join(' ')+' Falls roll 8%.'}; },
-    postures:YOU.concat(['rush']),
-    claim:{text:'The steward wins more often than the lab that stops and falls behind, and more often than the lab that tails blind',
-      score:function(t){ return Math.min(edge(t,ST,SP),edge(t,ST,TL)); },need:20}});
+      for(k=0;k<3;k++){ var u=r(),v=r(); f=u<0.6?1.02+0.08*v:0.6+0.2*v; var g=segBox(x,0.6*cp[k],f,{odds:8,cap:cp[k]}); gaps.push(g); says.push('Box '+(k+1)+': '+segSay(g,cp[k])); bars.push(segBar(x-220,0.4*cp[k])); x=g.x+g.W+520; }
+      return {bars:bars,gaps:gaps,finish:gaps[2].x+gaps[2].W+200,note:says.join(' ')+' Falls roll 8%.'}; },
+    postures:[ST,CLOSE,FAR5,TAIL,'build','rush'],
+    /* close and far5 are in the table as foils, not in the claim: the follow distance (45 to 500) is not well separated, see NOTES.md */
+    claim:{text:'The steward wins more often than parking to build and than tailing the leaders blind',
+      score:function(t){ return Math.min(edge(t,ST,'build'),edge(t,ST,TAIL)); },need:15}});
 
 })();
 
+LESSONS.forEach(function(m){ if(!m.dir){ m.dir='steward-pack'; } });
 if(LESSONS.length){ SEGS=LESSONS; }
 window.PF={segUse:segUse,SEGS:SEGS,RULES:RULES,LESSONS:LESSONS,rulesApply:rulesApply,ADV:ADV,SGC:SGC,SGP:SGP,setRoster:function(r){G_ROSTER=r||null;},setPlayerStrikes:function(n){PSTRIKES=(n===null||n===undefined)?null:n;},HANDS:HANDS,PRESETS:PRESETS,SKILL:SKILL,C:C,K:K,POL:POL,KINDS:KINDS,run:run,newGame:newGame,step:stepGame,G:function(){return G;},knowsBar:knowsBar,knowsGap:knowsGap,knowsWidth:knowsWidth,farEdgeInView:farEdgeInView,seenW:seenW,shadows:shadows,eyeOf:eyeOf,setBoxes:function(b){BOXOV=b||null;}};
 

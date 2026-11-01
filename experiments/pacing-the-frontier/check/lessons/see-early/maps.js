@@ -18,6 +18,20 @@ function seRun(l,g,st,target){
   st.go=true; return sgInp(1,[20,50,30],{fwd:true});
 }
 function seHold(l,g,w){ var d=g.x-l.x; if(d<=8){ return sgInp(0,w); } var vmax=Math.sqrt(2*C.DEC*Math.max(d-10,1)); return sgInp(Math.min(l.basePace,vmax/Math.max(topSpeed(l),1)),w); }
+/* the run-up a crossing at the ceiling's top speed needs */
+function seRunUp(l){ var TM=seTop(l); return TM*TM/(2*accOf(l)*0.9)+15; }
+/* where to stand while looking: short of a marker barrier just before the box (past it there is no backing up for a run-up), or else a
+   run-up's length short of the face */
+function seStopX(l,g){ var b=G.barriers[l.bi]; if(b&&b.x<g.x&&g.x-b.x<300&&knowsBar(l,l.bi)){ return b.x-12; } return g.x-seRunUp(l); }
+/* width unknown: slow so as to stop at that point; there, build height (to see over the box), then sight, until the far edge shows; with both
+   full and still blind, creep in */
+function seLook(l,g){
+  var e=seStopX(l,g)-l.x;
+  if(e>5){ var vmax=Math.sqrt(2*C.DEC*Math.max(e,0)); return sgInp(Math.min(l.basePace,vmax/Math.max(topSpeed(l),1)),[50,50,0]); }
+  if(l.pts[1]<l.cap-0.01){ return sgInp(0,[0,100,0]); }
+  if(l.pts[0]<l.cap-0.01){ return sgInp(0,[100,0,0]); }
+  return seHold(l,g,[100,0,0]);
+}
 function seKnown(l,g,st){
   var d=g.x-l.x; if(!st.go&&l.v*l.v/(2*C.DEC)>d-6){ st.go=true; }  /* too close to stop: commit at full speed */
   if(!st.go&&l.pts[1]<l.cap-0.01&&sgClearAt(l,g,seTop(l))!==0){ return sgInp(0,[0,100,0]); }
@@ -37,9 +51,13 @@ SGP.seeearly=function(l,g,st){
     return seRun(l,g,st,Math.min(seTop(l),Math.max(v0,v1*1.02)));
   }
   if(st.go||knowsWidth(l,l.gi)){ return seKnown(l,g,st); }
-  return seHold(l,g,[50,50,0]);
+  return seLook(l,g);
 };
-SGC.seeearly=function(l){ return sgInp(l.basePace,[100,0,0]); };
+/* cruising: a line it has seen (a low marker barrier with the next box beyond it) is where it means to stand and look, so it keeps to a speed it
+   can stop from before the line, even before the box itself is in view */
+function seLine(l,inp){ var b=G.barriers[l.bi],g=G.gaps[l.gi]; if(!b||!g||b.x>g.x||g.x-b.x>=300||!knowsBar(l,l.bi)||knowsWidth(l,l.gi)){ return inp; }
+  var e=b.x-12-l.x; if(e<=5){ return inp; } var vmax=Math.sqrt(2*C.DEC*e); inp.pace=Math.min(inp.pace,vmax/Math.max(topSpeed(l),1)); if(inp.fwd&&l.v>vmax){ inp.fwd=false; } return inp; }
+SGC.seeearly=function(l){ return seLine(l,sgInp(l.basePace,[100,0,0])); };
 NOPEEK.seeearly=1;
 /* seemax: a foil for The Box Behind the Box. Braces for the worst without looking: at every box it fills height and speed to the ceiling,
    then takes the longest run-up it can and crosses at full speed */
@@ -55,18 +73,21 @@ SGP.seecreep=SGP.build;
 LESSONS.push({key:'see-early-brake',lesson:'See before you need to',title:'Too Late to Brake',
   q:'The road is fast and you see only a short way ahead. By the time a box comes into view, can you still stop?',
   meta:'Evidence about a risk arrives late. If you only start looking when it is in front of you, you are already committed.',
-  look:'Everyone runs fast here. A lab that stops investing in sight until the box is in view finds it cannot brake in time.',
-  labs:[{x:0,pts:[5,50,40],pace:0.8,w:[0,100,0]},RIV('build','Build',-200,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('wait','Wait',-220,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('rush','Rush',-300,[5,50,40],{pace:0.8,w:[0,100,0]})],
-  track:function(r){ var wide=r()<0.5,g=segBox(900,30,wide?1.04+0.06*r():0.7,{odds:5}); return {bars:[],gaps:[g],finish:g.x+g.W+200,note:(wide?'A wide box. ':'A narrow box. ')+'The box: '+segSay(g,70)+' Falls roll 5%.'}; },
-  postures:['seeearly','rush','build','seecreep'],
-  claim:{text:'Seeing early wins more than rushing, late care, or slowing down blind', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seecreep.win); }, need:15}});
+  look:'A low line is painted 150 before the box. It is easy to drive over, but past it there is no backing up, so no room for a run-up. You lead, and see only a short way. The Looker behind you stops at the line and looks. Half the seeds have a wide box that needs a full run-up from behind the line.',
+  strategy:'seeearly',
+  labs:[{x:0,pts:[25,30,40],pace:0.6,w:[0,100,0]},RIV('seeearly','Looker',-200,[25,30,40],{pace:0.6,w:[0,100,0]}),RIV('rush','Rush',-300,[25,30,40],{pace:0.6,w:[0,0,100]})],
+  track:function(r){ var wide=r()<0.5,g=segBox(600,30,wide?1.07+0.05*r():0.7,{odds:5}),line=segBar(g.x-150,10);
+    return {bars:[line],gaps:[g],finish:g.x+g.W+120,note:(wide?'A wide box. ':'A narrow box. ')+'A line 150 before it; past the line there is no backing up. The box: '+segSay(g,70)+' Falls roll 5%.'}; },
+  postures:['seeearly','rush','build','seecreep','seemax'],
+  claim:{text:'Stopping at the line to look wins more than rushing, late care, slowing down blind, or bracing for the worst', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seecreep.win,t.seemax.win); }, need:15}});
 
 LESSONS.push({key:'see-early-bravo',lesson:'See before you need to',title:'The Box Behind the Box',
   q:'A small box you can see clearly. Is that all there is?',
   meta:'Once you take a step, you are committed to whatever comes right after it. The estimate that matters is of the thing you cannot see yet.',
   look:'There is a second box just past the first, with no room to stop between them. A wide second box needs you to hit the first one at full speed and height, so the choice is made before the first box. From there, only a lab that has invested in sight can see how wide the second one is.',
+  strategy:'seeearly',
   labs:[{x:0,pts:[20,50,40],pace:0.7,w:[0,100,0]},RIV('build','Build',-150,[20,50,40],{pace:0.7,w:[0,100,0]}),RIV('wait','Wait',-170,[20,50,40],{pace:0.7,w:[0,100,0]}),RIV('rush','Rush',-250,[20,50,40],{pace:0.7,w:[0,100,0]})],
-  track:function(r){ var wide=r()<0.5,g1=segBox(1000,30,0.55,{odds:5}),g2=segBox(g1.x+g1.W+70,30,wide?1.04+0.06*r():0.7,{odds:5});
+  track:function(r){ var wide=r()<0.5,g1=segBox(500,30,0.55,{odds:5}),g2=segBox(g1.x+g1.W+70,30,wide?1.04+0.06*r():0.7,{odds:5});
     return {bars:[],gaps:[g1,g2],finish:g2.x+g2.W+200,note:(wide?'A wide second box. ':'A narrow second box. ')+'Box 1: '+segSay(g1,70)+' Box 2: '+segSay(g2,70)+' Falls roll 5%.'}; },
   postures:['seeearly','rush','build','seemax'],
   claim:{text:'Looking past the first box wins more than rushing, careful box-by-box play, or bracing for the worst at every box', score:function(t){ return t.seeearly.win-Math.max(t.rush.win,t.build.win,t.seemax.win); }, need:15}});
@@ -84,6 +105,7 @@ LESSONS.push({key:'see-early-pack',lesson:'See before you need to',title:'The Pa
   q:'You are in the middle of a pack, and the lab in front hides the road. Something is ahead. Do you stay in the pack?',
   meta:'Nobody in a pack sees further than the lab in front. If it cannot see the danger in time, neither can anyone following it.',
   look:'The Lead is careful but has little sight, and it hides the road from everyone behind it. The tailers keep close. To see the box in time you have to get out in front first, then look.',
+  strategy:'seebreak',
   labs:[{x:0,pts:[5,50,40],pace:0.8,w:[0,100,0]},RIV('late','Lead',40,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('tail','Tail 1',-30,[5,50,40],{pace:0.8,w:[0,100,0]}),RIV('tail','Tail 2',-60,[5,50,40],{pace:0.8,w:[0,100,0]})],
   track:function(r){ var wide=r()<0.5,g=segBox(1400,30,wide?1.04+0.06*r():0.7,{odds:5}); return {bars:[],gaps:[g],finish:g.x+g.W+200,note:(wide?'A wide box. ':'A narrow box. ')+'The box: '+segSay(g,70)+' Falls roll 5%.'}; },
   postures:['seebreak','tail','build','rush','seeearly','seeblind'],
