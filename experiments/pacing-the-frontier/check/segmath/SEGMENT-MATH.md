@@ -123,3 +123,28 @@ Prediction: on a map with no regime 3 variant, a strategy that never looks ties 
    - strikes and fall odds are what a scrape or a fall costs;
    - sight per point, braking from sight, and peek set when you learn the width, which decides whether regime 3 is reachable at all (seeing the width before your braking distance, about 226 at top speed).
 5. **Bots become an audit, not a search.** One bot run per finished segment, against the adversary pool, catches mechanisms the equations miss. Footsteps' shadow trick is the example.
+
+## First design from the equations: Measure Twice (2026-11-02)
+
+[[ai gen]] Status: implemented, audited, **failed**. `design.mjs` solves for one box with a narrow and a wide variant and one rival who plans once it sees the width. The map is `check/lessons/look-pays/maps.js`. Build it with `node build.mjs --only look-pays`.
+
+On paper the last version works:
+
+- narrow box: the race leaves you 22 points of slack, and bracing blind for the wide box needs 32;
+- wide box: the rival stops to build, and you have 87.
+
+The judge disagrees (seeds 9001 to 9040, one run each):
+
+| Jump mode | Looking wins | Best adversary | Verdict |
+|---|---|---|---|
+| auto-jump (the page's default) | 70% | build 95% | fail |
+| by hand | 100% | max-out 100% | fail (no lesson) |
+
+The narrow variant behaved as designed in the sim in some versions: max-out and fill-first lost every narrow seed while looking won every one. Four things the equations leave out broke the rest. Each was found by tracing a single seed.
+
+1. **Sight shadows decide who can look.** A lab ahead hides the box from a lab behind it. With the rival behind you, you blind it, so it never learns the width and floors it into the wide box. With it a little ahead, you pass it before it sees, with the same result. A rival can only plan if it learns the width before anyone overtakes it. That's a timing constraint the equations now need.
+2. **The run-up.** A lab that learns the width late and stops close to the box can't reach top speed again before the face. Height needs no run-up, so a late looker should buy height. `design.mjs` now prices the run-up from where you stop (`standNeed`).
+3. **Speed points pay for themselves.** The budget uses your starting top speed. But a speed point raises top speed by 0.85, which saves `0.85 × D / top²` seconds over the `D` still to run, and it costs 1/14 s. So it pays back whenever the road left is longer than `top² / 12`: about 480 at top speed 75, 720 at 92, and 1,000 at the ceiling. On a box 700 out, everyone arrives with speed full no matter what. This is a big part of why max-out keeps winning. The budget needs a speed-payback term, or labs should start segments near the speed ceiling.
+4. **Auto-jump changes the box equations.** With auto-jump the take-off comes later in the arc (`u0 = 0.3 / jumpDur` instead of 0.25), so the flight after it is shorter. At top speed and full height, the landing width falls from about 104 to about 96. The same box that everyone falls into with auto-jump, everyone clears jumping by hand. The formulas above are for jumping by hand. They need a chill version, and a map has to be designed for one mode.
+
+What this means: the equations got the narrow variant right whenever the sim matched their assumptions, so the approach holds up. But looking can only win when the rival can look too, and in this sim that is mostly a question of shadows and overtaking. Next: add those four terms to the calculator, then design again.

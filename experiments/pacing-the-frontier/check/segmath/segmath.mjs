@@ -62,11 +62,24 @@ function floor(L, u, T) {
 export const budget = (t, L, S, M = 1) => K.invest * M * (t - L / top(S));
 const bonus = gap => Math.min(3, 1 + Math.max(gap, 0) / 5 / K.refill);  // refill: labs behind the leader build faster
 
+// how far before a box's face a lab sees its far edge (seenW in the sim): over the box, the eye (height + 18) sees down at a slope of
+// 0.15, and never past sight range (80 + 4.4 x sight). Below the box top it never sees the far edge from the road
+export const sightRange = sight => C.SIGHT0 + 4.4 * sight;
+export function knowAt(pts, R, W) { const eye = pts[1] + 18; return eye <= R ? -Infinity : Math.min((eye - R) / 0.15, sightRange(pts[0])) - W; }
+export const brakeDist = v => v * v / (2 * C.DEC);
+
 // one rival at one box: when it reaches the face, its state, and whether it gets across. post:
 //   go    cruise; floor it once the box face is in sight; jump at whatever speed and state it has
 //   dash  cruise; floor it from 250 out
 //   stop  cruise; stand `s` short (or at a line), learn the width, build what a clean cross needs (or as much as it can), run up, jump
 function rival(r, box, W, cap) {
+  if (r.post === 'plan') {
+    //  plan  cruise; if it sees the far edge while it can still stop, floor it from 250 when its state clears the box as it is, else
+    //        stop and build; if it cannot see in time, floor it from 250 (the gamble)
+    const u = r.pace * top(r.pts[2]), seesInTime = knowAt(r.pts, box.R, W) >= brakeDist(u) + (r.s ?? 180) - 180;
+    const free = need(W, box.R, r.pts[1], r.pts[2], cap, 'land') === 0;
+    return rival({...r, post: !seesInTime || free ? 'dash' : 'stop'}, box, W, cap);
+  }
   const L = box.x - r.x, T = top(r.pts[2]), u = r.pace * T, M = bonus(-r.x), wsum = r.w[0] + r.w[1] + r.w[2];
   const grow = (pts, P) => pts.map((p, i) => Math.min(cap, p + P * r.w[i] / wsum));
   if (r.post === 'go' || r.post === 'dash') {
