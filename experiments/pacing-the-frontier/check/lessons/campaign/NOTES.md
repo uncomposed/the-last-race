@@ -14,7 +14,12 @@ Play: serve `check/` (`python3 -m http.server 8765 --directory experiments/pacin
 | Warning Signs (`cp-signs`) | Small incidents are evidence | +15 | +8 |
 | The Pattern Breaks (`cp-break`) | Patterns hold until they don't | — | +25 (reader wins 100%) |
 
-Default rules, auto-jump, `sweep.mjs`. The judge's own result (seeds 9001–9040, 13 rule sets) is in `JUDGE.md`.
+Default rules, auto-jump, `sweep.mjs`.
+
+**The judge** (seeds 9001–9040, auto-jump, 13 rule sets; full table in `JUDGE.md`):
+- Warning Signs **passes**: +18, holds 10 of 13.
+- The Pattern Breaks: +45 at the default rules but holds only 8 of 13 (ties at 100% under several rules, loses at build 10). Fails on rule robustness, not on the default game.
+- Look Before You Leap **fails**: −5, holds 2 of 13.
 
 ## Drafts, not in the campaign (`draft:1`)
 
