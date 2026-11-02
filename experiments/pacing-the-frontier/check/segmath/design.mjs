@@ -1,78 +1,94 @@
-// Design a segment where looking is the way to win (2026-11-02), from the equations in segmath.mjs. No races are run.
-// For a candidate (where you start, one box with a narrow and a wide variant, one rival who plans when it can see), it times three
-// strategies of yours to the end of the segment in each variant, and the rival:
-//   look   cruise no faster than you can stop once the wide box's far edge shows; narrow: floor it; wide: stop, build what it needs, go
-//   brace  never look: always stop and build what the wide box needs, then go
-// and the budget test from segmath.mjs for the cheapest blind prep, building while running: it loses a variant whose budget is short of the
-// widest variant's need (and max-out, which fills everything, loses any variant whose budget is short of the fill)
-//   rush   never look, never build: floor it
-// Looking is the way to win when look beats the rival in both variants, and brace and rush each lose one.
-//   node design.mjs
-import {C, K, top, need, knowAt, brakeDist, reach, segment, landW} from './segmath.mjs';
+// Design a segment where looking is the way to win (2026-11-02, second version, with the four terms in terms.mjs). No races are run:
+// every time below is a closed form, from rest, for one lab on its own; the rivals' timing and who can see what are constraints on top.
+// The segment: one box, a narrow and a wide variant (half the seeds each), one rival ahead of you that floors it while cruising.
+//   rival  sees whether the box is wide before you catch it; narrow: keeps flooring it; wide: stops, buys the speed it needs, backs up, goes
+//   you    look: floor it, but slow so you can still stop once you learn the width; narrow: keep going; wide: stop, buy what it needs, go
+//          rush: floor it, never look. blind: buy what the wide box needs without looking (the cheapest mix of height and speed, bought from
+//          the start, when speed pays back best). fill: fill height and speed (max-out)
+// Looking is the way to win when it beats the rival in both variants and blind, fill and rush each lose a variant.
+//   node design.mjs            the chosen design;   node design.mjs --search   solve for designs
+import {C, K, top} from './segmath.mjs';
+import {landW, speedFor, backUp, floorRun, brake, runIn, knowAt, eyeOf, shadowEnd} from './terms.mjs';
+const free = T => K.invest * T / (2 * C.ACC);   // points a lab buys for nothing while it speeds up from rest without flooring it
+const atTop = (L, T) => L / T + T / (2 * C.ACC); // floored (or buying only the free points) from rest over L
 
-function travel(L, u, end) {  // as in segmath.mjs
-  const da = u * u / (2 * C.ACC), dd = end === 'stop' ? u * u / (2 * C.DEC) : 0;
-  if (L <= da + dd) { const v = Math.sqrt(2 * L / (1 / C.ACC + (end === 'stop' ? 1 / C.DEC : 0))); return v / C.ACC + (end === 'stop' ? v / C.DEC : 0); }
-  return u / C.ACC + (end === 'stop' ? u / C.DEC : 0) + (L - da - dd) / u;
-}
-function floorT(L, u, T) { const dt = (T * T - u * u) / (2 * C.ACC); if (L <= dt) { const v = Math.sqrt(u * u + 2 * C.ACC * L); return (v - u) / C.ACC; } return (T - u) / C.ACC + (L - dt) / T; }
-
-// the fewest points that land you across width W when you start from a standstill s before the face: height first is free of run-up,
-// speed only helps as far as the run-up lets you reach it (the sim's acceleration is 40, the bots plan at 90% of it)
-export function standNeed(W, R, H0, S0, cap, s) {
-  let best = Infinity;
-  for (let H = H0; H <= cap; H += 0.5) for (let S = S0; S <= cap; S += 0.5) {
-    const v = Math.min(top(S), Math.sqrt(2 * 0.9 * C.ACC * Math.max(s - 8, 0)));
-    if (landW(v, H, R) >= W * 1.02) { best = Math.min(best, H - H0 + S - S0); break; }
+// what a lab standing `d0` before the face buys to land width W, as the bots do it: height first (no run-up needed), then speed; then it backs
+// up for the run-up the face speed needs. Points, the face speed, and the time from standing
+function buy(W, R, H, S, cap, mode, d0) {
+  for (let h = H; h <= cap; h += 0.5) {
+    const v = speedFor(W, h, R, top(S), mode); if (v === Infinity) continue;
+    const P = h - H, r = runIn(d0, v); return {P, v, t: P / K.invest + r.t, h, s: S};
   }
-  return best;
-}
-// your time to the end of the segment for each strategy (see the top of this file)
-export function you(m, W, Ww, how) {
-  const box = m.boxes[0], cap = box.cap ?? C.CAPS[0], [, H0, S0] = m.you.pts, L = box.x, end = W + m.after, T0 = top(S0);
-  const free = need(W, box.R, H0, S0, cap, 'land') === 0;
-  // brake from u to stand s before the face, build what width w needs from there, run up, cross, run to the end
-  const stopBuild = (u, w, s) => {
-    const t1 = travel(L - s, u, 'stop'), P1 = K.invest * (t1 - (L - s) / T0);
-    const P = standNeed(w, box.R, H0, S0, cap, s); if (P === Infinity) return Infinity;
-    const S = Math.min(cap, S0 + P), vf = Math.min(top(S), Math.sqrt(2 * C.ACC * s));
-    return t1 + Math.max(0, P - P1) / K.invest + vf / C.ACC + (end - Math.max(0, s - vf * vf / (2 * C.ACC))) / Math.max(vf, 1);
-  };
-  const best = f => Math.min(...[40, 60, 80, 100, 130, 160, 200].map(f));
-  if (how === 'rush') return free ? floorT(L, 0, T0) + end / T0 : Infinity;
-  if (how === 'brace') return best(s => stopBuild(T0, Ww, s));
-  // look: cruise no faster than you can stop from, s before the face, once the wide box's far edge shows
-  return best(s => {
-    const u = Math.min(T0, Math.sqrt(2 * C.DEC * Math.max(knowAt(m.you.pts, box.R, Ww) - s, 0)));
-    if (u < 5) return Infinity;
-    if (free) { const kn = Math.max(knowAt(m.you.pts, box.R, W), 0); return travel(L - kn, u, 'cruise') + floorT(kn, u, T0) + end / T0; }
-    return stopBuild(u, W, s);
-  });
-}
-
-export function report(m) {
-  const box = m.boxes[0], cap = box.cap ?? C.CAPS[0], [n, w] = box.variants.map(v => v.W ?? Math.round(v.f * reach(cap, box.R)));
-  const seg = segment(m), rows = [];
-  for (const [i, W] of [n, w].entries()) {
-    const r = seg.rows[i], riv = r.rv[0];
-    rows.push({variant: i ? 'wide' : 'narrow', W, rival: riv.tEnd, rivalOut: riv.out, look: you(m, W, w, 'look'), brace: you(m, W, w, 'brace'), rush: you(m, W, w, 'rush'), regime: r.regime, need: r.need, B: r.B});
+  for (let s = S; s <= cap; s += 0.5) {
+    const v = speedFor(W, cap, R, top(s), mode); if (v === Infinity) continue;
+    const P = cap - H + s - S, r = runIn(d0, v); return {P, v, t: P / K.invest + r.t, h: cap, s};
   }
-  // blind prep (build while running for the widest box, or fill everything) loses when some variant's budget is short of it
-  const lookWins = rows.every(r => r.look < r.rival || r.rivalOut === 'fall'), blindLoses = rows.some(r => r.B < seg.worst), rushLoses = rows.some(r => r.rush === Infinity || r.rush > r.rival);
-  return {rows, fill: seg.fill, worst: seg.worst, ok: lookWins && blindLoses && rushLoses, know: [n, w].map(W => Math.round(knowAt(m.you.pts, box.R, W))), stopFrom: Math.round(brakeDist(top(m.you.pts[2])))};
+  return null;
 }
 
-// The candidate: see SEGMENT-MATH.md, "Designing a segment"
-export const LOOK = {key: 'look-pays', title: 'Measure Twice', after: 80,
-  you: {pts: [70, 70, 30]},
-  boxes: [{x: 700, R: 20, variants: [{p: [0.5, 'narrow'], f: 0.65}, {p: [0.5, 'wide'], f: 1.05}]}],
-  rivals: [{name: 'Rival', x: 350, pts: [50, 40, 0], pace: 0.8, w: [100, 0, 0], post: 'plan'}]};
+export function evaluate(d) {
+  const {L, R, Wn, Ww, after, cap = 70, mode = 'auto'} = d, [ys, yh, yS] = d.you, [rs, rh, rS] = d.rival.pts, x0 = d.rival.x;
+  const T = top(yS), Tr = top(rS), end = L + Ww + after, endN = L + Wn + after, o = {ok: false, why: []};
+  // who knows when. With two variants, seeing more than the narrow width without the far edge means wide, so both learn at knowAt(.., Wn)
+  const ky = knowAt(ys, yh, R, Wn), kr = knowAt(rs, rh, R, Wn);
+  const xr = t => x0 + (t <= Tr / C.ACC ? C.ACC * t * t / 2 : Tr * t - Tr * Tr / (2 * C.ACC)), xy = t => t <= T / C.ACC ? C.ACC * t * t / 2 : T * t - T * T / (2 * C.ACC);
+  let tc = Infinity; for (let t = 0; t < 30; t += 0.01) if (xy(t) >= xr(t)) { tc = t; break; }
+  const xc = xy(tc), trk = (() => { for (let t = 0; t < 30; t += 0.01) if (xr(t) >= L - kr) return t; return Infinity; })();
+  o.know = {you: Math.round(ky), rival: Math.round(kr), catchAt: Math.round(xc)};
+  if (!(T > Tr)) o.why.push('you are not faster than the rival');
+  if (!(trk < tc)) o.why.push('you catch the rival before it sees the width (your shadow then hides the box from it)');
+  // you must be past the rival before you need to see, or see over it
+  if (xc > L - ky) { const e = eyeOf(yh), db = xr(0) - 0; if (shadowEnd(e, rh + 18, 50) < ky + Wn + 50) {} else o.why.push('the rival hides the box from you when you need to see it'); }
+  if (kr < Tr * Tr / (2 * C.DEC) + 10) o.why.push('the rival learns the width too late to stop');
+  // the rival
+  const rN = (endN - x0) / Tr + Tr / (2 * C.ACC);
+  const rb = buy(Ww, R, rh, rS, cap, mode, 10), rBrake = brake(Tr, 0, Tr);
+  const rW = rb ? (L - 10 - rBrake.d - x0) / Tr + Tr / (2 * C.ACC) + rBrake.t + Math.max(0, rb.P - rBrake.P) / K.invest + runIn(10, rb.v).t + floorRun(Ww + after, rb.v, top(rb.s)).t : Infinity;
+  if (rW === Infinity) o.why.push('the rival cannot cross the wide box');
+  // you: look. Slow to the speed you can stop from once you learn the width (10 short of the face; backing up gives the run-up)
+  const uk = Math.min(T, Math.sqrt(2 * C.DEC * Math.max(ky - 10, 0)));
+  if (uk < 10) o.why.push('you see the width too late');
+  const bk = brake(T, uk, T), lead = L - ky - bk.d;  // brake from top speed to uk, reaching uk as you learn the width
+  const tToKnow = atTop(lead, T) + bk.t;
+  const lookN = tToKnow + floorRun(ky + Wn + after, uk, T).t;
+  const yb = buy(Ww, R, yh, yS, cap, mode, 10), b2 = brake(uk, 0, T);
+  const lookW = yb ? tToKnow + b2.t + Math.max(0, yb.P - bk.P - b2.P) / K.invest + runIn(10, yb.v).t + floorRun(Ww + after, yb.v, top(yb.s)).t : Infinity;
+  // blind: the cheapest mix that lands the wide box at full speed, bought from the start (speed bought first pays back over the whole road)
+  let blindN = Infinity;
+  for (let h = yh; h <= cap; h++) for (let s = yS; s <= cap; s++) if (landW(top(s), h, R, mode) >= Ww) { const P = h - yh + s - yS, Tb = top(s); blindN = Math.min(blindN, endN / Tb + Math.max(P, free(Tb)) / K.invest); break; }
+  const fillN = endN / top(cap) + Math.max(2 * cap - yh - yS, free(top(cap))) / K.invest;
+  // rush: free points go to height while speeding up; does it land the wide box?
+  const rushLandsW = landW(T, Math.min(cap, yh + free(T)), R, mode) >= Ww, rushLandsN = landW(T, yh, R, mode) >= Wn;
+  if (!rushLandsN) o.why.push('the narrow box is not free');
+  Object.assign(o, {rN, rW, lookN, lookW, blindN, fillN, rushN: atTop(endN, T), rushLandsW, uk: Math.round(uk), youNeed: yb && yb.P, rivalNeed: rb && rb.P});
+  if (!(lookN < rN)) o.why.push('looking loses the narrow box to the rival');
+  if (!(lookW < rW)) o.why.push('looking loses the wide box to the rival');
+  if (!(blindN > rN)) o.why.push('blind prep for the wide box beats the rival on the narrow one');
+  if (!(fillN > rN)) o.why.push('filling everything beats the rival on the narrow box');
+  if (rushLandsW) o.why.push('rushing lands the wide box');
+  o.margin = Math.min(rN - lookN, rW - lookW, blindN - rN, fillN - rN);
+  o.ok = !o.why.length;
+  return o;
+}
+
+export const DESIGN = {key: 'look-pays', title: 'Measure Twice', L: 600, R: 10, Wn: 55, Ww: 95, after: 80, mode: 'auto',
+  you: [45, 20, 60], rival: {x: 50, pts: [70, 50, 30]}};
+
+function search() {
+  const out = [];
+  for (const L of [600, 800, 1000]) for (const R of [10, 20, 30]) for (const Ww of [90, 95, 100]) for (const after of [40, 80])
+  for (const ys of [30, 45, 60]) for (const yh of [20, 35, 50]) for (const yS of [50, 60, 70])
+  for (const x of [50, 150, 250, 350]) for (const rs of [50, 70]) for (const rh of [50, 70]) for (const rS of [0, 15, 30]) {
+    const d = {L, R, Wn: 55, Ww, after, mode: 'auto', you: [ys, yh, yS], rival: {x, pts: [rs, rh, rS]}}, o = evaluate(d);
+    if (o.ok) out.push({...d, you: d.you.join('/'), rival: `${x} ${d.rival.pts.join('/')}`, margin: +o.margin.toFixed(2), lookN: +o.lookN.toFixed(1), rN: +o.rN.toFixed(1), lookW: +o.lookW.toFixed(1), rW: +o.rW.toFixed(1), blindN: +o.blindN.toFixed(1), need: o.youNeed});
+  }
+  console.log(out.length + ' designs pass'); console.table(out.sort((a, b) => b.margin - a.margin).slice(0, 15));
+}
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const r = report(LOOK), f = x => x === Infinity ? 'falls' : x.toFixed(1) + ' s';
-  console.log(`you see the far edge at ${r.know[0]} (narrow) and ${r.know[1]} (wide) before the face; at top speed you need ${r.stopFrom} to stop`);
-  console.log(`blind prep for the wide box needs ${Math.round(r.worst)} points; filling everything needs ${r.fill}`);
-  console.log('| Variant | Width | Regime | Budget | Need | Rival | look | brace | rush |\n|---|---|---|---|---|---|---|---|---|');
-  for (const x of r.rows) console.log(`| ${x.variant} | ${x.W} | ${x.regime} | ${Math.round(x.B)} | ${Math.round(x.need)} | ${f(x.rival)} (${x.rivalOut}) | ${f(x.look)} | ${f(x.brace)} | ${f(x.rush)} |`);
-  console.log(r.ok ? 'Looking is the way to win: look beats the rival in both variants; blind prep (budget < ' + r.worst + ' somewhere) and rush each lose one.' : 'Not yet: looking is not the way to win.');
+  if (process.argv.includes('--search')) search();
+  else { const o = evaluate(DESIGN), f = x => x === Infinity ? 'never' : x.toFixed(1) + ' s'; console.log(JSON.stringify(o.know), 'you slow to', o.uk);
+    console.log(`narrow: rival ${f(o.rN)}, look ${f(o.lookN)}, rush ${f(o.rushN)}, blind ${f(o.blindN)}, fill ${f(o.fillN)}`);
+    console.log(`wide: rival ${f(o.rW)} (needs ${o.rivalNeed}), look ${f(o.lookW)} (needs ${o.youNeed}), rush ${o.rushLandsW ? 'lands' : 'falls'}`);
+    console.log(o.ok ? `Looking is the way to win, by ${o.margin.toFixed(1)} s at the closest.` : 'Not yet: ' + o.why.join('; ')); }
 }

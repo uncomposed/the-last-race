@@ -148,3 +148,36 @@ The narrow variant behaved as designed in the sim in some versions: max-out and 
 4. **Auto-jump changes the box equations.** With auto-jump the take-off comes later in the arc (`u0 = 0.3 / jumpDur` instead of 0.25), so the flight after it is shorter. At top speed and full height, the landing width falls from about 104 to about 96. The same box that everyone falls into with auto-jump, everyone clears jumping by hand. The formulas above are for jumping by hand. They need a chill version, and a map has to be designed for one mode.
 
 What this means: the equations got the narrow variant right whenever the sim matched their assumptions, so the approach holds up. But looking can only win when the rival can look too, and in this sim that is mostly a question of shadows and overtaking. Next: add those four terms to the calculator, then design again.
+
+## Second design, with the four terms: Measure Twice passes (2026-11-02)
+
+[[ai gen]] Status: implemented and verified by the judge. Not yet played by Cole, so not human_validated.
+
+`terms.mjs` adds the four terms, each checked against the sim's own code (`node terms.mjs`):
+
+1. **Jump mode.** Box widths for auto-jump and for jumping by hand. Exact in 192 cases.
+2. **Backing up.** A lab can always back up for a run-up (Cole: a stopped lab's guard doesn't block it), so a late stop costs time, not the crossing. Matches the sim within 0.002 s.
+3. **The ledger.** A lab's time is the distance at its top speed, plus every point it buys divided by the build rate, plus what flooring it costs. Exact. Two results follow:
+   - speed bought early pays itself back over more road than `top² / 12`;
+   - a lab that speeds up from rest without flooring it gets `14 × top / 80` points free (13 to 19).
+4. **Shadows.** The sim's rule, used as constraints: the rival must see the width before you catch it, and you must pass it before you need to see.
+
+`design.mjs` turns these into closed-form times for the rival and for four ways to play (look, rush, blind prep, fill). It then searches design parameters (not races) for designs where looking beats the rival in both variants while blind prep, fill and rush each lose one. 159 designs pass, with margins under a second. The chosen one:
+
+- **The box:** 600 out, rise 10, either 55 or 95 wide, with the finish 80 past it. Falls roll 40%.
+- **You:** sight 45, height 20, speed 60. You're short, so you can tell the width only from 132 out, and you slow to 62 to be able to stop there.
+- **The rival:** 50 ahead with sight 70, height 50, speed 30. It floors it, and it can tell the width from 332 out, before you catch it at about 294.
+
+| | Rival | Look | Rush | Blind prep | Fill |
+|---|---|---|---|---|---|
+| Narrow, predicted | 10.0 s | 9.2 s | 8.5 s | 10.9 s | 11.0 s |
+| Wide, predicted | 22.7 s | 21.7 s | falls | | |
+
+The judge (seeds 9001 to 9040, 33 adversaries, 13 rule sets) passes it in both jump modes. Looking wins 100%. The best adversary, a rush-style strategy, wins 70%: every narrow seed and no wide one. Seed 9004 (wide) ran close to the prediction: you finished in 20.6 s against 21.7 predicted, and the rival crossed at 20.4. The map loses its margin only at the two build-rate extremes (10 and 18 points a second), as expected. The build rate is the price of time, so it moves every budget.
+
+What this does not show:
+
+1. **I wrote the rival.** The judge tests your strategies against it, not whether a lab would play like that.
+2. **Two-variant knowledge.** The bots use the rule "seeing past 55 without the far edge means wide". A player has to be told the two widths, and the map's text does that.
+3. **One segment, not a run.** It starts with speed mostly bought (60 of 70), which sidesteps the speed payback rather than fixing it.
+4. **Nobody has played it.**
