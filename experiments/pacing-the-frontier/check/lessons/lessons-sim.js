@@ -22,6 +22,10 @@ var RULES=[
    means:'A lab that invests in seeing ahead trusts what it sees and stops sooner: braking grows with the sight meter as a share of the ceiling.'},
   {key:'space',k:'space',def:100,lo:50,hi:100,exp:1,name:'Track spacing',unit:'% of the open track between obstacles',
    means:'Shrinks the open run between obstacles (the first 100 of each stretch is kept, so a barrier right before a box stays right before it). Less track, less time to build.'},
+  {key:'spill',k:'spill',def:40,lo:0,hi:80,exp:1,name:'Barrier spillover',unit:'% of what the crosser knows, up to the wall',
+   means:'A lab that clears a barrier lifts each lab behind it that saw it, once per barrier, by this share of the gap between the watcher’s height and the smaller of the wall and the crosser’s height. A watcher never passes the lab it watched.'},
+  {key:'spillrule',k:'spillRule',def:1,lo:0,hi:1,exp:1,name:'Spill rule',unit:'0 old, 1 new',
+   means:'0: the old rule (this % of the wall’s height, from every crossing in view, labs ahead too). 1: the share of what the crosser knows, once per barrier, labs behind only.'},
   {key:'wallstop',k:'wallStop',def:0,lo:0,hi:1,exp:1,name:'Wall when stopped',unit:'0 off, 1 on',
    means:'On: a lab stopped at a box leaves its barrier at once, growing with its height. Off: the barrier appears only when it starts forward again.'}
 ];

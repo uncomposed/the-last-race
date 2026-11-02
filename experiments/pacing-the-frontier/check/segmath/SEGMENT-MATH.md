@@ -181,3 +181,26 @@ What this does not show:
 2. **Two-variant knowledge.** The bots use the rule "seeing past 55 without the far edge means wide". A player has to be told the two widths, and the map's text does that.
 3. **One segment, not a run.** It starts with speed mostly bought (60 of 70), which sidesteps the speed payback rather than fixing it.
 4. **Nobody has played it.**
+
+## Barrier spillover: the new rule, judged at 0, 40 and 80 (2026-11-02)
+
+[[ai gen]] Cole asked for a spill dial and a more balanced formula. The new rule (built into the lesson pages by `lessons/build.mjs`; knob table in `lessons/KNOBS.md`): a lab that clears a barrier lifts each lab behind it that saw it by `spill`% × (min(wall, crosser's height) − watcher's height), once per barrier per watcher. The old rule gave a third of the wall's height from every crossing in view, labs ahead included. Five hand-written scenarios match the worked numbers (one crosser at 50 or 90; three crossers do not stack; a watcher above the crosser gains nothing).
+
+Judge, seeds 9001-9040, auto-jump on. Lesson strategy's win rate, then the margin over the best adversary:
+
+| Map | Old rule (33% of wall) | New, spill 0 | New, spill 40 | New, spill 80 |
+|---|---|---|---|---|
+| Measure Twice | 100%, +30, **pass** | same | same | same |
+| Still in the Air (`sr-landing`) | 75%, −25 | 30%, −70 | 10%, −90 | 5%, −95 |
+| The Last Box (`sr-lastbox`) | 83%, −17 | 0%, −98 | 0%, −98 | 0%, −93 |
+| The Minefield | 58%, −5 | 60%, −5 | 60%, −5 | 60%, −5 |
+| The other seven | unchanged | unchanged | unchanged | unchanged |
+
+What it shows:
+
+1. **The amount barely matters on today's maps; the rule does.** Between 0 and 80, only Still in the Air moves. The new rule pays only when the crosser is taller than the watcher, and these maps rarely make that happen. A generator that wants spill to matter has to build height differences into the pack.
+2. **The Last Box ran on the old rule's free height.** On seed 9001 "you" gained 62 height by watching an equal-height rival cross four walls (17 + 2 + 18 + 25). Under the new rule an equal-height watcher learns nothing, arrives short and scrapes. That is the rule doing what it was meant to do; the map's lesson strategy has to be redesigned, not the rule loosened.
+3. **Still in the Air gets worse as spill rises** (30% to 5%): spill lifts the rivals behind you more than it lifts you.
+4. **Measure Twice still passes**, unchanged: its rival is the taller lab and is ahead, so nothing spills to it.
+
+What it does not show: bot play only, one seed block, auto-jump only (jump by hand not run), and no map yet built to test spill on purpose. Status: verified, not human_validated.

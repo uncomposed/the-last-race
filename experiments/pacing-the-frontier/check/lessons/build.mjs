@@ -29,6 +29,13 @@ rep('peek:1,stepGaps:0', 'peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,sp
 // experiment rules (lessons-sim.js RULES with exp:1): a stopped lab's wall at once, and the track spacing hook
 rep('if(l.stopG===l.gi&&l.v>1&&sdist>0){ installBarrier(l,sg0); }', 'if(l.stopG===l.gi&&(l.v>1||K.wallStop)&&sdist>0){ installBarrier(l,sg0); }');
 rep('t=SEG.track(r);', 't=lessonSpace(SEG.track(r));');
+// spill (2026-11-02): a lab that clears a barrier (or a box step) lifts the labs behind it that saw it by a share of what it knows,
+// share × (min(wall, crosser's height) − watcher's height), once per barrier per watcher, so a watcher never passes the crosser and a crowd
+// crossing does not stack. K.spillRule 0 is the old rule (spill% of the wall, every crossing, labs ahead too)
+rep('spill:33,', 'spill:40,spillRule:1,');
+rep('    if(m.pts[1]<b.h){\n      var gain=Math.min(b.h*K.spill/100,b.h-m.pts[1],m.cap-m.pts[1]);',
+  "    if(K.spillRule&&(m===l||m.x>=l.x||(m.spilled&&m.spilled[bi]))){continue;}\n    if(m.pts[1]<b.h){\n      var gain=K.spillRule?Math.min(K.spill/100*(Math.min(b.h,l.pts[1])-m.pts[1]),m.cap-m.pts[1]):Math.min(b.h*K.spill/100,b.h-m.pts[1],m.cap-m.pts[1]);");
+rep('      if(gain>0.5){ m.pts[1]+=gain;', '      if(gain>0.5){ m.pts[1]+=gain; if(K.spillRule){ m.spilled=m.spilled||{}; m.spilled[bi]=true; }');
 rep('function sightRange(l){return C.SIGHT0+4.4*l.pts[0];}', 'function sightRange(l){return C.SIGHT0+4.4*K.sightX/100*l.pts[0];}');
 rep('if(g.odds!==undefined){return g.odds;}', 'if(g.odds!==undefined){return clamp(g.odds*K.oddsX/100,0,95);}');
 rep('if(!K.peek){ return inp; }', 'if(!K.peek||(l.post&&NOPEEK[l.post])){ return inp; }');

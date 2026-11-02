@@ -26,11 +26,28 @@ These are the knobs we expect to tune the game with. Lesson maps are tested at t
 
 Why these six: each is a lever the research catalog says matters (first-mover prize, shared learning, the value of information, the cost of caution, tolerance for near misses). I have not yet shown that each one changes which posture wins; the lesson grids will. Peek stays on and isn't varied: you decided to keep it in some form.
 
+## Added 2026-11-02: barrier spillover (`spill`), the follow reward at barriers
+
+Cole asked for a dial on how much height a lab gains by watching another clear a barrier. The old rule gave each watcher a third of the wall's height, from every crossing in view, labs ahead included. So a watcher could end up taller than the lab it watched, and three crossings in view lifted the whole pack to the wall.
+
+The new rule (`K.spillRule` 1, the default in the lesson pages):
+
+- **Gain** = `spill`% × (the smaller of the wall and the crosser's height, minus the watcher's height), capped at the watcher's ceiling.
+- **Once per barrier per watcher**, and **only labs behind the crosser**. It also applies to box steps, with the step's rise as the wall.
+- With `spill` below 100, a watcher never passes the lab it watched, so leading always pays.
+- **For the generator**, it is a closed-form height floor for followers at the next box: `h' = h + spill × (min(B, h_crosser) − h)`, alongside the crossing floor `B − 34`.
+
+| Rule | Knob | Default | Grid | What it means in the story |
+|---|---|---|---|---|
+| Barrier spillover | `spill` | 40% | 0, 80 | How much of a breakthrough leaks to the labs watching it happen |
+
+It is an experiment rule for now (`exp:1` in `lessons-sim.js`), so it is not yet in the judge's 13-set grid; run it with `--rules spill:N`. `--rules spillrule:0,spill:33` restores the old rule. The Hard Lessons daily twist sets it to 0 and still works. The judge results at 0, 40 and 80 are in `segmath/SEGMENT-MATH.md`.
+
 ## Everything else, and what I'd do with it
 
 The sim has 35 `K` knobs and 37 `C` constants. Grouped:
 
-1. **Candidates to promote later (fixed for now).** `spill` 33 (how much of a breakthrough barrier's height leaks to watchers), `refill` 50 (labs behind build up to 3× faster: the old finding that being behind is rewarded), `singOdds` 30 and `singSpeed` 3 (the singularity). These matter for some lessons, but adding them would double the grid.
+1. **Candidates to promote later (fixed for now).** `refill` 50 (labs behind build up to 3× faster: the old finding that being behind is rewarded), `singOdds` 30 and `singSpeed` 3 (the singularity). These matter for some lessons, but adding them would double the grid.
 2. **Penalties.** `bounce`, `capDist`, `capSecs`, `scrapeCap`, `dropH` (how big a miss still counts as a scrape), `strikeTower`, `strikeGap`. These are fixed physics of a crash or scrape.
 3. **Generator only.** `barScale`, `gapScale`, `stepW`, `stepV`, `stepFit`, `riseScale`, `singGap`, and the `C.RISE*`, `C.WID*`, `C.TW*`, `C.LEAN`, `C.NOWARN`, `C.RISEFLOOR`, `C.HREF*`, `C.WREF*` constants. These shape generated tracks and do nothing on a hand-built map. When the generator is rebuilt from the lessons, most of these should be replaced by the features the lessons need.
 4. **Physics.** `C.JUMP`, `C.ACC`, `C.DEC`, `C.TOP0`, `C.CAPS`, `C.SIGHT0`, `C.AIR0`, `K.airH` (air time grows with height), `C.BOXU`, `C.SEEANG`, plus input feel (`C.COYOTE`, `C.JBUF`). Treat as fixed. The "care band" (a careful lab clears only about 10% wider than a cruising one) comes from these, not from any knob.
