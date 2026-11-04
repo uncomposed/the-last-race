@@ -2,7 +2,7 @@
 
 [[ai gen]] Written by Claude, 2026-11-04, at Cole's request: review the box and lesson work of the past week and propose a full hand-built campaign to play locally. Status: a proposal. Opinion and inference are marked. Every number comes from a file named next to it or from the experiment in section 6. Nothing here is `human_validated`.
 
-**Revision 2, same day, after Cole's reply.** Decisions are recorded in section 0. Changed: the thesis (section 9), the overshoot box became Cole's second-order box (section 2, change 3), the reading rule became a rule for reading the world (section 3), the pace line was replaced by a speed limit and moved the ratchet to a fork (Act V), and a new section 4b on when a map may change the rules.
+**Revision 2, same day, after Cole's reply.** Decisions are recorded in section 0. Changed: the thesis (section 9), the overshoot box became Cole's second-order box (section 2, change 3), the reading rule became a rule for reading the world (section 3), Act V now uses a speed limit instead of the pace line, with the ratchet moved to a fork, and a new section 4b covers when a map may change the rules. Sections 6b and 6c add two new bot experiments.
 
 Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `check/lessons/ROUND2.md`, `check/segmath/SEGMENT-MATH.md` and `check/lessons/campaign/` (all on branch `claude/segment-math`), and the frontier-router note in `ai-pacing` (branch `claude/ai-capability-frontier-ni9scf`, `research_notes/frontier-router/README.md`).
 
@@ -21,7 +21,7 @@ Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `
 1. **The week worked, and the judge is the reason we know it.** Hidden width is the first mechanism you validated by playing ("almost precisely what I was hoping for"). The segment math explains in one table why nine of ten round 2 maps failed. Measure Twice is the first map designed from equations, and it passes the judge. Warning Signs passes too.
 2. **The judge is measuring the right thing for a single map and the wrong thing for a campaign.** It asks "is the lesson the *only* way to win this map?" A campaign teaches by contrast: what won the last three maps kills you on this one. That needs a second test, at the level of an act: no single habit coasts through it, and one reading rule a person can follow beats every habit (section 4). It measures what a player actually carries forward: a habit, and when to drop it.
 3. **The failures are content.** Max-out and its cousins ("fill, then floor it") beat or tied almost every lesson map. That is not noise. It is the honest truth of a world where every risk fits under the ceiling: scaling is safety. The campaign should teach that first, on purpose, and then break it. The adversaries' winning strategies (fill then floor it, stay ahead and tall so the rival can't see, free-ride, prepare blind for the worst) are each a real-world posture. They belong on maps, as lessons.
-4. **The four regimes from the segment math are the story.** Regime 1: slack, scale wins. Regime 2: buy what the risk needs. Regime 3: looking wins. Regime 4: the race won't let you be safe. That is the arc of the AI race as the research tells it, in order. The fifth act is the one the game cannot reach today: when no player can be safe, change the race. That is where `ai-pacing` lives (the public-frontier reference, the leapfrog ratchet), and the router note gives a mechanic for it that fits the game exactly.
+4. **The four regimes from the segment math are the story.** Regime 1: slack, scale wins. Regime 2: buy what the risk needs. Regime 3: looking wins. Regime 4: the race won't let you be safe. That is the arc of the AI race as the research tells it, in order. The fifth act is the one the game cannot reach today: when no player can be safe, change the race. In revision 2 that act is one rule, Cole's speed limit: cap how fast anyone may go, and let the speed nobody may use become investment. In bot play it took a bloodbath map from 59% extinction to 3% (section 6c).
 5. **Build it on the lesson harness, not on `prototype.html`.** The harness already has boxes, hidden width, peek, the new spill rule, hand-built maps and Next. The main game carries the daily, the leaderboard hash and ghosts, and every sim change there costs a re-vendor. Port to main once the campaign has been played.
 6. **The missing piece is a reference reader, not more maps.** The win matrix (section 6) shows the campaign shape already exists in bot play. Fill-first habits win 93% of the proposed Act I and 29% of Act III. In Act IV nothing wins more than 48%. What is missing is one strategy a person can follow on every map, in one sentence, that wins Acts II and III. `cpRead` is the starting point: never run faster than you can stop within what you can see. Revision 2 widens it into a world reader that also floors it when the road and the rivals allow (section 3). Today `cpRead` is the best single strategy only on the campaign maps it was written for. Make the world reader the lesson strategy for every Teach and Exam map, and design the maps around it.
 7. **Pick one jump mode and judge in it.** With auto-jump on (the page default), the lesson strategy is the best strategy on only 6 of 17 lesson maps. Spend It Once's lesson strategy wins 100% jumping by hand (`judged/final.md`) and 0% with auto-jump, and three small-risks lessons fall to 7.5 to 15%. A map works in one mode. I recommend auto-jump, since that is what a new player has.
@@ -128,26 +128,34 @@ Multipolar. Diffusion is turned up. Here the race will not let you be both safe 
 | The Pack Behind You | Teach | segment 11 (exists; best 62.5%, a reader) | Your tailers stop with you and hide the box from a latecomer. Stopping quietly hides the hazard from whoever comes next |
 | The Minefield | Feel | `steward-minefield` (exists; about 6 seeds in 40 nobody can win; its Steward wins 65%) | A careful lab can't just stop; it has to stay near the front |
 
-### Act V. Change the Race (the rules are the lever)
+### Act V. Pace the Frontier (revision 2)
 
-*"When nobody can be safe and win, the question is who writes the rules, and what they reference."*
+*"When the race won't let anyone be safe, change how fast anyone may go."*
 
-Each map is played twice, once under the default rules and once under a rule change, and the debrief puts the two results side by side. This is the one act where a map is allowed to set rule knobs, because the rule is the lesson (LESSONS.md forbids it today; section 8, decision 5).
+Rewritten after Cole's reply: no pace line, one rule, and the rest is map layout. Act V is the one act where maps may set the rules (section 4b).
 
-| Map | Rule pair | Source | What the player sees |
+| Map | What changes | Source | What the player sees |
 |---|---|---|---|
-| The Ratchet | the pace line references the best rival, then only outsiders | new: the pace line (below) | With two careful labs referencing each other, the line climbs and boxes arrive at speed. Referencing the outsider holds it |
-| Same Track, Different Rules | follower share 40 then 70; or build rate 14 then 10 | an Act II or III map at a rule where the judge grid says it flips (`JUDGE.md`: Pattern Breaks loses at build 10) | Your careful play loses only because care got slower. The rule, not you, decided |
-| The Last Gap | default, then the player's chosen rule | segment 12 (singularity: 3x speed, laggy controls) | Preparation happens before the transition. Then: pick the rule you want for the last race |
+| Same Track, Different Rules | one world dial, announced: build rate 14, then 10 | Pattern Breaks, where the judge grid shows it flipping at build 10 (`JUDGE.md`) | Your careful play loses only because care got slower. The rule decided, not you |
+| Slow Is Smooth | the speed limit: raced without it, then with it | new; built and run in bot play (section 6c) | Uncapped, the Rusher floors it and its falls roll everyone's dice. Capped, every lab arrives taller and nobody falls |
+| The Treaty Wall | no enforcer: a wall so tall nobody crosses without building near the ceiling, high spill, then open road to the finish | new, layout only (spill is an existing rule); not yet built | Whoever climbs first lifts the lab behind it, and then it's a sprint. Do you climb, or wait and dare the other to? |
+| Unknown World | one world dial moved, not announced | any Act II or III map | Something is off. The debrief tells you what |
+| The Last Gap | the player chooses: with or without the speed limit | segment 12, rebuilt so its boxes can be crossed under the limit | Preparation happens before the transition, and so does the choice of rules |
 
-**The pace line**, a new mechanic and the one I would most like to build. It is `ai-pacing` K4 and K6 as a drawing on the track. A line runs ε ahead of a *reference* lab. A lab past the line is in hostile review: its Build is forced to sight and height (the crash-cap code already does this), and it takes a strike if it stays past it longer than a few seconds. The rule's only setting is who the reference is:
+**The speed limit** is Cole's definition of pacing: limit how fast anyone may go, not how far. One rule with two parts:
 
-1. **Reference: the best other lab.** You and the Steward both obey it. Each of you may lead the other by ε, so you take turns, and the line climbs at k·ε per cycle. The router note's ratchet result, felt: more cooperators, faster frontier (`ai-pacing` Q17, proposed; 1.0, 3.3, 5.0 and 8.3 Elo a month for 1, 2, 3 and 5 signatories, model on assumed inputs).
-2. **Reference: the outsider only.** A slow non-signatory sets the line. Now the pack moves at its pace, the race leaves slack, and Acts II and III's reading pays again.
+1. **A cap on top speed** for every lab. Ceilings still rise when you cross a box, so capability still grows.
+2. **The speed you can't use becomes investment.** The sim funds building from the speed you hold back below your top speed, `1 − v/top`. With a plain cap, the cap becomes your top, so a lab held at the cap invests nothing: the opposite of the idea. With the limit, the sim uses the uncapped top, so a lab held at 80 that could do 110 keeps building about a quarter of the time. That is "excess investment for sight and height", as a formula.
 
-That is regime 4 turned into regime 3 by a rule, which is the whole thesis of the research in one map pair. Two more router ideas fit without new code: the line is drawn with a blur as wide as the measurement noise, so a lab inside the blur can't be ruled against (you can't police finer than you can see), and the variant-shopping tally (section 5).
+**Domestic enforcement** is dissolution, as Cole put it. In the game the cap is simply hard: nobody can break it, and the card says why ("In this world a lab that breaks the limit is shut down"). **International pacing without an enforcer** is the Treaty Wall: nothing stops anyone, but the wall makes climbing first a gift to the other lab. That is the game of chicken, using the spill rule that already exists. A stand-off already ends the race as "Nobody will cross" after 12 s; how that scores is a decision (section 8).
 
-**The finale.** The Last Gap, played once under rules the player chooses from those they met in Act V. The end card quotes K2 plainly: the aim is to slow and condition the conversion of capability into irreversible power, not to freeze it. And it says what the game is: a cartoon of that argument, not evidence for it.
+**What the bots say about the limit** (section 6c): on a map built for it, extinction fell from 59% to 3%, and falls from 2.2 a race to 0.15. But the limit doesn't pick the careful winner. The Rusher gets the spare investment too, arrives taller, stops falling, and often still wins. That is an honest lesson and maybe the important one: pacing doesn't reward virtue, it makes the race survivable whoever wins it.
+
+**What it costs.** One rule in the harness, two lines of sim (`paceCap`, `paceFree`; tested, and byte-identical when off). One design constraint: a paced map's boxes must be crossable at the cap. On today's maps, which were sized against full-speed reach, a cap leaves boxes nobody can cross, and races stall. In this sim speed is also what carries you over a box, so on a map not built for it the cap limits capability as well. Worth one honest line on the card: a speed limit only works if the risks ahead can be crossed with care instead of speed.
+
+**Out of the campaign: the pace line and the leapfrog ratchet.** They are good research (`ai-pacing` Q17) and too much machinery for this game. Keep them for a fork or an `ai-pacing` explainer.
+
+**The finale.** The Last Gap, raced under the rule the player picks. The end card quotes K2 plainly: the aim is to slow and condition the conversion of capability into irreversible power, not to freeze it. It also says what the game is: a cartoon of that argument, not evidence for it.
 
 ## 4. Four map roles, four tests
 
@@ -261,11 +269,40 @@ What it shows:
 3. **A barrier crash is cheap.** Retrying the same barrier is free and the bounce costs seconds. To get the two-strike version, the second obstacle has to be a *different* blockade, or a box. Worth one more layout pass, not a rule change.
 4. **The rival does a lot of the work.** The Rush rival falls almost every time, so a careful lab often wins just by surviving. Before you play it, it wants a rival that sometimes gets across.
 
+## 6c. Experiment: the speed limit (revision 2)
+
+[[ai gen]] A subagent added `paceCap` (a hard cap on every lab's top speed, applied after the singularity multiplier) and `paceFree` (investment uses the uncapped top) to a scratch copy of the harness, behind the rules mechanism. Both are byte-identical when off (8,400 races, same hash). Bot play, auto-jump, 70 strategies, seeds 1001 to 1040. Files kept out of the repo.
+
+**Round 1, a plain cap on today's maps: it breaks them.** At a cap of 95 (peak speeds are 102 to 110), races where every lab stops for good at a box rose from 0 to 20% to 50 to 82% on Pack Behind You, Who Goes First?, Fast Follower, Rising Stakes and the Minefield. Extinction fell, but almost all of the drop was races that never reached a box. Among races that did, extinction stayed level or rose: labs that committed at the cap jumped short. Height and sight at the first box did not rise.
+
+**Round 2, a map built for the cap, plain cap: half a result.** Slow Is Smooth: three labs start together, four low boxes, each just clearable at 80 with height near the ceiling, and uncapped clearable at full speed with modest height. That tempts the pack to floor it. A cap of 80 cut the Rusher's extinctions from 22 to 12 of 40 and moved the wins from the Rusher to the builders. But the bots arrived no taller (height 56, sight 30 at box 1), because a lab cruising at the cap invests nothing.
+
+**Round 3, the same map with the speed limit (cap plus freed investment):**
+
+| Rule | Extinction | Stalls | Falls a race | Height / sight at box 1 (pool mean) |
+|---|---|---|---|---|
+| No limit | 58.6% | 0% | 2.21 | 57 / 30 |
+| Plain cap 80 | 45.3% | 2% | 2.10 | 56 / 30 |
+| Limit 90 | 9.9% | 0% | 0.50 | 58 / 32 |
+| Limit 80 | 3.0% | 0% | 0.16 | 61 / 33 |
+| Limit 70 | 6.0% | 0% | 0.32 | 66 / 35 |
+
+Extinctions caused by the Rusher, out of 40 seeds: 22 with no limit, 12 under the plain cap, 0 under the limit at 80. The Rusher's spare investment went to height (49 to 61) and speed. It puts nothing into sight. So it landed boxes it used to fall into, and it often still won. A variant that also lets a lab holding Floor it invest (`paceFree:2`) gives about the same result (2.6% at 80).
+
+What it shows:
+
+1. **Cole's version of pacing works in this sim, on a map built for it.** The race goes from a bloodbath to survivable for everyone.
+2. **It saves everyone, not the careful.** Reading strategies don't gain. The lab ahead keeps its lead.
+3. **The freed investment is what does it.** A plain cap mostly turns falls into stand-offs.
+4. **It only works on maps built for it.** Paced maps must have boxes crossable at the cap. On today's maps the speed limit changes almost nothing, because the boxes still can't be crossed.
+
+Limits: one purpose-built map, tuned on the seeds it was measured on, three to four layouts tried, bot play only.
+
 ## 7. The text on screen
 
 Rules for every card, from the research side (`ai-pacing` CANONICALITY.md and its evidence labels):
 
-1. Name what is accepted research position, what is hypothesis, and what is a model on assumed inputs. The pace line is a proposal (`ai-pacing` I12, Q17); say so.
+1. Name what is accepted research position, what is hypothesis, and what is a model on assumed inputs. Pacing to the public frontier is the accepted core of `ai-pacing` (K4, K6); the speed limit is the game's cartoon of it, and says so.
 2. Never show a win share or an ensemble share as a probability of anything in the world.
 3. Each act's card includes one critique of the race framing (lesson catalog section C): race talk can start a race (Cave and Ó hÉigeartaigh 2018); the rush is a choice (Gebru and others); AI as a normal technology (Narayanan and Kapoor). Act V's "Same Track, Different Rules" is the honest map for these.
 4. Questions on the map card, lessons on the debrief card. If the question has to carry the lesson, the map has failed (LESSONS.md rule 1).
@@ -279,19 +316,16 @@ All local. Serve `check/` with `python3 -m http.server` and play.
 | M0 | Rebuild `lessons.html` with `--all` (the segments included). Campaign shell on the lesson harness: its own start card (not the main game's), act list, map card with the question, retries redraw the variant, debrief card with the variant reveal and the tally, progress in `localStorage`, auto-jump on. Load the maps that exist today for Acts I to IV (section 3) | one session | Play Acts I to IV. Per map, say in a line what the decision was |
 | M1 | The reference reader: one sentence, one posture, run on every Teach and Exam map. Then Act II: redesign Beacon and add one more regime 3 map from `design.mjs`, until the reader margin passes. The Gate and the narrow Unknown Box for Act I | one to two sessions | Play Act II again, then Act III right after Act I: does the habit carry? |
 | M2 | The second-order map for Act III; retune Rising Stakes, Fast Follower and the opacity map for Act IV; the minimap ledger | one to two sessions | Play III and IV |
-| M3 | Act V: the pace line (a new sim rule, behind a knob), the map pairs, a finale designed for it | two sessions | Play V |
+| M3 | Act V: the speed limit rule (two lines, already prototyped), Slow Is Smooth, the Treaty Wall, the what-if pairs, a finale crossable under the limit | one to two sessions | Play V |
 | M4 | Three ghosts and the story cards | one session | Play the whole campaign through |
 | Later | Port to `prototype.html` behind a switch; re-vendor the sim for the leaderboard | | |
 
-**Decisions that are yours.**
+**Decisions still open.**
 
-1. Dictate the thesis (section 9).
-2. Accept the four roles and the chapter test, or keep uniqueness for every map.
-3. The jump mode for the campaign: auto-jump (my recommendation) or by hand. Maps are designed and judged in one.
-4. The reference reader's sentence. `cpRead`'s, as a starting point: "Never run faster than you can stop within what you can see. Once you've seen more box than you can clear, stop and build."
-5. Let Act V maps set rule knobs.
-6. The pace line: hostile review as forced sight and height, or as a strike, or both.
-7. Whether a "nobody fell" mark joins the star on Act IV maps: a second objective that rewards shared survival without changing who wins.
+1. The world reader's sentence (section 3). My draft: "Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, keep to what you can stop from."
+2. Section 4b's shape for rule knobs: none in Acts I to IV, announced one-dial pairs and one unannounced map in Act V, and a dial room after the campaign.
+3. How a Treaty Wall stand-off scores: a loss for everyone (the race simply ended), or a draw that the debrief calls "the world kept its time".
+4. Whether the speed limit should ever pick the careful winner. As measured, it saves the world but not the virtuous. I'd keep that, because it's true to the research. Changing it would mean shaping bots' splits, not the rule.
 
 ## 9. A draft thesis, to strike through
 
