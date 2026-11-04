@@ -2,7 +2,19 @@
 
 [[ai gen]] Written by Claude, 2026-11-04, at Cole's request: review the box and lesson work of the past week and propose a full hand-built campaign to play locally. Status: a proposal. Opinion and inference are marked. Every number comes from a file named next to it or from the experiment in section 6. Nothing here is `human_validated`.
 
+**Revision 2, same day, after Cole's reply.** Decisions are recorded in section 0. Changed: the thesis (section 9), the overshoot box became Cole's second-order box (section 2, change 3), the reading rule became a rule for reading the world (section 3), the pace line was replaced by a speed limit and moved the ratchet to a fork (Act V), and a new section 4b on when a map may change the rules.
+
 Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `check/lessons/ROUND2.md`, `check/segmath/SEGMENT-MATH.md` and `check/lessons/campaign/` (all on branch `claude/segment-math`), and the frontier-router note in `ai-pacing` (branch `claude/ai-capability-frontier-ni9scf`, `research_notes/frontier-router/README.md`).
+
+## 0. Decisions so far (Cole, 2026-11-04)
+
+1. **Act-level tests:** yes.
+2. **Jump mode:** auto-jump. Maps are designed and judged with it. Jumping by hand is a bragging mark for players who want a twitch game on top of the strategy game: the same maps, a "by hand" mark beside the star, never designed or judged for.
+3. **The reading rule:** good, but not always true. Some maps should teach that sometimes the answer is speed and more speed. The real rule is about not knowing which world you're in (section 3, "Reading the world").
+4. **Keep the mechanics simple.** The pace line is too much. Pacing means capping how fast anyone can go, not how far: nobody breaks away, and the spare investment goes to sight and height. Domestic enforcement is dissolution. International pacing without an enforcer is a very tall wall and a game of chicken. Act V is rewritten around that.
+5. **Act V rule knobs:** Cole asked for my thinking; it's in section 4b.
+6. **"Nobody fell" mark:** no preference. I'd leave it out to keep things simple and revisit after play.
+7. **The thesis:** the first sentence contradicted the second. Rewritten in section 9.
 
 ## 1. The short version
 
@@ -11,7 +23,7 @@ Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `
 3. **The failures are content.** Max-out and its cousins ("fill, then floor it") beat or tied almost every lesson map. That is not noise. It is the honest truth of a world where every risk fits under the ceiling: scaling is safety. The campaign should teach that first, on purpose, and then break it. The adversaries' winning strategies (fill then floor it, stay ahead and tall so the rival can't see, free-ride, prepare blind for the worst) are each a real-world posture. They belong on maps, as lessons.
 4. **The four regimes from the segment math are the story.** Regime 1: slack, scale wins. Regime 2: buy what the risk needs. Regime 3: looking wins. Regime 4: the race won't let you be safe. That is the arc of the AI race as the research tells it, in order. The fifth act is the one the game cannot reach today: when no player can be safe, change the race. That is where `ai-pacing` lives (the public-frontier reference, the leapfrog ratchet), and the router note gives a mechanic for it that fits the game exactly.
 5. **Build it on the lesson harness, not on `prototype.html`.** The harness already has boxes, hidden width, peek, the new spill rule, hand-built maps and Next. The main game carries the daily, the leaderboard hash and ghosts, and every sim change there costs a re-vendor. Port to main once the campaign has been played.
-6. **The missing piece is a reference reader, not more maps.** The win matrix (section 6) shows the campaign shape already exists in bot play. Fill-first habits win 93% of the proposed Act I and 29% of Act III. In Act IV nothing wins more than 48%. What is missing is one reading strategy a person can follow on every map, in one sentence, that wins Acts II and III. `cpRead` is the candidate: never run faster than you can stop within what you can see, and stop once you have seen more box than you can clear. Today it is the best single strategy only on the campaign maps it was written for. Make it the lesson strategy for every Teach and Exam map, and design the maps around it.
+6. **The missing piece is a reference reader, not more maps.** The win matrix (section 6) shows the campaign shape already exists in bot play. Fill-first habits win 93% of the proposed Act I and 29% of Act III. In Act IV nothing wins more than 48%. What is missing is one strategy a person can follow on every map, in one sentence, that wins Acts II and III. `cpRead` is the starting point: never run faster than you can stop within what you can see. Revision 2 widens it into a world reader that also floors it when the road and the rivals allow (section 3). Today `cpRead` is the best single strategy only on the campaign maps it was written for. Make the world reader the lesson strategy for every Teach and Exam map, and design the maps around it.
 7. **Pick one jump mode and judge in it.** With auto-jump on (the page default), the lesson strategy is the best strategy on only 6 of 17 lesson maps. Spend It Once's lesson strategy wins 100% jumping by hand (`judged/final.md`) and 0% with auto-jump, and three small-risks lessons fall to 7.5 to 15%. A map works in one mode. I recommend auto-jump, since that is what a new player has.
 8. **First playable is small.** Enough maps for Acts I to IV exist today. A campaign shell (act list, a question card, a debrief card with the variant reveal, progress) is the only new code. That is one session's work, and it gets you playing.
 
@@ -28,7 +40,9 @@ Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `
 
 1. **Uniqueness per map is too strict a bar for a campaign.** Round 2 ended with 0 of 10 maps passing, then 1 of 3 in the campaign round. Some lessons are inherently "this is the best of several reasonable plays", and some are "the play that has worked so far is now wrong". Neither passes a uniqueness test, and both teach. Section 4 gives each map a role and a test that fits the role.
 2. **The adversary's output is treated as a defeat. It is a lesson mine.** Footsteps "failed" because the adversary found that staying just ahead and taller hides the box from the Racer, so the Racer never floors it. That is strategic opacity, a real dynamic (lesson A6 territory, and the secrecy half of the openness debate). It should be a map whose lesson it is. Likewise fill-then-floor (the scaling era), prepare-blind-for-the-worst (regime 2), and free-riding (the fast follower).
-3. **Height and speed are near-perfect substitutes at a box** (SEGMENT-MATH, consequence 1). Read through the metaphor, that says a more capable lab crosses a capability jump as safely as a more careful one. That undercuts the tension the game exists for. It is also part of why max-out wins: whatever you buy, it helps at the box. The fix is to give the two different jobs at the landing: an **overshoot box** with a barrier or a second box just past the landing, so arriving fast and low is a crash. In the story: capability that outruns control. ROUND2 already proposed it as idea 1; it should be a box species, not a one-off.
+3. **Height and speed are near-perfect substitutes at a box** (SEGMENT-MATH, consequence 1). *Revised after Cole's reply.* I first called this a leak. Cole's view, which I now share: going fast does help with risk, because capability can arrive fast enough to carry you across. Keep it. What the campaign needs is boxes where it stops being true, in two kinds, both pure map layout:
+   - **The wide box.** At full speed and low height, a lab lands only up to `carry(v) × (0.75 + H / 235)`. Past that, no speed is enough and only height gets you over. Invest everything in capacity, take a wide box low, and you're toast. In the story: alignment, a risk that capability alone doesn't cross.
+   - **The second-order box** (Cole's design). A box so tall you can't see past it. Charge it at full speed and you scrape through (a strike) onto a short platform, and the first thing you see is a wall or a box you have no chance of clearing in time (a second strike). In the story: handling one risk is not the same as thinking through its second- and third-order effects. Not the pattern for every box; one or two maps. Being tested now (section 6b).
 4. **Two terms are overpowered, and the math says by how much.** Waiting behind a crosser is six to eight times as strong as building (narrowing). A lab 500 behind pays a third as much per point (refill). Both are real-world forces (diffusion, cheap catch-up), so they should stay, but as *chapter variables*, not constants. Act IV turns them up, Act V asks who sets them.
 5. **Retries are variant shopping.** A player who retries a map until a lucky variant lets them through has done exactly what the router note's section 4 describes (27 private variants; keep the best). The campaign should neither forbid retries nor hide them. It should show the player their own record (section 5, the tally).
 6. **The harness doesn't look like a campaign yet.** I rebuilt the lesson page and loaded Measure Twice in a headless browser. The lesson header sits above the game like a test page. The first card is still the main game's: "Race three rival labs to the finish", with Daily, Campaign and "Achievements 0 / 12", none of which belong to these maps. The committed `lessons.html` is also stale: it lacks the campaign and Measure Twice maps and runs the old spill rule, so rebuild it before playing.
@@ -38,6 +52,22 @@ Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `
 ## 3. The arc: five acts, one regime each
 
 Each act has one sentence the player should be able to say at the end of it, a regime target from the segment math, and a set of maps. Maps marked **exists** are on `claude/segment-math` today; **retune** means it exists but needs work; **new** means it does not exist.
+
+### Reading the world (added in revision 2)
+
+Cole's point: there are worlds where the answer is speed and more speed, and worlds where it kills you, and we don't know which one we're in. So the skill is not "always look". It is reading two kinds of hints and playing the best strategy for what they suggest:
+
+1. **The road.** What kind of world is this? What the boxes and barriers so far have been like, and what that says about the ones to come (Warning Signs, the minimap ledger).
+2. **The rivals.** How much slack do you have? A lead is slack. A pack on your heels is none.
+
+| | Rivals far behind (slack) | Neck and neck (no slack) |
+|---|---|---|
+| **Speed world** (boxes fit under the ceiling) | Build speed, and spend the spare on sight and height while you keep your distance. The comfortable case | Everyone floors it and nobody can afford to look. The most dangerous map there is, and the case for pacing |
+| **Wide world** (boxes outgrow what speed carries) | Stop, look, build what the box needs. The lead pays for it | Regime 4: nobody is both safe and on time |
+
+This is the segment math in words. The rivals set the budget, the road sets the need, and the regime is where the two meet. The acts walk this table: Act I is the top left, Act II the bottom left, Act III changes the world under you, Act IV is the right-hand column, and Act V asks what moves you from the top right to the top left.
+
+So the reference reader becomes a world reader. In one sentence: *"Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, keep to what you can stop from."* It has to floor it in speed worlds as well as stop in wide ones, and the chapter test should include speed-world maps in Acts II and III, so a reader that is always careful loses them. That keeps the game from preaching caution. Speed is sometimes the right answer.
 
 ### Act I. Scale Is Enough (regime 1, then 2)
 
@@ -79,7 +109,7 @@ Maps that look like Acts I and II and are not. The test is that the habit loses 
 | Map | Role | Source | What the player sees |
 |---|---|---|---|
 | The Pattern Breaks | Trap | `cp-break` (exists; reader 100%, +45 at default, holds 8 of 13; matrix: max-out 32.5%, fill-first 67.5%) | The last box is sized to the leader's raised ceiling. Followers who trusted the rhythm fall |
-| Overshoot | Trap | new: the overshoot box (section 2, change 3) | Max-out arrives fast and low and hits the barrier past the landing |
+| Second Order | Trap | new: Cole's second-order box (section 2, change 3) | You charge the tall box, scrape onto a short platform, and face a wall you can't clear |
 | Rising Stakes | Feel | segment 7 (retune: extinction 55% is too harsh; fill-first wins 2.5%) | Three boxes, fall odds 5, 25 and 50. The same mistake costs more higher up |
 | Look Before You Leap | Exam | `cp-look` (retune: fails, −5) | Mixed variants from Acts I to III. Only reading the road wins across them |
 
@@ -138,6 +168,27 @@ Each map gets one role. The judge stays; it gets a test per role and one at the 
 Act I and Act IV run the test the other way round. In Act I, a habit should beat the reader: that is the scaling era. In Act IV, nothing should do well: that is regime 4.
 
 Two process rules carry over unchanged: designers never see the judge's seeds, and every number is reported with the seed block it came from.
+
+## 4b. When may a map change the rules? (added in revision 2)
+
+Cole's tension: the point of the game is that these constants are uncertain, in the present and for the future. But if they change too much, nothing can be learned. My answer is to keep two kinds of dial apart and to give each a fixed place in the campaign.
+
+**Two kinds of dial.**
+
+1. **World dials** are facts about the race that nobody knows: follower share (how much a breakthrough leaks), build rate (how long care takes), fall odds, narrowing (how fast the first crosser's knowledge spreads), sight per point. These are the six rule knobs in `KNOBS.md`, plus spill.
+2. **Policy dials** are choices people make: the speed limit. There is only one, on purpose.
+
+**Where each may move.**
+
+1. **Acts I to IV: no dial moves.** All the uncertainty lives in the map: widths, variants, rivals, what the road has shown. The player is learning the physics, and a moving constant would make every outcome impossible to read.
+2. **Act V, "What if" pairs: one world dial, announced.** The map card says it in words ("In this world, followers learn twice as fast"). You race the same map under the default and under the change, and the debrief shows what flipped. One dial per pair, two or three pairs in the campaign. Choose them where the judge's rule grid already shows a lesson flipping, since that is evidence the dial matters. Pattern Breaks losing at build rate 10 is the first candidate: careful play loses only because care got slower.
+3. **Act V, "Unknown World": one world dial, not announced.** One map, near the end, where a dial has moved and the card doesn't say which. The screen gives cues (rivals behind you jump up fast, so share is high; your own meters fill slowly, so build is low). The debrief names it. This is "we don't know what world we're in" applied to the constants, and it comes only after the player has learned what the defaults feel like.
+4. **The speed limit is announced and chosen.** It is the lever the player gets to pull in the finale.
+5. **The dial room.** After the campaign, a sandbox: any map, the six rule knobs and the speed limit, no stars. That serves the love of dials without costing the learning.
+
+**Why this shape.** An announced single-dial pair is a controlled experiment the player runs on themselves: same map, same seed, one thing changed. That is how the intuition "a small change in this constant flips who wins" gets built. Two dials at once, or a hidden one before the defaults are familiar, gives an outcome nobody can attribute.
+
+**Cost.** Small. The harness already applies rule sets by name (`?rules=share:70`). A map needs a `rules` field and a flag for whether the card names it. LESSONS.md's "a map never sets them" becomes "only Act V maps set them".
 
 ## 5. Where intuition is formed: the debrief
 
@@ -207,7 +258,7 @@ All local. Serve `check/` with `python3 -m http.server` and play.
 |---|---|---|---|
 | M0 | Rebuild `lessons.html` with `--all` (the segments included). Campaign shell on the lesson harness: its own start card (not the main game's), act list, map card with the question, retries redraw the variant, debrief card with the variant reveal and the tally, progress in `localStorage`, auto-jump on. Load the maps that exist today for Acts I to IV (section 3) | one session | Play Acts I to IV. Per map, say in a line what the decision was |
 | M1 | The reference reader: one sentence, one posture, run on every Teach and Exam map. Then Act II: redesign Beacon and add one more regime 3 map from `design.mjs`, until the reader margin passes. The Gate and the narrow Unknown Box for Act I | one to two sessions | Play Act II again, then Act III right after Act I: does the habit carry? |
-| M2 | The overshoot box for Act III; retune Rising Stakes, Fast Follower and the opacity map for Act IV; the minimap ledger | one to two sessions | Play III and IV |
+| M2 | The second-order map for Act III; retune Rising Stakes, Fast Follower and the opacity map for Act IV; the minimap ledger | one to two sessions | Play III and IV |
 | M3 | Act V: the pace line (a new sim rule, behind a knob), the map pairs, a finale designed for it | two sessions | Play V |
 | M4 | Three ghosts and the story cards | one session | Play the whole campaign through |
 | Later | Port to `prototype.html` behind a switch; re-vendor the sim for the leaderboard | | |
@@ -226,7 +277,9 @@ All local. Serve `check/` with `python3 -m http.server` and play.
 
 Only so you have something to edit. Not to be kept as is.
 
-> A box is a risk nobody can size until someone is committed to it. You can go now, stop and look, or wait for a rival to go first and learn from their body. Going first pays in ceiling; waiting pays in safety; looking pays only when the answer would change what you do. Early in the race the ceiling covers every risk, and scale is safety. Later it doesn't, and the race leaves no time to look. A careful lab can't fix that by playing better. It can only be fixed by changing what the race rewards.
+Revision 2. The first draft said a box can't be sized until someone commits, then offered stopping and looking, which don't commit. That was wrong: with enough height and sight you start to see a box's width. The cost of looking is time, and that is what this version is about.
+
+> A box is a risk you can only partly size from where you stand. Height and sight show you more of it, and a rival who goes first shows you the rest, but both cost time, and the race decides how much time you have. You don't know which world you're in. In some, speed is the answer: capability arrives fast enough to carry you across. In others a box is wider than speed alone can carry, and only height gets you over. And getting over one box is not the same as knowing what is behind it. So you read the hints: what the road has shown so far, and where your rivals are. A lead is slack: spend some of it on sight and height while you still build speed. A neck-and-neck race on a fast road is the most dangerous place there is, because nobody can afford to look. No lab can fix that by playing better. Pacing can: limit how fast anyone may go, not how far, and the slack comes back to everyone.
 
 ## 10. What this does not show
 
