@@ -241,6 +241,26 @@ Other findings:
 2. **The segments are mostly degenerate under the Feel test.** Fill-first wins 100% on Clean Record and The Last Gap, and rush wins 100% on the Breakthrough Wall. That suits Act I and does not suit The Last Gap as a finale, so the finale needs its own design pass.
 3. **Only about 10 of the 70 strategies are ever uniquely best on a map.** The pool's real diversity is small: steady cruise at 110 to 120, fill-first, stay ahead and tall, careful prep, early-seeing, Measure Twice's look. That is a manageable set of habits for a player to name, and a good list for the "you raced like" kinds of the campaign.
 
+## 6b. Experiment: the second-order box (revision 2)
+
+[[ai gen]] A subagent built Cole's design in a scratch copy as two maps, using only map layout: a 30 barrier, a tall box (rise 80, width 38 to 46), a short strip (220 to 260), then either a low wide box (104 to 112) or a tall barrier (112 to 120), more road, and the wide box. You and one Rush rival start side by side. Bot play, auto-jump, 71 strategies, seeds 1001 to 1040, tuned on those seeds (so optimistic), no held-out block. Files kept out of the repo.
+
+| Strategy | Box after the strip: win / fall % | Barrier after the strip: win / fall % |
+|---|---|---|
+| Max-out | 0 / 100 | 0 / 100 |
+| Rush | 0 / 100 | 0 / 65 (stuck at the barrier until time-out) |
+| Fill first | 25 / 75 | 70 / 0 |
+| Build | 83 / 18 | 95 / 5 |
+| The `cpRead` reader | 20 / 68 | 35 / 5 |
+| A careful posture written for the map | 93 / 8 | 75 / 5 |
+
+What it shows:
+
+1. **Charging loses, and careful play wins.** Max-out and rush win nothing on either map. Building wins 83 and 95%. No strategy wins 100%.
+2. **The story is not quite Cole's.** Chargers don't scrape the tall box: their speed carries them over it clean. A tall box wide enough to make a charger scrape also stops a slow careful lab from crossing clean, because a jump's reach is mostly speed. What kills the charger is the next thing: it lands on a strip too short to build the run-up the wide box needs, and falls. On the barrier map it crashes (strike 1), builds, clears, floors it and falls into the box. That is still a second-order story, and arguably a truer one: getting past the first risk put you somewhere you couldn't prepare for the next.
+3. **A barrier crash is cheap.** Retrying the same barrier is free and the bounce costs seconds. To get the two-strike version, the second obstacle has to be a *different* blockade, or a box. Worth one more layout pass, not a rule change.
+4. **The rival does a lot of the work.** The Rush rival falls almost every time, so a careful lab often wins just by surviving. Before you play it, it wants a rival that sometimes gets across.
+
 ## 7. The text on screen
 
 Rules for every card, from the research side (`ai-pacing` CANONICALITY.md and its evidence labels):
@@ -284,6 +304,6 @@ Revision 2. The first draft said a box can't be sized until someone commits, the
 ## 10. What this does not show
 
 1. Nothing here is played. The only `human_validated` mechanism is the hidden-width box itself.
-2. The pace line and the overshoot box are designs on paper. Neither has been built or judged.
+2. The second-order maps are tuned on the same seeds they were measured on, and the speed limit is tested only in bot play (section 6c).
 3. The chapter test's numbers (section 6) are bot play on one seed block, and the act sets were picked after seeing them.
 4. The research mapping covers `ai-pacing`'s accepted core and the router note. The off-Earth model is left out: its lesson (when you give up leverage matters more than trade) needs a two-sided game the racing frame doesn't have, and its shares must never be read as odds.
