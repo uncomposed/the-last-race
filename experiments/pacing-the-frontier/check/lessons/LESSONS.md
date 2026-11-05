@@ -53,6 +53,7 @@ node check.mjs --only <your-lesson> --heldout --grid
 - One map takes about 10 seconds for the full grid.
 - Every map is also run against **maxout** (in `lessons-sim.js`): build height and speed while running, never look, then floor it. Cole found it by playing, and it beat two maps' lessons. If maxout wins as often as your lesson's strategy, the map doesn't teach it.
 - To play: serve `check/` over http (`python3 -m http.server 8765 --directory experiments/pacing-the-frontier/check`) and open `/lessons/<your-lesson>/page.html?map=<key>`. Add `&rules=share:70` to play under a rule variant.
+- To learn what happened in a played run: `node ghost-replay.mjs '<ghost link>'` (add `--map <key>` for a link made before 1d7838f, `--page <lesson>/page.html` for a map not in `lessons.html`). It drives lab 0 along the ghost's path, lets the rivals and rolls run, prints the track, a timeline and every event, and says MATCH when it ends on the ghost's own last tick. Play with chill off unless the map says otherwise: chill changes box widths.
 
 ## What to hand back
 
