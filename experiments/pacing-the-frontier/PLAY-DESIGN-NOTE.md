@@ -59,11 +59,12 @@ The earlier campaign had long tracks with walls, gaps, a singularity, rival rost
 
    Whether they adapt matters less than whether they give you openings.
 5. **Something new past each crest.** That can be a new hazard kind, a rival's move, or a change in the road. The aim is a course you want to see the rest of.
-6. **Strikes and the extinction count carry across an act.**
+6. **Strikes and the extinction count carry across an act. If your lab is dissolved, the act is lost** (Cole, 2026-11-05: restarting that far back only wastes the player's time).
+7. **Acts never announce their character.** The player works it out from play. This is a dark forest, not a cheerful, well-lit one. The debrief says what it was.
 
-## How we check it, before you play it
+## Design for play first; bots are guard rails
 
-These are bot tests run before handing it over. They can't show it's fun; only you can judge that.
+The one-shot prototype was fun, and no bot test was involved. The lesson maps were built to pass bot claims, and they played boring. So design comes first: courses are built to be played, with races, rivals, barriers and variety, the way the prototype and the old campaign were. The bots are not the target. They only catch a few known failures before you play:
 
 - **Max-out loses.** A max-out bot that fills height and speed and floors it, but still looks and stops when it sees trouble, loses most races in every act. The old max-out bot never looked, so it lost races that a person playing max-out with their eyes open wins. That is part of why the lesson checks passed while the maps played easy.
 - **No single strategy dominates.** No one bot strategy is best on more than about a third of an act's maps.
@@ -75,12 +76,15 @@ These are bot tests run before handing it over. They can't show it's fun; only y
 
 **The old nine campaign tracks, not the lesson maps.** They already have walls, strikes, rosters and length. The new mechanics (hidden-width boxes, the jump peek, sight shadows, walls that go up when you stop) get added to them. Then they're tuned until the tests above pass, and you play them.
 
-## Questions for you
+## Decided (Cole, 2026-11-05)
+
+- Dissolved means the act is lost.
+- Acts never announce their character.
+- Strikes are already shown in the race. No per-rival odds exist: odds belong to boxes, so there is nothing new to show.
+
+## Open
 
 1. Coercion: is it enough to bait rivals into walls and plant walls in front of them, or do you want more direct tools? Examples: rivals that react to being shaded, or a way to signal a fake stop.
-2. Should the extinction risk from a reckless rival be visible during the race (its odds, its strikes), so that striking it out is a choice you can see?
-3. How harsh should carried-over strikes be? Options: dissolved means the act is lost, or you restart that race one strike down.
-4. Should acts announce their character or leave it to be worked out? I'd lean to working it out, with the debrief saying what it was.
 
 ## Known side effect of the new wall rule
 
