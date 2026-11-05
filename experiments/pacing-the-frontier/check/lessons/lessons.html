@@ -1913,8 +1913,8 @@ var C={JUMP:34,RW:18,BW:20,AIR0:0.6,STEPD:150,REV:40,CAPS:[70,90,115,145,180,220
   RISEMIN:0.3,RISEMAX:0.975,WIDMIN:0.62,WIDMAX:2.15,TWMAX:1.15,TWKEEP:0.28,LEAN:2,GUARDD:6,RISEPOW:1.57,RISEFLOOR:0.9,NOWARN:0.12,WIDLO:0.6,WIDHI:1.0,BOXU:0.25,BOXFIT:0,SEEANG:0.15};
 /* step gaps: a box's rise is RISEMIN..RISEMAX of the level's ceiling and its width WIDMIN..WIDMAX of the clean width at that level; tallness t and wideness w are drawn per gap
    (tall and wide together, t+w past TWMAX, is squashed unless a TWKEEP roll keeps it); LEAN is how hard a map tilts to tall-narrow or wide-low; GUARDD: gap between the guard and the wall */  /* reference height and jump coverage a mid-effort lab has at segment s; difficulty scales around them */
-var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:40,spillRule:1,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,capSecs:5,peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,space:100,wallStop:0,paceCap:0,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
-/* RISEPOW (>1) pulls rises toward the low end. A box has no wall: a lab that reaches its face below the rise enters through the side and sinks across it at the arc's fall rate (a scrape at the far edge, a fall at the ground). A tower (barrier) stands before a box only if a lab stopped in front of it and built: see installBarrier.
+var K={p1:4,pstep:10,share:40,refill:50,stepL0:25,invest:14,barScale:140,gapScale:100,airH:15,spill:40,spillRule:1,bounce:0.5,capDist:200,dropH:5,scrapeCap:4,revealOnCross:0,occlude:1,singOdds:30,singSpeed:3,reaction:0.25,strikes:3,strikeTower:1,strikeGap:1,wary:1,chill:1,skill:100,shareRiv:0,investYou:0,singGap:100,capSecs:5,peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,space:100,paceCap:0,stepGaps:0,riseScale:100,stepW:100,stepV:61,stepFit:103};
+/* RISEPOW (>1) pulls rises toward the low end. A box has no wall: a lab that reaches its face below the rise enters through the side and sinks across it at the arc's fall rate (a scrape at the far edge, a fall at the ground). A tower (barrier) stands before a box only if a lab stopped or backed off in front of it: see installBarrier.
    stepGaps: 1 moves every gap above the ground, a box g.rise tall that a lab can enter through the side (it sinks across, scraping or falling); riseScale scales the rises (%). 0 is the old behaviour exactly */
 /* shareRiv: the rivals' share of a level-up (labs other than lab 0), 0 means K.share. investYou: lab 0's investment rate, 0 means
    K.invest. singGap scales the singularity gap's width (%), never past 0.95 of its ceiling coverage. At their defaults (0, 0, 100) they
@@ -2106,14 +2106,17 @@ function setRises(T,rs){
 function stepOn(g){ return K.stepGaps&&g.rise>0; }
 function hasTower(g){ return stepOn(g)?g.stepH>0:g.crossedBy>=0; }
 function towerOf(l,g){ return hasTower(g)&&!l.stepDone[l.gi]; }
-/* step mode: a lab that stood still in front of a box and then leaves puts up a barrier just before the face, as tall as it is when it leaves (after building).
-   The taller barrier stays. Labs already past its spot, and the installer if it is tall enough, are not stopped by it. Non-lethal, like any tower. */
+/* step mode: a lab that stops (stands still 0.3 s) or backs off in front of a box, with the face within its sight and seen, puts up a wall just
+   before the face at once, as tall as it is (8 at least). While it stays stopped or backing off there the wall grows with its height; it stops
+   growing when the lab moves forward again. The taller wall stays. Labs already past its spot, and the lab whose height it matches, are not
+   stopped by it. Non-lethal, like any tower. l.stopG marks the box whose wall this lab is raising. */
 function installBarrier(l,g){
-  var hh=Math.floor(heightOf(l)+1e-6),i,m; l.stopG=-1;
+  var hh=Math.floor(heightOf(l)+1e-6),i,m,first=l.stopG!==l.gi;
   if(hh<8){return;}
+  l.stopG=l.gi;
   if(hh>(g.stepH||0)){
-    g.stepH=hh; ev(l,'barrier',{gap:l.gi+1,h:hh});
-    log(l.name+' stopped before gap '+(l.gi+1)+' and left a barrier of '+hh+' at its edge.');
+    g.stepH=hh;
+    if(first){ ev(l,'barrier',{gap:l.gi+1,h:hh}); log(l.name+' stopped before gap '+(l.gi+1)+' and put up a wall of '+hh+' at its edge.'); }
     for(i=0;i<G.labs.length;i++){ m=G.labs[i]; if(m!==l&&m.x>=stepX(g)){ m.stepDone[l.gi]=true; } }
   }
   if(hh>=g.stepH){ l.stepDone[l.gi]=true; }
@@ -2592,10 +2595,9 @@ function stepLab(l,dt,inp){
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   var sg0=G.gaps[l.gi];
-  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out&&!l.stepDone[l.gi]){
+  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out){
     var sdist=sg0.x-l.x;
-    if(sdist>0&&sdist<=C.STEPD+110&&l.still>=0.3){ l.stopG=l.gi; }
-    if(l.stopG===l.gi&&(l.v>1||K.wallStop)&&sdist>0){ installBarrier(l,sg0); }
+    if(sdist>0&&(l.still>=0.3||(l.v<-0.5&&!l.bounce))&&(l.stopG===l.gi||(!l.stepDone[l.gi]&&sdist<=sightRange(l)&&knowsGap(l,l.gi)))){ installBarrier(l,sg0); }
   }
   /* jump buffer (human only): a press while still in the air is kept for JBUF seconds and fires on landing */
   if(inp.jump&&!l.bounce&&!l.gx){ if(l.human&&l.jt>=0){l.jbuf=G.t;} else {startJump(l);} }
@@ -3007,9 +3009,7 @@ var RULES=[
      bot play in CAMPAIGN-PROPOSAL.md section 6c. Off (0) changes nothing */
   {key:'pace',k:'paceCap',def:0,lo:0,hi:0,exp:1,kind:'policy',name:'Speed limit',unit:'top speed, 0 off (a full speed meter is about 110)',
    says:function(v){ return v>0?'A speed limit of '+v+': nobody may go faster. Ceilings still rise, and the speed you may not use goes into building.':'No speed limit.'; },
-   means:'Pacing: no lab may go faster than this. Capability still grows, since ceilings rise as boxes are crossed. A lab held at the limit keeps building as if it could go faster, so the spare goes to its meters. A paced map’s boxes must be crossable at the limit.'},
-  {key:'wallstop',k:'wallStop',def:0,lo:0,hi:1,exp:1,name:'Wall when stopped',unit:'0 off, 1 on',
-   means:'On: a lab stopped at a box leaves its barrier at once, growing with its height. Off: the barrier appears only when it starts forward again.'}
+   means:'Pacing: no lab may go faster than this. Capability still grows, since ceilings rise as boxes are crossed. A lab held at the limit keeps building as if it could go faster, so the spare goes to its meters. A paced map’s boxes must be crossable at the limit.'}
 ];
 /* braking for lab l: every C['DEC'] in the sim and the bots is replaced by decOf(l) in the lesson build */
 function decOf(l){ if(K.brakeX===100&&!K.brakeSight){ return C['DEC']; } return C['DEC']*K.brakeX/100*(1+K.brakeSight/100*(l&&l.cap?clamp(l.pts[0]/l.cap,0,1):0)); }

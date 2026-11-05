@@ -19,6 +19,27 @@ rep("  log('Run started. Seed '+seed+'. '+T.label+'.');", "  if(globalThis.SEGPO
 // a stopped lab's barrier at a box face is its height rounded down, not to nearest: rounding up made a lab at the same height (often the
 // ceiling, 69.9 against 70) jump the barrier just before the box, so it came down inside the box and fell
 rep("function installBarrier(l,g){\n  var hh=Math.round(heightOf(l))", "function installBarrier(l,g){\n  var hh=Math.floor(heightOf(l)+1e-6)");
+// the wall rule (Cole, 2026-11-05): a lab that stops or backs off in front of a box it can see puts its wall up at once, and the wall grows with
+// its height while it stays; it no longer appears only when the lab moves off, and the old fixed 260 zone is replaced by the lab's own sight
+rep("A tower (barrier) stands before a box only if a lab stopped in front of it and built: see installBarrier.",
+  "A tower (barrier) stands before a box only if a lab stopped or backed off in front of it: see installBarrier.");
+rep("/* step mode: a lab that stood still in front of a box and then leaves puts up a barrier just before the face, as tall as it is when it leaves (after building).\n" +
+  "   The taller barrier stays. Labs already past its spot, and the installer if it is tall enough, are not stopped by it. Non-lethal, like any tower. */\n" +
+  "function installBarrier(l,g){\n  var hh=Math.floor(heightOf(l)+1e-6),i,m; l.stopG=-1;\n  if(hh<8){return;}\n" +
+  "  if(hh>(g.stepH||0)){\n    g.stepH=hh; ev(l,'barrier',{gap:l.gi+1,h:hh});\n" +
+  "    log(l.name+' stopped before gap '+(l.gi+1)+' and left a barrier of '+hh+' at its edge.');\n",
+  "/* step mode: a lab that stops (stands still 0.3 s) or backs off in front of a box, with the face within its sight and seen, puts up a wall just\n" +
+  "   before the face at once, as tall as it is (8 at least). While it stays stopped or backing off there the wall grows with its height; it stops\n" +
+  "   growing when the lab moves forward again. The taller wall stays. Labs already past its spot, and the lab whose height it matches, are not\n" +
+  "   stopped by it. Non-lethal, like any tower. l.stopG marks the box whose wall this lab is raising. */\n" +
+  "function installBarrier(l,g){\n  var hh=Math.floor(heightOf(l)+1e-6),i,m,first=l.stopG!==l.gi;\n  if(hh<8){return;}\n  l.stopG=l.gi;\n" +
+  "  if(hh>(g.stepH||0)){\n    g.stepH=hh;\n" +
+  "    if(first){ ev(l,'barrier',{gap:l.gi+1,h:hh}); log(l.name+' stopped before gap '+(l.gi+1)+' and put up a wall of '+hh+' at its edge.'); }\n");
+rep("  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out&&!l.stepDone[l.gi]){\n    var sdist=sg0.x-l.x;\n" +
+  "    if(sdist>0&&sdist<=C.STEPD+110&&l.still>=0.3){ l.stopG=l.gi; }\n" +
+  "    if(l.stopG===l.gi&&l.v>1&&sdist>0){ installBarrier(l,sg0); }\n  }",
+  "  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out){\n    var sdist=sg0.x-l.x;\n" +
+  "    if(sdist>0&&(l.still>=0.3||(l.v<-0.5&&!l.bounce))&&(l.stopG===l.gi||(!l.stepDone[l.gi]&&sdist<=sightRange(l)&&knowsGap(l,l.gi)))){ installBarrier(l,sg0); }\n  }");
 rep("function gapOdds(k){var g=G.gaps[k];return ", "function gapOdds(k){var g=G.gaps[k];if(g.odds!==undefined){return g.odds;}return ");
 
 // 2. the segments, just before window.PF (inside the section check.mjs extracts)

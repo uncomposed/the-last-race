@@ -25,7 +25,7 @@ const ADIR = join(HERE, 'adversary');
 const POOL = existsSync(ADIR) ? readdirSync(ADIR).filter(f => f.endsWith('.js')).sort().map(f => '\n/* ---- adversary: ' + f + ' ---- */\n' + readFileSync(join(ADIR, f), 'utf8')).join('') : '';
 
 // 1. sim
-rep('peek:1,stepGaps:0', 'peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,space:100,wallStop:0,paceCap:0,stepGaps:0');
+rep('peek:1,stepGaps:0', 'peek:1,oddsX:100,sightX:100,brakeX:100,brakeSight:0,space:100,paceCap:0,stepGaps:0');
 // the speed limit (policy dial, 2026-11-05; CAMPAIGN-PROPOSAL.md section 6c): K.paceCap>0 caps every lab's top speed, after the singularity
 // multiplier, and bots plan with it. The speed a lab may not use is spare effort: investment (1 - v/top) uses the top speed without the limit
 rep('function topSpeed(l,raw){var t=(C.TOP0+0.85*l.pts[2])*(inSing(l)?K.singSpeed:1);', 'function topSpeed(l,raw,free){var t=(C.TOP0+0.85*l.pts[2])*(inSing(l)?K.singSpeed:1);if(K.paceCap>0&&!free){t=Math.min(t,K.paceCap);}');
@@ -33,7 +33,7 @@ rep('r=fwd?0:clamp(1-Math.abs(l.v)/top,0,1);', 'r=fwd?0:clamp(1-Math.abs(l.v)/(K
 // a map's dial (lessons-sim.js, DIALS) is applied whenever the map is picked, after configure() in the checks and before ?rules= on the page
 rep('SEG=SEGS[id-1]||null; if(you){ SEGYOU=you; }', 'SEG=SEGS[id-1]||null; if(you){ SEGYOU=you; } if(SEG&&SEG.rules&&typeof dialApply===\'function\'){ dialApply(SEG); }');
 // experiment rules (lessons-sim.js RULES with exp:1): a stopped lab's wall at once, and the track spacing hook
-rep('if(l.stopG===l.gi&&l.v>1&&sdist>0){ installBarrier(l,sg0); }', 'if(l.stopG===l.gi&&(l.v>1||K.wallStop)&&sdist>0){ installBarrier(l,sg0); }');
+// (the wallstop trial rule is gone: the wall now goes up when a lab stops or backs off, see segments/build.mjs)
 rep('t=SEG.track(r);', 't=lessonSpace(SEG.track(r));');
 // spill (2026-11-02): a lab that clears a barrier (or a box step) lifts the labs behind it that saw it by a share of what it knows,
 // share × (min(wall, crosser's height) − watcher's height), once per barrier per watcher, so a watcher never passes the crosser and a crowd

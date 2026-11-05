@@ -45,9 +45,7 @@ var RULES=[
      bot play in CAMPAIGN-PROPOSAL.md section 6c. Off (0) changes nothing */
   {key:'pace',k:'paceCap',def:0,lo:0,hi:0,exp:1,kind:'policy',name:'Speed limit',unit:'top speed, 0 off (a full speed meter is about 110)',
    says:function(v){ return v>0?'A speed limit of '+v+': nobody may go faster. Ceilings still rise, and the speed you may not use goes into building.':'No speed limit.'; },
-   means:'Pacing: no lab may go faster than this. Capability still grows, since ceilings rise as boxes are crossed. A lab held at the limit keeps building as if it could go faster, so the spare goes to its meters. A paced map’s boxes must be crossable at the limit.'},
-  {key:'wallstop',k:'wallStop',def:0,lo:0,hi:1,exp:1,name:'Wall when stopped',unit:'0 off, 1 on',
-   means:'On: a lab stopped at a box leaves its barrier at once, growing with its height. Off: the barrier appears only when it starts forward again.'}
+   means:'Pacing: no lab may go faster than this. Capability still grows, since ceilings rise as boxes are crossed. A lab held at the limit keeps building as if it could go faster, so the spare goes to its meters. A paced map’s boxes must be crossable at the limit.'}
 ];
 /* braking for lab l: every C['DEC'] in the sim and the bots is replaced by decOf(l) in the lesson build */
 function decOf(l){ if(K.brakeX===100&&!K.brakeSight){ return C['DEC']; } return C['DEC']*K.brakeX/100*(1+K.brakeSight/100*(l&&l.cap?clamp(l.pts[0]/l.cap,0,1):0)); }
