@@ -65,7 +65,7 @@ The earlier campaign had long tracks with walls, gaps, a singularity, rival rost
 
 These are bot tests run before handing it over. They can't show it's fun; only you can judge that.
 
-- **Max-out loses.** The max-out bot (fill height and speed, floor it) loses most races in every act.
+- **Max-out loses.** A max-out bot that fills height and speed and floors it, but still looks and stops when it sees trouble, loses most races in every act. The old max-out bot never looked, so it lost races that a person playing max-out with their eyes open wins. That is part of why the lesson checks passed while the maps played easy.
 - **No single strategy dominates.** No one bot strategy is best on more than about a third of an act's maps.
 - **Strikes happen.** Rivals are dissolved in a real share of races, and a bot that herds rivals into walls does better than one that doesn't.
 - **A sensible driver loses.** The bot that cruises and slows for anything big loses most acts. A bot that reads the map and adapts wins clearly.
