@@ -82,14 +82,11 @@ The one-shot prototype was fun, and no bot test was involved. The lesson maps we
 - Acts never announce their character.
 - Strikes are already shown in the race.
 - Coercion stays emergent: no special tools. Walls, sight shadows and rival temperaments create the openings.
+- No fall odds during play. The box's red hatching already says it is bad. The exact number appears only when a fall rolls and in the debrief, so the lesson cards' "Falls roll N%" and the singularity panel's odds come out of play.
 
 ## Open
 
-1. **How much should a player know about how likely a fall is to end the world?** Today the game says it exactly: the lesson cards say "Falls roll 40%", and the singularity panel gives its odds. Claude's recommendation is to show no numbers during play.
-   - The odds should be learnable, not printed. They already rise along the track as capability grows, and the singularity is the worst. A player learns that shape over a campaign.
-   - A box can carry a rough visual tell of its danger.
-   - The exact number appears only when a fall rolls (the roll line already does this) and in the debrief.
-   - This makes judging doom part of the skill, and keeps the forest dark.
+Nothing. The note is ready to build from once Cole says go.
 
 ## Known side effect of the new wall rule
 
