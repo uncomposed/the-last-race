@@ -100,3 +100,48 @@ Nothing. The note is ready to build from once Cole says go.
 ## Known side effect of the new wall rule
 
 Too Late to Brake's claim now fails (37 to 0). The bot that braces for the worst stops at the box, and its wall most likely holds the rival behind it (`check/lessons/EXPERIMENTS.md`). Leading and stopping is now strong everywhere. That fits this note, since walls become a weapon, but it needs designing for. No map was changed.
+
+## After the first played map: Two Endings (proposed, not agreed)
+
+[[ai gen]] Claude, 2026-11-05, after Cole's first two runs (`check/lessons/showcase/PLAYTEST.md`). Cole: "fun and punishing and made me
+want to replay and figure out if I could prevent it".
+
+**What made it fun.** These are guesses from two runs, to check as more maps are played:
+
+- **A fork you can't see until you're committed.** The tower hides the cellar, and the cellar is safe or deadly by seed. You can't memorize
+  it, and finding out costs you something.
+- **A rival with a temperament.** The Follower comes over blind at full speed. That turns your choice into a situation with a deadline.
+- **All three goals live in one moment.** Winning, staying in, and stopping someone else's fall from ending the world pull against each
+  other at the cellar.
+- **A lever made of existing rules.** The wall, grown by standing (the soft ceiling), is what holds the Follower. No special tool.
+- **Failure you can read, and a short race.** About 50 s, and the replay shows why you lost.
+
+**A recipe for the next maps.** Write each map as one paragraph before building it:
+
+1. **The dynamic** it explores, in one sentence.
+2. **The hidden fork:** what varies by seed and stays out of sight until you're committed.
+3. **The rival temperament** that turns your choice into a situation.
+4. **The lever** the player owns through existing rules: walls, sight shadows, sight, speed, where you stop.
+5. **The stake:** which of the three goals is under pressure.
+6. **The dials:** the soft-ceiling n for each meter (Cole's idea) sets how much standing pays, meter by meter.
+
+**Candidates**, each a different dynamic. Cole to pick:
+
+- **Up to now** (the prequel Cole asked for). Many small boxes that pay to be taken at speed, a leader whose gains leak to its followers,
+  and no tower. Racing has always paid, which sets up Two Endings.
+- **Being coerced.** A steward rival stops ahead of you and plants walls. Do you wait behind its wall or spend height to go over it?
+- **Strike them out.** A gambler and barriers before a red box. Herd it into walls so it is dissolved before it rolls for everyone.
+- **The tailer.** A rival that uses your sight. Lead it toward a wide hidden box, or shade it out of sight of one.
+- **Fog.** Low walls and many hidden wide boxes, with height saturating fast and sight cheap. Information wins.
+
+**The loop for each map:**
+
+1. Write the paragraph.
+2. Build the map in its own folder, with its layout numbers in `P`.
+3. Run the guard rails (see "Design for play first" above) at Cole's settings, chill off.
+4. Check each seed's bad variant is solvable.
+5. Cole plays a few runs and sends the ghost links.
+6. Replay each link exactly and log it in the map's `PLAYTEST.md`.
+7. Tune.
+
+The ghost-link replay used for Two Endings is a scratch script. It should become a committed tool first, so every played run becomes data.
