@@ -80,11 +80,16 @@ The one-shot prototype was fun, and no bot test was involved. The lesson maps we
 
 - Dissolved means the act is lost.
 - Acts never announce their character.
-- Strikes are already shown in the race. No per-rival odds exist: odds belong to boxes, so there is nothing new to show.
+- Strikes are already shown in the race.
+- Coercion stays emergent: no special tools. Walls, sight shadows and rival temperaments create the openings.
 
 ## Open
 
-1. Coercion: is it enough to bait rivals into walls and plant walls in front of them, or do you want more direct tools? Examples: rivals that react to being shaded, or a way to signal a fake stop.
+1. **How much should a player know about how likely a fall is to end the world?** Today the game says it exactly: the lesson cards say "Falls roll 40%", and the singularity panel gives its odds. Claude's recommendation is to show no numbers during play.
+   - The odds should be learnable, not printed. They already rise along the track as capability grows, and the singularity is the worst. A player learns that shape over a campaign.
+   - A box can carry a rough visual tell of its danger.
+   - The exact number appears only when a fall rolls (the roll line already does this) and in the debrief.
+   - This makes judging doom part of the skill, and keeps the forest dark.
 
 ## Known side effect of the new wall rule
 
