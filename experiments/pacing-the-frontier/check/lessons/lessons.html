@@ -6369,7 +6369,7 @@ function ghShareLine(h){
   if(h.o==='dis'){ return (h.lk?like+'my lab was':'My lab was')+' dissolved on '+w+'. Can you do better?'; }
   return like+'did not win '+w+'. Can you do better?';
 }
-function ghLink(b64){ return utm(siteBase(),'ghost')+(window.HIDDEN?'&hidden=1'+(window.NBOX>1?'&boxes='+window.NBOX:'')+(window.WF0?'&wf='+window.WF0:''):'')+'#g='+b64; }  /* HIDDEN_WIDTH_UI */
+function ghLink(b64){ return utm(siteBase(),'ghost')+(window.HIDDEN?'&hidden=1'+(window.NBOX>1?'&boxes='+window.NBOX:'')+(window.WF0?'&wf='+window.WF0:''):'')+(SEG?'&map='+SEG.key+(RULESQ?'&rules='+RULESQ:''):'')+'#g='+b64; }  /* HIDDEN_WIDTH_UI */
 
 /* own best ghosts: in memory for every race, and kept in storage for daily tiers (last 7 days) */
 function ghKey(h){ return [h.m,h.s,h.d,h.mp,h.ti,(h.r||[]).join(','),JSON.stringify(ghSortK(h.k))].join('|')+(h.fl?'|f'+h.fl:''); }

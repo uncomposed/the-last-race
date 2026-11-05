@@ -78,6 +78,8 @@ rep("location.search='?seg='+n+(c?'&chill='+c[1]:'');", "location.search='?map='
 rep("'?seg='+SEGN+'&seed='+G.seed+(G_ROSTER", "'?map='+SEG.key+(RULESQ?'&rules='+RULESQ:'')+'&seed='+G.seed+(G_ROSTER");
 rep("$('seg-n').textContent='Segment '+SEGN+' of '+SEGS.length;",
   "$('seg-n').textContent=(SEG.lesson?'Lesson: '+SEG.lesson+' · ':'')+'Map '+SEGN+' of '+SEGS.length+(RULESQ?' · rules '+RULESQ.replace(/,/g,', '):'');");
+// the page: a ghost link names its map (and any ?rules=), so opening it races the same map; without it the link opened map 1 at that seed
+rep("+'#g='+b64; }  /* HIDDEN_WIDTH_UI */", "+(SEG?'&map='+SEG.key+(RULESQ?'&rules='+RULESQ:''):'')+'#g='+b64; }  /* HIDDEN_WIDTH_UI */");
 rep('aria-label="Previous segment"', 'aria-label="Previous map"');
 rep('aria-label="Pick a segment"', 'aria-label="Pick a map"');
 rep('aria-label="Next segment"', 'aria-label="Next map"');
