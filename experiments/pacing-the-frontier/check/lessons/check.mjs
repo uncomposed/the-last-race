@@ -4,7 +4,8 @@
 // and on which rules; it does not show that a person feels the lesson.
 //   node build.mjs --only <lesson> && node check.mjs --only <lesson> [--map key] [--n 40] [--start 1] [--heldout] [--grid] [--out file]
 //   --heldout  seeds 1001.. instead of 1.. (tune on 1..40, report on 1001..1040)
-//   --rules share:70,odds:150  run everything under these rule values
+//   --rules share:70,odds:150  run everything under these rule values (a map's own dial, lessons-sim.js DIALS, still wins on its key)
+//   --chill 1  auto-jump, as the page starts and as the campaign is played (default 0, jumping by hand, as earlier checks ran)
 import {writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -13,7 +14,7 @@ const argv = process.argv.slice(2), A = {};
 for (let i = 0; i < argv.length; i++) if (argv[i].startsWith('--')) A[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : '1';
 process.env.PF_PAGE = A.page || (A.only ? join(HERE, A.only, 'page.html') : join(HERE, 'lessons.html'));
 const {PF, configure, resetAll} = await import('../hidden-width/bt.mjs');
-const N = +(A.n ?? 40), START = A.heldout ? 1001 : +(A.start ?? 1);
+const CHILL = +(A.chill ?? 0), N = +(A.n ?? 40), START = A.heldout ? 1001 : +(A.start ?? 1);
 const BASE = {};
 if (A.rules) for (const p of A.rules.split(',')) { const [k, v] = p.split(':'); if (!PF.RULES.some(r => r.key === k)) throw new Error('unknown rule ' + k); BASE[k] = +v; }
 const pct = (a, n) => Math.round(100 * a / n);
@@ -24,7 +25,7 @@ function row(idx, you, rules) {
   let win = 0, fall = 0, diss = 0, ext = 0, none = 0, rf = 0, tsum = 0;
   const notes = new Set();
   for (let seed = START; seed < START + N; seed++) {
-    configure({seed, steps: 1, roster: null, chill: 0, player: 'balanced', strikesYou: null, knobs: knobsFor(rules)});
+    configure({seed, steps: 1, roster: null, chill: CHILL, player: 'balanced', strikesYou: null, knobs: knobsFor(rules)});
     PF.KINDS.probe = {name: 'You', col: 'a', w: [0.2, 0.5, 0.3]}; PF.SKILL.probe = 100;
     PF.segUse(idx, you);
     PF.newGame(seed, 'probe');
@@ -47,7 +48,7 @@ function table(idx, seg, rules) { const t = {}; for (const p of seg.postures || 
 const MAXOUT = 'maxout';
 function score(seg, t) { try { return Math.round(seg.claim.score(t)); } catch (e) { return NaN; } }
 
-const out = ['# Lesson maps: bot check', '', `[[ai gen]] Bot play only, seeds ${START} to ${START + N - 1}${A.rules ? ', rules ' + A.rules : ''}. "You" is a bot playing the row's posture; the rivals play their map postures. Status: verified (this script reproduces it), nothing human_validated.`, ''];
+const out = ['# Lesson maps: bot check', '', `[[ai gen]] Bot play only, seeds ${START} to ${START + N - 1}, ${CHILL ? 'auto-jump' : 'jumping by hand'}${A.rules ? ', rules ' + A.rules : ''}. "You" is a bot playing the row's posture; the rivals play their map postures. Status: verified (this script reproduces it), nothing human_validated.`, ''];
 let fails = 0;
 PF.SEGS.forEach((seg, i) => {
   if (A.map && seg.key !== A.map) return;
@@ -65,7 +66,7 @@ PF.SEGS.forEach((seg, i) => {
     const rowsG = [], breaks = [];
     let held = ok ? 1 : 0, total = 1;
     for (const r of PF.RULES.filter(r => !r.exp)) for (const v of [r.lo, r.hi]) {
-      if (BASE[r.key] === v) continue;
+      if (BASE[r.key] === v || (seg.rules && seg.rules[r.key] !== undefined)) continue;  // a map's own dial is not varied
       const rs = Object.assign({}, BASE, {[r.key]: v}), sg = score(seg, table(i + 1, seg, rs)), okg = sg >= seg.claim.need;
       total++; if (okg) held++; else breaks.push(`${r.key} ${v}`);
       rowsG.push(`| ${r.name} | ${v} (default ${r.def}) | ${sg} | ${okg ? 'holds' : '**breaks**'} |`);

@@ -45,7 +45,8 @@ function winRate(idx, post, rules) {
 function judgeMap(key) {
   const idx = PF.SEGS.findIndex(s => s.key === key) + 1, seg = PF.SEGS[idx - 1], strat = strategyOf(seg);
   const pool = ['maxout', ...PF.ADV.filter(p => p !== 'adv-hs-go' && p !== strat)];
-  const sets = ruleSets.map(([name, rules]) => {
+  // a map's own dial (lessons-sim.js DIALS) is not varied: the grid skips rule sets on its key
+  const sets = ruleSets.filter(([name]) => !(seg.rules && seg.rules[name.split(' ')[0]] !== undefined)).map(([name, rules]) => {
     const lw = winRate(idx, strat, rules), adv = {};
     for (const p of pool) adv[p] = winRate(idx, p, rules);
     const [best, bw] = Object.entries(adv).sort((a, b) => b[1] - a[1])[0];

@@ -26,7 +26,7 @@ Cole's settled rules are in his notes, and he treats them as opinions open to ch
 
 ## The rule knobs (read `KNOBS.md`)
 
-Six knobs are the rules the game will be tuned with: fall odds, follower share, narrowing distance, sight per point, build rate and strikes. **A map never sets them.** `check.mjs --grid` reruns your claim at each one's low and high value. A break is information, not failure: it says which rule your lesson leans on. Report it plainly.
+Six knobs are the rules the game will be tuned with: fall odds, follower share, narrowing distance, sight per point, build rate and strikes. **A map never sets them**, except in Act V of the campaign, where a map may set exactly one, in the ways `lessons-sim.js` (DIALS) allows and `dialCheck` enforces: one world dial named on the card, one named only after the race, or the speed limit (`CAMPAIGN-PROPOSAL.md` section 4b). `check.mjs --grid` reruns your claim at each one's low and high value. A break is information, not failure: it says which rule your lesson leans on. Report it plainly.
 
 Fall odds are the one exception in spirit: each box sets its own odds (`segBox(..., {odds: 25})`), because how much a box can end the world is part of the map. The rule knob scales them all.
 

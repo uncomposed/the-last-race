@@ -12,8 +12,10 @@ Read with: `check/hidden-width/HIDDEN-WIDTH.md`, `check/segments/SEGMENTS.md`, `
 2. **Jump mode:** auto-jump. Maps are designed and judged with it. Jumping by hand is a bragging mark for players who want a twitch game on top of the strategy game: the same maps, a "by hand" mark beside the star, never designed or judged for.
 3. **The reading rule:** good, but not always true. Some maps should teach that sometimes the answer is speed and more speed. The real rule is about not knowing which world you're in (section 3, "Reading the world").
 4. **Keep the mechanics simple.** The pace line is too much. Pacing means capping how fast anyone can go, not how far: nobody breaks away, and the spare investment goes to sight and height. Domestic enforcement is dissolution. International pacing without an enforcer is a very tall wall and a game of chicken. Act V is rewritten around that.
-5. **Act V rule knobs:** Cole asked for my thinking; it's in section 4b.
-6. **"Nobody fell" mark:** no preference. I'd leave it out to keep things simple and revisit after play.
+5. **Act V rule knobs:** the plan in section 4b, adopted 2026-11-05 and built in the lesson harness (section 4b, "Built").
+6. **"Nobody fell" mark:** no preference. Left out to keep things simple; revisit after play.
+8. **The world reader's sentence** (2026-11-05): adopted, with "keep to what you can stop from" reworded: "Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, don't outrun your sight."
+9. **A Treaty Wall stand-off** (2026-11-05) is a loss for everyone. The harness already ends it that way: when every lab still racing has stood still for 12 s, the race ends with no winner ("Nobody will cross").
 7. **The thesis:** the first sentence contradicted the second. Rewritten in section 9.
 
 ## 1. The short version
@@ -67,7 +69,7 @@ Cole's point: there are worlds where the answer is speed and more speed, and wor
 
 This is the segment math in words. The rivals set the budget, the road sets the need, and the regime is where the two meet. The acts walk this table: Act I is the top left, Act II the bottom left, Act III changes the world under you, Act IV is the right-hand column, and Act V asks what moves you from the top right to the top left.
 
-So the reference reader becomes a world reader. In one sentence: *"Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, keep to what you can stop from."* It has to floor it in speed worlds as well as stop in wide ones, and the chapter test should include speed-world maps in Acts II and III, so a reader that is always careful loses them. That keeps the game from preaching caution. Speed is sometimes the right answer.
+So the reference reader becomes a world reader. In one sentence: *"Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, don't outrun your sight."* It has to floor it in speed worlds as well as stop in wide ones, and the chapter test should include speed-world maps in Acts II and III, so a reader that is always careful loses them. That keeps the game from preaching caution. Speed is sometimes the right answer.
 
 ### Act I. Scale Is Enough (regime 1, then 2)
 
@@ -196,7 +198,29 @@ Cole's tension: the point of the game is that these constants are uncertain, in 
 
 **Why this shape.** An announced single-dial pair is a controlled experiment the player runs on themselves: same map, same seed, one thing changed. That is how the intuition "a small change in this constant flips who wins" gets built. Two dials at once, or a hidden one before the defaults are familiar, gives an outcome nobody can attribute.
 
-**Cost.** Small. The harness already applies rule sets by name (`?rules=share:70`). A map needs a `rules` field and a flag for whether the card names it. LESSONS.md's "a map never sets them" becomes "only Act V maps set them".
+**Built (2026-11-05, lesson harness, branch `claude/inspiring-newton-hvu9ax`).** Status: implemented and verified in bot play and a browser; not played by a person.
+
+1. **The rules know their kind.** Each world dial in `lessons-sim.js` `RULES` has a plain-language `says` line. The speed limit is a rule of its own kind (`kind:'policy'`, key `pace`): a cap on every lab's top speed, and investment computed from the top speed the lab would have without it (two lines in `build.mjs`).
+2. **A map sets at most one dial, in one of three ways.** `dial:'announced'` (a world dial named on the map card), `dial:'hidden'` (a world dial named only in the after-race reveal, and only once a race has ended) or `dial:'policy'` (the speed limit). `dialCheck` refuses anything else when the page loads: two dials, a dial without its kind, the speed limit as a world dial, an experiment rule. Ten cases tested. `whatIf(base, fields)` makes a twin of another map with one dial changed. The reveal says which map it is a twin of.
+3. **The checks respect it.** A map's dial is applied whenever the map is picked, after the rule set, so `check.mjs` and `judge.mjs` see it. Their rule grids skip the map's own dial. `check.mjs` gains `--chill 1` (auto-jump).
+4. **The dial room** is a section on the page with the six world dials, spill and the speed limit. "Race with these" reloads the map with `?rules=`. Your settings replace a map's own dial, and the card says so. "Back to normal" clears them. Nothing is saved.
+5. **Act V's first four maps,** in `check/lessons/act5/maps.js`, sorted last:
+   - Slow Is Smooth (`pace-open`)
+   - With a Speed Limit (`pace-limit`, policy)
+   - The Pattern Breaks, When Care Is Slower (`slower-care`, announced build rate 10)
+   - Unknown World (`unknown-world`, Warning Signs with a hidden follower share of 70)
+6. **Nothing else moved.** All 26 earlier maps give identical outcomes before and after: four strategies, auto-jump on and off, three seeds each, hashed.
+
+`check.mjs --chill 1 --heldout` (seeds 1001 to 1040, bot play):
+
+| Map | Claim | Result |
+|---|---|---|
+| Slow Is Smooth | without a limit, extinction at least 33% whatever you play | holds: 55% reading, 55% building, 55% max-out, 75% rushing |
+| With a Speed Limit | with it, extinction under 10% whatever you play | holds: 0% for all four. Playing the Rusher yourself wins 100%; every other play loses to the Rusher |
+| When Care Is Slower | a height-first habit beats reading by 15 | holds: 68% against 0% |
+| Unknown World | fill-first beats reading by 15 | holds: 73% against 25% |
+
+Two things to know before playing them. Slow Is Smooth has a single track (its seeds change only the dice), so its rows repeat one race 40 times. And under the limit, the fast road becomes safe: going as fast as you're allowed is the winning play. That fits "sometimes the answer is speed", provided someone else set the limit. The Treaty Wall and the finale are not built yet.
 
 ## 5. Where intuition is formed: the debrief
 
@@ -322,10 +346,7 @@ All local. Serve `check/` with `python3 -m http.server` and play.
 
 **Decisions still open.**
 
-1. The world reader's sentence (section 3). My draft: "Play fast while the road and the rivals give you room; when the road looks wide or the pack is close, keep to what you can stop from."
-2. Section 4b's shape for rule knobs: none in Acts I to IV, announced one-dial pairs and one unannounced map in Act V, and a dial room after the campaign.
-3. How a Treaty Wall stand-off scores: a loss for everyone (the race simply ended), or a draw that the debrief calls "the world kept its time".
-4. Whether the speed limit should ever pick the careful winner. As measured, it saves the world but not the virtuous. I'd keep that, because it's true to the research. Changing it would mean shaping bots' splits, not the rule.
+1. Whether the speed limit should ever pick the careful winner. As measured, it saves the world but not the virtuous. I'd keep that, because it's true to the research. Changing it would mean shaping bots' splits, not the rule.
 
 ## 9. A draft thesis, to strike through
 

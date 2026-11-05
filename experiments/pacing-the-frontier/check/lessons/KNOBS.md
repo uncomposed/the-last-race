@@ -13,7 +13,7 @@ The lesson harness adds one knob over both: **Fall odds** (`K.oddsX`, 100%), whi
 
 ## The six rule knobs
 
-These are the knobs we expect to tune the game with. Lesson maps are tested at the low and high value of each (`check.mjs --grid`), and maps may not set them.
+These are the knobs we expect to tune the game with. Lesson maps are tested at the low and high value of each (`check.mjs --grid`), and maps may not set them, except Act V maps (section below).
 
 | Rule | Knob | Default | Grid | What it means in the story |
 |---|---|---|---|---|
@@ -63,3 +63,12 @@ The sim has 35 `K` knobs and 37 `C` constants. Grouped:
 What would show this is wrong: a lesson agent that can't teach its lesson without changing a knob outside the six, or a grid where a lesson breaks on a knob nobody would ever tune.
 
 Cost to know: any change to the sim in `prototype.html` changes `SIM_HASH`, so the leaderboard server has to re-vendor the sim.
+
+## Added 2026-11-05: world dials, the speed limit, and Act V
+
+[[ai gen]] From `CAMPAIGN-PROPOSAL.md` section 4b, adopted by Cole.
+
+- **World dials** are the six rules above plus spill: facts about the race nobody knows. Each has a `says` line in `RULES` for the map card.
+- **The policy dial** is the speed limit (`pace`, `K.paceCap`, 0 off). Every lab's top speed is capped at it, and investment uses the top speed without the cap, so the speed nobody may use goes into the meters. Off, nothing changes (checked by outcome hashes on all 26 earlier maps). `?rules=pace:80` sets it. Paced maps need boxes crossable at the limit; on maps sized for full speed, races stall (proposal section 6c).
+- **Who may set a dial:** only Act V maps, one each, as `dial:'announced'`, `'hidden'` or `'policy'`. `dialCheck` stops the page from loading otherwise. `whatIf(base, fields)` builds a twin of another map with one dial changed.
+- **The dial room** on the page lets a player set any of them for any map, overriding a map's own dial. It writes `?rules=` and keeps nothing.
