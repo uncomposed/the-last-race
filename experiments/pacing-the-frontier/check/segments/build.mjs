@@ -62,6 +62,21 @@ rep("    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,", "    else { l.cap=M
 // a later lab that crosses a capTo box itself gets that box's ceiling, as crossing any box gives its full ceiling
 rep("    l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;", "    l.cap=Math.max(l.cap,g.capTo!==undefined?g.capTo:C.CAPS[k+1]); l.gapStopT=undefined;");
 
+// SOFT CEILING (Cole, 2026-11-05): a map with soft:{n:...} has no hard ceiling. Up to the ceiling a meter grows at the usual rate, as before;
+// past it at the usual rate times (cap/p)^n, so ever slower (n 3: 30% at 1.5 times the ceiling, 12% at twice it), but it never stops. The
+// ceiling becomes the knee of the curve, and crossing a box first still moves it. n is the bend (bigger: sharper knee), one number or one per meter [sight, height, speed]. Maps without soft are
+// unchanged: K.soft is 0 unless segUse sets it from the map
+rep("    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt); }",
+  "    for(var i=0;i<3;i++){ var gr=r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt;\n" +
+  "      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*Math.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*Math.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }");
+rep("function capped(l){", "function softN(i){ var n=K.softN; return typeof n==='number'?n:(n&&n[i])||3; }\nfunction capped(l){");
+// with a soft ceiling the meters show the value and the knee as a marker only ("130 · knee 115" would crowd the canvas)
+rep("v=Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];", "v=K.soft?String(Math.round(l.pts[i])):Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];");
+rep("$('v'+i).textContent=Math.round(l.pts[i])+' / '+Math.round(l.cap);", "$('v'+i).textContent=K.soft?Math.round(l.pts[i])+' (knee '+Math.round(l.cap)+')':Math.round(l.pts[i])+' / '+Math.round(l.cap);");
+
+// with a soft ceiling standing still is building, so "everyone has stood 12 s: nobody will cross" waits 60 s instead
+rep("if(sm.still>=12&&!sm.gx){st++;}", "if(sm.still>=(K.soft?60:12)&&!sm.gx){st++;}");
+
 // 2. the segments, just before window.PF (inside the section check.mjs extracts)
 rep("\nwindow.PF={setRoster:", "\n" + SIMJS + "\nwindow.PF={segUse:segUse,SEGS:SEGS,setRoster:");
 

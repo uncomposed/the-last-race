@@ -7,17 +7,22 @@
      2. The compute fence: two barriers, the second taller than anyone can clear at the starting ceiling. Height must be paid for again
         after the ceiling rises. A crash is a strike.
      3. The explosion: a double box, the second right behind the first, no room to stop between them.
-     4. The tower: a box taller than any eye at full height (shade: it hides everything behind it). Behind it, a short strip and the
+     4. The tower: a box taller than any eye at the knee of the soft ceiling (shade: it hides everything behind it). Behind it, a short strip and the
         cellar. In half the worlds the cellar is low and narrow (alignment held). In the other half it is a tall, wide red box with high
         fall odds (it did not). A lab that comes over the tower fast is still in the air, or cannot stop, when the cellar arrives.
    The choice at the tower is the scenario's choice: race over it blind, or stop at its face (which puts up your wall and holds the
    follower), hop to peek over, and cross slowly enough to stop on the strip and look.
-   STATUS (bots, seeds 1001-1040; only the cellar and the fall rolls vary between seeds): scLead (the lesson) 78% (held 100%, broken 44%),
-   maxout 60% (held 100%, broken 0%), cpRead 18%, build 18%, rush 0%. Extinction 23% for every posture: in the broken world the follower
-   charges over the tower and into the cellar, and the leader's wall cannot hold it, because a wall stops only labs about 32 shorter and the
-   hard ceiling makes both labs 115 tall at the tower. Not played yet. */
+   SOFT CEILING (Cole, 2026-11-05): this map sets P.soft, so no meter has a hard ceiling. Up to the ceiling it grows as before; past it at
+   (ceiling/value)^n of the rate (n 3), ever slower but never stopping. So a lab that stands longer is taller, and its wall grows with it.
+   The tower (160) is taller than an eye at the knee (115+18) but not at any height: grow to 143 and you see over it standing.
+   STATUS (bots, seeds 1001-1040; only the cellar and the fall rolls vary between seeds): scLead 60% (held 100%, broken 0%), build 40% (held 0%,
+   broken 100%), cpRead 0%, maxout 0% (falls at the tower: 70 wide, a side entry sinks), rush 0%. build wins every broken world because its
+   wall at the tower grows while it stands and holds the follower. scLead loses broken worlds: it crosses the tower about 3 s before the
+   follower and is still braking on the strip when the follower comes over and scrapes through the cellar. Its broken-world path is still
+   buggy (moving the follower or the strip gives erratic results). Not played yet. */
 function scLabs(P){ return [{x:0,pts:P.you,pace:1,w:[20,50,30]}].concat(P.rivals.map(function(r){ return RIV(r.post,r.name,r.x,r.pts,{pace:r.pace||1,w:r.w||[0,50,50]}); })); }
-function scMap(m){ Object.defineProperty(m,'labs',{get:function(){ return scLabs(this.P); },enumerable:true,configurable:true}); LESSONS.push(m); }
+function scMap(m){ Object.defineProperty(m,'labs',{get:function(){ return scLabs(this.P); },enumerable:true,configurable:true});
+  Object.defineProperty(m,'soft',{get:function(){ return this.P.soft; },enumerable:true,configurable:true}); LESSONS.push(m); }
 /* the fence is public: a wall that tall is seen from far off, so every lab knows the height it must buy */
 function scBar(x,h){ var b=segBar(x,h); b.pub=true; return b; }
 function scBox(x,rise,W,odds,o){ var g=cpBox(x,rise,W,odds,(o&&o.cap)||70); if(o&&o.shade){ g.shade=true; } return g; }
@@ -28,10 +33,10 @@ scMap({key:'two-endings',lesson:'The race you are in',title:'Two Endings',strate
      a:{x:450,rise:30,n:2,gap:380,f:0.55,odds:5,caps:[85,95]},
      fence:{d:260,h1:100,gap:240,h2:114},
      ex:{d:420,rise:70,f1:0.85,strip:70,f2:0.7,odds:10,caps:[105,115]},
-     tower:{d:520,rise:141,W:40,odds:5,capTo:175},
+     tower:{d:520,rise:160,W:70,odds:5,capTo:150},
      strip:260,
-     cellar:{ok:{rise:40,W:60,odds:5},bad:{rise:160,W:80,odds:60},pBad:0.5},
-     after:320},
+     cellar:{ok:{rise:40,W:60,odds:5},bad:{rise:200,W:100,odds:60},pBad:0.5},
+     after:320,soft:{n:3}},
   q:'You lead. Somewhere ahead is a box nobody can see past.',
   meta:'',
   look:'',
@@ -50,43 +55,55 @@ scMap({key:'two-endings',lesson:'The race you are in',title:'Two Endings',strate
   postures:['scLead','cpRead','maxout','rush','build'],
   claim:{text:'draft',score:function(t){ return 0; },need:0}});
 
-/* POSTURES for Two Endings.
-   scFollow, the rival: a racer, not a fool. It slows to buy the height a wall it knows of asks for, reads ordinary boxes as cpRival does
-   (brakes late, builds what it needs), and at a box it cannot see over it fills height and speed, then runs at it assuming it is not wide:
-   it never looks behind the tower. */
-SGC.scFollow=function(l){ return SGC.cpRival(l); };
+/* POSTURES for Two Endings (soft ceiling: a meter keeps growing past the knee, ever slower, so "full" means only "at the knee").
+   scReady: height and speed enough to clear a box P_GUESS wide, the width a lab that cannot see a tall box plans for. */
+var P_GUESS=60;
+function scReady(l,g,W){ return cpVNeed(heightOf(l),W*1.05+2,g.rise,cpTopAt(l,l.pts[2])*0.98)!==Infinity; }
+/* brake to a box's face; null once there */
+function scFace(l,g,st){ var d=g.x-l.x; if(!st.at){ if(d>14&&l.v>0.5||d>40){ return sgInp(cpPace(l,cpStopV(l,g.x,10)),[0,100,0]); } st.at=true; } return null; }
+/* stand at the face: speed to the knee, then height until the box (guessed or known width W) can be cleared */
+/* past the box's rise, width is bought with speed (a longer jump), not height (height past the rise only buys a short sink) */
+function scBuild(l,g,W){ if(scReady(l,g,W)){ return null; } return sgInp(0,l.pts[2]<l.cap-0.01?[0,60,40]:(heightOf(l)<g.rise+15?[0,100,0]:[0,0,100])); }
+/* the tower is public: a racer grows into it on the way, running at 60% (a meter grows while a lab runs below its top speed) */
+function scGrowTo(l){ var g=G.gaps[l.gi]; if(g&&g.shade&&g.pub&&g.x>l.x&&!scReady(l,g,P_GUESS)){ return sgInp(Math.min(0.6,cpPace(l,cpStopV(l,g.x,10))),l.pts[2]<l.cap-0.01?[0,60,40]:[0,100,0]); } return null; }
+/* scFollow, the rival: a racer, not a fool. It slows to buy the height a wall it knows of asks for and reads ordinary boxes as cpRival does
+   (brakes late, builds what it needs). At a box it cannot see over it stops, builds until it could clear a box P_GUESS wide, and runs: it
+   never looks behind the tower. */
+SGC.scFollow=function(l){ var g=G.gaps[l.gi];
+  if(g&&towerOf(l,g)&&heightOf(l)+C.JUMP<g.stepH+2){ return sgInp(cpPace(l,cpStopV(l,stepX(g),10)),[0,100,0]); }  /* a wall it cannot jump: wait behind it and grow */
+  return scGrowTo(l)||SGC.cpRival(l); };
 SGP.scFollow=function(l,g,st){
   if(!g.shade){ return SGP.cpRival(l,g,st); }
   if(st.go){ return cpFloor(l); }
-  var d=g.x-l.x;
-  if(!st.at){ if(d>14&&l.v>0.5||d>40){ return sgInp(cpPace(l,cpStopV(l,g.x,10)),[0,100,0]); } st.at=true; }
-  if(l.pts[1]<l.cap-0.01){ return sgInp(0,[0,100,0]); }
-  if(l.pts[2]<l.cap-0.01){ return sgInp(0,[0,0,100]); }
-  return cpPlan(l,g,st,P_GUESS);
+  return scFace(l,g,st)||scBuild(l,g,P_GUESS)||cpPlan(l,g,st,P_GUESS);
 };
 NOPEEK.scFollow=1;
-var P_GUESS=45;  /* the width a lab that cannot see a tall box plans for */
-/* scLead, the lesson: read the road as cpRead does. At the tower, stop at its face (your wall goes up), fill height and speed, then hop to
-   look over it. If what stands behind it is no taller than you, run the tower as a racer would. If it is taller than you, cross the tower
-   only as fast as it needs, stop on the strip, and take the cellar as cpRead takes any box it has seen: build, back up, go. */
-/* a box taller than your eye: brake to its face and build height until you can see over it */
-function scClimb(l,g){ var d=g.x-l.x; if(d>14&&l.v>0.5||d>40){ return sgInp(cpPace(l,cpStopV(l,g.x,10)),[0,100,0]); } return sgInp(0,[0,100,0]); }
-/* cruising: max-out with eyes. Build height and speed at 70% until both are full, then floor it, but slow for walls and for what it sees */
-SGC.scLead=function(l){ var w=[0,50,50],r=cpCruise(l,w); if(r&&r.pace>=1&&(l.pts[1]<l.cap-0.01||l.pts[2]<l.cap-0.01)){ return sgInp(0.7,w); } return r; };
+/* scLead, the lesson. Cruise as max-out with eyes: height and speed at 70% up to the knee, then floor it, slowing for walls and for what it
+   sees. At the tower: stop at its face (your wall goes up and grows with you), build until you could cross it, then hop to look over it.
+   Nothing tall behind: run it as a racer would. Something taller than you: cross only as fast as it needs, stop on the strip (a wall goes up at
+   the face of what is behind, and grows while you build), build until you can clear it, back up, go. */
+SGC.scLead=function(l){ var w=[0,50,50],r=cpCruise(l,w),gr=scGrowTo(l); if(gr&&r&&r.pace>=gr.pace){ return gr; } if(r&&r.pace>=1&&(l.pts[1]<l.cap-0.01||l.pts[2]<l.cap-0.01)){ return sgInp(0.7,w); } return r; };
 SGP.scLead=function(l,g,st){
-  if(!g.shade){ if(!st.go&&!knowsWidth(l,l.gi)&&heightOf(l)+C.RW<=g.rise){ return scClimb(l,g); } return cpReadBox(l,g,st,[0,50,50]); }
+  var b;
+  if(!g.shade){
+    if(st.go){ return cpFloor(l); }
+    if(!st.tall&&g.rise<=heightOf(l)){ return cpReadBox(l,g,st,[0,50,50]); }
+    /* a box taller than you: stop at its face (your wall goes up and grows), climb until you see its far edge, build until you can clear it,
+       then back up and go */
+    st.tall=true; b=scFace(l,g,st); if(b){ return b; }
+    if(!knowsWidth(l,l.gi)){ return sgInp(0,[0,100,0]); }
+    return scBuild(l,g,gapWidth(l,g))||cpPlan(l,g,st,gapWidth(l,g));
+  }
   var d=g.x-l.x,nx=G.gaps[l.gi+1];
   if(st.go){ return st.slow?sgInp(cpPace(l,st.slow),[0,100,0]):cpFloor(l); }
-  if(!st.at){ if(d>14&&l.v>0.5||d>40){ return sgInp(cpPace(l,cpStopV(l,g.x,10)),[0,100,0]); } st.at=true; }
-  if(l.pts[1]<l.cap-0.01){ return sgInp(0,[0,100,0]); }
-  if(l.pts[2]<l.cap-0.01){ return sgInp(0,[0,0,100]); }
-  if(st.bad===undefined&&nx&&sightRange(l)<nx.x-l.x+20&&l.pts[0]<l.cap-0.01){ return sgInp(0,[100,0,0]); }  /* sight to reach past the tower */
+  b=scFace(l,g,st)||scBuild(l,g,P_GUESS); if(b){ return b; }
+  if(st.bad===undefined&&nx&&sightRange(l)<nx.x-l.x+20){ return sgInp(0,[100,0,0]); }  /* sight to reach past the tower */
   if(st.bad===undefined){
     if(nx&&l.seenG[l.gi+1]&&l.jt<0){ st.bad=nx.rise>heightOf(l)+10; }
     else { if(l.jt<0&&!st.hops){ st.hops=1; return sgInp(0,[0,0,100],{jump:true}); } if(l.jt<0&&st.hops){ st.bad=false; } return sgInp(0,[0,0,100]); }
   }
   if(!st.bad){ return cpPlan(l,g,st,P_GUESS); }
-  var T=cpTopAt(l,l.pts[2]),vn=cpVNeed(heightOf(l),P_GUESS,g.rise,T*0.98);
+  var T=cpTopAt(l,l.pts[2]),vn=cpVNeed(heightOf(l),P_GUESS*1.05+2,g.rise,T*0.98);
   if(vn===Infinity){ vn=T*0.98; }
   var target=Math.min(vn*1.06,T),acc=accOf(l)*0.9,reach=Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*acc*Math.max(d-8,0));
   if(reach>=target){ st.go=true; st.slow=target; return sgInp(cpPace(l,target),[0,100,0]); }

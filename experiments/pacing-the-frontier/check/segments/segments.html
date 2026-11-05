@@ -2122,6 +2122,7 @@ function stepX(g){ return stepOn(g)?g.x-C.BW-C.GUARDD:g.x-C.STEPD; }
 function sightRange(l){return C.SIGHT0+4.4*l.pts[0];}
 function heightOf(l){return l.pts[1];}
 function capSpeed(l){return Math.sqrt(2*C.DEC*sightRange(l));}
+function softN(i){ var n=K.softN; return typeof n==='number'?n:(n&&n[i])||3; }
 function capped(l){return l.capUntil>l.x&&!(l.capT!==undefined&&G.t>=l.capT);}
 /* raw skips the crash/scrape cap */
 /* past the singularity gap top speed and acceleration are multiplied; the crash and scrape caps are not */
@@ -2589,7 +2590,8 @@ function stepLab(l,dt,inp){
   l.ivr=r; l.ivw=w;  /* for drawing only: how much of the lab's effort goes to investment, and where */
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
-    for(var i=0;i<3;i++){ l.pts[i]=Math.min(l.cap,l.pts[i]+r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt); }
+    for(var i=0;i<3;i++){ var gr=r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt;
+      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*Math.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*Math.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   var sg0=G.gaps[l.gi];
@@ -2742,7 +2744,7 @@ function stepGame(dt){
   }
   if(!G.over){updatePublic();}
   if(!G.over&&G.t>C.TLIMIT){G.over=true;G.result={type:'timeout'};log('Time limit reached.');}
-  if(!G.over){ var sl=0,st=0,si; for(si=0;si<G.labs.length;si++){ var sm=G.labs[si]; if(sm.out||sm.done){continue;} sl++; if(sm.still>=12&&!sm.gx){st++;} } if(sl>0&&st===sl){ G.over=true; G.result={type:'timeout'}; log('Nobody will cross. The run ends with no winner.'); } }
+  if(!G.over){ var sl=0,st=0,si; for(si=0;si<G.labs.length;si++){ var sm=G.labs[si]; if(sm.out||sm.done){continue;} sl++; if(sm.still>=(K.soft?60:12)&&!sm.gx){st++;} } if(sl>0&&st===sl){ G.over=true; G.result={type:'timeout'}; log('Nobody will cross. The run ends with no winner.'); } }
 }
 
 /* headless run for tuning: the first lab is driven by a bot policy */
@@ -2872,6 +2874,7 @@ var SEGS=[
 ];
 function segUse(id,you){
   SEG=SEGS[id-1]||null; if(you){ SEGYOU=you; }
+  K.soft=SEG&&SEG.soft?1:0; K.softN=SEG&&SEG.soft?SEG.soft.n:3;  /* soft ceiling (build.mjs): only maps that ask for it */
   globalThis.SCEN=SEG?segScen:null; globalThis.CTRL=SEG?segCtrl:null; globalThis.SEGPOST=SEG?segPost:null;
   return SEG;
 }
@@ -3300,7 +3303,7 @@ function drawMeters(l){
   var names=['Sight','Height','Max speed'],cols=[COL.a,COL.c,COL.b],gap=10,x0=24,cw=(W-48-2*gap)/3,y=CM?37:56,top=topSpeed(l);
   ctx.font='10px "IBM Plex Mono",monospace';
   for(var i=0;i<3;i++){
-    var x=x0+i*(cw+gap),v=Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];
+    var x=x0+i*(cw+gap),v=K.soft?String(Math.round(l.pts[i])):Math.round(l.pts[i])+'/'+Math.round(l.cap),nm=names[i];
     if(i===2&&ctx.measureText(nm+' '+v+' \u00b7 top '+Math.round(top)).width<=cw){ v+=' \u00b7 top '+Math.round(top); }
     if(ctx.measureText(nm+' '+v).width>cw){ nm=nm.charAt(0); }
     if(ctx.measureText(nm+' '+v).width>cw){ v=String(Math.round(l.pts[i])); }
@@ -3320,7 +3323,7 @@ function hud(){
   for(var i=0;i<3;i++){
     $('f'+i).style.width=(l.pts[i]/G.maxcap*100)+'%';
     $('c'+i).style.left='calc('+(l.cap/G.maxcap*100)+'% - 1px)';
-    $('v'+i).textContent=Math.round(l.pts[i])+' / '+Math.round(l.cap);
+    $('v'+i).textContent=K.soft?Math.round(l.pts[i])+' (knee '+Math.round(l.cap)+')':Math.round(l.pts[i])+' / '+Math.round(l.cap);
   }
   var top=topSpeed(l);
   $('read').innerHTML='<span><b>Reach</b> '+Math.round(heightOf(l)+C.JUMP)+'</span><span><b>Sight</b> '+Math.round(sightRange(l))+'</span><span><b>Top speed</b> '+Math.round(top)+'</span><span><b>Speed</b> '+Math.round(l.v)+'</span><span><b>Behind</b> '+Math.round(leadOf(l))+'</span><span><b>Level</b> '+G.level+'</span>'+(strikesOf(l)?'<span><b>Strikes</b> '+l.strikes+' of '+strikesOf(l)+'</span>':'')+(capped(l)?'<span><b>Capped</b> '+Math.round(top)+' for '+Math.round(l.capUntil-l.x)+' more</span>':'');

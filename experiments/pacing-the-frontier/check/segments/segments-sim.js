@@ -111,6 +111,7 @@ var SEGS=[
 ];
 function segUse(id,you){
   SEG=SEGS[id-1]||null; if(you){ SEGYOU=you; }
+  K.soft=SEG&&SEG.soft?1:0; K.softN=SEG&&SEG.soft?SEG.soft.n:3;  /* soft ceiling (build.mjs): only maps that ask for it */
   globalThis.SCEN=SEG?segScen:null; globalThis.CTRL=SEG?segCtrl:null; globalThis.SEGPOST=SEG?segPost:null;
   return SEG;
 }
