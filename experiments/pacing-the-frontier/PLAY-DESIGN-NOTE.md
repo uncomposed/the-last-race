@@ -59,7 +59,7 @@ The earlier campaign had long tracks with walls, gaps, a singularity, rival rost
 
    Whether they adapt matters less than whether they give you openings.
 5. **Something new past each crest.** That can be a new hazard kind, a rival's move, or a change in the road. The aim is a course you want to see the rest of.
-6. **Strikes and the extinction count carry across an act. If your lab is dissolved, the act is lost** (Cole, 2026-11-05: restarting that far back only wastes the player's time).
+6. **Strikes reset every race. If your lab is dissolved, or the world ends, the act is lost** (Cole, 2026-11-05: restarting that far back only wastes the player's time).
 7. **Acts never announce their character.** The player works it out from play. This is a dark forest, not a cheerful, well-lit one. The debrief says what it was.
 
 ## Design for play first; bots are guard rails
@@ -74,7 +74,16 @@ The one-shot prototype was fun, and no bot test was involved. The lesson maps we
 
 ## Where to start
 
-**The old nine campaign tracks, not the lesson maps.** They already have walls, strikes, rosters and length. The new mechanics (hidden-width boxes, the jump peek, sight shadows, walls that go up when you stop) get added to them. Then they're tuned until the tests above pass, and you play them.
+**Not the old nine tracks.** Cole: they were tested many times, and their barriers force near-maximum height before any box appears. So every lab arrives at the decision built the same way, and the only choice left is when to floor it. Adding the new mechanics doesn't change that.
+
+**Different dominant strategies need a tight budget.** In the segment math, a lab's budget is the build it can buy before it must commit: invest × refill × (time − distance ÷ top speed). Need is what the hazards ask for. Wherever budget covers need, max-out wins (regime 1). That describes the old tracks, and, as played by a person who looks, most of the lesson maps too. A map gets its own dominant strategy only when its budget falls short of need in its own way:
+
+- **Short spacing, tall walls:** build height only; sight is wasted.
+- **Low walls, hidden wide boxes:** sight wins; height and speed alone fall in.
+- **Small boxes, close race:** speed and nerve win; stopping hands the race away.
+- **A reckless roster near a red box:** walls and baiting win; strike them out before they roll.
+
+The first build should be two such maps, each about a minute long. Bots only check that max-out-with-eyes loses on both and that the winning build differs between them. Then Cole plays them, before anything else is built.
 
 ## Decided (Cole, 2026-11-05)
 
