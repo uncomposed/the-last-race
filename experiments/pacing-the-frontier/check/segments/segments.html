@@ -2213,6 +2213,9 @@ function shadows(l,stand){
     var top=heightOf(m)+C.RW,end=eye>top?db*eye/(eye-top):sr;
     if(end>db){out.push({by:m,a:db,b:Math.min(end,sr)});}
   }
+  for(i=0;i<G.gaps.length;i++){ var gq=G.gaps[i]; if(!gq.shade||!stepOn(gq)){continue;}
+    var gt=gq.rise,ga=(eye>gt?gq.x+gq.W:gq.x)-l.x; if(ga<=0||ga>=sr){continue;}
+    var gend=eye>gt?ga*eye/(eye-gt):sr; if(gend>ga){out.push({by:{name:'the tall box',box:true,v:0,still:99},top:gt,a:ga,b:Math.min(gend,sr)});} }
   return out;
 }
 function inView(l,x,sh){
@@ -2234,7 +2237,7 @@ function knowsWidth(l,i){ var g=G.gaps[i]; return !!g&&(g.wpub||l.gi>i||!!l.wsee
 function inViewTop(l,x,top,sh){
   var d=x-l.x; if(d>sightRange(l)){return false;}
   var eye=eyeOf(l),i,rt,line;
-  for(i=0;i<sh.length;i++){ if(d>sh[i].a&&d<sh[i].b){ rt=heightOf(sh[i].by)+C.RW; line=eye+(rt-eye)*d/sh[i].a; if(top<line){return false;} } }
+  for(i=0;i<sh.length;i++){ if(d>sh[i].a&&d<sh[i].b){ rt=sh[i].top!==undefined?sh[i].top:heightOf(sh[i].by)+C.RW; line=eye+(rt-eye)*d/sh[i].a; if(top<line){return false;} } }
   return true;
 }
 function gapInView(l,g,sh){ return stepOn(g)?inViewTop(l,g.x,g.rise,sh):inView(l,g.x,sh); }
@@ -2336,11 +2339,11 @@ function updateJump(l,dt){
 }
 
 function applyLevel(k,by){
-  var d=C.CAPS[k+1]-C.CAPS[k],T=C.CAPS[k+1]+(G.gaps[k].sing?C.SINGUP:0);  /* the first lab across the singularity gap gets the final ceiling */
+  var gk=G.gaps[k],own=gk.capTo!==undefined,hi=own?gk.capTo:C.CAPS[k+1],d=own?Math.max(0,gk.capTo-by.cap):C.CAPS[k+1]-C.CAPS[k],T=hi+(gk.sing?C.SINGUP:0);  /* the first lab across the singularity gap gets the final ceiling */
   for(var i=0;i<G.labs.length;i++){
     var l=G.labs[i]; if(l.out){continue;}
     if(l===by){ l.cap=Math.max(l.cap,T); }
-    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,l.cap+((l.id>0&&K.shareRiv>0)?K.shareRiv:K.share)/100*d)); }
+    else { l.cap=Math.min(hi,Math.max(l.cap,l.cap+((l.id>0&&K.shareRiv>0)?K.shareRiv:K.share)/100*d)); }
   }
 }
 function crossGap(l,g,k){
@@ -2355,7 +2358,7 @@ function crossGap(l,g,k){
     ev(l,'first',{gap:k+1,sing:!!g.sing,w:g.W,h:Math.round(heightOf(l))});
     log(l.name+' was first across gap '+(k+1)+(g.sing?', the singularity,':'')+' (width '+g.W+')'+(stepOn(g)?'':' and left a tower of '+g.stepH)+'. Ceilings rise'+(g.sing?' to the final ceiling for '+l.name+'.':'.'));
   } else {
-    l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;
+    l.cap=Math.max(l.cap,g.capTo!==undefined?g.capTo:C.CAPS[k+1]); l.gapStopT=undefined;
     ev(l,'cross',{gap:k+1,sing:!!g.sing});
     log(l.name+' crossed gap '+(k+1)+'.');
   }
@@ -2545,7 +2548,7 @@ function botPlan(l){
     var vs=Math.sqrt(2*C.DEC*0.8*sightRange(l)),sh=shadows(l);
     /* do not pass a slower lab blind: close on it no faster than it can stop behind it. A lab that has stood still for 2 s stands on solid ground,
        so a careful bot may pull level with it, where its shadow ends (stopping 25 behind it, two careful bots could wait on each other to the time limit) */
-    for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(m.still>2?sh[si].a+2:sh[si].a-25,0))); } }
+    for(var si=0;si<sh.length;si++){ var m=sh[si].by; if(!m.box&&m.v<l.v+1){ vs=Math.min(vs,Math.max(0,m.v)+Math.sqrt(2*C.DEC*Math.max(m.still>2?sh[si].a+2:sh[si].a-25,0))); } }
     pace=Math.min(pace,vs/top);
   }
   if(gapGo>0){pace=Math.max(pace,gapGo);}

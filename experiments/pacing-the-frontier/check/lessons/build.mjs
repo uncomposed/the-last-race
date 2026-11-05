@@ -16,8 +16,10 @@ let S = readFileSync(join(HERE, '..', 'segments', 'segments.html'), 'utf8');
 function rep(a, b) { const n = S.split(a).length - 1; if (n !== 1) throw new Error('expected 1 match, got ' + n + ' for: ' + a.slice(0, 80)); S = S.replace(a, () => b); }
 
 const dirs = readdirSync(HERE, {withFileTypes: true}).filter(d => d.isDirectory() && existsSync(join(HERE, d.name, 'maps.js'))).map(d => d.name).sort((a, b) => (a === 'act5') - (b === 'act5') || (a < b ? -1 : a > b ? 1 : 0));  // act5 (the campaign's last act) last
-const pick = ONLY ? dirs.filter(d => d === ONLY) : dirs.filter(d => d !== 'example');
-if (ONLY && !pick.length) throw new Error('no ' + ONLY + '/maps.js');
+// --only a+b builds several folders into b/page.html (a folder whose maps use another's helpers, e.g. campaign+showcase)
+const ONLYS = ONLY ? ONLY.split('+') : null, OUTDIR = ONLYS ? ONLYS[ONLYS.length - 1] : null;
+const pick = ONLY ? dirs.filter(d => ONLYS.includes(d)) : dirs.filter(d => d !== 'example');
+if (ONLY && pick.length !== ONLYS.length) throw new Error('no ' + ONLY + '/maps.js');
 // each lesson's maps carry their folder name as dir (judge.mjs --only <lesson>)
 const MAPS = pick.map(d => '/* ---- lesson: ' + d + ' ---- */\n' + readFileSync(join(HERE, d, 'maps.js'), 'utf8') + `\nLESSONS.forEach(function(m){ if(!m.dir){ m.dir='${d}'; } });`).join('\n');
 // adversary/*.js: strategies written by adversaries (not designers) to beat lesson maps; each file pushes its posture names onto ADV
@@ -114,6 +116,6 @@ rep("$('seg-rev').addEventListener('toggle',function(){ $('seg-note').textConten
   DIALROOM);
 S = S.split('C.DEC').join('decOf(l)');
 S = S.replace(/<title>[^<]*<\/title>/, '<title>Lesson Maps</title>');
-const out = ALL ? join(HERE, 'all.html') : ONLY ? join(HERE, ONLY, 'page.html') : join(HERE, 'lessons.html');
+const out = ALL ? join(HERE, 'all.html') : ONLY ? join(HERE, OUTDIR, 'page.html') : join(HERE, 'lessons.html');
 writeFileSync(out, S);
 console.log('wrote ' + out.slice(HERE.length + 1) + ' (' + pick.join(', ') + ')');

@@ -42,6 +42,26 @@ rep("  if(sg0&&stepOn(sg0)&&!l.gx&&!l.out&&!l.stepDone[l.gi]){\n    var sdist=sg
   "    if(sdist>0&&(l.still>=0.3||(l.v<-0.5&&!l.bounce))&&(l.stopG===l.gi||(!l.stepDone[l.gi]&&sdist<=sightRange(l)&&knowsGap(l,l.gi)))){ installBarrier(l,sg0); }\n  }");
 rep("function gapOdds(k){var g=G.gaps[k];return ", "function gapOdds(k){var g=G.gaps[k];if(g.odds!==undefined){return g.odds;}return ");
 
+// tall boxes that hide what is behind them (Cole, 2026-11-05): a box with shade:true casts a sight shadow like a lab. The edge that limits the
+// view is the near top corner when the eye is below the box's top, the far top corner when it is above. Only boxes marked shade do this, so
+// every existing map races as before. A shadow's `top` replaces the lab height in the see-over test; bots do not slow for a box's shadow
+rep("    if(end>db){out.push({by:m,a:db,b:Math.min(end,sr)});}\n  }\n  return out;\n}",
+  "    if(end>db){out.push({by:m,a:db,b:Math.min(end,sr)});}\n  }\n" +
+  "  for(i=0;i<G.gaps.length;i++){ var gq=G.gaps[i]; if(!gq.shade||!stepOn(gq)){continue;}\n" +
+  "    var gt=gq.rise,ga=(eye>gt?gq.x+gq.W:gq.x)-l.x; if(ga<=0||ga>=sr){continue;}\n" +
+  "    var gend=eye>gt?ga*eye/(eye-gt):sr; if(gend>ga){out.push({by:{name:'the tall box',box:true,v:0,still:99},top:gt,a:ga,b:Math.min(gend,sr)});} }\n" +
+  "  return out;\n}");
+rep("rt=heightOf(sh[i].by)+C.RW; line=", "rt=sh[i].top!==undefined?sh[i].top:heightOf(sh[i].by)+C.RW; line=");
+rep("var m=sh[si].by; if(m.v<l.v+1){", "var m=sh[si].by; if(!m.box&&m.v<l.v+1){");
+
+// a box may set the ceiling it hands out (Cole's maps need a ceiling curve the map controls, 2026-11-05): with g.capTo the first lab across
+// gets capTo and every other lab its share of the rise from the crosser's old ceiling. Boxes without capTo use C.CAPS by index, as before
+rep("  var d=C.CAPS[k+1]-C.CAPS[k],T=C.CAPS[k+1]+(G.gaps[k].sing?C.SINGUP:0);",
+  "  var gk=G.gaps[k],own=gk.capTo!==undefined,hi=own?gk.capTo:C.CAPS[k+1],d=own?Math.max(0,gk.capTo-by.cap):C.CAPS[k+1]-C.CAPS[k],T=hi+(gk.sing?C.SINGUP:0);");
+rep("    else { l.cap=Math.min(C.CAPS[k+1],Math.max(l.cap,", "    else { l.cap=Math.min(hi,Math.max(l.cap,");
+// a later lab that crosses a capTo box itself gets that box's ceiling, as crossing any box gives its full ceiling
+rep("    l.cap=Math.max(l.cap,C.CAPS[k+1]); l.gapStopT=undefined;", "    l.cap=Math.max(l.cap,g.capTo!==undefined?g.capTo:C.CAPS[k+1]); l.gapStopT=undefined;");
+
 // 2. the segments, just before window.PF (inside the section check.mjs extracts)
 rep("\nwindow.PF={setRoster:", "\n" + SIMJS + "\nwindow.PF={segUse:segUse,SEGS:SEGS,setRoster:");
 
