@@ -33,7 +33,7 @@ rep('if(LESSONS.length){ SEGS=LESSONS; }', PLACE + "\nSEGS=LESSONS.filter(functi
 rep('window.PF={segUse:segUse,', 'window.PF={SHIP_ACTS:globalThis.SHIP_ACTS,segUse:segUse,');
 
 // ---- CSS: the old game's sections
-cut('/* ---- achievements (begin)', '/* ---- achievements (end) ---- */');
+/* the achievements CSS stays: the award cards and the awards screen use it (recap.js) */
 cut('/* ---- campaign (begin)', '/* ---- ghost links (end) ---- */');
 rep('</style>\n\n<main', read('game.css') + '\n</style>\n\n<main');
 
@@ -69,7 +69,7 @@ cut('<!-- campaign (begin): the map list', '<script>\n/* sound', read('screens.h
 rep('role="img" aria-label="Side-scrolling track. Your lab and three rivals run toward a finish line past barriers and hidden gaps."', 'role="img" aria-label="Side-scrolling track. Your lab and its rivals run toward a finish line past walls and boxes."');
 
 // ---- script: the recap's commentary, the epilogue, and the old game's sections
-cut('<script>\n/* end-of-run story', '<script>\n(function(){');
+cut('<script>\n/* end-of-run story', '<script>\n(function(){', '<script>\n' + read('story.js') + '\n</script>\n');  /* the recap's commentary, reworded for boxes */
 { const i = S.indexOf('<script>\n/* Epilogue.'), j = S.indexOf('</script>', i) + 9; if (i < 0) throw new Error('epilogue'); removed.push(S.slice(i, j)); S = S.slice(0, i) + S.slice(j); }
 rep("  $('log').innerHTML=li;\n", '');
 rep("  $('seed').textContent='Seed '+G.seed+'. Track '+Math.round(G.finish)+' long. Time '+G.t.toFixed(1)+' s.';\n", '');
@@ -85,9 +85,9 @@ cut('function parseSeed(', 'function go(){',
 rep("  campGo();  /* campaign: fix the race's chill state and difficulty */\n", '');
 rep("  dailyGo();  /* daily: count the attempt and fix the race's chill state */\n", '');
 rep("  recStart();  /* every run: start the input log */\n", '');
-rep("  achGo();  /* achievements: start this run's chill and shadow tally */\n", '');
+rep("  achGo();  /* achievements: start this run's chill and shadow tally */\n", "  achGo();  /* awards: start this race's auto-jump and shadow tally (recap.js) */\n");
 rep("  RL=rlNew();  /* you raced like: start this run's habit tally */\n", '');
-rep("syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); rlTick(RL,hm,1/60); acc-=1/60;", "syncInput(); stepGame(1/60); gmTick(); acc-=1/60;");
+rep("syncInput(); ghRec(); recTick(); stepGame(1/60); achTick(1/60); rlTick(RL,hm,1/60); acc-=1/60;", "syncInput(); stepGame(1/60); achTick(1/60); gmTick(); acc-=1/60;");
 rep("'</span> wide, the widest gap on this track. A fall here rolls '+Math.round(gapOdds(G.sing))+'%.'", "'</span> wide, the widest box on this track.'");
 rep("$('btn-restart').addEventListener('click',function(){ if(CAMP){ campStart(CAMP.i,CAMP.tier); } else if(DLY){ dailyStart(DLY.date,DLY.tier); } else { start(); } });\n", "$('btn-restart').addEventListener('click',function(){ gmRestart(); });\n$('btn-maps').addEventListener('click',function(){ gmLeave(); });\n$('ready-back').addEventListener('click',function(){ gmLeave(); });\n");
 cut("$('btn-seed').addEventListener(", "document.addEventListener('keyup',");
@@ -97,8 +97,10 @@ rep("e.target.id!=='ready-camp'", "e.target.id!=='ready-back'");
 rep("gap:function(){ return '<b>Gap ahead.</b> '", "gap:function(){ return '<b>Box ahead.</b> '");
 rep("'This gap needs speed. Move the dot", "'This box needs speed. Move the dot");
 cut('  /* "How to play" on the Ready card', '})();\n\n/* investment flow');  /* ends before the flow layer: the old end marker, knobs, also cut the triangle's flowing dots */
-cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + '\n');
-rep('syncInput(); stepGame(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } gmTick(); acc-=1/60;');
+cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + read('recap.js') + '\n');
+rep('syncInput(); stepGame(1/60); achTick(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } achTick(1/60); gmTick(); acc-=1/60;');
+// the recap's CSS was written for the old end card (.card); the debrief is .gm
+S = S.split('.card .rc-').join(':is(.card,.gm) .rc-').split('.card .ach-').join(':is(.card,.gm) .ach-').split('.card .achg-').join(':is(.card,.gm) .achg-');
 rep('    /* ghost link: drawn under the labs, never part of the sim */\n', '    ghDrawBest(cam,VW,FW);  /* drawn under the labs, never part of the sim */\n');
 cut("var qh=/[?&]hidden=(0|1)/", "if(window.HIDDEN){", "window.HIDDEN=true; window.NBOX=1; window.WF0=null;\n");
 rep("  K.stepGaps=1; var hsgi=$('k-stepGaps'); if(hsgi){ hsgi.checked=true; $('o-k-stepGaps').textContent='on'; }\n", "  K.stepGaps=1;\n");
