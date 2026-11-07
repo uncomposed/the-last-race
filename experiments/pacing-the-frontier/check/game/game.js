@@ -89,7 +89,7 @@ var GM_FOOT='<p class="gm-foot">A cartoon of an AI race, for intuition. It is no
 function gmStart(){
   var any=GS.prog[0]+GS.prog[1]+GS.prog[2]>0,d=GS.days[gmToday()];
   gmShow('<p class="eyebrow">A game about an AI race</p><h1 class="gm-logo">Pacing the Frontier</h1><p>You run an AI lab. Get to the end first. Stay in the race. And make sure nobody ends the game for everyone.</p>'+
-    '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">'+(any?'Continue':'Play')+'</button><button type="button" data-gm="daily">Daily'+(d&&d.won?' (won)':'')+'</button><button type="button" data-gm="help">How to play</button></div>'+GM_FOOT);
+    '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">'+(any?'Continue':'Play')+'</button><button type="button" data-gm="daily">Daily'+(d&&d.won?' (won)':'')+'</button><button type="button" data-gm="help">How to play</button></div><button type="button" class="gm-link" data-gm="awards">'+achLabel()+'</button>'+GM_FOOT);
 }
 function gmHelp(then){
   var touch=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
@@ -133,7 +133,7 @@ function gmRace(R){
   var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
   E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
-  E('gm').hidden=true; E('gm-toast').hidden=true;
+  E('gm').hidden=true; E('gm-toast').hidden=true; rcStop();
   start(seed);
   if(GH_ON||(LB_OK&&R.mode==='daily')){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
@@ -162,6 +162,7 @@ function gmDebrief(){
   else if(r.type==='allout'){ head='Nobody left'; sub='Every lab fell or was dissolved.'; }
   else { head='No winner'; sub='Nobody reached the end.'; }
   G.ev.forEach(function(e){ if(e.type==='fall'){ lines.push(gmFall(e)); } });
+  achEnd();  /* awards: what this race earned, for the card that opens the recap */
   if(REC){ ghEnd(REC,G); }
   if(REC&&GH_ON){ if(won){ var gs=ghStore(),gk=ghSlot(R),gb=gs[gk]; if(!gb||gb.sim!==SIM_ID||REC.end.t<gb.end.t){ gs[gk]=REC; ghStoreSet(gs); lines.push(gb&&gb.sim===SIM_ID?'A new best, ahead of '+gb.end.t.toFixed(1)+' s.':'Saved as your best. It races with you next time.'); } else { lines.push('Your best is still '+gb.end.t.toFixed(1)+' s.'); } } }
   var note=m.debrief||(G.world&&G.world.note)||'';
@@ -181,10 +182,11 @@ function gmDebrief(){
     else { btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="camp">Maps</button>'; }
   }
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
-    (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
+    (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+rcMarkup()+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
     (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
   if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.date].tries); }
+  tellStory();  /* Professor Postmortem walks the track just raced (recap.js) */
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+
@@ -198,7 +200,7 @@ function gmBoot(){
   E('gm').addEventListener('click',function(e){
     var b=e.target.closest?e.target.closest('[data-gm]'):null; if(!b||b.disabled){return;} var a=b.getAttribute('data-gm'),p;
     snd.unlock();
-    if(a==='home'){ gmStart(); } else if(a==='help'){ gmHelp(); }
+    if(a==='home'){ gmStart(); } else if(a==='help'){ gmHelp(); } else if(a==='awards'){ gmAwards(); }
     else if(a==='camp'){ if(!GS.help){ gmHelp('camp'); } else { gmCamp(); } }
     else if(a==='daily'){ if(!GS.help){ gmHelp('daily'); } else { gmDailyCard(); } }
     else if(a==='dgo'){ var D=gmDailyOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed}); }
