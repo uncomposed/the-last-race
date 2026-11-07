@@ -2955,7 +2955,8 @@ SGP.rvSprint=function(l,g,st){
 NOPEEK.rvSprint=1;
 /* Builder: floors it unless a wall needs height, which it buys just in time. Reads boxes as Reader does */
 SGC.rvBuild=function(l){ return shCruise(l,l.cpW||[0,70,30],'bold'); };
-SGP.rvBuild=function(l,g,st){ return shBox(l,g,st,l.cpW||[0,70,30],true); };
+/* a wall it cannot jump comes before the box: deal with the wall first. Without this it floors at the wall forever: flooring stops every meter from growing, so the height never comes */
+SGP.rvBuild=function(l,g,st){ var wl=shWall(l); if(wl&&wl.b.x<g.x){ return SGC.rvBuild(l); } return shBox(l,g,st,l.cpW||[0,70,30],true); };
 NOPEEK.rvBuild=1;
 /* Reader: a good steady lab. Never outruns its sight, stops at what it cannot clear, builds, goes */
 SGC.rvRead=function(l){ return shCruise(l,l.cpW||[30,40,30],'eyes'); };
@@ -2982,9 +2983,9 @@ SGC.rvShadow=function(l){ var a=shTailAhead(l),tw=shTower(l),T=Math.max(topSpeed
 SGP.rvShadow=function(l,g,st){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&!(g.crossedBy>=0)){ return SGC.rvShadow(l); } if(st.go){ return cpFloor(l); } if(g.crossedBy>=0&&cpOut(Math.max(topSpeed(l),1)*.98,heightOf(l),gapWidth(l,g)*1.05+2,g.rise)===0){ return cpFloor(l); } return shBox(l,g,st,l.cpW||[0,20,80],true); };
 NOPEEK.rvShadow=1;
 
-/* ---- ACT 3, MAP 2. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. Run-out lengthened from 160 to 450 so the follow line can pass on it. Under key lag most losses end under two seconds behind; 620 did not help. ---- */
+/* ---- ACT 3, MAP 2. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. Run-out lengthened from 160 to 450 so the follow line can pass on it. Under key lag most losses ended under two seconds behind and 620 did not help; the Foreman then got slower (speed 42, split 90/10) and the wall bug in SGP.rvBuild was fixed. See NOTES: by keys, max-out with eyes now beats the follow line. ---- */
 shMap({key:'picket',act:3,slot:2,lesson:'',title:'The Picket',strategy:'sp-hs-tail',
-  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,63],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172],after:450},
+  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,42],w:[0,90,10]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172],after:450},
   q:'There is a fence across the road. Then another.',
   meta:'Scaling hits a wall the size of the next data center: you buy the height or you take the crash.',
   track:function(r){ var P=this.P,mid=P.hs.slice(1,5),s=shShuffle(r,mid),hs=[P.hs[0]].concat(s,P.hs.slice(5)),it=[],i;
@@ -4006,7 +4007,7 @@ function ghSame(a,r){ return a.over&&a.n===r.n&&a.type===r.end.type&&a.t===r.end
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
-var SIM_ID='1cc8f0ee1c4b9c25';  /* the hash of the simulation section, maps included: build.mjs fills it in */
+var SIM_ID='e76ea276436eed44';  /* the hash of the simulation section, maps included: build.mjs fills it in */
 /* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
 var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
 function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
