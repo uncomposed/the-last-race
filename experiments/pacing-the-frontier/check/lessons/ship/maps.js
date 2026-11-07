@@ -159,7 +159,7 @@ shMap({key:'long-sight',act:1,slot:2,lesson:'',title:'Long Sight',strategy:'sp-e
   meta:'Whether a risk is small or huge is the thing you cannot see from where you are: evaluations are how you see further.',
   track:function(r){ var P=this.P,it=[],i,wide=[],nw=0; for(i=0;i<P.n;i++){ var w=r()<P.pw&&i>0; if(w&&nw>=3){ w=false; } if(i===P.n-1&&nw===0){ w=true; } if(w){ nw++; } wide.push(w);
       it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:6,W:w?P.fw[0]+r()*(P.fw[1]-P.fw[0]):P.fn[0]+r()*(P.fn[1]-P.fn[0]),odds:P.odds,capTo:70+i*6}); }
-    return shRoad(it,70,nw+' of the '+P.n+' boxes were wide.'); }});
+    return shRoad(it,70,nw+' of the '+P.n+' boxes '+(nw===1?'was':'were')+' wide.'); }});
 
 /* ---- ACT 1, MAP 3. ELBOWS. Tiny boxes as fast as you can read them, three labs at your elbow. One box in the run is a pothole, and it is in a different place every time SAW in the page: four labs in a clump, tiny red boxes under them, 'shadowed by Kite'. Fast and crowded, clearly unlike the first two maps. ---- */
 shMap({key:'elbows',act:1,slot:3,lesson:'',title:'Elbows',strategy:'sp-s-bold',
@@ -213,7 +213,7 @@ shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy
   q:'The road is full of near misses.',
   meta:'Each near miss looks affordable. You get to spend exactly two. The skill is knowing which two.',
   track:function(r){ var P=this.P,it=[],i,nb=0; for(i=0;i<P.n;i++){ var b=i>0&&r()<P.pb&&nb<2; if(b){ nb++; } it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:(b?P.Wb[0]+r()*(P.Wb[1]-P.Wb[0]):P.Wn[0]+r()*(P.Wn[1]-P.Wn[0]))+i*P.Wg,odds:P.odds,capTo:70+i*8,open:true}); }
-    return shRoad(it,110,nb+' of the boxes were too wide to scrape.'); }});
+    return shRoad(it,110,nb+' of the boxes '+(nb===1?'was':'were')+' too wide to scrape.'); }});
 
 /* ---- DAILY 1. THE ONLY BOX. One road, one box, one rival right behind you. The box is 40, 85 or 130 wide. Everything you do for thirty seconds is a bet on which SAW in the page: a long empty road, one lab, nothing on screen for many seconds. Clearly distinct, and the one most at risk of being dull. ---- */
 shMap({key:'only-box',daily:1,lesson:'',title:'The Only Box',strategy:'sp-even-slow',
