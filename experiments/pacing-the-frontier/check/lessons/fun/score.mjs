@@ -11,9 +11,11 @@ const FUN = new Set(['picket', 'long-sight', 'elbows', 'steward', 'takeoff', 're
 const BOR1 = new Set(['see-early-brake@r1', 'see-early-pack@r1']);
 const BOR2 = new Set(['close-footsteps', 'close-wall', 'close-spend', 'see-early-brake', 'see-early-bravo', 'see-early-pack', 'sr-landing', 'sr-odds', 'sr-lastbox', 'steward-minefield', 'cp-look', 'cp-signs', 'cp-break', 'pace-open', 'pace-limit', 'slower-care', 'unknown-world', 'look-pays']);
 const grp = k => FUN.has(k) ? 'fun' : BOR1.has(k) ? 'r1-boring' : BOR2.has(k) ? 'r2-boring' : k.startsWith('gen:') ? 'gen-boring' : null;
-const rows = f => f.split(',').flatMap(p => JSON.parse(readFileSync(p, 'utf8'))).map(r => ({...r, g: grp(r.key)})).filter(r => r.g);
+const BOTS = ['coleFollow', 'sp-hs-eyes', 'sp-hs-slow', 'sp-hs-tail', 'sp-even-slow', 'sp-s-bold', 'sp-h-eyes'];  /* maxout never changes a control */
+const rows = f => f.split(',').flatMap(p => JSON.parse(readFileSync(p, 'utf8'))).map(r => ({...r, g: grp(r.key), ...Object.fromEntries(BOTS.map(b => ['dpm:' + b, r.dpmBy ? r.dpmBy[b] : null]))})).filter(r => r.g);
 const T = rows(A.tune), H = rows(A.hold);
-const TESTS = {gapMax: 'a. longest stretch without a decision (s)', dpm: 'a. decisions per minute', gapWin: 'a2. same, over races won (any bot)', dpmWin: 'a2. decisions/min, races won (any bot)', dom: 'b. best single generic bot win share', intr: 'c. half-leader fails to win', adapt: 'c. lesson bot beats half-leader by', voi: 'd. decisions right after a reveal', riv: 'e. a rival survives'};
+const TESTS = {gapMax: 'a. longest stretch without a decision (s)', dpm: 'a. decisions per minute', gapWin: 'a2. same, over races won (any bot)', dpmWin: 'a2. decisions/min, races won (any bot)', dom: 'b. best single generic bot win share', intr: 'c. half-leader fails to win', adapt: 'c. lesson bot beats half-leader by', voi: 'd. decisions right after a reveal', riv: 'e. a rival survives',
+  ...Object.fromEntries(BOTS.map(b => ['dpm:' + b, 'a2 control: decisions/min, ' + b + ' (all races)']))};
 // balanced accuracy of "fun if dir*(x - th) >= 0"; groups weigh equally inside the boring side
 function bacc(R, k, th, dir) {
   const pass = r => dir * (r[k] - th) >= 0, f = R.filter(r => r.g === 'fun'), gs = ['r1-boring', 'r2-boring', 'gen-boring'].map(g => R.filter(r => r.g === g)).filter(x => x.length);
@@ -46,4 +48,15 @@ for (const [k, label] of Object.entries(TESTS)) {
     const pass = best.dir * (h[k] - best.th) >= 0; hit[h.g][1]++; if (pass === (h.g === 'fun')) hit[h.g][0]++; }
   const r = g => hit[g][1] ? hit[g][0] / hit[g][1] : 0, ba = (r('fun') + (r('r1-boring') + r('r2-boring') + r('gen-boring')) / 3) / 2;
   console.log(label.padEnd(44) + pc(ba) + '   ' + ['fun', 'r1-boring', 'r2-boring', 'gen-boring'].map(g => pc(r(g))).join('  '));
+}
+
+// a2 control, part 2: who wins. If fun maps are won mostly by twitchy bots and boring ones by calm bots, dpmWin measures the bot, not the map.
+// Share of all won races per winner, pooled by group, on the held-out block; next to each bot, its median decisions/min over the same maps.
+console.log('\nwho wins (held-out block): share of won races by bot, and that bot\'s median decisions/min on those maps');
+const WHO = ['lesson', 'maxout', ...BOTS];
+console.log('group'.padEnd(12) + WHO.map(w => w.slice(0, 11).padStart(13)).join(''));
+for (const g of ['fun', 'r1-boring', 'r2-boring', 'gen-boring']) {
+  const R = H.filter(r => r.g === g && r.winBy), tot = R.reduce((a, r) => a + Object.values(r.winBy).reduce((x, y) => x + y, 0), 0);
+  const dp = w => { const v = R.map(r => w === 'lesson' ? r.dpm : w === 'maxout' ? 0 : r.dpmBy[w]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0; };
+  console.log(g.padEnd(12) + WHO.map(w => (pc(R.reduce((a, r) => a + (r.winBy[w] || 0), 0) / (tot || 1)) + ' ' + String(Math.round(dp(w))).padStart(3) + '/m').padStart(13)).join(''));
 }

@@ -6,7 +6,7 @@
 
 1. **Two per-map tests separate fun maps from boring ones better than chance, and they hold when the map itself is left out:**
    1. **Adaptation pays (test c):** the map's adaptive lesson bot beats the generic bot that most often leads at half distance by at least 38 points. 68% balanced accuracy with the map left out.
-   2. **The winner keeps deciding (test a2):** whoever wins makes at least about 26 control changes a minute. 63% with the map left out.
+   2. **The winner keeps deciding (test a2):** whoever wins makes at least about 26 control changes a minute. 63% with the map left out. It is not an artifact of which bot wins: with one bot (coleFollow) held fixed on every map, the same measure scores 73% with the map left out (see "Is a2 just measuring which bot wins?").
 2. **One set-level test separates the PR 38 days cleanly:** variety (test f). Across the 12 fun maps, 7 different generic bots are best. Across PR 38's 26 Elbows days, one bot is best on every day; the same holds for the 16 Ladder days, and 3 bots across the 18 Two Endings days. No per-map test can fail those days, because each is a near copy of a fun map. Their problem is sameness, which only shows across a set.
 3. **Failed to separate** (at or below chance with the map left out): micro measured on the lesson bot, dominance by one generic bot, decisions right after a reveal, and rival survival.
 4. **The director's catch was right.** Micro measured on the lesson bot scored Takeoff as having no decisions at all, because its lesson bot floors the whole race. Measured over races that were won, by whichever bot won them, Takeoff has a decision about every 4 seconds. The winner-based version (a2) is the one to keep.
@@ -54,6 +54,15 @@ The hit-rate columns are on the held-out seeds. "Map left out" fits each rule wi
 
 **Variety (f):** 7 distinct best bots over the 12 fun maps (both blocks); 6 to 7 over the 18 round 2 maps; PR 38 days: Elbows 1 over 26, Ladder 1 over 16, Two Endings 3 over 18.
 
+### Is a2 just measuring which bot wins?
+
+The director's worry: if twitchy bots happen to win fun maps and calm bots win boring ones, "decisions per minute by the winner" measures the bot, not the map. Two controls, same seeds:
+
+1. **One bot held fixed on every map.** coleFollow's own decisions per minute, over all its races, separates as well as a2 or better: 73% balanced accuracy on held-out seeds and 73% with the map left out (a2: 72% and 63%). Rule: at least about 34 a minute. Five of the six other fixed bots also land between 63% and 71% on held-out seeds. So the signal is in the map: fun maps make the same bot decide more often.
+2. **Who wins.** On the held-out block, max-out never changes a control. It wins 11% of won races on fun maps, 29% on the round 1 boring pair, 10% on round 2 and 13% on PR 38's days. Fun maps are not won by twitchier bots. The lesson bot wins 28% of fun-map races and 40% of PR 38 day races.
+
+a2 is kept. The fixed-coleFollow version is at least as good and simpler to explain, so step 2 uses it as the micro filter: "coleFollow decides at least about 34 times a minute". It still cannot fail PR 38's days on its own (it fails 23% of them), because they are near copies of fun maps. That remains variety's job (f).
+
 Two of the rules point the wrong way, which is why they're dropped:
 - **d:** fun maps had fewer reveal-driven decisions.
 - **e:** fun maps had *fewer* surviving rivals.
@@ -63,7 +72,7 @@ Rival survival stays a guard rail because Cole asked for it directly (issue 36),
 ## What this does not show
 
 1. Only 12 fun maps, and most labels are group-level. The round 2 labels are inferred. Every percentage above moves by about 8 points per map.
-2. **Confound:** the fun maps are hand-built and human-played; the boring ones are mostly generated or bot-tuned. A test may be detecting "hand-built", not fun.
+2. **Confound:** the fun maps are hand-built and human-played; the boring ones are mostly generated or bot-tuned. A test may be detecting "hand-built", not fun. There is partial evidence against that. The 18 round 2 maps are also hand-built (and tuned against bots), yet most of them fail c and a2: 89% fail c and 83% fail a2 on held-out seeds. So hand-building alone doesn't pass these tests. The cleaner check is the old `genTrack` generator in `prototype.html`: its races were generated, and Cole found them fun. If c and a2 pass genTrack races, the "hand-built" explanation is out. That check is open: genTrack runs in an older sim and has not been ported.
 3. Shipped maps use the browser driver's tuned knobs for their lesson bot; other maps use generic knobs. That may flatter the shipped maps on a, a2 and c.
 4. Thresholds were fit on these same maps. The left-out-map numbers are the honest ones, and they are modest.
 5. No human played anything for this. Nothing here is `human_validated`.
@@ -72,7 +81,7 @@ Rival survival stays a guard rail because Cole asked for it directly (issue 36),
 
 Keep three filters for generated maps:
 1. Adaptation pays (c, lesson beats half-leader by about 0.4).
-2. The winner keeps deciding (a2, at least about 26 changes a minute).
+2. The map keeps you deciding (a2, measured on one fixed bot: coleFollow at least about 34 changes a minute).
 3. Across a set of days, the best generic bot must vary (f).
 
 Add "a rival survives some races" as a guard rail only. What would show this wrong: Cole finds a generated map that passes all three boring, or one that fails them fun.

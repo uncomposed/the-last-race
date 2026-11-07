@@ -47,7 +47,7 @@ export function makeApi(page) {
     R = {G: null, dp: [], rev: [], known: 0, last: null, tEnd: 0, half: null};
     const r = run(api, key, o.P || null, hdFor(key, post, o.lesson), seed), G = R.G, riv = G.labs.filter(l => l.id !== 0);
     const pts = [0, ...R.dp, R.tEnd]; let gap = 0; for (let i = 1; i < pts.length; i++) gap = Math.max(gap, pts[i] - pts[i - 1]);
-    const out = {won: r.won, type: r.type, gap, dpm: R.tEnd > 5 ? R.dp.length / (R.tEnd / 60) : 0, half: !!R.half, info: R.dp.length ? R.dp.filter(t => R.rev.some(v => t >= v && t - v <= 1)).length / R.dp.length : 0, rivAlive: riv.filter(l => !l.out && !l.dissolved).length, rivN: riv.length};
+    const out = {post, won: r.won, type: r.type, gap, dpm: R.tEnd > 5 ? R.dp.length / (R.tEnd / 60) : 0, half: !!R.half, info: R.dp.length ? R.dp.filter(t => R.rev.some(v => t >= v && t - v <= 1)).length / R.dp.length : 0, rivAlive: riv.filter(l => !l.out && !l.dissolved).length, rivN: riv.length};
     R = null; return out;
   };
   return api;
@@ -68,7 +68,9 @@ export function testMap(api, key, start, n, LP = null, name = key) {
     dom: +Math.max(...Object.values(wins)).toFixed(2), best,
     intr: +(hb.filter(r => r.half && !r.won).length / n).toFixed(2), halfBest, adapt: +(win(L) - win(hb)).toFixed(2),
     voi: +med(L.map(r => r.info)).toFixed(2), lessonWin: +win(L).toFixed(2),
-    riv: +(all.filter(r => r.rivN && r.rivAlive > 0).length / all.length).toFixed(2), wins};
+    riv: +(all.filter(r => r.rivN && r.rivAlive > 0).length / all.length).toFixed(2), wins,
+    dpmBy: Object.fromEntries(POOL.map(p => [p, +med(P[p].map(r => r.dpm)).toFixed(1)])),  /* control for a2: each bot's own decision rate, all its races */
+    winBy: W.reduce((o, r) => { const k = r.post === lesson && L.includes(r) ? 'lesson' : r.post; o[k] = (o[k] || 0) + 1; return o; }, {})};
 }
 
 if (process.argv[1] && process.argv[1].endsWith('tests.mjs')) {
