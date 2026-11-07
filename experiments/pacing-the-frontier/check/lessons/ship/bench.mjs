@@ -25,7 +25,7 @@ function run(idx, post) {
   const pc = x => Math.round(100 * x / N);
   return {win: pc(o.win), fall: pc(o.you), dis: pc(o.dis), ext: pc(o.ext), riv: pc(o.riv), str: +(o.str / N).toFixed(1), t: o.win ? +(o.t / o.win).toFixed(1) : null, vary: o.times.size};
 }
-const POOL = A.posts ? A.posts.split(',') : ['sp-hs-eyes', 'sp-hs-bold', 'sp-hs-slow', 'sp-hs-tail', 'sp-h-eyes', 'sp-h-bold', 'sp-h-tail', 'sp-s-eyes', 'sp-s-bold', 'sp-s-tail', 'sp-v-eyes', 'sp-v-bold', 'sp-v60-eyes', 'sp-v60-bold', 'sp-vh-eyes', 'sp-vs-eyes', 'sp-vs-bold', 'sp-even-eyes', 'sp-even-slow', 'maxout', 'rush'];
+const POOL = A.posts ? A.posts.split(',') : ['sp-hs-eyes', 'sp-hs-bold', 'sp-hs-slow', 'sp-hs-tail', 'sp-hs-scrape', 'sp-s-scrape', 'sp-h-eyes', 'sp-h-bold', 'sp-h-tail', 'sp-s-eyes', 'sp-s-bold', 'sp-s-tail', 'sp-v-eyes', 'sp-v-bold', 'sp-v60-eyes', 'sp-v60-bold', 'sp-vh-eyes', 'sp-vs-eyes', 'sp-vs-bold', 'sp-even-eyes', 'sp-even-slow', 'maxout', 'rush'];
 for (const seg of PF.SEGS.filter(s => (s.act || s.daily) && (!A.map || A.map.split(',').includes(s.key)))) {
   const idx = PF.SEGS.indexOf(seg) + 1;
   const list = [...new Set([...POOL, seg.strategy].filter(Boolean))];
