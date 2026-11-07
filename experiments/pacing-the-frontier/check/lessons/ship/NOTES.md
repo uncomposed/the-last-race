@@ -41,6 +41,24 @@ Unconfirmed reports from the ship manager, from a few hand runs:
 1. The Foreman stalling near x 866 after being passed. Not reproduced: in 200 bot races on 1001-1040 it never stood still for more than 6 seconds. A human run may differ.
 2. Long Sight won in 41.9 s by standing about 18 s with lowest sight, then flooring it. Not checked. If it holds, it skips the sight lesson.
 
+## Can a person win? Scripted keys with human lag (2026-11-06)
+
+`keydriver.js` plays the built page with real key events: a decision every 250-400 ms, reaching the keys 250-400 ms later, nearest number-key split, pace by Arrow Up and Down, floor and brake by held Arrow Right and Left. This is not a person. It reads exact game numbers, and I stepped time at 1/60 s because the pane is hidden. It answers one question: do these lines survive human timing? Status stays `implemented`.
+
+| Map | Bot's line, lag only, seeds 1-20 | With a person's margins, seeds 1-20 | Frame |
+|---|---|---|---|
+| Three Strikes | 1 | 11 | `frames/three-strikes.jpg` |
+| Elbows | 17 | 18 | `frames/elbows.jpg` |
+| The Steward | 5 | 19 | `frames/steward.jpg` |
+| Takeoff | 17 | 17 | `frames/takeoff.jpg` |
+| Red Box | 0 | 17 | `frames/red-box.jpg` |
+| Trailbreaker | 0 | 15 | `frames/trailbreaker.jpg` |
+| The Ladder | 14 | 15 | `frames/ladder.jpg` |
+
+"A person's margins" means: read the road a second or more ahead of where you are, treat boxes as 10-35% wider than they look, and brake with the Back key. The margin values were picked per map from four tries on seeds 1-20, so those numbers are flattered; the held-out run is below.
+
+**Hard to win, and why.** Three Strikes, The Steward, Red Box, Trailbreaker and Second Order lose almost every race if you drive the bot's line with lag, because that line brakes on the last possible curve. At speed 120 a stop takes about 465 of road, and half a second of lag adds 60. Three Strikes is the tightest: its boxes are 540-660 apart, so flooring over one box can leave no room to stop for the next. Trailbreaker asks for the most patience, since the winning time is about 52 s, most of it standing behind Pioneer. None of these turned out to be bot-only, so none was redesigned for this.
+
 ## What varies by seed
 
 - The Picket: order of the middle walls, spacing.
