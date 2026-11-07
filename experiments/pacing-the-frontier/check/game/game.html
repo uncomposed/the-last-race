@@ -3956,6 +3956,89 @@ document.addEventListener('keydown',function(e){
   requestAnimationFrame(tick);
 })();
 
+/* investment flow: while your lab is investing (the sim's l.ivr and l.ivw, read only), small dots leave the Build part of the bar,
+   go into the triangle's point, and come out in a meter's colour, bending past that meter's corner, to land on the meter itself
+   (the panel meters when they are on screen, else the ones drawn along the top of the track). Rate and size follow ivr; which meter
+   follows the split. A meter that is full gets none. One fixed canvas, pointer-events none, drawn only while there is something to draw.
+   With reduced motion there are no dots: the receiving meter is outlined for a moment instead (flowHi, read by drawMeters too) */
+(function(){
+  var fc=document.createElement('canvas'),fx=fc.getContext('2d'),RM=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+  var dots=[],rings=[],due=0,prev=performance.now(),fw=0,fh=0,fd=1,drawn=false,was=[false,false,false];
+  fc.id='flow'; fc.setAttribute('aria-hidden','true'); document.body.appendChild(fc);
+  function size(){ fd=Math.min(2,window.devicePixelRatio||1); fw=window.innerWidth; fh=window.innerHeight; fc.width=Math.round(fw*fd); fc.height=Math.round(fh*fd); drawn=true; }
+  size(); window.addEventListener('resize',size);
+  function shown(r){ return r.width>0&&r.height>0&&r.bottom>0&&r.top<fh; }
+  function ease(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function quad(a,c,b,t){ var u=1-t; return {x:u*u*a.x+2*u*t*c.x+t*t*b.x,y:u*u*a.y+2*u*t*c.y+t*t*b.y}; }
+  /* where things are on screen this frame */
+  function where(l){
+    var th=$('lcol').offsetParent!==null,src=(th?$('th-build'):$('rb-build')).getBoundingClientRect(),run=(th?$('th-track'):$('rb')).getBoundingClientRect();
+    var svg=$('tri'),m=svg.getScreenCTM(); if(!m||!shown(svg.getBoundingClientRect())){ return null; }
+    function tp(p){ return {x:m.a*p[0]+m.c*p[1]+m.e,y:m.b*p[0]+m.d*p[1]+m.f}; }
+    var forced=capped(l),pt=tp(triPos(forced?[50,50,0]:ui.w)),cn=[tp(TV[0]),tp(TV[1]),tp(TV[2])],mt=null,i,f;
+    var mp=$('meters').getBoundingClientRect();
+    if(mp.height>0&&mp.top>=0&&mp.bottom<=fh){
+      mt=[]; for(i=0;i<3;i++){ var br=$('f'+i).parentNode.getBoundingClientRect(); f=clamp(l.pts[i]/G.maxcap,0,1); mt.push({x:br.left+br.width*f,y:br.top+br.height/2}); }
+    } else {
+      var cr=cv.getBoundingClientRect(),my=CM?37:56,kx=cr.width/W,ky=cr.height/H,cw=(W-68)/3;
+      if(cr.top+my*ky>0&&cr.top+my*ky<fh){ mt=[]; for(i=0;i<3;i++){ f=clamp(l.pts[i]/G.maxcap,0,1); mt.push({x:cr.left+(24+i*(cw+10)+cw*f)*kx,y:cr.top+(my+2.5)*ky}); } }
+    }
+    return {src:src,vert:th,pt:pt,cn:cn,mt:mt,box:run};
+  }
+  function clear(){ if(drawn){ fx.setTransform(1,0,0,1,0,0); fx.clearRect(0,0,fc.width,fc.height); drawn=false; } }
+  function tick(now){
+    var dt=Math.min(0.1,(now-prev)/1000); prev=now;
+    var l=G&&G.labs[0],live=!!l&&running&&!paused&&!G.over&&l.human&&!l.out&&!l.done;
+    var r=live?(l.ivr||0):0,w=live?(capped(l)?[50,50,0]:(l.ivw||ui.w)):[0,0,0],tot=w[0]+w[1]+w[2],i;
+    var recv=[false,false,false];
+    if(r>0.03&&tot>0){ for(i=0;i<3;i++){ recv[i]=w[i]/tot>0.15&&l.pts[i]<l.cap-0.01; } }
+    if(!live){ dots=[]; rings=[]; due=0; }
+    /* reduced motion: outline a meter for 1.5 s when it starts receiving */
+    if(RM&&RM.matches){
+      dots=[]; rings=[];
+      for(i=0;i<3;i++){ if(recv[i]&&!was[i]){ flowHi[i]=now+1500; } was[i]=recv[i]; $('f'+i).parentNode.parentNode.classList.toggle('recv',flowHi[i]>now); }
+      clear(); requestAnimationFrame(tick); return;
+    }
+    if(!dots.length&&!rings.length&&!(recv[0]||recv[1]||recv[2])){ clear(); requestAnimationFrame(tick); return; }
+    var at=where(l);
+    if(!at){ dots=[]; rings=[]; clear(); requestAnimationFrame(tick); return; }
+    /* spawn: up to 12 a second at full investment, each bound for a meter picked by the split among those still filling */
+    var open=0; for(i=0;i<3;i++){ if(recv[i]){ open+=w[i]; } }
+    if(open>0){
+      due+=dt*12*r;
+      while(due>=1&&dots.length<60){
+        due-=1;
+        var pick=Math.random()*open,k=0; for(i=0;i<3;i++){ if(recv[i]){ k=i; if(pick<w[i]){ break; } pick-=w[i]; } }
+        var s=at.src,bx=at.box,sx=at.vert?bx.left+bx.width*(0.25+0.5*Math.random()):s.left+s.width*Math.random(),sy=at.vert?s.top+s.height*(0.15+0.7*Math.random()):bx.top+bx.height/2;
+        dots.push({ph:1,t:0,a:{x:sx,y:sy},m:k,r:1.6+1.6*r,sh:w[k]/tot});
+      }
+    } else { due=0; }
+    fx.setTransform(fd,0,0,fd,0,0); fx.clearRect(0,0,fw,fh); drawn=true;
+    var cols=[COL.a,COL.c,COL.b];
+    for(var d=dots.length-1;d>=0;d--){
+      var o=dots[d],p,c;
+      o.t+=dt/(o.ph===1?0.55:0.8);
+      if(o.ph===1){
+        if(o.t>=1){ o.ph=2; o.t=0; o.a={x:at.pt.x,y:at.pt.y}; }
+        else { c={x:(o.a.x+at.pt.x)/2,y:Math.max(6,Math.min(o.a.y,at.pt.y)-40)}; p=quad(o.a,c,at.pt,ease(o.t));
+          fx.globalAlpha=0.6; fx.fillStyle=COL.ink; fx.beginPath(); fx.arc(p.x,p.y,o.r*0.85,0,6.2832); fx.fill(); continue; }
+      }
+      if(!at.mt){ fx.globalAlpha=0.9*(1-o.t); fx.fillStyle=cols[o.m]; fx.beginPath(); fx.arc(at.pt.x,at.pt.y,o.r*(1+o.t*1.5),0,6.2832); fx.fill(); if(o.t>=1){ dots.splice(d,1); } continue; }
+      var tg=at.mt[o.m];
+      if(o.t>=1){ rings.push({x:tg.x,y:tg.y,m:o.m,t:0}); dots.splice(d,1); continue; }
+      p=quad(o.a,at.cn[o.m],tg,ease(o.t));
+      fx.globalAlpha=0.9; fx.fillStyle=cols[o.m]; fx.beginPath(); fx.arc(p.x,p.y,o.r*(0.75+0.6*o.sh),0,6.2832); fx.fill();
+    }
+    for(var q=rings.length-1;q>=0;q--){
+      var g=rings[q]; g.t+=dt/0.35; if(g.t>=1){ rings.splice(q,1); continue; }
+      fx.globalAlpha=0.7*(1-g.t); fx.strokeStyle=cols[g.m]; fx.lineWidth=1.5; fx.beginPath(); fx.arc(g.x,g.y,3+g.t*7,0,6.2832); fx.stroke();
+    }
+    fx.globalAlpha=1;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
 /* ---------- recorded runs: what a ghost is, shared by the page and check/game/ghost-check.mjs ----------
    A run is its seed, its map and every change to the player's controls, stamped with the identity of the simulation it was played on. A ghost is never a stored
    path: it is that run raced again, in this browser, before it is shown. If this build's simulation or maps differ, or the replay does not end the way the run did,

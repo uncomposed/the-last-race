@@ -90,7 +90,7 @@ rep("  if(!$('camp').hidden){ if(e.code==='Escape'){e.preventDefault();campClose
 rep("e.target.id!=='ready-camp'", "e.target.id!=='ready-back'");
 rep("gap:function(){ return '<b>Gap ahead.</b> '", "gap:function(){ return '<b>Box ahead.</b> '");
 rep("'This gap needs speed. Move the dot", "'This box needs speed. Move the dot");
-cut('  /* "How to play" on the Ready card', '})();\n\n/* knobs */');
+cut('  /* "How to play" on the Ready card', '})();\n\n/* investment flow');  /* ends before the flow layer: the old end marker, knobs, also cut the triangle's flowing dots */
 cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + '\n');
 rep('syncInput(); stepGame(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } gmTick(); acc-=1/60;');
 rep('    /* ghost link: drawn under the labs, never part of the sim */\n', '    ghDrawBest(cam,VW,FW);  /* drawn under the labs, never part of the sim */\n');
