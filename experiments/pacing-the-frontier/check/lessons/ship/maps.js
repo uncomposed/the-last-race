@@ -98,6 +98,15 @@ SGC.spBait=function(l){ var i,m,near=-1,T=Math.max(topSpeed(l),1),w=[0,70,30],c=
 SGP.spBait=function(l,g,st){ if(st.go||knowsWidth(l,l.gi)){ return shPlan(l,g,st,gapWidth(l,g),[0,70,30]); } return sgInp(cpPace(l,cpStopV(l,g.x,12)),[0,100,0]); };
 NOPEEK.spBait=1;
 
+/* spFirst: runs flat out from the line, stops only for what it can see, and takes whatever time the box asks once it is there */
+SGC.spFirst=function(l){ var w=[0,50,50],T=Math.max(topSpeed(l),1),vb=shBlindV(l),wl=shWall(l),tw=shTower(l); if(tw){ return sgInp(cpPace(l,cpStopV(l,stepX(tw),10)),[0,100,0]); } if(wl){ return sgInp(Math.min(shWallPace(l,wl),vb/T),[0,100,0]); } return vb<T?sgInp(vb/T,w):cpFloor(l,w); };
+SGP.spFirst=function(l,g,st){ var w=[0,50,50],T0=Math.max(topSpeed(l),1)*0.98,d=g.x-l.x,known=knowsWidth(l,l.gi),W=known?gapWidth(l,g):0,sv=cpStopV(l,g.x,90);
+  if(st.go){ return cpFloor(l,w); }
+  if(known&&!st.at&&cpOut(T0,heightOf(l),W*1.05+2,g.rise)===0&&Math.sqrt(Math.max(l.v,0)*Math.max(l.v,0)+2*accOf(l)*0.9*Math.max(d-8,0))>=T0){ st.go=true; return cpFloor(l,w); }
+  if(!st.at&&(d>94||l.v>4)){ return sv<T0?sgInp(cpPace(l,sv),w):cpFloor(l,w); }  /* all the way to the face: that is where your wall counts */
+  st.at=true; if(!known){ return heightOf(l)+18<g.rise+6?sgInp(0,[0,100,0]):sgInp(0,w,l.jt<0?{jump:true}:{}); }
+  return shPlan(l,g,st,W,w); };
+NOPEEK.spFirst=1;
 /* spLate: clears what it can, and spends its strikes on the last boxes, where the height a scrape costs no longer matters */
 SGC.spLate=function(l){ var g=G.gaps[l.gi]; if(g&&G.gaps.length-l.gi<=1&&l.strikes<K.strikes-1&&cpOut(Math.max(topSpeed(l),1)*0.98,heightOf(l),gapWidth(l,g)*1.03,g.rise)===1){ return cpFloor(l,[0,50,50]); } return shCruise(l,[0,50,50],'bold'); };
 SGP.spLate=function(l,g,st){ var left=G.gaps.length-l.gi,w=[0,50,50]; if(!st.go&&left<=1&&l.strikes<K.strikes-1&&cpOut(Math.max(topSpeed(l),1)*0.98,heightOf(l),gapWidth(l,g)*1.03,g.rise)===1){ st.go=true; return cpFloor(l,w); } return shBox(l,g,st,w,true); };
@@ -143,14 +152,14 @@ SGC.rvShadow=function(l){ var a=shTailAhead(l),tw=shTower(l),T=Math.max(topSpeed
 SGP.rvShadow=function(l,g,st){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&!(g.crossedBy>=0)){ return SGC.rvShadow(l); } if(st.go){ return cpFloor(l); } if(g.crossedBy>=0&&cpOut(Math.max(topSpeed(l),1)*.98,heightOf(l),gapWidth(l,g)*1.05+2,g.rise)===0){ return cpFloor(l); } return shBox(l,g,st,l.cpW||[0,20,80],true); };
 NOPEEK.rvShadow=1;
 
-/* ---- ACT 3, MAP 2. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. ---- */
-shMap({key:'picket',act:3,slot:2,lesson:'',title:'The Picket',strategy:'sp-h-tail',
-  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,63],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172]},
+/* ---- ACT 3, MAP 2. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. Run-out lengthened from 160 to 450 so the follow line can pass on it. Under key lag most losses end under two seconds behind; 620 did not help. ---- */
+shMap({key:'picket',act:3,slot:2,lesson:'',title:'The Picket',strategy:'sp-hs-tail',
+  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,63],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172],after:450},
   q:'There is a fence across the road. Then another.',
   meta:'Scaling hits a wall the size of the next data center: you buy the height or you take the crash.',
   track:function(r){ var P=this.P,mid=P.hs.slice(1,5),s=shShuffle(r,mid),hs=[P.hs[0]].concat(s,P.hs.slice(5)),it=[],i;
     for(i=0;i<hs.length;i++){ it.push({d:i?P.gap[0]+r()*(P.gap[1]-P.gap[0]):P.first,bar:hs[i]}); if(i===3){ it.push({d:120,rise:12,W:40,odds:10,capTo:95}); } }
-    return shRoad(it,160,'Walls in this order: '+hs.join(', ')+'.'); }});
+    return shRoad(it,P.after,'Walls in this order: '+hs.join(', ')+'.'); }});
 
 /* ---- ACT 1, MAP 2. LONG SIGHT. A flat sea of low boxes. Most are narrow. Some are three times as wide, and from the ground they look the same SAW in the page: a rival standing at a low box with a tower growing, 'gap 115 wide', 'your jump now: fall'. Very readable. ---- */
 shMap({key:'long-sight',act:1,slot:2,lesson:'',title:'Long Sight',strategy:'sp-even-slow',
@@ -215,12 +224,12 @@ shMap({key:'three-strikes',act:1,slot:1,lesson:'',title:'Three Strikes',strategy
   track:function(r){ var P=this.P,it=[],i,nb=0; for(i=0;i<P.n;i++){ var b=i>0&&r()<P.pb&&nb<2; if(b){ nb++; } it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:(b?P.Wb[0]+r()*(P.Wb[1]-P.Wb[0]):P.Wn[0]+r()*(P.Wn[1]-P.Wn[0]))+i*P.Wg,odds:P.odds,capTo:70+i*8,open:true}); }
     return shRoad(it,110,nb+' of the boxes '+(nb===1?'was':'were')+' too wide to scrape.'); }});
 
-/* ---- DAILY 1. THE ONLY BOX. One road, one box, one rival right behind you. The box is 40, 85 or 130 wide. Everything you do for thirty seconds is a bet on which SAW in the page: a long empty road, one lab, nothing on screen for many seconds. Clearly distinct, and the one most at risk of being dull. ---- */
-shMap({key:'only-box',daily:1,lesson:'',title:'The Only Box',strategy:'sp-even-slow',
-  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-60,pts:[45,30,62],pace:1,w:[0,40,60]}],d:2200,rise:18,Ws:[50,100,130],odds:20},
-  q:'There is one box on this road.',
-  meta:'When there is only one decision, all the preparation is a guess about it.',
-  track:function(r){ var P=this.P,W=shPick(r,P.Ws); return shRoad([{d:P.d,rise:P.rise,W:W,odds:P.odds,capTo:100}],220,'Today the box was '+W+' wide.'); }});
+/* ---- DAILY 1. THE ONLY BOX. One road, one box 50, 100 or 130 wide, somewhere past 1950. Tail starts far back, faster, and never looks. Run, stop, build what today's box asks. SAW in the page: a long empty road, then a wide box with your wall going up beside you and Tail in the box, out on the dice. Tail is beaten by its own fall, not held by your wall. Still the map most at risk of being dull. ---- */
+shMap({key:'only-box',daily:1,lesson:'',title:'The Only Box',strategy:'spFirst',
+  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-500,pts:[45,30,62],pace:1,w:[0,40,60]}],d:[1950,2250],rise:[6,12],Ws:[50,100,130],odds:20},
+  q:'There is one box on this road. Tail is a long way back, and faster.',
+  meta:'A wide box takes whoever arrives at speed. Stop and look, and the road is yours.',
+  track:function(r){ var P=this.P,W=shPick(r,P.Ws); return shRoad([{d:P.d[0]+r()*(P.d[1]-P.d[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:W,odds:P.odds,capTo:100}],220,'Today the box was '+W+' wide.'); }});
 
 /* ---- DAILY 2. THE LADDER. Each box a step up from the last, each much higher ceiling only for whoever gets there first. Lead at box one or chase forever SAW in the page: two labs side by side, one shadowing the other. Between steps the frame is plain. ---- */
 shMap({key:'ladder',daily:2,lesson:'',title:'The Ladder',strategy:'sp-hs-bold',
@@ -231,15 +240,28 @@ shMap({key:'ladder',daily:2,lesson:'',title:'The Ladder',strategy:'sp-hs-bold',
     return shRoad(it,160,'Six steps, highest '+Math.round(rise)+'.'); }});
 
 /* ---- DAILY 3 (the mean one). SECOND ORDER. Tall boxes you cannot see over. Behind each, a strip, and then a wall, or a worse box, or nothing at all. Charge and you pay for it twice SAW in the page: a white tower hard against a red box, the rival already gone inside. ---- */
-shMap({key:'second-order',daily:3,lesson:'',title:'Second Order',strategy:'sp-hs-eyes',
-  P:{you:[30,55,50],rivals:[{post:'rvRead',name:'Scout',x:-70,pts:[60,60,55],w:[30,40,30]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],odds:30},
+shMap({key:'second-order',daily:3,lesson:'',title:'Second Order',strategy:'spLook',
+  P:{you:[30,55,50],rivals:[{post:'rvRead',name:'Scout',x:-200,pts:[60,60,55],w:[30,40,30]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],back:{rise:40,W:[110,124]},odds:15},
   q:'You can not see what is behind that.',
-  meta:'Handling a risk is not the same as thinking through what it does next.',
+  meta:'Clearing the tower was never the hard part. Being able to stop on the other side was.',
   track:function(r){ var P=this.P,it=[],i,says=[]; for(i=0;i<P.n;i++){ var cap=80+i*25,k=shPick(r,P.behind),s=P.strip[0]+r()*(P.strip[1]-P.strip[0]); says.push(k);
       it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.tower.rise+i*10,W:P.tower.W,odds:P.odds,capTo:cap,shade:true,pub:true});
-      if(k==='wall'){ it.push({d:s,bar:128+i*14}); } if(k==='box'){ it.push({d:s,rise:64,W:96,odds:P.odds+15,capTo:cap+8}); } }
+      if(k==='wall'){ it.push({d:s,bar:128+i*14}); } if(k==='box'){ it.push({d:s,rise:P.back.rise,W:P.back.W[0]+r()*(P.back.W[1]-P.back.W[0]),odds:P.odds,capTo:cap+8}); } }
     return shRoad(it,170,'Behind the towers: '+says.join(', ')+'.'); }});
 
+/* spLook: crosses each tower only as fast as it must, so it lands with room to stop on the strip and read what is behind */
+SGC.spLook=function(l){ var w=[0,50,50],g=G.gaps[l.gi],T=Math.max(topSpeed(l),1),base=shCruise(l,w,'eyes'); if(g&&g.shade&&g.x>l.x&&!shWall(l)&&!shTower(l)){ var vn=cpVNeed(heightOf(l),FIN_GUESS*1.05+2,g.rise,T*0.98),tv=vn===Infinity?0:Math.min(vn*1.08,T),cv=Math.sqrt(tv*tv+2*0.9*decOf(l)*Math.max(g.x-l.x-16,0)); if(base&&base.pace*T>cv){ return sgInp(Math.max(cv/T,0.05),[0,60,40]); } } return base; };
+SGP.spLook=function(l,g,st){
+  var w=[0,50,50]; if(!g.shade){ return shBox(l,g,st,w,false); }
+  if(st.go){ return sgInp(cpPace(l,st.slow),w); }
+  var T=Math.max(topSpeed(l),1),d=g.x-l.x,vn=cpVNeed(heightOf(l),FIN_GUESS*1.05+2,g.rise,T*0.98),base=shCruise(l,w,'bold'),bv=base?base.pace*T:T;
+  if(vn===Infinity){ var sv=cpStopV(l,g.x,10); return bv>sv?sgInp(cpPace(l,sv),[0,60,40]):(l.v<1&&d<40?sgInp(0,[0,60,40]):base); }
+  var tv=Math.min(vn*1.08,T),cv=Math.sqrt(tv*tv+2*0.9*decOf(l)*Math.max(d-16,0));
+  if(d<(l.v>tv*0.9?l.v*0.3+6:0)){ st.go=true; st.slow=tv; return sgInp(cpPace(l,tv),w); }
+  if(l.v<tv*0.9&&d<tv*tv/(2*accOf(l)*0.9)+12){ if(!st.run&&l.x>backLimit(l)+2&&d<tv*tv/(2*accOf(l)*0.9)){ return sgInp(0,[0,60,40],{rev:true}); } st.run=true; return sgInp(cpPace(l,tv),w); }
+  return bv>cv?sgInp(cv/T,[0,60,40]):base;
+};
+NOPEEK.spLook=1;
 /* ---- ACT 3, MAP 3. TWO ENDINGS. The showcase map (showcase/maps.js) moved here and retuned: see NOTES.md SAW in the page: the lab stopped on the tower, the box beyond reading 'at least 4 wide', follower stacked behind. ---- */
 /* the fence is public: a wall that tall is seen from far off, so every lab knows the height it must buy */
 function finBar(x,h){ var b=segBar(x,h); b.pub=true; return b; }
