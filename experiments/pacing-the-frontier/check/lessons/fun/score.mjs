@@ -12,9 +12,9 @@ const BOR1 = new Set(['see-early-brake@r1', 'see-early-pack@r1']);
 const BOR2 = new Set(['close-footsteps', 'close-wall', 'close-spend', 'see-early-brake', 'see-early-bravo', 'see-early-pack', 'sr-landing', 'sr-odds', 'sr-lastbox', 'steward-minefield', 'cp-look', 'cp-signs', 'cp-break', 'pace-open', 'pace-limit', 'slower-care', 'unknown-world', 'look-pays']);
 const grp = k => FUN.has(k) ? 'fun' : BOR1.has(k) ? 'r1-boring' : BOR2.has(k) ? 'r2-boring' : k.startsWith('gen:') ? 'gen-boring' : null;
 const BOTS = ['coleFollow', 'sp-hs-eyes', 'sp-hs-slow', 'sp-hs-tail', 'sp-even-slow', 'sp-s-bold', 'sp-h-eyes'];  /* maxout never changes a control */
-const rows = f => f.split(',').flatMap(p => JSON.parse(readFileSync(p, 'utf8'))).map(r => ({...r, g: grp(r.key), ...Object.fromEntries(BOTS.map(b => ['dpm:' + b, r.dpmBy ? r.dpmBy[b] : null]))})).filter(r => r.g);
+const rows = f => f.split(',').flatMap(p => JSON.parse(readFileSync(p, 'utf8'))).map(r => ({...r, g: grp(r.key), ...Object.fromEntries(BOTS.map(b => ['dpm:' + b, r.dpmBy ? r.dpmBy[b] : null])), adaptAny: r.wins ? +(r.dom - r.wins[r.halfBest]).toFixed(2) : null})).filter(r => r.g);
 const T = rows(A.tune), H = rows(A.hold);
-const TESTS = {gapMax: 'a. longest stretch without a decision (s)', dpm: 'a. decisions per minute', gapWin: 'a2. same, over races won (any bot)', dpmWin: 'a2. decisions/min, races won (any bot)', dom: 'b. best single generic bot win share', intr: 'c. half-leader fails to win', adapt: 'c. lesson bot beats half-leader by', voi: 'd. decisions right after a reveal', riv: 'e. a rival survives',
+const TESTS = {gapMax: 'a. longest stretch without a decision (s)', dpm: 'a. decisions per minute', gapWin: 'a2. same, over races won (any bot)', dpmWin: 'a2. decisions/min, races won (any bot)', dom: 'b. best single generic bot win share', intr: 'c. half-leader fails to win', adapt: 'c. lesson bot beats half-leader by', adaptAny: 'c (no lesson bot). best generic bot beats it by', voi: 'd. decisions right after a reveal', riv: 'e. a rival survives',
   ...Object.fromEntries(BOTS.map(b => ['dpm:' + b, 'a2 control: decisions/min, ' + b + ' (all races)']))};
 // balanced accuracy of "fun if dir*(x - th) >= 0"; groups weigh equally inside the boring side
 function bacc(R, k, th, dir) {

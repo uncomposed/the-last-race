@@ -127,20 +127,33 @@ function gmDailyCard(){
 function gmRace(R){
   RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
   GHOST=null; REC=null;
-  if(GH_ON){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
+  if(GH_ON&&R.mode!=='gen'){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
-  var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
+  var where=R.mode==='daily'?'Daily · '+R.date:R.mode==='gen'?'Drawn map '+R.gen+' · research':'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
-  E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
+  E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='camp'?'Back to maps':'Back';
   E('gm').hidden=true; E('gm-toast').hidden=true;
   start(seed);
-  if(GH_ON||(LB_OK&&R.mode==='daily')){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
+  if(R.mode!=='gen'&&(GH_ON||(LB_OK&&R.mode==='daily'))){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
+/* drawn maps (issue 36 step 2, research only): ?gen=1&seed=N goes straight into the pattern generator's map N. Nothing is saved or counted.
+   On a map with a hidden finish the flag and the minimap tick stay hidden until the finish is within your sight, and the minimap is scaled to what
+   you know instead of to the finish */
+function gmFinSeen(){ var h=G.labs[0]; return !(SEG&&SEG.hideFinish)||G.over||G.finish-h.x<=sightRange(h); }
+function gmMapLen(t){ if(gmFinSeen()){ return G.finish; } var f=t.x+sightRange(t),i;
+  for(i=0;i<G.labs.length;i++){ f=Math.max(f,G.labs[i].x); }
+  for(i=0;i<G.barriers.length;i++){ if(knowsBar(t,i)){ f=Math.max(f,G.barriers[i].x); } }
+  for(i=0;i<G.gaps.length;i++){ if(knowsGap(t,i)){ f=Math.max(f,G.gaps[i].x+G.gaps[i].W); } }
+  return f+600; }
+function gmGenSeed(){ var q=/[?&]gen=1(?:&|$)/.test(location.search)&&/[?&]seed=(\d{1,9})(?:&|$)/.exec(location.search); return q&&typeof gnDraw==='function'?+q[1]:0; }
+function gmGenRace(seed){ var m=null,i; for(i=0;i<SEGS.length;i++){ if(SEGS[i].key==='gn-'+seed){ m=SEGS[i]; } }
+  if(!m){ m=gnDraw(seed); m.soft=m.soft||{n:3}; Object.defineProperty(m,'labs',{get:function(){ return shLabs(this.P); },enumerable:true,configurable:true}); SEGS.push(m); }
+  m.title='Drawn map '+seed; gmRace({mode:'gen',map:m,gen:seed,counts:false}); }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
 function gmRestart(){ if(RACE){ running=false; gmRace(RACE); } }
-function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else { gmCamp(); } }
+function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else if(RACE&&RACE.mode==='gen'){ gmStart(); } else { gmCamp(); } }
 /* the exact roll shows when a fall rolls: a short line over the track */
 var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
 function gmTick(){
@@ -168,6 +181,8 @@ function gmDebrief(){
   if(R.mode==='daily'){
     var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();
     sub='Daily for '+R.date+'. '+sub; btn='<button class="primary" type="button" data-gm="dgo">Race again</button><button type="button" data-gm="home">Back</button>';
+  } else if(R.mode==='gen'){
+    after='A drawn map from the pattern generator, for research. Nothing is saved.'; btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="home">Start page</button>';
   } else {
     var nextS=0;
     if(R.counts){
@@ -207,7 +222,7 @@ function gmBoot(){
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
     else if(a.indexOf('map:')===0){ p=a.split(':'); gmCampRace(+p[1],+p[2]); }
   });
-  gmStart();
+  var gs=gmGenSeed(); if(gs){ gmGenRace(gs); } else { gmStart(); }
   if(LB_ORIGIN){ lbProbe(); }
 }
 /* a touch screen has no number keys */

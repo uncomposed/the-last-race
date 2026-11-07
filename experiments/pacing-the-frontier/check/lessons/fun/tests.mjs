@@ -25,8 +25,8 @@ const PRE = [[100, 0, 0], [0, 100, 0], [0, 0, 100], [33, 33, 33], [50, 50, 0], [
 const preset = w => { let b = 0, bs = -2; const n = Math.hypot(...w) || 1; PRE.forEach((p, i) => { const s = (p[0] * w[0] + p[1] * w[1] + p[2] * w[2]) / (n * Math.hypot(...p)); if (s > bs) { bs = s; b = i; } }); return b; };
 const med = a => { const b = [...a].sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
 
-export function makeApi(page) {
-  const api = load(resolve(page)), PF = api.PF, step0 = PF.step;
+export function makeApi(page, extra = '') {
+  const api = load(resolve(page), extra), PF = api.PF, step0 = PF.step;
   let R = null;  // the instrumented race
   PF.step = function (dt) {
     const G = PF.G();
@@ -74,9 +74,12 @@ export function testMap(api, key, start, n, LP = null, name = key) {
 }
 
 if (process.argv[1] && process.argv[1].endsWith('tests.mjs')) {
-  const api = makeApi(A.page || 'reader/page.html'), start = +(A.start ?? 1001), n = +(A.n ?? 40), res = [];
+  // --draw a-b: race the pattern generator's draws a..b (gen/maps.js gnDraw; needs a page built with gen)
+  const DR = A.draw ? A.draw.split('-').map(Number) : null;
+  const api = makeApi(A.page || 'reader/page.html', DR ? `for(var s=${DR[0]};s<=${DR[1] || DR[0]};s++){ gnAdd(gnDraw(s)); }` : ''), start = +(A.start ?? 1001), n = +(A.n ?? 40), res = [];
   // --gen gen-days.js [--every k]: race PR 38's baked days, each the shipped map's P with that day's numbers set ('gap.0' is P.gap[0])
   const jobs = (A.maps || '').split(',').filter(Boolean).map(k => [k, null, k]);
+  if (DR) for (let s = DR[0]; s <= (DR[1] || DR[0]); s++) jobs.push(['gn-' + s, null, 'gn-' + s]);
   if (A.gen) { const D = new Function(readFileSync(A.gen, 'utf8') + ';return GEN_DAYS;')(), ev = +(A.every ?? 1);
     Object.keys(D).sort().forEach((d, i) => { if (i % ev) return; const m = api.PF.SEGS.find(s => s.key === D[d].map), P = JSON.parse(JSON.stringify(m.P));
       for (const [path, v] of Object.entries(D[d].set)) { const ks = path.split('.'); let o = P; ks.slice(0, -1).forEach(k => { o = o[k]; }); o[ks[ks.length - 1]] = v; }
