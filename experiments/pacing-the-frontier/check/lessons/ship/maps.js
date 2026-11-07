@@ -209,7 +209,7 @@ shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'
 
 /* ---- ACT 3, MAP 2. THREE STRIKES. Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all ---- */
 shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy:'spLate',
-  P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvRead',name:'Ledger',x:-40,pts:[30,60,60],pace:0.85,w:[20,45,35]}],n:5,gap:[540,660],rise:[40,54],Wn:[84,92],Wb:[108,116],Wg:9,pb:0.34,odds:20},
+  P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvSprint',name:'Ledger',x:-40,pts:[30,60,62],pace:1,w:[0,50,50]}],n:5,gap:[540,660],rise:[40,54],Wn:[82,90],Wb:[102,110],Wg:7,pb:0.34,odds:20},
   q:'The road is full of near misses.',
   meta:'Each near miss looks affordable. You get to spend exactly two. The skill is knowing which two.',
   track:function(r){ var P=this.P,it=[],i,nb=0; for(i=0;i<P.n;i++){ var b=i>0&&r()<P.pb&&nb<2; if(b){ nb++; } it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:(b?P.Wb[0]+r()*(P.Wb[1]-P.Wb[0]):P.Wn[0]+r()*(P.Wn[1]-P.Wn[0]))+i*P.Wg,odds:P.odds,capTo:70+i*8,open:true}); }
