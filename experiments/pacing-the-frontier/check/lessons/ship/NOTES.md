@@ -38,7 +38,7 @@ Bold marks a rail not met.
 Earlier block, 9001-9040, before these changes: The Picket 55, Long Sight 63, Elbows 95, The Steward 75, Takeoff 75, Red Box 100, Trailbreaker 100, Three Strikes 80, Two Endings 100, The Only Box 63, The Ladder 88, Second Order 65.
 
 Unconfirmed reports from the ship manager, from a few hand runs:
-1. The Foreman stalling after being passed. Bots did not reproduce it: in 200 bot races on 1001-1040 it never stood still for more than 6 seconds. The key driver did, on 2 of seeds 1-14 of The Picket. On seed 1 the Foreman takes a strike, then sits at the wall at x 951, height 118, from about t 20 to t 299 with its meters stuck at 30/80/76. Its top height with a jump is 114. If you then dissolve, the race does not end until the 300 second limit. Why its meters stop growing is not diagnosed. Not fixed, because a change to the rival would change the held-out numbers.
+1. The Foreman stalling after being passed: now diagnosed and fixed, see the softening section. What was seen: bots did not reproduce it: in 200 bot races on 1001-1040 it never stood still for more than 6 seconds. The key driver did, on 2 of seeds 1-14 of The Picket. On seed 1 the Foreman takes a strike, then sits at the wall at x 951, height 118, from about t 20 to t 299 with its meters stuck at 30/80/76. Its top height with a jump is 114. If you then dissolve, the race does not end until the 300 second limit. 
 2. Long Sight won in 41.9 s by standing about 18 s with lowest sight, then flooring it. Not checked. If it holds, it skips the sight lesson.
 
 ## The last redesigns, seeds 9301-9340
@@ -101,9 +101,33 @@ The driver is not fully repeatable: a second Only Box run on the same seeds gave
 **Hard to win, and why.** Three Strikes, The Steward, Red Box, Trailbreaker and Second Order lose almost every race if you drive the bot's line with lag, because that line brakes on the last possible curve. At speed 120 a stop takes about 465 of road, and half a second of lag adds 60. Three Strikes is the tightest: its boxes are 540-660 apart, so flooring over one box can leave no room to stop for the next. Trailbreaker asks for the most patience, since the winning time is about 52 s, most of it standing behind Pioneer. None of these turned out to be bot-only, so none was redesigned for this.
 
 **The hardest three.**
-1. The Picket, 6 of 40, is the first campaign-completion risk. Most losses are close: on seeds 1-14 most ended 50-150 short of the flag at about speed 150, so under a second or two behind. Two of those 14 ended on three strikes. A run-out of 620 gave the same 6 of 20, so the road is not the fix, and I went back to 450. A person who learns the wall order on retries should do better than this driver, but that is a guess until someone plays it. If a person cannot win it, this is the map to soften first.
+1. The Picket was 6 of 40 on 9301-9340. It has since been softened; see the section after this one. As it was then: Most losses are close: on seeds 1-14 most ended 50-150 short of the flag at about speed 150, so under a second or two behind. Two of those 14 ended on three strikes. A run-out of 620 gave the same 6 of 20, so the road is not the fix, and I went back to 450. A person who learns the wall order on retries should do better than this driver, but that is a guess until someone plays it. If a person cannot win it, this is the map to soften first.
 2. The Only Box needs a habit the bot does not have. Sight 45 sees the box about 278 away and a stop from speed 87 takes 243, so half a second of lag at full speed leaves no room, and a box seen late is fallen into. Easing to 85% pace from x 1650 until the box is in sight, and trusting the "clears" readout rather than adding a margin, took it from 5-7 of 20 to 14 of 20 on the tuning seeds. That setting was tried on seeds 1-20 before the held-out run. Note that a first-time player does not know where the box is, so this is a line for the second try.
 3. Second Order, 28 of 40, falls 7 times. My reading, not traced seed by seed: the same stopping margin, this time behind a tower.
+
+## The Picket softened, and the Foreman stall fixed (seeds 9401-9440)
+
+**The stall was my bug, in `SGP.rvBuild`.** On The Picket there is one box, at about x 1060, just behind a wall. Once the Foreman has seen that box, the dispatcher hands it to the box plan, which floors toward the box and never looks at the wall in between. Flooring stops all meter growth (`r=fwd?0`), so it bounces off the wall and floors again, forever, with no height coming. Now, if a wall it cannot jump comes before the box, it deals with the wall first. No race timed out on seeds 1-20 with the fix. Only The Picket and The Ladder use this rival. The Ladder has no walls on the road and its numbers on 9201-9240 did not change (`sp-hs-bold` 88, max-out with eyes 5, blind max-out 100).
+
+The fix made the Foreman stronger, because it no longer loses time crashing. So the softening had to work against that.
+
+**Two tries on the Foreman, as directed, then stopped.** Starting speed and split, keys on seeds 1-20 with the bot's own pass:
+1. Speed 50, split 85 height 15 speed: 1 of 20, bots 98 on 1001-1040, max-out with eyes 0. Kept losing by 25-79.
+2. Speed 42, split 90 height 10 speed: 1 of 20, bots 98, max-out with eyes 3. Losses 19-62 with one outlier. This is the one kept.
+
+**The real problem was the pass.** A nearly constant gap meant the race was not what the driver was losing. The bot passes as late as it possibly can, and half a second of lag loses by about 50. So I added `HD.kick`: flat out as soon as the last wall is behind you. On seeds 1-20 that gave 17 of 20. A person would do that without being told, so this is a driver setting, not a change to the race. It was found on the tuning seeds after the two tries.
+
+| Line, seeds 9401-9440 | Keys, wins of 40, flat out from the last wall | Keys, wins of 40, bot's own pass | Bot win share |
+|---|---|---|---|
+| Follow line, `sp-hs-tail` | **32** | 1 | 98 |
+| Max-out with eyes, `sp-hs-eyes` | **39** | 10 | 0 |
+| `spBait` | not run | not run | 60 |
+| `sp-h-tail` | not run | not run | 48 |
+| `sp-h-eyes` | not run | not run | 30 |
+| Cruiser, `sp-hs-slow` | not run | not run | 0 |
+| Blind max-out, `maxout` | not run | not run | 0 |
+
+**The target is half met.** At least 20 of 40 by keys: met, 32. Max-out with eyes clearly below the follow line: met for bots, 98 to 0, and **not met by keys, where it wins more, 39 to 32.** So for a person The Picket is now winnable, and the follow idea in its sentence is probably not what wins. Buying height and speed, reading the walls, and flooring the run-out does. I did not take a third try. The map's sentence is unchanged, as directed, and it is now flattering. Blocks: the no-kick key runs happened by accident, because the browser had cached the old driver; they count as that setting's one run. A page reload then ran the kick setting once.
 
 ## What varies by seed
 
