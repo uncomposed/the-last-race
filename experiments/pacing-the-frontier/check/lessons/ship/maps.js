@@ -85,7 +85,7 @@ Object.keys(SH_SPLITS).forEach(function(k){ ['eyes','bold','slow','tail','scrape
       return shCruise(l,w,'bold'); }
     return shCruise(l,w,mode==='scrape'?'bold':mode); };
   SGP[name]=function(l,g,st){ if(k==='v60'){ w=l.pts[0]<60?[100,0,0]:[0,50,50]; }
-    if(mode==='tail'){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&g.crossedBy<0){ var d=g.x-l.x; return sgInp(cpPace(l,Math.min(cpStopV(l,g.x,10),shFollowV(l,a,45))),w); } return shBox(l,g,st,w,true); }
+    if(mode==='tail'){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&g.crossedBy<0){ var d=g.x-l.x; return sgInp(cpPace(l,Math.min(cpStopV(l,g.x,10),shFollowV(l,a,45))),w); } return shBox(l,g,st,w,false); }
     if(mode==='scrape'&&!st.go&&knowsWidth(l,l.gi)&&l.strikes<K.strikes-1&&cpOut(Math.max(topSpeed(l),1)*0.98,heightOf(l),gapWidth(l,g)*1.02,g.rise)===1){ st.go=true; return cpFloor(l,w); }
     return shBox(l,g,st,w,mode==='bold'||mode==='scrape'); };
 }); });
@@ -138,8 +138,8 @@ SGP.rvShadow=function(l,g,st){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&!(g.cros
 NOPEEK.rvShadow=1;
 
 /* ---- ACT 1, MAP 1. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed ---- */
-shMap({key:'picket',act:1,slot:1,lesson:'',title:'The Picket',strategy:'sp-h-eyes',
-  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,70],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148]},
+shMap({key:'picket',act:1,slot:1,lesson:'',title:'The Picket',strategy:'sp-h-tail',
+  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,66],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172]},
   q:'There is a fence across the road. Then another.',
   meta:'Scaling hits a wall the size of the next data center: you buy the height or you take the crash.',
   track:function(r){ var P=this.P,mid=P.hs.slice(1,5),s=shShuffle(r,mid),hs=[P.hs[0]].concat(s,P.hs.slice(5)),it=[],i;
@@ -157,10 +157,10 @@ shMap({key:'long-sight',act:1,slot:2,lesson:'',title:'Long Sight',strategy:'sp-v
 
 /* ---- ACT 1, MAP 3. ELBOWS. Tiny boxes as fast as you can read them, three labs at your elbow. One box in the run is a pothole, and it is in a different place every time ---- */
 shMap({key:'elbows',act:1,slot:3,lesson:'',title:'Elbows',strategy:'sp-s-bold',
-  P:{you:[12,30,42],rivals:[{post:'rvSprint',name:'Kite',x:30,pts:[12,30,60],pace:0.85,w:[0,20,80]},{post:'rvSprint',name:'Rook',x:-18,pts:[12,34,58],pace:0.85,w:[0,40,60]},{post:'rvGamble',name:'Jack',x:-40,pts:[12,28,56],pace:0.88,w:[0,10,90]}],n:11,gap:[130,250],W:[26,44],pot:[86,100],odds:10},
+  P:{you:[12,30,42],rivals:[{post:'rvSprint',name:'Kite',x:30,pts:[12,30,52],pace:0.85,w:[0,20,80]},{post:'rvSprint',name:'Rook',x:-18,pts:[12,34,50],pace:0.85,w:[0,40,60]},{post:'rvGamble',name:'Jack',x:-40,pts:[12,28,50],pace:0.88,w:[0,10,90]}],n:11,gap:[130,250],W:[26,44],pot:[72,84],odds:10},
   q:'Everybody leaves at once.',
   meta:'In a close race every second you spend looking is a second somebody else is not. Most of the time, they are right.',
-  track:function(r){ var P=this.P,it=[],i,pot=4+Math.floor(r()*(P.n-5)); for(i=0;i<P.n;i++){ it.push({d:i===pot?430:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:8+Math.floor(r()*7),W:i===pot?P.pot[0]+r()*(P.pot[1]-P.pot[0]):P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:70+i*5,pub:i===pot}); }
+  track:function(r){ var P=this.P,it=[],i,pot=4+Math.floor(r()*(P.n-5)); for(i=0;i<P.n;i++){ it.push({d:i===pot?320:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:8+Math.floor(r()*7),W:i===pot?P.pot[0]+r()*(P.pot[1]-P.pot[0]):P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:70+i*5,pub:i===pot}); }
     return shRoad(it,120,'The wide one was box '+(pot+1)+' of '+P.n+'.'); }});
 
 /* ---- ACT 2, MAP 1. THE STEWARD. A lab ahead stops at the face of every box and its wall grows while it stands. Behind it you need its height. Ahead of it you need its nerve ---- */
@@ -173,13 +173,14 @@ shMap({key:'steward',act:2,slot:1,lesson:'',title:'The Steward',strategy:'sp-vh-
 
 /* ---- ACT 2, MAP 2. TAKEOFF. Pebbles, pebbles, pebbles. Then the road stands up, at a place you cannot predict. It turns once, and the build that won the first half loses the second ---- */
 shMap({key:'takeoff',act:2,slot:2,lesson:'',title:'Takeoff',strategy:'sp-hs-eyes',
-  P:{you:[20,25,50],rivals:[{post:'rvSprint',name:'Volt',x:20,pts:[15,20,55],pace:0.95,w:[0,10,90]},{post:'rvRead',name:'Anchor',x:-120,pts:[30,45,45],w:[20,50,30]}],n:[2,4],gap:[260,360],tower:{rise:80,W:62,odds:25,capTo:125},wall:125,b2:{rise:60,W:70,odds:30,capTo:150},b3:{rise:30,W:96,odds:30,capTo:170}},
+  P:{you:[20,25,50],rivals:[{post:'rvSprint',name:'Volt',x:20,pts:[15,20,55],pace:0.95,w:[0,10,90]},{post:'rvRead',name:'Anchor',x:-30,pts:[30,50,50],w:[20,50,30]}],n:[2,4],gap:[260,360],tower:{rise:80,W:62,odds:25,capTo:125},wall:125,b2:{rise:60,W:70,odds:30,capTo:150},b3:{rise:30,W:96,odds:30,capTo:170}},
   q:'A quiet start.',
   meta:'Capability looks like pebbles until the day it does not. Everything you skipped while it was easy comes due at once.',
   track:function(r){ var P=this.P,it=[],i,n=P.n[0]+Math.floor(r()*(P.n[1]-P.n[0]+1)); for(i=0;i<n;i++){ it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:10,W:36+r()*18,odds:10,capTo:70+i*4}); }
     it.push({d:400,rise:P.tower.rise,W:P.tower.W,odds:P.tower.odds,capTo:P.tower.capTo,shade:true,pub:true});
     it.push({d:230+r()*60,bar:P.wall,pub:true});
     it.push({d:300,rise:P.b2.rise,W:P.b2.W+r()*10,odds:P.b2.odds,capTo:P.b2.capTo,pub:true});
+    it.push({d:280,bar:P.wall+25,pub:true});
     it.push({d:330,rise:P.b3.rise,W:P.b3.W+r()*10,odds:P.b3.odds,capTo:P.b3.capTo});
     return shRoad(it,260,'The road turned after '+n+' pebbles.'); }});
 
@@ -193,7 +194,7 @@ shMap({key:'red-box',act:2,slot:3,lesson:'',title:'Red Box',strategy:'spBait',
     return shRoad(it,170,'The red box was '+Math.round(W)+' wide.'); }});
 
 /* ---- ACT 3, MAP 1. TRAILBREAKER. Boxes too wide for anyone to want to go first. One lab will. Let it. It pays for every box, you get every box half price, and the last stretch is long ---- */
-shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'sp-h-tail',
+shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'sp-hs-tail',
   P:{you:[10,30,45],rivals:[{post:'rvRead',name:'Pioneer',x:150,pts:[50,60,50],w:[25,50,25]}],n:4,gap:[420,560],W:[106,120],rise:12,odds:40,after:520},
   q:'The boxes are enormous. Someone is already on their way.',
   meta:'Whoever goes first pays for the road. A fast follower gets most of the gain for a fraction of the cost. That is a good strategy and a bad reason to be proud.',
@@ -202,7 +203,7 @@ shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'
 
 /* ---- ACT 3, MAP 2. THREE STRIKES. Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all ---- */
 shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy:'sp-hs-scrape',
-  P:{you:[30,50,50],rivals:[{post:'rvSprint',name:'Brink',x:50,pts:[30,50,55],pace:0.9,strikes:1,w:[0,50,50]},{post:'rvRead',name:'Ledger',x:-320,pts:[35,60,50],w:[20,45,35]}],n:6,gap:[300,440],rise:[50,66],Wn:[78,90],Wb:[126,136],pb:0.34,odds:20},
+  P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvRead',name:'Ledger',x:-40,pts:[30,60,60],pace:0.85,w:[20,45,35]}],n:6,gap:[380,500],rise:[40,54],Wn:[86,96],Wb:[112,122],pb:0.34,odds:20},
   q:'The road is full of near misses.',
   meta:'Each near miss looks affordable. You get to spend exactly two. The skill is knowing which two.',
   track:function(r){ var P=this.P,it=[],i,nb=0; for(i=0;i<P.n;i++){ var b=i>0&&r()<P.pb&&nb<2; if(b){ nb++; } it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:b?P.Wb[0]+r()*(P.Wb[1]-P.Wb[0]):P.Wn[0]+r()*(P.Wn[1]-P.Wn[0]),odds:P.odds,capTo:70+i*8,open:true}); }
@@ -210,14 +211,14 @@ shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy
 
 /* ---- DAILY 1. THE ONLY BOX. One road, one box, one rival right behind you. The box is 40, 85 or 130 wide. Everything you do for thirty seconds is a bet on which ---- */
 shMap({key:'only-box',daily:1,lesson:'',title:'The Only Box',strategy:'sp-even-eyes',
-  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-300,pts:[45,30,40],pace:0.85,w:[0,40,60]}],d:2200,rise:18,Ws:[50,110,150],odds:30},
+  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-180,pts:[45,30,40],pace:0.8,w:[0,40,60]}],d:2200,rise:18,Ws:[50,100,130],odds:20},
   q:'There is one box on this road.',
   meta:'When there is only one decision, all the preparation is a guess about it.',
   track:function(r){ var P=this.P,W=shPick(r,P.Ws); return shRoad([{d:P.d,rise:P.rise,W:W,odds:P.odds,capTo:100}],220,'Today the box was '+W+' wide.'); }});
 
 /* ---- DAILY 2. THE LADDER. Each box a step up from the last, each much higher ceiling only for whoever gets there first. Lead at box one or chase forever ---- */
 shMap({key:'ladder',daily:2,lesson:'',title:'The Ladder',strategy:'sp-hs-bold',
-  P:{you:[10,35,45],rivals:[{post:'rvSprint',name:'Climber',x:10,pts:[10,35,48],pace:0.9,w:[0,50,50]}],n:6,rise0:18,step:[16,24],gap:[340,420],W:[50,70],capStep:32,odds:20},
+  P:{you:[10,35,45],rivals:[{post:'rvBuild',name:'Climber',x:50,pts:[10,45,52],w:[0,60,40]}],n:6,rise0:18,step:[16,24],gap:[340,420],W:[50,70],capStep:32,odds:20},
   q:'Up.',
   meta:'Compounding. The first lab across each step stands higher for the next. Followers get a share, and a share of a share.',
   track:function(r){ var P=this.P,it=[],i,rise=P.rise0; for(i=0;i<P.n;i++){ it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:rise,W:P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds+i*5,capTo:70+(i+1)*P.capStep}); rise+=P.step[0]+r()*(P.step[1]-P.step[0]); }
@@ -225,7 +226,7 @@ shMap({key:'ladder',daily:2,lesson:'',title:'The Ladder',strategy:'sp-hs-bold',
 
 /* ---- DAILY 3 (the mean one). SECOND ORDER. Tall boxes you cannot see over. Behind each, a strip, and then a wall, or a worse box, or nothing at all. Charge and you pay for it twice ---- */
 shMap({key:'second-order',daily:3,lesson:'',title:'Second Order',strategy:'sp-hs-eyes',
-  P:{you:[30,55,50],rivals:[{post:'rvSprint',name:'Haste',x:-70,pts:[20,60,55],pace:0.92,w:[0,50,50]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],odds:45},
+  P:{you:[30,55,50],rivals:[{post:'rvSprint',name:'Haste',x:-70,pts:[20,60,55],pace:0.92,w:[0,50,50]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],odds:30},
   q:'You can not see what is behind that.',
   meta:'Handling a risk is not the same as thinking through what it does next.',
   track:function(r){ var P=this.P,it=[],i,says=[]; for(i=0;i<P.n;i++){ var cap=80+i*25,k=shPick(r,P.behind),s=P.strip[0]+r()*(P.strip[1]-P.strip[0]); says.push(k);
