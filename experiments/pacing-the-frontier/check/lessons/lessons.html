@@ -3153,6 +3153,10 @@ SGP.finLead=function(l,g,st){
 };
 NOPEEK.finLead=1;
 
+/* one line for the end of each act */
+var SHIP_ACTS=[{line:'Act one was the three things you can buy: height for walls, sight for what you cannot see, speed for when everyone else has it.'},
+  {line:'Act two was other labs: the careful one who raises the bar, the turn nobody saw coming, the reckless ones you cannot talk down.'},
+  {line:'Act three was the price: who pays to go first, what a near miss really costs, and what you do when you cannot see the end.'}];
 var SHIP_ORDER=SHIP.filter(function(m){ return m.act; }).sort(function(a,b){ return a.act-b.act||a.slot-b.slot; }).map(function(m){ return m.key; });
 var SHIP_DAILIES=SHIP.filter(function(m){ return m.daily; }).sort(function(a,b){ return a.daily-b.daily; }).map(function(m){ return m.key; });
 
