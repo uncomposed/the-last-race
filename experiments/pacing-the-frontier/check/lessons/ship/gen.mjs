@@ -17,7 +17,9 @@ const args = process.argv.slice(2), flags = Object.fromEntries(args.filter(a => 
 const FIRST = pos[0] || '2026-11-07', DAYS = +(pos[1] || 60), COLE = flags.cole || null, TRIES = 12;
 const RAIL = [1001, 40], HELD = [9501, 40];
 
-const api = load();
+// --cole-src=<file>: research strategies not in the shipped build (coleFollow is in reader/maps.js on claude/cole-follow), added to the simulation
+// for the rails only. The page never sees them, and the stamp written to gen-days.js is the shipped simulation's.
+const api = load(undefined, flags['cole-src'] ? readFileSync(flags['cole-src'], 'utf8') : '');
 if (COLE && !api.PF.SGP[COLE] && !api.PF.SGC[COLE]) throw new Error('no strategy ' + COLE + ' in this build');
 const fnv = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 const rng = s => () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -35,6 +37,16 @@ function rails(key, P, dseed) {
 // how far a candidate moved: each number's distance from the shipped value as a share of its range, averaged
 function moved(key, set) { const P = base(key); let t = 0, n = 0; for (const path in set) { const [lo, hi] = RANGES[key][path], v0 = path.split('.').reduce((o, p) => o[p], P); t += Math.abs(set[path] - v0) / (hi - lo); n++; } return n ? Math.round(t / n * 100) / 100 : 0; }
 
+// --corners: every number at the bottom of its range, then every one at the top, through the same rails on the day's seed of FIRST. Prints and stops.
+if ('corners' in flags) {
+  const dseed = fnv(FIRST);
+  for (const key of MAPS) for (const end of [0, 1]) {
+    const set = {}; for (const [path, b] of Object.entries(RANGES[key])) set[path] = b[end];
+    const P = applySet(base(key), set), R = rails(key, P, dseed), hs = wins(key, P, null, HELD), he = wins(key, P, 'sp-hs-eyes', HELD), hc = COLE ? wins(key, P, COLE, HELD) : null;
+    console.log(key.padEnd(12) + (end ? ' all max' : ' all min') + '  rail ' + R.s + '/' + R.e + (COLE ? '/' + R.c : '') + ' today ' + R.today + '/3  held ' + hs + '/' + he + (COLE ? '/' + hc : '') + '  ' + (R.why ? 'REJECT ' + R.why : 'accept'));
+  }
+  process.exit(0);
+}
 const days = {}, log = [], t0 = Date.now(); let drawn = 0, accepted = 0;
 const per = Object.fromEntries(MAPS.map(k => [k, {drawn: 0, accepted: 0, heldS: 0, heldE: 0, heldN: 0, moved: 0}]));
 for (let d = 0; d < DAYS; d++) {

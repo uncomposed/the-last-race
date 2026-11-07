@@ -8,11 +8,13 @@ import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-export function load(page = join(HERE, '..', '..', 'game', 'game.html')) {
+// extra: research code (strategies) run inside the simulation just before window.PF, for the checks only; the stamp stays the shipped section's
+export function load(page = join(HERE, '..', '..', 'game', 'game.html'), extra = '') {
   const L = readFileSync(page, 'utf8').split('\n');
   const a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l => l.startsWith('window.PF={'));
   if (a < 0 || b < a) throw new Error('simulation section not found');
-  const SIM = L.slice(a, b + 1).join('\n'), PF = new Function('window', 'document', SIM + '\nwindow.PF.top=topSpeed;return window.PF;')({}, null);
+  const SIM = L.slice(a, b + 1).join('\n'), RUN = extra ? L.slice(a, b).join('\n') + '\n' + extra + '\n' + L[b] : SIM;
+  const PF = new Function('window', 'document', RUN + '\nwindow.PF.top=topSpeed;return window.PF;')({}, null);
   return {PF, KSNAP: {...PF.K, stepGaps: 1, chill: 1}, id: createHash('sha256').update(SIM).digest('hex').slice(0, 16)};
 }
 
