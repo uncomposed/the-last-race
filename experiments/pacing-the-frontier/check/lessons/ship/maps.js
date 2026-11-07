@@ -171,10 +171,10 @@ shMap({key:'elbows',act:1,slot:3,lesson:'',title:'Elbows',strategy:'sp-s-bold',
 
 /* ---- ACT 2, MAP 1. THE STEWARD. A lab ahead stops at the face of every box and its wall grows while it stands. Behind it you need its height. Ahead of it you need its nerve ---- */
 shMap({key:'steward',act:2,slot:1,lesson:'',title:'The Steward',strategy:'sp-vh-eyes',
-  P:{you:[30,30,50],rivals:[{post:'rvSteward',name:'Warden',x:420,pts:[40,45,60],pat:2.5,w:[20,50,30]}],n:6,gap:[340,480],rise:[28,44],W:[58,108],odds:25},
+  P:{you:[30,30,50],rivals:[{post:'rvSteward',name:'Warden',x:420,pts:[40,50,62],pat:1.5,w:[20,50,30]}],n:6,gap:[340,480],rise:[28,44],W:[58,108],odds:25},
   q:'Someone is ahead of you, taking their time.',
   meta:'A careful lab makes the road safer for whoever follows it, and raises the bar they must clear. You can shelter behind it or pass it, not both.',
-  track:function(r){ var P=this.P,it=[],i; for(i=0;i<P.n;i++){ it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:70+i*10}); }
+  track:function(r){ var P=this.P,it=[],i; for(i=0;i<P.n;i++){ it.push({d:(i?0:P.rivals[0].x+260)+P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:70+i*10}); }
     return shRoad(it,110,'Box widths: '+it.map(function(o){ return Math.round(o.W); }).join(', ')+'.'); }});
 
 /* ---- ACT 2, MAP 2. TAKEOFF. Pebbles, pebbles, pebbles. Then the road stands up, at a place you cannot predict. It turns once, and the build that won the first half loses the second ---- */
