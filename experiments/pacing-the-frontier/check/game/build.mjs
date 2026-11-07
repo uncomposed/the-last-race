@@ -44,6 +44,12 @@ rep('ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */', 'lblEnd(VW,U
 rep('ctx.fillText(lt,lx,ly);', 'lblLab=isHuman?2:1; ctx.fillText(lt,lx,ly); lblLab=0;');
 rep('<text class="t-key" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>', '<text class="t-key" id="tri-keys" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>');
 
+// ---- the meters' scale: G.maxcap is C.CAPS[boxes]+SINGUP, which is NaN on a map with more boxes than CAPS has entries (Elbows has 11, CAPS 8),
+// so its bars never filled. Only drawing reads it, so the page uses barMax(): the same number, with the box count clamped to the last entry. The stamp does not move
+{ const i = S.indexOf('window.PF={'); if (i < 0) throw new Error('PF'); const tail = S.slice(i), n = tail.split('G.maxcap').length - 1; if (n !== 6) throw new Error('expected 6 page uses of G.maxcap, got ' + n);
+  S = S.slice(0, i) + tail.split('G.maxcap').join('barMax()'); }
+rep('function drawLab(l,cam,VW,FW,isHuman,idx){', 'function barMax(){ var m=G.maxcap; return m>0?m:C.CAPS[C.CAPS.length-1]+C.SINGUP; }\nfunction drawLab(l,cam,VW,FW,isHuman,idx){');
+
 // ---- markup
 cut('<header>', '</header>', '<header id="gm-head"><p class="eyebrow" id="gm-where"></p><h1 id="gm-title"></h1><p class="seg-q" id="gm-q"></p>');
 cut('<div class="ov" id="ov">', '<div class="ov" id="ready" hidden>');
