@@ -1,0 +1,866 @@
+[
+ {
+  "key": "picket",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "long-sight",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "elbows",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "steward",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "takeoff",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "red-box",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "trailbreaker",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "three-strikes",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "ladder",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "high",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "two-endings",
+  "group": 1,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "high",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "only-box",
+  "group": 1,
+  "label": "UNLABELED",
+  "direct": "NONE",
+  "confidence": "high",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "second-order",
+  "group": 1,
+  "label": "UNLABELED",
+  "direct": "NONE",
+  "confidence": "high",
+  "source": "Issue 34 comment, 2026-11-07: Cole played the whole campaign and certified the 10 maps fun (The Ladder and Two Endings also named in an earlier comment). Group label for the other 8."
+ },
+ {
+  "key": "sr-lastbox@bba125c",
+  "group": 2,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "high",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "steward-minefield@bba125c",
+  "group": 2,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "high",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "sr-landing@bba125c",
+  "group": 2,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "close-footsteps@bba125c",
+  "group": 2,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "see-early-brake@bba125c",
+  "group": 2,
+  "label": "BORING",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "see-early-pack@bba125c",
+  "group": 2,
+  "label": "BORING",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "see-early-bravo@bba125c",
+  "group": 2,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "close-wall@bba125c",
+  "group": 2,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "close-spend",
+  "group": 2,
+  "label": "UNLABELED",
+  "direct": "NONE",
+  "confidence": "high",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "sr-odds",
+  "group": 2,
+  "label": "UNLABELED",
+  "direct": "NONE",
+  "confidence": "high",
+  "source": "Cole's playtest of round 1 lesson maps (commit bba125c), 2026-10-31; private notes, paraphrased. See lessons/ROUND2.md for the round 1 to 2 change."
+ },
+ {
+  "key": "close-footsteps@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "close-wall@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "close-spend@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "see-early-brake@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "see-early-bravo@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "see-early-pack@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "sr-landing@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "sr-odds@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "sr-lastbox@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "steward-minefield@round2",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "cp-look",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "cp-signs",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "cp-break",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "pace-open",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "medium",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "pace-limit",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "medium",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "slower-care",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "medium",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "unknown-world",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "medium",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "look-pays",
+  "group": 4,
+  "label": "BORING",
+  "direct": "INFERRED",
+  "confidence": "low",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "lessons-unlabeled-drafts",
+  "group": 4,
+  "label": "UNLABELED",
+  "direct": "NONE",
+  "confidence": "medium",
+  "source": "INFERRED from one private remark that the 2026-11-05 lessons page was easy and boring; echoed in PLAY-DESIGN-NOTE.md line 67. ROUND2.md says round 2 was never human-played map by map."
+ },
+ {
+  "key": "genTrack(seed) family",
+  "group": 3,
+  "label": "FUN",
+  "direct": "DIRECT-GROUP",
+  "confidence": "medium",
+  "source": "Cole, private message 2026-11-07, paraphrased: the old generator played well, apart from chasms being safe once the barriers were cleared. Family label, no per-seed labels."
+ },
+ {
+  "key": "old nine campaign tracks",
+  "group": 3,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "low",
+  "source": "Cole, private message 2026-11-07, paraphrased: the old generator played well, apart from chasms being safe once the barriers were cleared. Family label, no per-seed labels."
+ },
+ {
+  "key": "gen:2026-11-07:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-08:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-09:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-10:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-11:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-12:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-13:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-14:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-15:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-16:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-17:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-18:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-19:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-20:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-21:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-22:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-23:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-24:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-25:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-26:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-27:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-28:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-29:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-11-30:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-01:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-02:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-03:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-04:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-05:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-06:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-07:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-08:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-09:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-10:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-11:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-12:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-13:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-14:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-15:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-16:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-17:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-18:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-19:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-20:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-21:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-22:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-23:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-24:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-25:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-26:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-27:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-28:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-29:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-30:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2026-12-31:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2027-01-01:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2027-01-02:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2027-01-03:two-endings",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2027-01-04:ladder",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "gen:2027-01-05:elbows",
+  "group": 5,
+  "label": "BORING",
+  "direct": "DIRECT-GROUP",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: Cole's verdict on PR 38's generated days (too similar to each other and their base maps, too little micro)."
+ },
+ {
+  "key": "elbows redraw (unidentified day)",
+  "group": 6,
+  "label": "BORING",
+  "direct": "DIRECT",
+  "confidence": "low",
+  "source": "Issue 36 comment, 2026-11-07: one Elbows redraw killed every rival. The day was not recorded; this candidate was found by racing the baked days (low confidence)."
+ },
+ {
+  "key": "seg beacon (Beacon and the Quiet One)",
+  "group": 0,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole, private playtest notes on the segments and hidden-width pages, paraphrased. Not used in the back-test (not maps in this harness)."
+ },
+ {
+  "key": "seg pack (The Pack Behind You)",
+  "group": 0,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "low",
+  "source": "Cole, private playtest notes on the segments and hidden-width pages, paraphrased. Not used in the back-test (not maps in this harness)."
+ },
+ {
+  "key": "seg rushing (Everyone Else Is Rushing)",
+  "group": 0,
+  "label": "NEUTRAL",
+  "direct": "DIRECT",
+  "confidence": "medium",
+  "source": "Cole, private playtest notes on the segments and hidden-width pages, paraphrased. Not used in the back-test (not maps in this harness)."
+ },
+ {
+  "key": "hidden-width box page",
+  "group": 0,
+  "label": "FUN",
+  "direct": "DIRECT",
+  "confidence": "high",
+  "source": "Cole, private playtest notes on the segments and hidden-width pages, paraphrased. Not used in the back-test (not maps in this harness)."
+ }
+]
