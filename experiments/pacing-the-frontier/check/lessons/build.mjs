@@ -15,10 +15,10 @@ const argv = process.argv.slice(2), ONLY = argv.includes('--only') ? argv[argv.i
 let S = readFileSync(join(HERE, '..', 'segments', 'segments.html'), 'utf8');
 function rep(a, b) { const n = S.split(a).length - 1; if (n !== 1) throw new Error('expected 1 match, got ' + n + ' for: ' + a.slice(0, 80)); S = S.replace(a, () => b); }
 
-const dirs = readdirSync(HERE, {withFileTypes: true}).filter(d => d.isDirectory() && existsSync(join(HERE, d.name, 'maps.js'))).map(d => d.name).sort((a, b) => (a === 'act5') - (b === 'act5') || (a < b ? -1 : a > b ? 1 : 0));  // act5 (the campaign's last act) last
+const dirs = readdirSync(HERE, {withFileTypes: true}).filter(d => d.isDirectory() && existsSync(join(HERE, d.name, 'maps.js'))).map(d => d.name).sort((a, b) => (a === 'ship') - (b === 'ship') || (a === 'act5') - (b === 'act5') || (a < b ? -1 : a > b ? 1 : 0));  // act5 (the campaign's last act) last, ship (the shipped maps, which use other folders' helpers) after all
 // --only a+b builds several folders into b/page.html (a folder whose maps use another's helpers, e.g. campaign+showcase)
 const ONLYS = ONLY ? ONLY.split('+') : null, OUTDIR = ONLYS ? ONLYS[ONLYS.length - 1] : null;
-const pick = ONLY ? dirs.filter(d => ONLYS.includes(d)) : dirs.filter(d => d !== 'example');
+const pick = ONLY ? dirs.filter(d => ONLYS.includes(d)) : dirs.filter(d => d !== 'example' && d !== 'ship');
 if (ONLY && pick.length !== ONLYS.length) throw new Error('no ' + ONLY + '/maps.js');
 // each lesson's maps carry their folder name as dir (judge.mjs --only <lesson>)
 const MAPS = pick.map(d => '/* ---- lesson: ' + d + ' ---- */\n' + readFileSync(join(HERE, d, 'maps.js'), 'utf8') + `\nLESSONS.forEach(function(m){ if(!m.dir){ m.dir='${d}'; } });`).join('\n');

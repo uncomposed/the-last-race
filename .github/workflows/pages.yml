@@ -1,5 +1,5 @@
 name: Publish Pacing the Frontier
-# Serves the single-file game at the repository's GitHub Pages address. Needs Settings > Pages > Source: GitHub Actions.
+# Serves the single-file game at the repository's GitHub Pages address: the shipped game (check/game/game.html) at the front page, the old game (prototype.html) at /classic.html. Needs Settings > Pages > Source: GitHub Actions.
 # Each open pull request from a branch in this repository is also published at /preview/pr-<number>/, so it can be played on a phone
 # before merging. This workflow always runs from main; it copies the branch's HTML file as a static file and never runs code from it.
 # Only pull requests opened by the owner from a branch in this repository get a preview; forks and other authors are skipped,
@@ -7,6 +7,7 @@ name: Publish Pacing the Frontier
 # A branch that carries the hidden-width check page (check/hidden-width/page-hidden.html) also gets it at /preview/pr-<number>/hidden.html.
 # A branch that carries the race segments page (check/segments/segments.html) also gets it at /preview/pr-<number>/segments.html.
 # A branch that carries the lesson maps page (check/lessons/lessons.html) also gets it at /preview/pr-<number>/lessons.html.
+# A branch that carries the shipped game page (check/game/game.html) also gets it at /preview/pr-<number>/game.html.
 on:
   push:
     branches: [main]
@@ -41,7 +42,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p _site
-          cp experiments/pacing-the-frontier/prototype.html _site/index.html
+          cp experiments/pacing-the-frontier/check/game/game.html _site/index.html
+          cp experiments/pacing-the-frontier/prototype.html _site/classic.html
           cp experiments/pacing-the-frontier/spec.html _site/spec.html
           gh pr list --state open --base main --json number,headRefName,isCrossRepository,author \
             --jq '.[] | select((.isCrossRepository | not) and (.author.login as $a | $ENV.PREVIEW_AUTHORS | split(" ") | index($a))) | "\(.number) \(.headRefName)"' |
@@ -62,9 +64,13 @@ jobs:
                 { echo '<meta name="robots" content="noindex">'; cat lessons.html; } > "_site/preview/pr-$num/lessons.html"
                 echo "Lessons preview for PR $num from $ref"
               fi
+              if git show "origin/$ref:experiments/pacing-the-frontier/check/game/game.html" > game.html 2>/dev/null; then
+                { echo '<meta name="robots" content="noindex">'; cat game.html; } > "_site/preview/pr-$num/game.html"
+                echo "Game preview for PR $num from $ref"
+              fi
             fi
           done
-          rm -f page.html hidden.html segments.html lessons.html
+          rm -f page.html hidden.html segments.html lessons.html game.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deployment
