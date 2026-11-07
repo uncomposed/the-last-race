@@ -27,7 +27,7 @@ function cut(a, b, put = '') {
 }
 
 // ---- which maps: only those with an act and slot or a daily number, in play order
-const PLACE = REAL ? '' : read('placeholder.js');
+const PLACE = read('placeholder.js');  // fills only the places ship/maps.js leaves empty
 rep('if(LESSONS.length){ SEGS=LESSONS; }', PLACE + "\nSEGS=LESSONS.filter(function(m){ return m.daily||(m.act&&m.slot); }).sort(function(a,b){ return (a.daily?1:0)-(b.daily?1:0)||(a.daily||0)-(b.daily||0)||(a.act-b.act)||(a.slot-b.slot); });\nglobalThis.SHIP_ACTS=typeof SHIP_ACTS!=='undefined'?SHIP_ACTS:[];");
 rep('window.PF={segUse:segUse,', 'window.PF={SHIP_ACTS:globalThis.SHIP_ACTS,segUse:segUse,');
 
