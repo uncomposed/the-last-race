@@ -3156,7 +3156,7 @@ whatIfResolve(); dialCheck();
   for(var i=0;i<12;i++){ if(has(i)){ continue; } var p=pool[n++%pool.length],m=Object.create(p); m.key='ph-'+i; m.title=p.title; m.q=p.q||'What does this map want?'; m.debrief=undefined;
     if(i<9){ m.act=Math.floor(i/3)+1; m.slot=i%3+1; } else { m.daily=i-8; } LESSONS.push(m); }
 })();
-if(typeof SHIP_ACTS==='undefined'){ var SHIP_ACTS=[{line:'Placeholder: what act 1 was.'},{line:'Placeholder: what act 2 was.'},{line:'Placeholder: what act 3 was.'}]; }
+if(typeof SHIP_ACTS==='undefined'){ var SHIP_ACTS=[{line:'Each road wanted a different build, and none told you which.'},{line:'The other labs and a road that changed set your pace more than you did.'},{line:'You spent what you could afford, and you could not know which ending you were in.'}]; }
 
 SEGS=LESSONS.filter(function(m){ return m.daily||(m.act&&m.slot); }).sort(function(a,b){ return (a.daily?1:0)-(b.daily?1:0)||(a.daily||0)-(b.daily||0)||(a.act-b.act)||(a.slot-b.slot); });
 globalThis.SHIP_ACTS=typeof SHIP_ACTS!=='undefined'?SHIP_ACTS:[];
@@ -3993,7 +3993,7 @@ function gmDebrief(){
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
     (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
-    (note?'<h2>What this map was</h2><p>'+gmEsc(note)+'</p>':'')+'<div class="gm-btns">'+btn+'</div>');
+    (note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+

@@ -28,6 +28,8 @@ if (daily.length !== 3 || new Set(daily.map(m => m.daily)).size !== 3) fail('exp
 if (new Set(PF.SEGS.map(m => m.key)).size !== PF.SEGS.length) fail('map keys repeat');
 for (const m of PF.SEGS) if (!m.title || !m.q) fail(m.key + ': needs a title and a question');
 for (const m of PF.SEGS) if (/\d\s*%|\bodds\b/i.test(m.q)) fail(m.key + ': the question gives fall odds');
+if (!PF.SHIP_ACTS || PF.SHIP_ACTS.length !== 3 || PF.SHIP_ACTS.some(a => !a.line || /placeholder/i.test(a.line))) fail('needs three real act lines');
+for (const m of PF.SEGS) if (/^ph-/.test(m.key)) fail(m.key + ': a placeholder map is still in the page');
 const POSTURES = ['rush', 'build', 'wait'];
 PF.SEGS.forEach((m, i) => {
   let finished = 0, n = 0; const out = {};

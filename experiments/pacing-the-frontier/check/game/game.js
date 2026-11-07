@@ -103,7 +103,7 @@ function gmDebrief(){
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
     (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
-    (note?'<h2>What this map was</h2><p>'+gmEsc(note)+'</p>':'')+'<div class="gm-btns">'+btn+'</div>');
+    (note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+
