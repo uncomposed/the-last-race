@@ -54,3 +54,11 @@
 .gm-lb li span:first-child{flex:1 1 8em;font-weight:600}
 .gm-lbname{display:block;margin:8px 0}
 .gm-lbname input{display:block;margin-top:4px;font:inherit;padding:6px 8px;width:100%;max-width:18em;background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px}
+
+/* the recap and the award card in the debrief (recap.js): a panel of its own so the strip and the speech bubble read against it */
+.gm .story{border:1px solid var(--line);border-radius:6px;padding:8px 10px 6px;background:var(--surface)}
+.gm .story .rc-line{background:var(--bg)}
+.gm .story .ach-open{background:var(--bg)}
+.gm .achg-it{background:var(--surface)}
+/* the page keeps the pixel font for the name on the start card; the old cards used it for award names and plaques */
+.gm .ach-nm,.gm .rc-plaque,.gm .rc-list b,.gm .achg-it b{font-family:var(--body);font-weight:700}
