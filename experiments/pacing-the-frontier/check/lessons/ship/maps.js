@@ -143,8 +143,8 @@ SGC.rvShadow=function(l){ var a=shTailAhead(l),tw=shTower(l),T=Math.max(topSpeed
 SGP.rvShadow=function(l,g,st){ var a=shTailAhead(l); if(a&&a.x<g.x+g.W&&!(g.crossedBy>=0)){ return SGC.rvShadow(l); } if(st.go){ return cpFloor(l); } if(g.crossedBy>=0&&cpOut(Math.max(topSpeed(l),1)*.98,heightOf(l),gapWidth(l,g)*1.05+2,g.rise)===0){ return cpFloor(l); } return shBox(l,g,st,l.cpW||[0,20,80],true); };
 NOPEEK.rvShadow=1;
 
-/* ---- ACT 1, MAP 1. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. ---- */
-shMap({key:'picket',act:1,slot:1,lesson:'',title:'The Picket',strategy:'sp-h-tail',
+/* ---- ACT 3, MAP 2. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. ---- */
+shMap({key:'picket',act:3,slot:2,lesson:'',title:'The Picket',strategy:'sp-h-tail',
   P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,63],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172]},
   q:'There is a fence across the road. Then another.',
   meta:'Scaling hits a wall the size of the next data center: you buy the height or you take the crash.',
@@ -207,9 +207,9 @@ shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'
   track:function(r){ var P=this.P,it=[],i; for(i=0;i<P.n;i++){ it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise,W:P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:80+i*15}); }
     return shRoad(it,P.after,'Box widths: '+it.map(function(o){ return Math.round(o.W); }).join(', ')+'.'); }});
 
-/* ---- ACT 3, MAP 2. THREE STRIKES. Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all SAW in the page: 'clears 101 of 94' and 'strike 1 of 3, -40 height'. A scrape costs far more height than the card suggests, so it is not cheap. After the last layout change: the player flies clear at 30 s, Brink is down in a box behind, a crossed box has shrunk to 39. ---- */
-shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy:'spLate',
-  P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvSprint',name:'Ledger',x:-40,pts:[30,60,62],pace:1,w:[0,50,50]}],n:5,gap:[540,660],rise:[40,54],Wn:[82,90],Wb:[102,110],Wg:7,pb:0.34,odds:20},
+/* ---- ACT 1, MAP 1. THREE STRIKES (moved here because max-out with eyes wins it: the habit the next maps break). Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all SAW in the page: 'clears 101 of 94' and 'strike 1 of 3, -40 height'. A scrape costs far more height than the card suggests, so it is not cheap. After the last layout change: the player flies clear at 30 s, Brink is down in a box behind, a crossed box has shrunk to 39. ---- */
+shMap({key:'three-strikes',act:1,slot:1,lesson:'',title:'Three Strikes',strategy:'spLate',
+  P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvSprint',name:'Ledger',x:-40,pts:[30,82,78],pace:1,w:[0,50,50]}],n:5,gap:[540,660],rise:[40,54],Wn:[82,90],Wb:[102,110],Wg:7,pb:0.34,odds:20},
   q:'The road is full of near misses.',
   meta:'Each near miss looks affordable. You get to spend exactly two. The skill is knowing which two.',
   track:function(r){ var P=this.P,it=[],i,nb=0; for(i=0;i<P.n;i++){ var b=i>0&&r()<P.pb&&nb<2; if(b){ nb++; } it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise[0]+r()*(P.rise[1]-P.rise[0]),W:(b?P.Wb[0]+r()*(P.Wb[1]-P.Wb[0]):P.Wn[0]+r()*(P.Wn[1]-P.Wn[0]))+i*P.Wg,odds:P.odds,capTo:70+i*8,open:true}); }
@@ -217,7 +217,7 @@ shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy
 
 /* ---- DAILY 1. THE ONLY BOX. One road, one box, one rival right behind you. The box is 40, 85 or 130 wide. Everything you do for thirty seconds is a bet on which SAW in the page: a long empty road, one lab, nothing on screen for many seconds. Clearly distinct, and the one most at risk of being dull. ---- */
 shMap({key:'only-box',daily:1,lesson:'',title:'The Only Box',strategy:'sp-even-slow',
-  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-180,pts:[45,30,40],pace:0.8,w:[0,40,60]}],d:2200,rise:18,Ws:[50,100,130],odds:20},
+  P:{you:[45,30,40],rivals:[{post:'rvSprint',name:'Tail',x:-60,pts:[45,30,62],pace:1,w:[0,40,60]}],d:2200,rise:18,Ws:[50,100,130],odds:20},
   q:'There is one box on this road.',
   meta:'When there is only one decision, all the preparation is a guess about it.',
   track:function(r){ var P=this.P,W=shPick(r,P.Ws); return shRoad([{d:P.d,rise:P.rise,W:W,odds:P.odds,capTo:100}],220,'Today the box was '+W+' wide.'); }});
@@ -232,7 +232,7 @@ shMap({key:'ladder',daily:2,lesson:'',title:'The Ladder',strategy:'sp-hs-bold',
 
 /* ---- DAILY 3 (the mean one). SECOND ORDER. Tall boxes you cannot see over. Behind each, a strip, and then a wall, or a worse box, or nothing at all. Charge and you pay for it twice SAW in the page: a white tower hard against a red box, the rival already gone inside. ---- */
 shMap({key:'second-order',daily:3,lesson:'',title:'Second Order',strategy:'sp-hs-eyes',
-  P:{you:[30,55,50],rivals:[{post:'rvSprint',name:'Haste',x:-70,pts:[20,60,55],pace:0.92,w:[0,50,50]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],odds:30},
+  P:{you:[30,55,50],rivals:[{post:'rvRead',name:'Scout',x:-70,pts:[60,60,55],w:[30,40,30]}],n:3,tower:{rise:96,W:52},strip:[150,210],gap:[420,520],behind:['wall','box','none'],odds:30},
   q:'You can not see what is behind that.',
   meta:'Handling a risk is not the same as thinking through what it does next.',
   track:function(r){ var P=this.P,it=[],i,says=[]; for(i=0;i<P.n;i++){ var cap=80+i*25,k=shPick(r,P.behind),s=P.strip[0]+r()*(P.strip[1]-P.strip[0]); says.push(k);
@@ -331,8 +331,8 @@ SGP.finLead=function(l,g,st){
 NOPEEK.finLead=1;
 
 /* one line for the end of each act */
-var SHIP_ACTS=[{line:'Act one was the three things you can buy: height for walls, sight for what you cannot see, speed for when everyone else has it.'},
+var SHIP_ACTS=[{line:'Act one was reading the road: what a near miss costs, what you cannot see from the ground, who is at your elbow.'},
   {line:'Act two was other labs: the careful one who raises the bar, the turn nobody saw coming, the reckless ones you cannot talk down.'},
-  {line:'Act three was the price: who pays to go first, what a near miss really costs, and what you do when you cannot see the end.'}];
+  {line:'Act three was the price: who pays to go first, how much height the road keeps asking for, what you do when you cannot see the end.'}];
 var SHIP_ORDER=SHIP.filter(function(m){ return m.act; }).sort(function(a,b){ return a.act-b.act||a.slot-b.slot; }).map(function(m){ return m.key; });
 var SHIP_DAILIES=SHIP.filter(function(m){ return m.daily; }).sort(function(a,b){ return a.daily-b.daily; }).map(function(m){ return m.key; });
