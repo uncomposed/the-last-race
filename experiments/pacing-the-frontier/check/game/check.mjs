@@ -22,7 +22,7 @@ for (const w of ['not evidence', 'prediction', 'github.com/uncomposed/the-last-r
 // b. the maps
 const W = new Function('window', 'document', LINES.slice(A, B + 1).join('\n') + '\nreturn window;')({}, null), PF = W.PF;
 const K0 = JSON.parse(JSON.stringify(PF.K));
-const camp = PF.SEGS.filter(m => m.act), daily = PF.SEGS.filter(m => m.daily);
+const camp = PF.SEGS.filter(m => m.act && m.act !== 9), daily  /* act 9: research maps (lessons/reader/), listed only with ?maps=reader */ = PF.SEGS.filter(m => m.daily);
 if (camp.length !== 9 || new Set(camp.map(m => m.act + ':' + m.slot)).size !== 9 || camp.some(m => m.act < 1 || m.act > 3 || m.slot < 1 || m.slot > 3)) fail('expected 3 acts of 3 maps, got ' + camp.map(m => m.act + ':' + m.slot));
 if (daily.length !== 3 || new Set(daily.map(m => m.daily)).size !== 3) fail('expected 3 dailies');
 if (new Set(PF.SEGS.map(m => m.key)).size !== PF.SEGS.length) fail('map keys repeat');
