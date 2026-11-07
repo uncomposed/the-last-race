@@ -47,3 +47,10 @@
 /* the pixel font is for the name on the start card only: at small sizes its C reads as O and its 2 as 8 */
 .gm-in h1,.gm-in h2,.gm-help b,#gm-head h1,#ready-h{font-family:var(--body);font-weight:600}
 .gm-in h1.gm-logo{font-family:var(--display);font-weight:700}
+
+/* the daily board: only ever shown once it has loaded */
+.gm-lb{margin:0 0 12px;padding:0;list-style-position:inside}
+.gm-lb li{display:flex;gap:12px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid var(--line,#2a303a)}
+.gm-lb li span:first-child{flex:1 1 8em;font-weight:600}
+.gm-lbname{display:block;margin:8px 0}
+.gm-lbname input{display:block;margin-top:4px;font:inherit;padding:6px 8px;width:100%;max-width:18em;background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px}

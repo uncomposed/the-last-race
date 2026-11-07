@@ -86,5 +86,22 @@ want('no ending', {...J(), end: null}, 'malformed');
 want('inputs out of order', {...J(), inp: [[5, 1, 1, 1, 1, 1, 0, 0, 0], [3, 1, 1, 1, 1, 1, 0, 0, 0]]}, 'malformed');
 want('input past the end', {...J(), inp: [[R.n, 1, 1, 1, 1, 1, 0, 0, 0]]}, 'malformed');
 
+// the board's verifier: what the reference server accepts and refuses, on a daily run that won
+const {verify} = await import('./lb-reference-server.mjs');
+const date = '2026-11-07', dseed = (() => { let h = 2166136261; for (let i = 0; i < date.length; i++) h = Math.imul(h ^ date.charCodeAt(i), 16777619); return h >>> 0; })();
+let good = null, dkey = null;
+for (const m of fresh().SEGS.filter(x => x.daily)) { const {R: r} = record(fresh(), m.key, dseed, STYLES[0]); if (r.end.won) { good = r; dkey = m.key; break; } }
+if (!good) fail('no daily run won on the test date, so the verifier was not tested');
+else {
+  const G2 = () => JSON.parse(JSON.stringify(good)), says = (name, r, d, k, ok) => { const w = verify(r, d, k); if (!!w === ok) fail('verifier, ' + name + ': said "' + w + '"'); };
+  says('a good run', G2(), date, dkey, true);
+  says('a faked time', (() => { const r = G2(); r.end.t -= 5; return r; })(), date, dkey, false);
+  says('a faked fingerprint', (() => { const r = G2(); r.end.print ^= 1; return r; })(), date, dkey, false);
+  says('a changed input', (() => { const r = G2(); for (const q of r.inp) q[1] = Math.min(1, q[1] * 1.1); return r; })(), date, dkey, false);
+  says('another date', G2(), '2026-11-08', dkey, false);
+  says('an older build', {...G2(), sim: 'ffffffffffffffff'}, date, dkey, false);
+  says('a loss posing as a win', {...G2(), end: {...good.end, won: false}}, date, dkey, false);
+  console.log('verifier: accepts the real run on ' + dkey + ', refuses six fakes');
+}
 if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); }
 console.log('ghost replay checks pass');

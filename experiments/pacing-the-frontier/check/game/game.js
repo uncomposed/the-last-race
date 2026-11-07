@@ -7,6 +7,54 @@ var SIM_ID='';  /* the hash of the simulation section, maps included: build.mjs 
 /* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
 var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
 function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
+/* the daily board: off unless this browser asks with ?lb=prod or ?lb=local (?lb=off stops), and only when the server answers that it runs this exact simulation.
+   LB_PROD stays empty until Cole's server is live. Until then, and whenever the check fails, nothing about a board shows anywhere. Nothing leaves the device unless the player presses Publish. */
+var LB_PROD='',LB_LOCAL='http://127.0.0.1:8787',LB_ORIGIN=lbOrigin(),LB_OK=false,LB_WAIT=4000,LB_NAME='pf-lb-name',LB_TOKEN='pf-lb-token',LB_PENDING=null;
+function lbOrigin(){ var m=/[?&]lb=(prod|local|off)(?:&|$)/.exec(location.search),v=null; try{ if(m){ if(m[1]==='off'){ window.localStorage.removeItem('pf-lb'); } else { window.localStorage.setItem('pf-lb',m[1]); } } v=window.localStorage.getItem('pf-lb'); }catch(e){ v=m&&m[1]!=='off'?m[1]:null; } return v==='prod'?LB_PROD:v==='local'?LB_LOCAL:''; }
+function lbCall(path,body,cb){
+  if(!LB_ORIGIN||typeof fetch!=='function'){ cb(null); return; }
+  var done=false,ctl=typeof AbortController!=='undefined'?new AbortController():null,o={method:body?'POST':'GET',credentials:'omit',mode:'cors'},t;
+  function fin(v){ if(!done){ done=true; clearTimeout(t); cb(v); } }
+  if(body){ o.headers={'Content-Type':'application/json'}; o.body=JSON.stringify(body); } if(ctl){ o.signal=ctl.signal; }
+  t=setTimeout(function(){ if(ctl){ try{ ctl.abort(); }catch(e){} } fin(null); },LB_WAIT);
+  fetch(LB_ORIGIN+path,o).then(function(r){ return r.json().then(function(j){ fin({status:r.status,json:j}); }); }).catch(function(){ fin(null); });
+}
+/* can this server verify a run from this build? anything but a clear yes keeps the board hidden */
+function lbProbe(then){ LB_OK=false; if(!LB_ORIGIN){ if(then){ then(); } return; } lbCall('/v1/sim/'+SIM_ID,null,function(a){ LB_OK=!!(a&&a.status===200&&a.json&&a.json.ok===true&&a.json.sim===SIM_ID); if(then){ then(); } }); }
+function lbPlaceLine(rows,t){ var f=0,i; for(i=0;i<rows.length;i++){ if(rows[i]<t){ f++; } } var n=rows.length; return n?'You would be '+lbOrd(f+1)+(n>=100?' of '+(n+1):'')+' today.':'You would be the first on today\'s board.'; }
+function lbOrd(n){ var s=n%100; return n+((s>=11&&s<=13)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th')); }
+function lbRows(title,rows){ return '<h2>'+gmEsc(title)+'</h2><ol class="gm-lb">'+rows.slice(0,10).map(function(r){ return '<li><span>'+gmEsc(r.name)+'</span><span>'+Number(r.t).toFixed(3)+' s</span><span>'+Number(r.attempts)+(r.attempts===1?' try':' tries')+', '+(r.chill?'auto-jump':'hand jump')+'</span></li>'; }).join('')+'</ol>'; }
+/* a board only appears once it has loaded and is whole; a failure leaves the card as it would be with no board at all */
+function lbBoard(date,key,el){
+  lbCall('/v1/daily/'+date+'/'+key,null,function(a){
+    var j=a&&a.status===200&&a.json,box=E(el); if(!box||!j||!Array.isArray(j.any)||!Array.isArray(j.first)){ return; }
+    box.innerHTML=(j.any.length?lbRows('Today, any try',j.any)+(j.first.length?lbRows('Today, first try',j.first):''):'<p class="gm-sub">Nobody has published today yet.</p>')+'<p class="gm-sub">Times are checked by racing them again on the server. Tries are what each browser reports, and are not checked.</p>';
+  });
+}
+function lbOffer(R,run,tries){
+  LB_PENDING={date:R.date,run:run,tries:tries};
+  lbCall('/v1/daily/'+R.date+'/'+R.map.key,null,function(a){
+    var j=a&&a.status===200&&a.json,box=E('gm-lb'); if(!box||!j||!Array.isArray(j.times)){ return; }
+    box.innerHTML='<p>'+lbPlaceLine(j.times,run.end.t)+'</p><p class="gm-sub">Your time stays on this device unless you publish it.</p><div class="gm-btns"><button type="button" data-gm="lbpub">Publish my time</button></div>';
+  });
+}
+function lbPublishCard(){
+  var P=LB_PENDING,n=''; try{ n=window.localStorage.getItem(LB_NAME)||''; }catch(e){}
+  E('gm-lb').innerHTML='<h2>Publish</h2><label class="gm-lbname">Name, up to 16 letters <input id="gm-lbn" maxlength="16" value="'+gmEsc(n)+'"></label><p class="gm-sub">This sends your name, your time of '+P.run.end.t.toFixed(3)+' s, your '+P.tries+(P.tries===1?' try':' tries')+' today, whether auto-jump was on, your controls for this race so the server can race them again, and a random code that lets this browser remove the entry. No account, and nothing else.</p><div class="gm-btns"><button type="button" data-gm="lbsend">Send it</button><button type="button" class="primary" data-gm="lbkeep">Keep it private</button></div>';
+}
+function lbToken(){ var t=null; try{ t=window.localStorage.getItem(LB_TOKEN); }catch(e){} if(t&&/^[0-9a-f]{32}$/.test(t)){ return t; } if(!window.crypto||!window.crypto.getRandomValues){ return null; } var u=new Uint8Array(16),i; window.crypto.getRandomValues(u); t=''; for(i=0;i<16;i++){ t+=(u[i]<16?'0':'')+u[i].toString(16); } try{ window.localStorage.setItem(LB_TOKEN,t); }catch(e){} return t; }
+function lbSend(){
+  var P=LB_PENDING,box=E('gm-lb'),name=(E('gm-lbn').value||'').trim().slice(0,16),tok=lbToken();
+  if(!name){ E('gm-lbn').focus(); return; } if(!tok){ box.innerHTML='<p class="gm-sub">This browser cannot publish. Your result here is safe.</p>'; return; }
+  try{ window.localStorage.setItem(LB_NAME,name); }catch(e){}
+  box.innerHTML='<p class="gm-sub">Racing your run again on the server.</p>';
+  lbCall('/v1/daily/'+P.date+'/'+P.run.map,{run:P.run,name:name,tries:P.tries,token:tok},function(a){
+    var j=a&&a.json,b=E('gm-lb'); if(!b){ return; }
+    if(a&&a.status===200&&j&&j.ok===true&&typeof j.place==='number'){ b.innerHTML='<p><b>Published: '+lbOrd(j.place)+(j.entries>=100?' of '+Number(j.entries):'')+'.</b></p>'; LB_PENDING=null; }
+    else if(a&&j&&j.ok===false){ b.innerHTML='<p>This run could not be verified, so nothing was stored.</p>'; LB_PENDING=null; }
+    else { b.innerHTML='<p class="gm-sub">The server did not answer. Your result here is safe.</p><div class="gm-btns"><button type="button" data-gm="lbsend2">Try again</button></div>'; }
+  });
+}
 function ghStore(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_KEY)||'null'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; } }
 function ghStoreSet(o){ var ks=Object.keys(o); while(ks.length>GH_MAX){ delete o[ks.shift()]; } try{ window.localStorage.setItem(GH_KEY,JSON.stringify(o)); }catch(e){} }
 function ghSlot(R){ return R.mode==='daily'?'d:'+R.date+':'+R.map.key:R.map.key; }
@@ -73,7 +121,8 @@ function gmDailyCard(){
   var D=gmDailyOf(gmToday()),r=GS.days[D.date];
   gmShow('<p class="eyebrow">Daily &middot; '+D.date+' (UTC)</p><h1>'+gmEsc(D.map.title)+'</h1><p>Same map and same dice for everyone today. A new one comes at midnight UTC.</p>'+
     (r?'<p class="gm-sub">Today: '+(r.won?'won in '+r.best.toFixed(1)+' s':'not won yet')+', '+r.tries+(r.tries===1?' try':' tries')+'.</p>':'')+
-    '<div class="gm-btns"><button class="primary" type="button" data-gm="dgo">Race</button><button type="button" data-gm="home">Back</button></div>');
+    '<div class="gm-btns"><button class="primary" type="button" data-gm="dgo">Race</button><button type="button" data-gm="home">Back</button></div><div id="gm-lbb"></div>');
+  if(LB_ORIGIN){ lbProbe(function(){ if(LB_OK){ lbBoard(D.date,D.map.key,'gm-lbb'); } }); }
 }
 function gmRace(R){
   RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
@@ -86,7 +135,7 @@ function gmRace(R){
   E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
   E('gm').hidden=true; E('gm-toast').hidden=true;
   start(seed);
-  if(GH_ON){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
+  if(GH_ON||(LB_OK&&R.mode==='daily')){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
@@ -130,7 +179,8 @@ function gmDebrief(){
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
     (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
-    (note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
+    (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
+  if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.date].tries); }
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+
@@ -149,8 +199,10 @@ function gmBoot(){
     else if(a==='daily'){ if(!GS.help){ gmHelp('daily'); } else { gmDailyCard(); } }
     else if(a==='dgo'){ var D=gmDailyOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed}); }
     else if(a==='end'){ gmEndCard(); } else if(a==='again'){ gmRace(RACE); }
+    else if(a==='lbpub'){ lbPublishCard(); } else if(a==='lbsend'||a==='lbsend2'){ if(a==='lbsend2'){ lbPublishCard(); } else { lbSend(); } } else if(a==='lbkeep'){ E('gm-lb').innerHTML='<p class="gm-sub">Kept private. It stays on this device.</p>'; LB_PENDING=null; }
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
     else if(a.indexOf('map:')===0){ p=a.split(':'); gmCampRace(+p[1],+p[2]); }
   });
   gmStart();
+  if(LB_ORIGIN){ lbProbe(); }
 }
