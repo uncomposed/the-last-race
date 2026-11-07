@@ -97,7 +97,9 @@ rep("e.target.id!=='ready-camp'", "e.target.id!=='ready-back'");
 rep("gap:function(){ return '<b>Gap ahead.</b> '", "gap:function(){ return '<b>Box ahead.</b> '");
 rep("'This gap needs speed. Move the dot", "'This box needs speed. Move the dot");
 cut('  /* "How to play" on the Ready card', '})();\n\n/* investment flow');  /* ends before the flow layer: the old end marker, knobs, also cut the triangle's flowing dots */
-cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + '\n');
+// generated dailies, only used with ?gen=1: baked by ship/gen.mjs, page code after the simulation, so the stamp does not move
+const GEN = existsSync(join(LES, 'ship', 'gen-days.js')) ? readFileSync(join(LES, 'ship', 'gen-days.js'), 'utf8') : '';
+cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + GEN + read('game.js') + '\n');
 rep('syncInput(); stepGame(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } gmTick(); acc-=1/60;');
 rep('    /* ghost link: drawn under the labs, never part of the sim */\n', '    ghDrawBest(cam,VW,FW);  /* drawn under the labs, never part of the sim */\n');
 cut("var qh=/[?&]hidden=(0|1)/", "if(window.HIDDEN){", "window.HIDDEN=true; window.NBOX=1; window.WF0=null;\n");

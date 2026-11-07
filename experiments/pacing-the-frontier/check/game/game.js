@@ -82,12 +82,27 @@ function gmSave(){ try{ window.localStorage.setItem(GKEY,JSON.stringify(GS)); }c
 function gmEsc(s){ return String(s===undefined||s===null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function gmMap(a,s){ for(var i=0;i<SEGS.length;i++){ if(SEGS[i].act===a&&SEGS[i].slot===s){ return SEGS[i]; } } return null; }
 function gmDailyMaps(){ return SEGS.filter(function(m){ return m.daily; }); }
-function gmToday(){ return new Date().toISOString().slice(0,10); }
+/* generated dailies (issue 36, step 1): off unless the link has ?gen=1, and never remembered. The day's map and numbers were drawn and checked ahead of time by
+   check/lessons/ship/gen.mjs and baked into GEN_DAYS, because the checks race about a hundred bot games per draw and every player must get the same daily.
+   With ?gen=1, ?day=YYYY-MM-DD picks another date, for testing. A generated daily records no ghost and offers no board: the server knows only the shipped maps. */
+var GEN_ON=/[?&]gen=1(?:&|$)/.test(location.search),GEN_DAY=GEN_ON&&(/[?&]day=(\d{4}-\d\d-\d\d)(?:&|$)/.exec(location.search)||[])[1]||null,GEN_MAPS={};
+function gmToday(){ return GEN_DAY||new Date().toISOString().slice(0,10); }
+/* the numbers that differ from maps.js, written into a copy of the map's numbers: the same function as applySet in gen.mjs */
+function gmGenP(P,set){ var Q=JSON.parse(JSON.stringify(P)),path,k,o,j; for(path in set){ k=path.split('.'); o=Q; for(j=0;j<k.length-1;j++){ o=o[k[j]]; } o[k[k.length-1]]=set[path]; } return Q; }
+/* the day's generated map: the base map with today's numbers, added to SEGS once so the race can load it, and never counted as a campaign map or a daily */
+function gmGenOf(date){
+  var e=typeof GEN_DAYS!=='undefined'&&GEN_SIM===SIM_ID&&GEN_DAYS[date],b,v,D; if(!e){ return null; }
+  b=SEGS.filter(function(m){ return m.key===e.map; })[0]; if(!b){ return null; }
+  v=GEN_MAPS[date]; if(!v){ v=Object.create(b); v.P=gmGenP(b.P,e.set); v.act=0; v.slot=0; v.daily=0; v.gen=e; SEGS.push(v); GEN_MAPS[date]=v; }
+  D=gmDailyOf(date); return {date:date,map:v,seed:D.seed,gen:e,key:'gen:'+date};
+}
+/* the daily the player gets: the generated one when ?gen=1 has one for the date, otherwise the shipped rotation */
+function gmDayOf(date){ var g=GEN_ON?gmGenOf(date):null,D; if(g){ return g; } D=gmDailyOf(date); D.key=date; return D; }
 function gmDailyOf(date){ var day=Math.floor(Date.parse(date+'T00:00:00Z')/864e5),ms=gmDailyMaps(),h=2166136261,i; for(i=0;i<date.length;i++){ h=Math.imul(h^date.charCodeAt(i),16777619); } return {date:date,map:ms[((day%ms.length)+ms.length)%ms.length],seed:h>>>0}; }
 function gmShow(html){ E('gm-in').innerHTML=html; E('gm').hidden=false; E('gm').scrollTop=0; var b=E('gm-in').querySelector('button.primary'); if(b){ try{ b.focus({preventScroll:true}); }catch(e){} } }
 var GM_FOOT='<p class="gm-foot">A cartoon of an AI race, for intuition. It is not evidence or a prediction. Source: <a href="https://github.com/uncomposed/the-last-race">github.com/uncomposed/the-last-race</a> (Apache-2.0). Background reading: <a href="https://ai-2027.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2027</a>, its hopeful companion <a href="https://ai-2040.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2040: Plan A</a>, and <a href="https://80000hours.org/problem-profiles/artificial-intelligence/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">80,000 Hours on risks from AI</a>.</p>';
 function gmStart(){
-  var any=GS.prog[0]+GS.prog[1]+GS.prog[2]>0,d=GS.days[gmToday()];
+  var any=GS.prog[0]+GS.prog[1]+GS.prog[2]>0,d=GS.days[gmDayOf(gmToday()).key];
   gmShow('<p class="eyebrow">A game about an AI race</p><h1 class="gm-logo">Pacing the Frontier</h1><p>You run an AI lab. Get to the end first. Stay in the race. And make sure nobody ends the game for everyone.</p>'+
     '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">'+(any?'Continue':'Play')+'</button><button type="button" data-gm="daily">Daily'+(d&&d.won?' (won)':'')+'</button><button type="button" data-gm="help">How to play</button></div>'+GM_FOOT);
 }
@@ -118,16 +133,17 @@ function gmCamp(){
   gmShow(h);
 }
 function gmDailyCard(){
-  var D=gmDailyOf(gmToday()),r=GS.days[D.date];
-  gmShow('<p class="eyebrow">Daily &middot; '+D.date+' (UTC)</p><h1>'+gmEsc(D.map.title)+'</h1><p>Same map and same dice for everyone today. A new one comes at midnight UTC.</p>'+
+  var D=gmDayOf(gmToday()),r=GS.days[D.key];
+  gmShow('<p class="eyebrow">Daily &middot; '+D.date+' (UTC)'+(D.gen?' &middot; generated':'')+'</p><h1>'+gmEsc(D.map.title)+'</h1><p>Same map and same dice for everyone today. A new one comes at midnight UTC.</p>'+
+    (D.gen?'<p class="gm-sub">Test daily: the '+gmEsc(D.map.title)+' you know, with today\'s own numbers.</p>':GEN_ON?'<p class="gm-sub">No generated daily for this date, so this is the usual one.</p>':'')+
     (r?'<p class="gm-sub">Today: '+(r.won?'won in '+r.best.toFixed(1)+' s':'not won yet')+', '+r.tries+(r.tries===1?' try':' tries')+'.</p>':'')+
     '<div class="gm-btns"><button class="primary" type="button" data-gm="dgo">Race</button><button type="button" data-gm="home">Back</button></div><div id="gm-lbb"></div>');
-  if(LB_ORIGIN){ lbProbe(function(){ if(LB_OK){ lbBoard(D.date,D.map.key,'gm-lbb'); } }); }
+  if(LB_ORIGIN&&!D.gen){ lbProbe(function(){ if(LB_OK){ lbBoard(D.date,D.map.key,'gm-lbb'); } }); }
 }
 function gmRace(R){
   RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
   GHOST=null; REC=null;
-  if(GH_ON){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
+  if(GH_ON&&!R.gen){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
   var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
@@ -135,7 +151,7 @@ function gmRace(R){
   E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
   E('gm').hidden=true; E('gm-toast').hidden=true;
   start(seed);
-  if(GH_ON||(LB_OK&&R.mode==='daily')){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
+  if(!R.gen&&(GH_ON||(LB_OK&&R.mode==='daily'))){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
@@ -166,7 +182,7 @@ function gmDebrief(){
   if(REC&&GH_ON){ if(won){ var gs=ghStore(),gk=ghSlot(R),gb=gs[gk]; if(!gb||gb.sim!==SIM_ID||REC.end.t<gb.end.t){ gs[gk]=REC; ghStoreSet(gs); lines.push(gb&&gb.sim===SIM_ID?'A new best, ahead of '+gb.end.t.toFixed(1)+' s.':'Saved as your best. It races with you next time.'); } else { lines.push('Your best is still '+gb.end.t.toFixed(1)+' s.'); } } }
   var note=m.debrief||(G.world&&G.world.note)||'';
   if(R.mode==='daily'){
-    var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();
+    var dk=R.dkey||R.date,d=GS.days[dk]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[dk]=d; gmSave();
     sub='Daily for '+R.date+'. '+sub; btn='<button class="primary" type="button" data-gm="dgo">Race again</button><button type="button" data-gm="home">Back</button>';
   } else {
     var nextS=0;
@@ -184,7 +200,7 @@ function gmDebrief(){
     (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
     (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
-  if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.date].tries); }
+  if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.dkey||R.date].tries); }
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+
@@ -201,7 +217,7 @@ function gmBoot(){
     if(a==='home'){ gmStart(); } else if(a==='help'){ gmHelp(); }
     else if(a==='camp'){ if(!GS.help){ gmHelp('camp'); } else { gmCamp(); } }
     else if(a==='daily'){ if(!GS.help){ gmHelp('daily'); } else { gmDailyCard(); } }
-    else if(a==='dgo'){ var D=gmDailyOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed}); }
+    else if(a==='dgo'){ var D=gmDayOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed,gen:D.gen||null,dkey:D.key}); }
     else if(a==='end'){ gmEndCard(); } else if(a==='again'){ gmRace(RACE); }
     else if(a==='lbpub'){ lbPublishCard(); } else if(a==='lbsend'||a==='lbsend2'){ if(a==='lbsend2'){ lbPublishCard(); } else { lbSend(); } } else if(a==='lbkeep'){ E('gm-lb').innerHTML='<p class="gm-sub">Kept private. It stays on this device.</p>'; LB_PENDING=null; }
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
