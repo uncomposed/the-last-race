@@ -210,3 +210,5 @@ function gmBoot(){
   gmStart();
   if(LB_ORIGIN){ lbProbe(); }
 }
+/* a touch screen has no number keys */
+if(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches){ $('tri-keys').textContent='drag the dot'; $('tri').setAttribute('aria-label','Split picker. Drag the point.'); }

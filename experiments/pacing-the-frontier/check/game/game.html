@@ -458,7 +458,7 @@ html.epi-open{overflow:hidden}
         <text class="t-lbl" x="4" y="199" text-anchor="start"><tspan class="kn">1 </tspan>Sight <tspan class="pc" id="tp0" style="fill:var(--a)">25%</tspan></text>
         <text class="t-lbl" x="257" y="199" text-anchor="end"><tspan class="kn">3 </tspan>Max speed <tspan class="pc" id="tp2" style="fill:var(--b)">25%</tspan></text>
         <g id="tri-mk" pointer-events="none"></g>
-        <text class="t-key" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>
+        <text class="t-key" id="tri-keys" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>
         <circle class="t-cue" id="tri-cue" r="15" visibility="hidden"/>
         <circle class="t-ghost" id="tri-ghost" r="9" visibility="hidden"/>
         <circle class="t-pt" id="tri-pt" r="9"/>
@@ -3322,6 +3322,31 @@ function drawCritter(l,sx,y,h){
     }
   }
 }
+/* phones: labels on the track are held to the end of the frame, then placed so none sits on another or runs off the screen. Your lab's name goes first and does not move.
+   Page code only: it runs in draw, outside the simulation. Desktop never comes here. */
+var lblQ=null,lblLab=0;
+function lblBegin(){ if(!CM){ return; } lblQ=[]; ctx.fillText=function(s,x,y){ lblQ.push({s:s,x:x,y:y,lab:lblLab,fill:ctx.fillStyle,font:ctx.font,al:ctx.globalAlpha,ta:ctx.textAlign}); }; }
+function lblEnd(VW,U){
+  if(!lblQ){ return; }
+  delete ctx.fillText;
+  var q=lblQ,done=[],LH=12*U,top=(HUDH-GY*(1-Z))/Z+LH,bot=(H-GY*(1-Z))/Z-U*2,i,j,k,a,w,x,y,t;
+  lblQ=null;
+  function free(x,y,w){ for(var n=0;n<done.length;n++){ var d=done[n]; if(x<d.x+d.w&&x+w>d.x&&y-LH<d.y&&y>d.y-LH){ return false; } } return true; }
+  q.sort(function(p,r){ return r.lab-p.lab; });  /* stable: your name 2, rivals' names 1, the rest in drawn order */
+  ctx.save(); ctx.textAlign='left'; ctx.lineJoin='round'; ctx.lineWidth=3*U; ctx.strokeStyle=COL.surface;
+  for(i=0;i<q.length;i++){
+    a=q[i]; ctx.font=a.font; w=ctx.measureText(a.s).width;
+    if(w>VW-4*U&&a.s.lastIndexOf(' \u00b7 ')>0){ a.s=a.s.slice(0,a.s.lastIndexOf(' \u00b7 ')); w=ctx.measureText(a.s).width; }  /* too wide for the screen: drop the last part, which the box's own label repeats */
+    x=a.ta==='right'?a.x-w:a.ta==='center'?a.x-w/2:a.x;
+    if(x>VW||x+w<0){ continue; }  /* off screen: nothing to draw */
+    if(a.s.length>1){ x=Math.max(2*U,Math.min(x,VW-w-2*U)); }
+    y=a.y;
+    if(a.s.length>1&&a.lab!==2){ for(j=0;j<14;j++){ k=(j%2?1:-1)*Math.ceil(j/2); t=a.y+k*LH; if(t>=top&&t<=bot&&free(x,t,w)){ y=t; break; } } }
+    done.push({x:x,y:y,w:w});
+    ctx.globalAlpha=a.al; ctx.strokeText(a.s,x,y); ctx.fillStyle=a.fill; ctx.fillText(a.s,x,y);
+  }
+  ctx.restore();
+}
 function drawLab(l,cam,VW,FW,isHuman,idx){
   var sx=l.x-cam-C.RW;
   if(sx<-40||sx>VW+40){return;}
@@ -3341,7 +3366,7 @@ function drawLab(l,cam,VW,FW,isHuman,idx){
   else { drawCritter(l,sx,y,h); }
   ctx.fillStyle=COL.ink; ctx.font=FW;
   var ly=y-(l.kind==='gambler'?13:9)-(idx%2)*12,lt=l.dissolved?'dissolved':(l.out?'out':l.name),lx=CM?Math.max(sx-2,4/Z):sx-2;  /* phones: names stay on screen */
-  ctx.fillText(lt,lx,ly);
+  lblLab=isHuman?2:1; ctx.fillText(lt,lx,ly); lblLab=0;
   /* strike pips beside the name: filled for each strike, hollow for those left */
   if(strikesOf(l)){
     var pw=5/Z,px0=lx+ctx.measureText(lt).width+4/Z;
@@ -3370,7 +3395,7 @@ function draw(){
   var VW=W/Z,cam=Math.max(-70,tgt.x-LEAD*VW),FW=(11/Z).toFixed(2)+'px "IBM Plex Mono",monospace';
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.fillStyle=COL.surface; ctx.fillRect(0,0,W,H);
-  ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */
+  ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */ lblBegin();
   var sgp=G.gaps[G.sing],singKnown=!!sgp&&knowsGap(tgt,G.sing),sx0=sgp?sgp.x+gapWidth(tgt,sgp)-cam:Infinity;
   if(singKnown&&sx0<VW){  /* past the singularity gap the background is tinted */
     ctx.fillStyle=COL.d; ctx.globalAlpha=0.13; ctx.fillRect(Math.max(0,sx0),GY-GY/Z,VW,H/Z); ctx.globalAlpha=0.5;
@@ -3491,7 +3516,7 @@ function draw(){
   if(CM){ var rt='reach '+Math.round(reach),rw=ctx.measureText(rt).width;
     ctx.fillStyle=COL.surface; ctx.globalAlpha=0.85; ctx.fillRect(VW-rw-9*U,GY-reach-15*U,rw+6*U,14*U); ctx.globalAlpha=1;
     ctx.fillStyle=COL.a; ctx.font=FW; ctx.fillText(rt,VW-rw-6*U,GY-reach-4*U); }
-  ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */
+  lblEnd(VW,U); ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */
   drawMeters(tgt);
   // beyond your loop: only once the watched lab is past the singularity gap
   if(inSing(tgt)&&!tgt.out&&!tgt.done){
@@ -4188,6 +4213,8 @@ function gmBoot(){
   gmStart();
   if(LB_ORIGIN){ lbProbe(); }
 }
+/* a touch screen has no number keys */
+if(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches){ $('tri-keys').textContent='drag the dot'; $('tri').setAttribute('aria-label','Split picker. Drag the point.'); }
 
 /* ---- HIDDEN_WIDTH_UI: ?hidden=1 is the one-box hidden-width track of check/hidden-width/hidden.mjs, playable by hand ---- */
 window.HIDDEN=true; window.NBOX=1; window.WF0=null;

@@ -37,6 +37,13 @@ cut('/* ---- achievements (begin)', '/* ---- achievements (end) ---- */');
 cut('/* ---- campaign (begin)', '/* ---- ghost links (end) ---- */');
 rep('</style>\n\n<main', read('game.css') + '\n</style>\n\n<main');
 
+// ---- phones: track labels are placed so they cannot sit on each other (track-labels.js); all of it after the simulation, so the stamp does not move
+rep('function drawLab(l,cam,VW,FW,isHuman,idx){', read('track-labels.js') + 'function drawLab(l,cam,VW,FW,isHuman,idx){');
+rep('ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */', 'ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */ lblBegin();');
+rep('ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */', 'lblEnd(VW,U); ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */');
+rep('ctx.fillText(lt,lx,ly);', 'lblLab=isHuman?2:1; ctx.fillText(lt,lx,ly); lblLab=0;');
+rep('<text class="t-key" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>', '<text class="t-key" id="tri-keys" x="130" y="212" text-anchor="middle">keys 1 to 7 jump to a mark</text>');
+
 // ---- markup
 cut('<header>', '</header>', '<header id="gm-head"><p class="eyebrow" id="gm-where"></p><h1 id="gm-title"></h1><p class="seg-q" id="gm-q"></p>');
 cut('<div class="ov" id="ov">', '<div class="ov" id="ready" hidden>');
