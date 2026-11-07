@@ -14,7 +14,7 @@ Tune block: seeds 1001-1040. Held-out block: seeds 9001-9040, run once after the
 
 | Map | Strategy in a sentence | Bot | Win | Max-out with eyes | Cruiser |
 |---|---|---|---|---|---|
-| The Picket | Buy only height and sit behind the Foreman | `sp-h-tail` | **55 (misses 60)** | 50 | 53 |
+| The Picket | Buy only height and sit behind the Foreman | `sp-h-tail` | see below | see below | see below |
 | Long Sight | Split points evenly, sight included, and do not outrun your sight | `sp-even-eyes` | 63 | 5 | 3 |
 | Elbows | Buy speed, floor it, trust your reactions | `sp-s-bold` | 95 | 0 | 0 |
 | The Steward | Buy sight and height, stop for what you cannot clear | `sp-vh-eyes` | 75 | 40 | 45 |
@@ -26,6 +26,10 @@ Tune block: seeds 1001-1040. Held-out block: seeds 9001-9040, run once after the
 | The Only Box | Build evenly at a steady pace: a bet on the width | `sp-even-slow` | 63 | **63 (rail fails)** | 45 |
 | The Ladder | Lead from the first step and never stop | `sp-hs-bold` | 88 | 3 | 3 |
 | Second Order | Slow for the towers and look behind them | `sp-hs-eyes` | 65 | **65 (rail fails)** | 68 |
+
+The Picket missed on seeds 9001-9040 (55, with max-out with eyes at 50), so I slowed the Foreman once (speed 66 to 63) and judged it on a fresh block. Now: seeds 9101-9140 win 80, max-out with eyes 35, cruiser 38. Seeds 1001-1040 win 53, max-out with eyes 20, cruiser 23. That is a wide spread between blocks of the same map, so treat the Picket as near the 60 line, not safely over it. 9001-9040 has been seen once, so it is no longer unseen for this map.
+
+Finish times barely vary on three maps: distinct times across 40 seeds were Two Endings 2, The Only Box 4, Red Box 5. The rail asks for replays that differ. In these three the choice varies more than the clock does, but that is my reading and it is unproven.
 
 ## What varies by seed
 
@@ -50,7 +54,7 @@ Each map's comment in `maps.js` says what the frame showed. The Steward's frame 
 
 1. Whether any map is fun. A bot winning says nothing about that.
 2. Whether a person finds these strategies. Trailbreaker, Red Box and Elbows are close to all or nothing for bots: the right idea wins almost always and the wrong one almost never. That could be a good puzzle or an unfair one.
-3. Red Box, Trailbreaker and Three Strikes were last watched before their final layout change.
+3. Rails not met: max-out with eyes wins most races on Three Strikes, Two Endings, The Only Box and Second Order. I did not fix these before usage ran low.
 4. Red Box has a second easy answer: `sp-vs-bold` also wins 100, in about half the time of `spBait`. Sight and speed, flooring it, is simpler than the bait the card describes.
 5. Frames were stepped by hand because the browser pane was hidden, so I have not watched any map at real speed, and no one has judged the pacing by feel.
 6. `maxout` wins 98 on The Ladder and 75 on Takeoff, so "height and speed, no looking" is strong on those two.

@@ -145,7 +145,7 @@ NOPEEK.rvShadow=1;
 
 /* ---- ACT 1, MAP 1. THE PICKET. Tall walls, close together, no time for anything but height. A wall is a strike and it costs your speed SAW in the page: white walls one after another, the reach line reads at a glance, a strike toast; a rival ahead hid a wall from me and that caused a strike. ---- */
 shMap({key:'picket',act:1,slot:1,lesson:'',title:'The Picket',strategy:'sp-h-tail',
-  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,66],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172]},
+  P:{you:[30,20,70],rivals:[{post:'rvBuild',name:'Foreman',x:0,pts:[30,28,63],w:[0,70,30]}],first:280,gap:[170,260],hs:[58,76,92,106,118,128,138,148,156,164,172]},
   q:'There is a fence across the road. Then another.',
   meta:'Scaling hits a wall the size of the next data center: you buy the height or you take the crash.',
   track:function(r){ var P=this.P,mid=P.hs.slice(1,5),s=shShuffle(r,mid),hs=[P.hs[0]].concat(s,P.hs.slice(5)),it=[],i;
@@ -190,7 +190,7 @@ shMap({key:'takeoff',act:2,slot:2,lesson:'',title:'Takeoff',strategy:'maxout',
     it.push({d:330,rise:P.b3.rise,W:P.b3.W+r()*10,odds:P.b3.odds,capTo:P.b3.capTo});
     return shRoad(it,260,'The road turned after '+n+' pebbles.'); }});
 
-/* ---- ACT 2, MAP 3. RED BOX. Two gamblers ahead of you, a strike down already. At the end a box they will not stop for, with high odds. Only a wall they do not see can stop them SAW in the page: a wall with a rival marked dissolved at its foot and the player on top. Reads as a kill. Watched before narrowing the box; not re-watched since. ---- */
+/* ---- ACT 2, MAP 3. RED BOX. Two gamblers ahead of you, a strike down already. At the end a box they will not stop for, with high odds. Only a wall they do not see can stop them SAW in the page: a wall with a rival marked dissolved at its foot and the player on top. Reads as a kill. After narrowing: the player stands on its own tower at the red box, 107 wide, with the flag just beyond. ---- */
 shMap({key:'red-box',act:2,slot:3,lesson:'',title:'Red Box',strategy:'spBait',
   P:{you:[20,35,50],rivals:[{post:'rvGamble',name:'Ace',x:50,pts:[45,15,48],pace:1,strikes:1,w:[0,30,70]},{post:'rvGamble',name:'Deuce',x:20,pts:[45,15,48],pace:1,strikes:1,w:[0,30,70]}],walls:[{h:76},{h:100},{h:120},{h:136}],gap:[300,380],first:520,red:{rise:40,W:[98,114],odds:75}},
   q:'Two labs ahead of you are not slowing down for anything.',
@@ -199,7 +199,7 @@ shMap({key:'red-box',act:2,slot:3,lesson:'',title:'Red Box',strategy:'spBait',
     var W=P.red.W[0]+r()*(P.red.W[1]-P.red.W[0]); it.push({d:520,rise:P.red.rise,W:W,odds:P.red.odds,capTo:110});
     return shRoad(it,170,'The red box was '+Math.round(W)+' wide.'); }});
 
-/* ---- ACT 3, MAP 1. TRAILBREAKER. Boxes too wide for anyone to want to go first. One lab will. Let it. It pays for every box, you get every box half price, and the last stretch is long SAW in the page: two labs stand at a huge box and the crossed box shrinks for the follower ('gap 56 wide'). The stand was long; Pioneer now starts taller. Not re-watched since. ---- */
+/* ---- ACT 3, MAP 1. TRAILBREAKER. Boxes too wide for anyone to want to go first. One lab will. Let it. It pays for every box, you get every box half price, and the last stretch is long SAW in the page: two labs stand at a huge box and the crossed box shrinks for the follower ('gap 56 wide'). Pioneer now starts taller: at 9 s both labs stand at box one, Pioneer's tower hiding the road. ---- */
 shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'sp-hs-tail',
   P:{you:[10,30,45],rivals:[{post:'rvRead',name:'Pioneer',x:150,pts:[50,75,70],w:[25,50,25]}],n:4,gap:[420,560],W:[106,120],rise:12,odds:40,after:520},
   q:'The boxes are enormous. Someone is already on their way.',
@@ -207,7 +207,7 @@ shMap({key:'trailbreaker',act:3,slot:1,lesson:'',title:'Trailbreaker',strategy:'
   track:function(r){ var P=this.P,it=[],i; for(i=0;i<P.n;i++){ it.push({d:P.gap[0]+r()*(P.gap[1]-P.gap[0]),rise:P.rise,W:P.W[0]+r()*(P.W[1]-P.W[0]),odds:P.odds,capTo:80+i*15}); }
     return shRoad(it,P.after,'Box widths: '+it.map(function(o){ return Math.round(o.W); }).join(', ')+'.'); }});
 
-/* ---- ACT 3, MAP 2. THREE STRIKES. Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all SAW in the page: 'clears 101 of 94' and 'strike 1 of 3, -40 height'. A scrape costs far more height than the card suggests, so it is not cheap. Watched before the last layout change. ---- */
+/* ---- ACT 3, MAP 2. THREE STRIKES. Tall boxes just past what you can clear. You can scrape any of them for a strike, twice. A third is the end. Some cannot be scraped at all SAW in the page: 'clears 101 of 94' and 'strike 1 of 3, -40 height'. A scrape costs far more height than the card suggests, so it is not cheap. After the last layout change: the player flies clear at 30 s, Brink is down in a box behind, a crossed box has shrunk to 39. ---- */
 shMap({key:'three-strikes',act:3,slot:2,lesson:'',title:'Three Strikes',strategy:'spLate',
   P:{you:[30,64,64],rivals:[{post:'sp-hs-scrape',name:'Brink',x:30,pts:[30,62,60],w:[0,50,50]},{post:'rvSprint',name:'Ledger',x:-40,pts:[30,60,62],pace:1,w:[0,50,50]}],n:5,gap:[540,660],rise:[40,54],Wn:[82,90],Wb:[102,110],Wg:7,pb:0.34,odds:20},
   q:'The road is full of near misses.',
