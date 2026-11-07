@@ -128,6 +128,18 @@ if (missing.length) throw new Error('kept code uses removed elements: ' + missin
 { const L = S.split('\n'), a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l => l.startsWith('window.PF={')); if (a < 0 || b < a) throw new Error('simulation section');
   const id = createHash('sha256').update(L.slice(a, b + 1).join('\n')).digest('hex').slice(0, 16); rep("var SIM_ID='';", "var SIM_ID='" + id + "';"); }
 
+// ---- drawn maps (issue 36 step 2, research): ?gen=1&seed=N races the pattern generator's map N (game.js gmGenStart). The generator goes in right
+// after the window.PF line, outside the hashed simulation section, so the stamp above is the shipped campaign's alone. GN_NOREG keeps it from adding
+// its debug and comparison maps. A drawn map with a hidden finish (pattern 16) hides the flag and the minimap tick until the finish is in sight
+const GEN = join(LES, 'gen', 'maps.js');
+if (existsSync(GEN)) {
+  const i = S.indexOf('\n', S.indexOf('window.PF={')) + 1;
+  S = S.slice(0, i) + 'var GN_NOREG=1;\n' + readFileSync(GEN, 'utf8') + '\n' + S.slice(i);
+  rep('  var fx=G.finish-cam;\n  if(fx>-20&&fx<VW+20){', '  var fx=G.finish-cam;\n  if(fx>-20&&fx<VW+20&&gmFinSeen()){');
+  rep('  function mmx(x){return mx0+clamp(x,0,G.finish)/G.finish*mw;}', '  var mmF=gmMapLen(tgt); function mmx(x){return mx0+clamp(x,0,mmF)/mmF*mw;}');
+  rep('  ctx.fillStyle=COL.d; ctx.fillRect(mmx(G.finish)-1,my-9,2,18);', '  if(gmFinSeen()){ ctx.fillStyle=COL.d; ctx.fillRect(mmx(G.finish)-1,my-9,2,18); }');
+}
+
 writeFileSync(join(HERE, 'game.html'), S);
 copyFileSync(join(HERE, 'game.html'), join(LES, 'lessons.html'));
 console.log('wrote game.html and the preview copy, ' + Math.round(S.length / 1024) + ' KB, maps: ' + (REAL ? 'ship' : 'placeholders'));
