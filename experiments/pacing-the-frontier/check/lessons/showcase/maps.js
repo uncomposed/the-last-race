@@ -19,7 +19,7 @@
    broken 100%), cpRead 0%, maxout 0% (falls at the tower: 70 wide, a side entry sinks), rush 0%. build wins every broken world because its
    wall at the tower grows while it stands and holds the follower. scLead loses broken worlds: it crosses the tower about 3 s before the
    follower and is still braking on the strip when the follower comes over and scrapes through the cellar. Its broken-world path is still
-   buggy (moving the follower or the strip gives erratic results). Not played yet. */
+   buggy (moving the follower or the strip gives erratic results). Cole has played this map; the retuned version is in ship/maps.js. */
 function scLabs(P){ return [{x:0,pts:P.you,pace:1,w:[20,50,30]}].concat(P.rivals.map(function(r){ return RIV(r.post,r.name,r.x,r.pts,{pace:r.pace||1,w:r.w||[0,50,50]}); })); }
 function scMap(m){ Object.defineProperty(m,'labs',{get:function(){ return scLabs(this.P); },enumerable:true,configurable:true});
   Object.defineProperty(m,'soft',{get:function(){ return this.P.soft; },enumerable:true,configurable:true}); LESSONS.push(m); }
