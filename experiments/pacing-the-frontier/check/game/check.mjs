@@ -52,6 +52,9 @@ if (/\.prog\[[^\]]*\]\s*=\s*0/.test(GAMEJS) || /Restart the act|Act '\+a\+' is l
 const debrief = GAMEJS.match(/function gmDebrief\(\)\{[\s\S]*?\n\}/)[0];
 if ((debrief.match(/GS\.prog\[/g) || []).length !== 1 || !/if\(won\)\{ GS\.prog\[a-1\]=m\.slot;/.test(debrief)) fail('only a win may change act progress');
 
+// a player who is out never has to watch a stuck race to the time limit (designer's report, 2026-11-07)
+if (!/if\(h\.out\|\|h\.dissolved\)\{[^\n]*GM_OUT_WATCH[^\n]*stepGame\(1\/60\)/.test(GAMEJS)) fail('a player who is out can be left watching a stuck race');
+
 // c. the daily, using the page's own function
 const fn = readFileSync(join(HERE, 'game.js'), 'utf8').match(/^function gmDailyOf\(date\)\{.*$/m)[0];
 const of = new Function('gmDailyMaps', fn + '\nreturn gmDailyOf;')(() => daily);

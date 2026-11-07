@@ -142,10 +142,14 @@ function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s==
 function gmRestart(){ if(RACE){ running=false; gmRace(RACE); } }
 function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else { gmCamp(); } }
 /* the exact roll shows when a fall rolls: a short line over the track */
+var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
 function gmTick(){
   if(gmEvG!==G){ gmEvG=G; gmEvN=0; }
   for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
   if(gmToastT&&G.t>gmToastT){ E('gm-toast').hidden=true; gmToastT=0; }
+  /* You are out and the race goes on at 4x. Rivals can sit at a wall until the time limit, so after 60 game seconds, about 15 real ones, run the rest unseen and show the real result. A run you are out of is never saved or published, so nothing relies on these steps being logged. */
+  var h=G.labs[0];
+  if(h.out||h.dissolved){ if(gmOutG!==G){ gmOutG=G; gmOutT=G.t; } if(G.t-gmOutT>=GM_OUT_WATCH){ var g=0; while(!G.over&&g++<20000){ stepGame(1/60); } } }
 }
 function gmFall(e){ return (e.who==='You'?'You':e.who)+' fell into box '+e.gap+'. The dice rolled '+e.roll+' against '+e.odds+': '+(e.ext?'the world ended.':'only that lab is out.'); }
 function gmEnd(){ var tok=++gmTok; setRev(false); setFwd(false); setTimeout(function(){ if(tok===gmTok){ gmDebrief(); } },600); }
