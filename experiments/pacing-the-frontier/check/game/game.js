@@ -3,6 +3,30 @@
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
+var SIM_ID='';  /* the hash of the simulation section, maps included: build.mjs fills it in */
+/* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
+var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
+function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
+function ghStore(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_KEY)||'null'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; } }
+function ghStoreSet(o){ var ks=Object.keys(o); while(ks.length>GH_MAX){ delete o[ks.shift()]; } try{ window.localStorage.setItem(GH_KEY,JSON.stringify(o)); }catch(e){} }
+function ghSlot(R){ return R.mode==='daily'?'d:'+R.date+':'+R.map.key:R.map.key; }
+/* race the stored best again before showing it. A run from another build, or one that does not end as it did, is dropped and says so. Returns {t,run,x,y} or {why} or null */
+function ghLoad(R){
+  var s=ghStore(),k=ghSlot(R),r=s[k],why,tr=[],m,o; if(!r){ return null; }
+  why=ghRefuse(r,SIM_ID,SEGS);
+  if(!why){ o=ghReplay({K:K,KSNAP:KSNAP,SEGS:SEGS,segUse:segUse,newGame:newGame,step:stepGame,G:function(){ return G; }},r,function(g){ var l=g.labs[0]; tr.push(l.x,heightOf(l)+l.jy,l.out||l.dissolved?1:0); }); if(!ghSame(o,r)){ why='it does not replay the same here'; } }
+  if(why){ delete s[k]; ghStoreSet(s); return {why:why}; }
+  return {run:r,tr:tr,t:r.end.t};
+}
+/* the ghost is drawn from its replay and never touches the race: a dashed outline with a label, so it reads without colour */
+function ghDrawBest(cam,VW,FW){
+  if(!GHOST||!GHOST.tr||!G){ return; }
+  var tr=GHOST.tr,i=Math.min(Math.round(G.t*60),tr.length/3)-1; if(i<0){ i=0; }
+  var x=tr[3*i],h=tr[3*i+1],gone=tr[3*i+2],U=CM?1/Z:1,sx=x-cam-C.RW,y=GY-h-C.RW,lab='Your best'+(gone?' (out)':'');
+  ctx.save(); ctx.font=FW; ctx.fillStyle=COL.ink; ctx.strokeStyle=COL.ink; ctx.lineWidth=1.2*U;
+  if(sx<-C.RW-4||sx>VW+4){ var d=Math.round(Math.abs(x-G.labs[0].x)),t=sx>VW?lab+' '+d+' ahead >':'< '+lab+' '+d+' behind',w=ctx.measureText(t).width; ctx.fillText(t,sx>VW?VW-w-6*U:6*U,GY-(CM?44:60)*U); ctx.restore(); return; }
+  ctx.globalAlpha=gone?0.45:0.9; ctx.setLineDash([3*U,2*U]); ctx.strokeRect(sx,y,C.RW,C.RW); ctx.setLineDash([]); ctx.fillText(lab,sx,y-20*U); ctx.restore();
+}
 function E(id){ return document.getElementById(id); }
 function gmLoad(){ var o=null; try{ o=JSON.parse(window.localStorage.getItem(GKEY)||'null'); }catch(e){ o=null; }
   if(!o||o.v!==1||!Array.isArray(o.prog)||o.prog.length!==3){ o={v:1,help:false,prog:[0,0,0],won:{},end:false,days:{}}; } o.won=o.won||{}; o.days=o.days||{}; return o; }
@@ -52,14 +76,17 @@ function gmDailyCard(){
     '<div class="gm-btns"><button class="primary" type="button" data-gm="dgo">Race</button><button type="button" data-gm="home">Back</button></div>');
 }
 function gmRace(R){
-  RACE=R; gmTok++; var m=R.map,c=K.chill,k;
+  RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
+  GHOST=null; REC=null;
+  if(GH_ON){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
   var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
-  E('ready-h').textContent=m.title; E('ready-msg').textContent=m.q||''; E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
+  E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
   E('gm').hidden=true; E('gm-toast').hidden=true;
-  start(R.seed);
+  start(seed);
+  if(GH_ON){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
@@ -82,6 +109,8 @@ function gmDebrief(){
   else if(r.type==='allout'){ head='Nobody left'; sub='Every lab fell or was dissolved.'; }
   else { head='No winner'; sub='Nobody reached the end.'; }
   G.ev.forEach(function(e){ if(e.type==='fall'){ lines.push(gmFall(e)); } });
+  if(REC){ ghEnd(REC,G); }
+  if(REC&&GH_ON){ if(won){ var gs=ghStore(),gk=ghSlot(R),gb=gs[gk]; if(!gb||gb.sim!==SIM_ID||REC.end.t<gb.end.t){ gs[gk]=REC; ghStoreSet(gs); lines.push(gb&&gb.sim===SIM_ID?'A new best, ahead of '+gb.end.t.toFixed(1)+' s.':'Saved as your best. It races with you next time.'); } else { lines.push('Your best is still '+gb.end.t.toFixed(1)+' s.'); } } }
   var note=m.debrief||(G.world&&G.world.note)||'';
   if(R.mode==='daily'){
     var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();

@@ -26,3 +26,4 @@ jobs:
       - run: node experiments/pacing-the-frontier/check/game/build.mjs
       - run: git diff --exit-code -- experiments/pacing-the-frontier/check/game/game.html
       - run: node experiments/pacing-the-frontier/check/game/check.mjs
+      - run: node experiments/pacing-the-frontier/check/game/ghost-check.mjs

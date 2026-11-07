@@ -3456,7 +3456,7 @@ function draw(){
     ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(fx,GY); ctx.lineTo(fx,GY-90); ctx.stroke();
     ctx.fillStyle=COL.d; ctx.beginPath(); ctx.moveTo(fx,GY-90); ctx.lineTo(fx+26,GY-80); ctx.lineTo(fx,GY-70); ctx.fill();
   }
-    /* ghost link: drawn under the labs, never part of the sim */
+    ghDrawBest(cam,VW,FW);  /* drawn under the labs, never part of the sim */
   // labs
   for(var n=G.labs.length-1;n>=0;n--){ drawLab(G.labs[n],cam,VW,FW,n===0,n); }
   if(CM){ var rt='reach '+Math.round(reach),rw=ctx.measureText(rt).width;
@@ -3691,7 +3691,7 @@ function frame(now){
     var hm=G.labs[0],scale=(hm.out||hm.done)?4:1;
     acc+=dt*scale;
     while(acc>=1/60){
-      syncInput(); stepGame(1/60); gmTick(); acc-=1/60;
+      syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } gmTick(); acc-=1/60;
       if(G.over){running=false;endScreen();break;}
       if(!singShown&&hm.human&&!hm.out&&!hm.done&&knowsGap(hm,G.sing)){ singShown=true; showSing(hm); snd.sfx('sing'); break; }
     }
@@ -3901,11 +3901,81 @@ document.addEventListener('keydown',function(e){
   requestAnimationFrame(tick);
 })();
 
+/* ---------- recorded runs: what a ghost is, shared by the page and check/game/ghost-check.mjs ----------
+   A run is its seed, its map and every change to the player's controls, stamped with the identity of the simulation it was played on. A ghost is never a stored
+   path: it is that run raced again, in this browser, before it is shown. If this build's simulation or maps differ, or the replay does not end the way the run did,
+   the ghost refuses to load. Nothing here touches the page, so the same text runs under Node. api = {K,KSNAP,SEGS,segUse,newGame,step,G}. */
+function ghNew(sim,map,seed,chill){ return {v:1,sim:sim,map:map,seed:seed,chill:chill?1:0,inp:[],n:0,end:null}; }
+/* call once per simulation step, after the controls are set and before the step: [tick,pace,sight,height,speed,auto,rev,fwd,jump] on any change */
+function ghTick(r,i){
+  var e=[r.n,i.pace,i.w[0],i.w[1],i.w[2],i.auto?1:0,i.rev?1:0,i.fwd?1:0,i.jump?1:0],l=r.last,k,same=!!l;
+  if(l){ for(k=1;k<9;k++){ if(l[k]!==e[k]){ same=false; break; } } }
+  if(!same){ r.inp.push(e); } r.last=e.slice(); r.n++;
+}
+/* call after the step: the step clears a jump press, so a second press on the next tick must log as a change */
+function ghAfter(r,i){ if(r.last){ r.last[8]=i.jump?1:0; } }
+/* every number that says how a race went: one bit of difference anywhere in any lab changes it */
+function ghPrint(G){
+  var h=2166136261,b=new Float64Array(1),w=new Uint32Array(b.buffer);
+  function n(v){ b[0]=+v||0; h=Math.imul(h^w[0],16777619); h=Math.imul(h^w[1],16777619); }
+  n(G.t); n(G.ev.length);
+  G.labs.forEach(function(l){ n(l.x); n(l.v); n(l.jy); n(l.strikes); n(l.out?1:0); n(l.dissolved?1:0); n(l.done?1:0); n(l.pts[0]); n(l.pts[1]); n(l.pts[2]); });
+  return h>>>0;
+}
+function ghEnd(r,G){ var w=G.result||{},h=G.labs[0]; r.end={type:w.type||'none',won:w.type==='win'&&w.winner===h,t:Math.round(G.t*1000)/1000,print:ghPrint(G)}; delete r.last; return r; }
+/* the reason a run may not load in this build, or '' */
+function ghRefuse(r,sim,SEGS){
+  if(!r||r.v!==1){ return 'unknown format'; }
+  if(r.sim!==sim){ return 'recorded on a different build'; }
+  if(!SEGS.some(function(m){ return m.key===r.map; })){ return 'map not in this build'; }
+  if(typeof r.seed!=='number'||!Array.isArray(r.inp)||typeof r.n!=='number'||r.n<1||r.n>200000||!r.end){ return 'malformed'; }
+  for(var i=0,p=-1;i<r.inp.length;i++){ var e=r.inp[i]; if(!Array.isArray(e)||e.length!==9||!(e[0]>p)||e[0]>=r.n){ return 'malformed'; } p=e[0]; }
+  return '';
+}
+/* race the run again. onTick(G,tick) sees each step, for tracing. Leaves K as it found it, and a finished race in G: the caller starts its own after */
+function ghReplay(api,r,onTick){
+  var K=api.K,k,c=K.chill,I,i=0,n=0,e,G;
+  for(k in api.KSNAP){ K[k]=api.KSNAP[k]; } K.chill=r.chill;
+  api.segUse(api.SEGS.findIndex(function(m){ return m.key===r.map; })+1);
+  api.newGame(r.seed); G=api.G(); I=G.input;
+  while(!G.over&&n<r.n){
+    if(i<r.inp.length&&r.inp[i][0]===n){ e=r.inp[i++]; I.pace=e[1]; I.w=[e[2],e[3],e[4]]; I.auto=!!e[5]; I.rev=!!e[6]; I.fwd=!!e[7]; I.jump=!!e[8]; K.chill=e[5]?1:0; }
+    api.step(1/60); n++;
+    if(onTick){ onTick(G,n); }
+  }
+  var out={over:G.over,n:n,type:(G.result||{}).type||'none',t:Math.round(G.t*1000)/1000,print:ghPrint(G)};
+  K.chill=c; return out;
+}
+function ghSame(a,r){ return a.over&&a.n===r.n&&a.type===r.end.type&&a.t===r.end.t&&a.print===r.end.print; }
 /* ---------- the shipped game: start card, first-run help, three acts of three maps, map card, debrief, daily, end card ----------
    Progress lives in localStorage in try/catch, in memory if that throws. Only the next map of an act counts: a win moves the act on; any loss, a dissolve
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
+var SIM_ID='c8168b15c390f6b7';  /* the hash of the simulation section, maps included: build.mjs fills it in */
+/* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
+var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
+function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
+function ghStore(){ try{ var o=JSON.parse(window.localStorage.getItem(GH_KEY)||'null'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; } }
+function ghStoreSet(o){ var ks=Object.keys(o); while(ks.length>GH_MAX){ delete o[ks.shift()]; } try{ window.localStorage.setItem(GH_KEY,JSON.stringify(o)); }catch(e){} }
+function ghSlot(R){ return R.mode==='daily'?'d:'+R.date+':'+R.map.key:R.map.key; }
+/* race the stored best again before showing it. A run from another build, or one that does not end as it did, is dropped and says so. Returns {t,run,x,y} or {why} or null */
+function ghLoad(R){
+  var s=ghStore(),k=ghSlot(R),r=s[k],why,tr=[],m,o; if(!r){ return null; }
+  why=ghRefuse(r,SIM_ID,SEGS);
+  if(!why){ o=ghReplay({K:K,KSNAP:KSNAP,SEGS:SEGS,segUse:segUse,newGame:newGame,step:stepGame,G:function(){ return G; }},r,function(g){ var l=g.labs[0]; tr.push(l.x,heightOf(l)+l.jy,l.out||l.dissolved?1:0); }); if(!ghSame(o,r)){ why='it does not replay the same here'; } }
+  if(why){ delete s[k]; ghStoreSet(s); return {why:why}; }
+  return {run:r,tr:tr,t:r.end.t};
+}
+/* the ghost is drawn from its replay and never touches the race: a dashed outline with a label, so it reads without colour */
+function ghDrawBest(cam,VW,FW){
+  if(!GHOST||!GHOST.tr||!G){ return; }
+  var tr=GHOST.tr,i=Math.min(Math.round(G.t*60),tr.length/3)-1; if(i<0){ i=0; }
+  var x=tr[3*i],h=tr[3*i+1],gone=tr[3*i+2],U=CM?1/Z:1,sx=x-cam-C.RW,y=GY-h-C.RW,lab='Your best'+(gone?' (out)':'');
+  ctx.save(); ctx.font=FW; ctx.fillStyle=COL.ink; ctx.strokeStyle=COL.ink; ctx.lineWidth=1.2*U;
+  if(sx<-C.RW-4||sx>VW+4){ var d=Math.round(Math.abs(x-G.labs[0].x)),t=sx>VW?lab+' '+d+' ahead >':'< '+lab+' '+d+' behind',w=ctx.measureText(t).width; ctx.fillText(t,sx>VW?VW-w-6*U:6*U,GY-(CM?44:60)*U); ctx.restore(); return; }
+  ctx.globalAlpha=gone?0.45:0.9; ctx.setLineDash([3*U,2*U]); ctx.strokeRect(sx,y,C.RW,C.RW); ctx.setLineDash([]); ctx.fillText(lab,sx,y-20*U); ctx.restore();
+}
 function E(id){ return document.getElementById(id); }
 function gmLoad(){ var o=null; try{ o=JSON.parse(window.localStorage.getItem(GKEY)||'null'); }catch(e){ o=null; }
   if(!o||o.v!==1||!Array.isArray(o.prog)||o.prog.length!==3){ o={v:1,help:false,prog:[0,0,0],won:{},end:false,days:{}}; } o.won=o.won||{}; o.days=o.days||{}; return o; }
@@ -3955,14 +4025,17 @@ function gmDailyCard(){
     '<div class="gm-btns"><button class="primary" type="button" data-gm="dgo">Race</button><button type="button" data-gm="home">Back</button></div>');
 }
 function gmRace(R){
-  RACE=R; gmTok++; var m=R.map,c=K.chill,k;
+  RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
+  GHOST=null; REC=null;
+  if(GH_ON){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
   var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
-  E('ready-h').textContent=m.title; E('ready-msg').textContent=m.q||''; E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
+  E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
   E('gm').hidden=true; E('gm-toast').hidden=true;
-  start(R.seed);
+  start(seed);
+  if(GH_ON){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
@@ -3985,6 +4058,8 @@ function gmDebrief(){
   else if(r.type==='allout'){ head='Nobody left'; sub='Every lab fell or was dissolved.'; }
   else { head='No winner'; sub='Nobody reached the end.'; }
   G.ev.forEach(function(e){ if(e.type==='fall'){ lines.push(gmFall(e)); } });
+  if(REC){ ghEnd(REC,G); }
+  if(REC&&GH_ON){ if(won){ var gs=ghStore(),gk=ghSlot(R),gb=gs[gk]; if(!gb||gb.sim!==SIM_ID||REC.end.t<gb.end.t){ gs[gk]=REC; ghStoreSet(gs); lines.push(gb&&gb.sim===SIM_ID?'A new best, ahead of '+gb.end.t.toFixed(1)+' s.':'Saved as your best. It races with you next time.'); } else { lines.push('Your best is still '+gb.end.t.toFixed(1)+' s.'); } } }
   var note=m.debrief||(G.world&&G.world.note)||'';
   if(R.mode==='daily'){
     var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();

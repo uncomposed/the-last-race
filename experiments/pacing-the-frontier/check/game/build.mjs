@@ -9,6 +9,7 @@ import {readFileSync, writeFileSync, existsSync, unlinkSync, copyFileSync} from 
 import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
 const HERE = dirname(fileURLToPath(import.meta.url)), LES = join(HERE, '..', 'lessons');
 const REAL = existsSync(join(LES, 'ship', 'maps.js'));
 const FOLDERS = REAL ? 'campaign+showcase+ship' : 'campaign+showcase', LAST = REAL ? 'ship' : 'showcase';
@@ -83,7 +84,9 @@ rep("e.target.id!=='ready-camp'", "e.target.id!=='ready-back'");
 rep("gap:function(){ return '<b>Gap ahead.</b> '", "gap:function(){ return '<b>Box ahead.</b> '");
 rep("'This gap needs speed. Move the dot", "'This box needs speed. Move the dot");
 cut('  /* "How to play" on the Ready card', '})();\n\n/* knobs */');
-cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('game.js') + '\n');
+cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + '\n');
+rep('syncInput(); stepGame(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } gmTick(); acc-=1/60;');
+rep('    /* ghost link: drawn under the labs, never part of the sim */\n', '    ghDrawBest(cam,VW,FW);  /* drawn under the labs, never part of the sim */\n');
 cut("var qh=/[?&]hidden=(0|1)/", "if(window.HIDDEN){", "window.HIDDEN=true; window.NBOX=1; window.WF0=null;\n");
 rep("  K.stepGaps=1; var hsgi=$('k-stepGaps'); if(hsgi){ hsgi.checked=true; $('o-k-stepGaps').textContent='on'; }\n", "  K.stepGaps=1;\n");
 { const a = 'CM?GY-21*U:GY+86', n = S.split(a).length - 1; if (n !== 3) throw new Error('expected 3 jump labels, got ' + n); S = S.split(a).join('CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86'); }  /* phones: the jump line sits above the box label, not on it */
@@ -107,6 +110,10 @@ if (dangling.length) throw new Error('kept code uses removed names: ' + dangling
 const ids = new Set([...S.matchAll(/\bid="([\w-]+)"/g)].map(m => m[1]));
 const missing = [...new Set([...code.matchAll(/\$\('([\w-]+)'\)/g)].map(m => m[1]))].filter(i => !ids.has(i));
 if (missing.length) throw new Error('kept code uses removed elements: ' + missing.join(', '));
+
+// stamp the page with the hash of its simulation section, maps included, so a recorded run from any other build refuses to load
+{ const L = S.split('\n'), a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l => l.startsWith('window.PF={')); if (a < 0 || b < a) throw new Error('simulation section');
+  const id = createHash('sha256').update(L.slice(a, b + 1).join('\n')).digest('hex').slice(0, 16); rep("var SIM_ID='';", "var SIM_ID='" + id + "';"); }
 
 writeFileSync(join(HERE, 'game.html'), S);
 copyFileSync(join(HERE, 'game.html'), join(LES, 'lessons.html'));
