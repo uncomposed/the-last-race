@@ -3210,7 +3210,7 @@ function draw(){
         var wcl=lim(g.rise),wsc=lim(1e-9),ry=GY+(CM?20*U:70);
         ctx.lineWidth=(1/Z)*4; ctx.strokeStyle=COL.a; ctx.beginPath(); ctx.moveTo(gx,ry); ctx.lineTo(gx+Math.max(2,wcl),ry); ctx.stroke();
         ctx.strokeStyle=COL.b; ctx.beginPath(); ctx.moveTo(gx+wcl,ry); ctx.lineTo(gx+Math.max(wcl+2,wsc),ry); ctx.stroke();
-        ctx.fillStyle=sw>wcl?COL.b:COL.a; ctx.font=FW; ctx.fillText('your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \u00b7 box at least '+Math.round(sw):''),gx+(CM?4*U:0),CM?GY-21*U:GY+86);
+        ctx.fillStyle=sw>wcl?COL.b:COL.a; ctx.font=FW; ctx.fillText('your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \u00b7 box at least '+Math.round(sw):''),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
       } else if(stepOn(g)){
         /* step gaps: the bar predicts the sim's own rule (boxOutcome). Blue is clean, orange a scrape, orange hatched and outlined a fall; the word is always written, so colour never carries it alone */
         var bo=boxOutcome(tgt,g),by=GY+(CM?20*U:70),bw=Math.max(2,pw),bl=['clean','scrape','fall'][bo];
@@ -3222,12 +3222,12 @@ function draw(){
         var aw=function(w){ return a1>=g.rise?flightAltJ(v1,h1,w,u1,jd1):a1-sinkRate(jd1)*w/v1; },wc=0,lo1=0,hi1=600,q1,m1;
         if(aw(0)>=g.rise){ for(q1=0;q1<18;q1++){ m1=(lo1+hi1)/2; if(aw(m1)>=g.rise){lo1=m1;} else {hi1=m1;} } wc=lo1; }
         ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(gx+wc,by-8*U); ctx.lineTo(gx+wc,by+8*U); ctx.stroke();
-        ctx.fillText('your jump now: '+bl+' \u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),gx+(CM?4*U:0),CM?GY-21*U:GY+86);
+        ctx.fillText('your jump now: '+bl+' \u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
       } else {
       ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=(1/Z)*4;
       ctx.beginPath(); ctx.moveTo(gx,GY+(CM?20*U:70)); ctx.lineTo(gx+cover,GY+(CM?20*U:70)); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
-      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?GY-21*U:GY+86); }
+      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86); }
     }
   }
   // sight bracket

@@ -86,6 +86,7 @@ cut('  /* "How to play" on the Ready card', '})();\n\n/* knobs */');
 cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('game.js') + '\n');
 cut("var qh=/[?&]hidden=(0|1)/", "if(window.HIDDEN){", "window.HIDDEN=true; window.NBOX=1; window.WF0=null;\n");
 rep("  K.stepGaps=1; var hsgi=$('k-stepGaps'); if(hsgi){ hsgi.checked=true; $('o-k-stepGaps').textContent='on'; }\n", "  K.stepGaps=1;\n");
+{ const a = 'CM?GY-21*U:GY+86', n = S.split(a).length - 1; if (n !== 3) throw new Error('expected 3 jump labels, got ' + n); S = S.split(a).join('CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86'); }  /* phones: the jump line sits above the box label, not on it */
 rep("  if(!qc){ K.chill=0; ui.auto=false; $('auto').checked=false; showChill(); }\n", "  K.chill=1; ui.auto=true; $('auto').checked=true; showChill();  /* auto-jump on by default (Cole) */\n");
 cut('var qsg=/[?&]seg=', 'newGame(s0===null', "var SEGN=1; segUse(1);\n");
 rep("newGame(s0===null?(Math.random()*4294967295)>>>0:s0);\nshowSeed(); $('pace').value=ui.pace;", "newGame(1);\n$('pace').value=ui.pace;");
