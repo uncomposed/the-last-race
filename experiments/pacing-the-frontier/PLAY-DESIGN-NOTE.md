@@ -59,7 +59,7 @@ The earlier campaign had long tracks with walls, gaps, a singularity, rival rost
 
    Whether they adapt matters less than whether they give you openings.
 5. **Something new past each crest.** That can be a new hazard kind, a rival's move, or a change in the road. The aim is a course you want to see the rest of.
-6. **Strikes reset every race. If your lab is dissolved, or the world ends, the act is lost** (Cole, 2026-11-05: restarting that far back only wastes the player's time).
+6. **Strikes reset every race. Any loss, a dissolve or a world end included, retries just that map; progress in the act is never taken away** (Cole, 2026-11-06, replacing his 2026-11-05 rule that a dissolve or world end lost the act). Losing the act may come back later as a harder mode.
 7. **Acts never announce their character.** The player works it out from play. This is a dark forest, not a cheerful, well-lit one. The debrief says what it was.
 
 ## Design for play first; bots are guard rails
@@ -87,7 +87,7 @@ The first build should be two such maps, each about a minute long. Bots only che
 
 ## Decided (Cole, 2026-11-05)
 
-- Dissolved means the act is lost.
+- Dissolved means you retry that map (Cole, 2026-11-06; on 2026-11-05 it meant the act was lost).
 - Acts never announce their character.
 - Strikes are already shown in the race.
 - Coercion stays emergent: no special tools. Walls, sight shadows and rival temperaments create the openings.

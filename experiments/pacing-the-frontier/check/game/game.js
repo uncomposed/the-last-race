@@ -1,6 +1,6 @@
 /* ---------- the shipped game: start card, first-run help, three acts of three maps, map card, debrief, daily, end card ----------
-   Progress lives in localStorage in try/catch, in memory if that throws. Only the next map of an act counts: a win moves the act on; dissolved or world
-   ended loses the act (back to its first map); any other loss just retries the map. A finished map replays with nothing at stake. Strikes reset each race
+   Progress lives in localStorage in try/catch, in memory if that throws. Only the next map of an act counts: a win moves the act on; any loss, a dissolve
+   or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
 function E(id){ return document.getElementById(id); }
@@ -29,7 +29,7 @@ function gmHelp(then){
     '<li><b>Jumps</b><span>Auto-jump is on. Turn it off to jump by hand.</span>'+(touch?'':'<em>Space jumps.</em>')+'</li>'+
     '<li><b>Strikes</b><span>Hit a wall and you take a strike. '+K.strikes+' strikes dissolve your lab. Strikes reset each race.</span></li>'+
     '<li><b>Falls</b><span>Fall into a box and you are out, and the dice roll. A bad roll ends the world for every lab.</span></li>'+
-    '<li><b>Losing an act</b><span>Dissolved, or the world ended, and the act starts over. Lose any other way and you just retry the map.</span></li>'+
+    '<li><b>Losing</b><span>Lose any way you like and you retry that map. Maps you have won stay won.</span></li>'+
     '</ul><div class="gm-btns"><button class="primary" type="button" data-gm="'+(then||'home')+'">'+(then?'Start':'Back')+'</button></div>');
 }
 function gmCamp(){
@@ -91,13 +91,11 @@ function gmDebrief(){
     if(R.counts){
       if(won){ GS.prog[a-1]=m.slot; GS.won[m.key]=1; if(m.slot<3){ nextS=m.slot+1; after='Next map unlocked.'; }
         else { after='Act '+a+' is over.'+(SHIP_ACTS[a-1]&&SHIP_ACTS[a-1].line?' '+SHIP_ACTS[a-1].line:''); if(a===3){ GS.end=true; } } }
-      else if(ended||diss){ GS.prog[a-1]=0; after='Act '+a+' is lost. It starts again from its first map.'; }
       gmSave();
     } else { after='A replay. Nothing changes.'; }
     if(won&&R.counts&&nextS){ btn='<button class="primary" type="button" data-gm="map:'+a+':'+nextS+'">Next map</button><button type="button" data-gm="camp">Maps</button>'; }
     else if(won&&R.counts&&a===3){ btn='<button class="primary" type="button" data-gm="end">Go on</button>'; }
     else if(won&&R.counts){ btn='<button class="primary" type="button" data-gm="map:'+(a+1)+':1">Next act</button><button type="button" data-gm="camp">Maps</button>'; }
-    else if(R.counts&&(ended||diss)){ btn='<button class="primary" type="button" data-gm="map:'+a+':1">Restart the act</button><button type="button" data-gm="camp">Maps</button>'; }
     else { btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="camp">Maps</button>'; }
   }
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
@@ -107,7 +105,7 @@ function gmDebrief(){
 }
 function gmEndCard(){
   gmShow('<p class="eyebrow">Campaign finished</p><h1>You got to the end</h1><p>This is a game about racing and pacing at the AI frontier. You balanced getting there first, staying in the race, and keeping anyone from ending it for everyone.</p>'+
-    '<h2>What it does not show</h2><p>It is a cartoon, made for intuition. It is not evidence and it is not a prediction. The maps, the rivals and the dice were all made by hand. Winning here says nothing about what will happen in the world.</p>'+
+    '<h2>What it does not show</h2><p>It is a cartoon, made for intuition. It is not evidence and it is not a prediction. The maps and the rivals were made by hand, and the dice are only dice. Winning here says nothing about what will happen in the world.</p>'+
     '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">Replay any map</button><button type="button" data-gm="daily">Daily</button><button type="button" data-gm="home">Start card</button></div>'+GM_FOOT);
 }
 function gmWipe(){ gmShow('<h1>Start over?</h1><p>This clears your campaign progress. Daily results stay.</p><div class="gm-btns"><button type="button" data-gm="camp" class="primary">Keep my progress</button><button type="button" data-gm="wipe2">Clear it</button></div>'); }
