@@ -6,11 +6,11 @@ Status of every map: `implemented`. The numbers below are bot play, so they are 
 
 All numbers use auto-jump on (`K.chill=1`), which is what the shipped page sets by default. The lesson page `ship/page.html` opens with auto-jump off, so a browser check there must turn it on. With it on, the page and the bench agreed on the three maps I compared (20 seeds each: 20/20 vs 100%, 18/20 vs 90%, 17/20 vs 85%).
 
-Tune block: seeds 1001-1040. Held-out blocks: 9001-9040 (first check, before the last changes), 9101-9140 (The Picket only), 9201-9240 (final check, run once).
+Tune block: seeds 1001-1040. Held-out blocks: 9001-9040 (first check, before the last changes), 9101-9140 (The Picket only), 9201-9240 (check before the last redesigns, run once), 9301-9340 (The Only Box, Second Order and The Picket after their redesigns, and the key driver on ten maps, run once).
 
 ## Results, seeds 9201-9240
 
-This is the final check, run once after the last change. Campaign order is the order below. "Max-out with eyes" is `sp-hs-eyes`, "cruiser" is `sp-hs-slow`, "blind max-out" is `maxout`. The rail says the first two should lose most races. "Times" is the number of distinct finish times across the 40 seeds.
+This check ran once, before the last redesigns of The Only Box, Second Order and The Picket. Those three have new numbers in the next section; the other nine were not changed. Campaign order is the order below. "Max-out with eyes" is `sp-hs-eyes`, "cruiser" is `sp-hs-slow`, "blind max-out" is `maxout`. The rail says the first two should lose most races. "Times" is the number of distinct finish times across the 40 seeds.
 
 | Slot | Map | Strategy in a sentence | Bot | Win | Max-out with eyes | Cruiser | Blind max-out | Times |
 |---|---|---|---|---|---|---|---|---|
@@ -29,17 +29,38 @@ This is the final check, run once after the last change. Campaign order is the o
 
 Bold marks a rail not met.
 
-**The Picket is still near the line.** Its intended bot, `sp-h-tail` (sit behind the Foreman), won 55 here, 80 on 9101-9140 and 53 on 1001-1040. The 68 is `spBait`, the best of 15 bots on this block, so it is flattered by being picked after the fact. Treat this map as about 60, not safely over. This is the first campaign-completion risk to check by hand. A loss only retries the map, so it should not block a player.
+**The Picket was near the line at this check; its layout changed after, see the next section.** Its intended bot, `sp-h-tail` (sit behind the Foreman), won 55 here, 80 on 9101-9140 and 53 on 1001-1040. The 68 is `spBait`, the best of 15 bots on this block, so it is flattered by being picked after the fact. Treat this map as about 60, not safely over. This is the first campaign-completion risk to check by hand. A loss only retries the map, so it should not block a player.
 
-**One redesign each, as directed, then left alone.** Three Strikes got a stronger Ledger, The Only Box a real sprinter, Second Order a rival that buys sight. Max-out with eyes still wins all three. Second Order did improve in the tune block: the reckless rival no longer decides it by dice (world-ended share fell from 28-33 to 15), and blind max-out fell to 33. Three Strikes opens the campaign on purpose, so max-out working there becomes the habit that Long Sight (18), Elbows (0) and later maps break.
+**One redesign each, at this point.** Three Strikes got a stronger Ledger, The Only Box a real sprinter, Second Order a rival that buys sight. Max-out with eyes still wins all three. Second Order did improve in the tune block: the reckless rival no longer decides it by dice (world-ended share fell from 28-33 to 15), and blind max-out fell to 33. Three Strikes opens the campaign on purpose, so max-out working there becomes the habit that Long Sight (18), Elbows (0) and later maps break.
 
 **Two Endings was not retuned against this bot,** on the director's instruction, because Cole has played it. Max-out with eyes wins 58. That is his call.
 
 Earlier block, 9001-9040, before these changes: The Picket 55, Long Sight 63, Elbows 95, The Steward 75, Takeoff 75, Red Box 100, Trailbreaker 100, Three Strikes 80, Two Endings 100, The Only Box 63, The Ladder 88, Second Order 65.
 
 Unconfirmed reports from the ship manager, from a few hand runs:
-1. The Foreman stalling near x 866 after being passed. Not reproduced: in 200 bot races on 1001-1040 it never stood still for more than 6 seconds. A human run may differ.
+1. The Foreman stalling after being passed. Bots did not reproduce it: in 200 bot races on 1001-1040 it never stood still for more than 6 seconds. The key driver did, on 2 of seeds 1-14 of The Picket. On seed 1 the Foreman takes a strike, then sits at the wall at x 951, height 118, from about t 20 to t 299 with its meters stuck at 30/80/76. Its top height with a jump is 114. If you then dissolve, the race does not end until the 300 second limit. Why its meters stop growing is not diagnosed. Not fixed, because a change to the rival would change the held-out numbers.
 2. Long Sight won in 41.9 s by standing about 18 s with lowest sight, then flooring it. Not checked. If it holds, it skips the sight lesson.
+
+## The last redesigns, seeds 9301-9340
+
+Each was redesigned from why max-out won, tuned on 1001-1040, then run once on 9301-9340. Blind max-out was read afterwards from a second run of the same seeds, with nothing changed.
+
+| Map | Block | Strategy in a sentence | Bot | Win | Max-out with eyes | Cruiser | Blind max-out |
+|---|---|---|---|---|---|---|---|
+| The Only Box, before | 9201-9240 | Build at a steady pace: a bet on the width | `sp-even-slow` | 68 | **68** | **68** | 33 |
+| The Only Box, after | 1001-1040 (tune) | Run flat out from the line, stop at the box, and take the time it needs | `spFirst` | 85 | 58 | 58 | 48 |
+| The Only Box, after | 9301-9340 | same | `spFirst` | 80 | 48 | 48 | 53 |
+| Second Order, before | 9201-9240 | Slow for the towers and look behind them | `sp-hs-eyes` | 68 | **68** | **68** | 33 |
+| Second Order, after | 1001-1040 (tune) | Cross each tower only as fast as you must, so you can stop on the far side | `spLook` | 83 | 63 | 63 | 28 |
+| Second Order, after | 9301-9340 | same | `spLook` | 75 | 45 | 43 | 15 |
+| The Picket, before | 9201-9240 | Buy mostly height, get in front, and hold your pace near the Foreman | `spBait` | 68 | 23 | 25 | 0 |
+| The Picket, after | 1001-1040 (tune) | Follow the Foreman through the walls, buying height and speed, and pass it on the long run to the finish | `sp-hs-tail` | 85 | 20 | 18 | 0 |
+| The Picket, after | 9301-9340 | same | `sp-hs-tail` | 88 | 18 | 20 | 0 |
+
+**Why max-out won, and what changed.**
+1. The Only Box: Tail's own fall decided the race, whatever you did, so every line tied. Now Tail starts 500 back and is faster, the box is farther down the road with a small rise, and you can win only by reaching it with room to stop. Tail runs blind into a box 100 or 130 wide and falls, as the frame shows. `sp-s-eyes` and `sp-vs-eyes` also win 80 on 9301-9340: they buy speed and read the road, which is the same idea. World-ended is 20 for all of them, the fall odds of the rival.
+2. Second Order: a bot could carry its speed over a tower and still clear what was behind. Now the box behind is 110-124 wide with rise 40, close enough that charging over the tower leaves no room to stop and build, and Scout starts 200 back. The bot that crosses only as fast as it must beats max-out with eyes by 30. Its fall share is still 18 on 9301-9340.
+3. The Picket: I changed the layout rather than the sentence. The run-out went from 160 to 450, so the follow line has room to pass. It wins 88 on 9301-9340. The nearest earlier line, `sp-h-tail`, won 55 on 9201-9240 before the change and 58 on 9301-9340 after it. `spBait` still wins 75 on the tune block and was not in the held-out run, so bait is a second answer for bots. Under key lag it dissolves (0-2 of 20).
 
 ## Can a person win? Scripted keys with human lag (2026-11-06)
 
@@ -54,10 +75,35 @@ Unconfirmed reports from the ship manager, from a few hand runs:
 | Red Box | 0 | 17 | `frames/red-box.jpg` |
 | Trailbreaker | 0 | 15 | `frames/trailbreaker.jpg` |
 | The Ladder | 14 | 15 | `frames/ladder.jpg` |
+| The Only Box | 5-7 | 14 | `frames/only-box.jpg` |
+| Second Order | not separated | 15 | `frames/second-order.jpg` |
+| The Picket | not separated | 6 | `frames/picket.jpg` |
+
+Held-out, one run on seeds 9301-9340, wins out of 40 with the settings fixed in `CFG`:
+
+| Map | Wins of 40 | Fell | Dissolved | World ended |
+|---|---|---|---|---|
+| Red Box | 40 | 0 | 0 | 0 |
+| Elbows | 36 | 3 | 0 | 1 |
+| The Steward | 32 | 7 | 0 | 4 |
+| Takeoff | 32 | 0 | 4 | 1 |
+| Trailbreaker | 32 | 4 | 0 | 1 |
+| The Only Box | 28 | 1 | 0 | 8 |
+| The Ladder | 28 | 1 | 0 | 4 |
+| Second Order | 28 | 7 | 1 | 0 |
+| Three Strikes | 21 | 2 | 0 | 11 |
+| The Picket | 6 | 0 | 5 | 0 |
+
+The driver is not fully repeatable: a second Only Box run on the same seeds gave 26, not 28, split 11 of 13 at width 50, 9 of 14 at width 100, 6 of 13 at width 130. Three Strikes loses most of its misses to the world ending, not to the keys.
 
 "A person's margins" means: read the road a second or more ahead of where you are, treat boxes as 10-35% wider than they look, and brake with the Back key. The margin values were picked per map from four tries on seeds 1-20, so those numbers are flattered; the held-out run is below.
 
 **Hard to win, and why.** Three Strikes, The Steward, Red Box, Trailbreaker and Second Order lose almost every race if you drive the bot's line with lag, because that line brakes on the last possible curve. At speed 120 a stop takes about 465 of road, and half a second of lag adds 60. Three Strikes is the tightest: its boxes are 540-660 apart, so flooring over one box can leave no room to stop for the next. Trailbreaker asks for the most patience, since the winning time is about 52 s, most of it standing behind Pioneer. None of these turned out to be bot-only, so none was redesigned for this.
+
+**The hardest three.**
+1. The Picket, 6 of 40, is the first campaign-completion risk. Most losses are close: on seeds 1-14 most ended 50-150 short of the flag at about speed 150, so under a second or two behind. Two of those 14 ended on three strikes. A run-out of 620 gave the same 6 of 20, so the road is not the fix, and I went back to 450. A person who learns the wall order on retries should do better than this driver, but that is a guess until someone plays it. If a person cannot win it, this is the map to soften first.
+2. The Only Box needs a habit the bot does not have. Sight 45 sees the box about 278 away and a stop from speed 87 takes 243, so half a second of lag at full speed leaves no room, and a box seen late is fallen into. Easing to 85% pace from x 1650 until the box is in sight, and trusting the "clears" readout rather than adding a margin, took it from 5-7 of 20 to 14 of 20 on the tuning seeds. That setting was tried on seeds 1-20 before the held-out run. Note that a first-time player does not know where the box is, so this is a line for the second try.
+3. Second Order, 28 of 40, falls 7 times. My reading, not traced seed by seed: the same stopping margin, this time behind a tower.
 
 ## What varies by seed
 
@@ -70,7 +116,7 @@ Unconfirmed reports from the ship manager, from a few hand runs:
 - Trailbreaker: box widths and spacing.
 - Three Strikes: which boxes are too wide to scrape.
 - Two Endings: the cellar, held or broken.
-- The Only Box: the box is 50, 100 or 130 wide. Dailies now rotate by date with date-seeded dice, so this one has only three variants; that is thin.
+- The Only Box: the box is 50, 100 or 130 wide, and its place and rise move. Dailies rotate by date with date-seeded dice, so the road plays three ways; 25-30 distinct finish times, but still the thinnest daily.
 - The Ladder: step heights and spacing.
 - Second Order: what is behind each tower.
 
@@ -82,7 +128,7 @@ Each map's comment in `maps.js` says what the frame showed. The Steward's frame 
 
 1. Whether any map is fun. A bot winning says nothing about that.
 2. Whether a person finds these strategies. Trailbreaker, Red Box and Elbows are close to all or nothing for bots: the right idea wins almost always and the wrong one almost never. That could be a good puzzle or an unfair one.
-3. Rails not met: see the bold cells above.
+3. Rails not met: see the bold cells above. The redesigns cleared them on The Only Box and Second Order; Three Strikes and Two Endings stay as they are on purpose.
 4. Red Box has a second easy answer: `sp-vs-bold` also wins 100, in about half the time of `spBait`. Sight and speed, flooring it, is simpler than the bait the card describes.
-5. Frames were stepped by hand because the browser pane was hidden, so I have not watched any map at real speed, and no one has judged the pacing by feel.
+5. Frames of the dailies say "ACT UNDEFINED" because my harness starts them as campaign maps; that is not in the shipped flow. Frames were stepped by hand because the browser pane was hidden, so I have not watched any map at real speed, and no one has judged the pacing by feel.
 6. `maxout` wins 100 on The Ladder and 78 on Takeoff, so "height and speed, no looking" is strong on those two.
