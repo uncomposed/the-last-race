@@ -54,3 +54,25 @@
 .gm-lb li span:first-child{flex:1 1 8em;font-weight:600}
 .gm-lbname{display:block;margin:8px 0}
 .gm-lbname input{display:block;margin-top:4px;font:inherit;padding:6px 8px;width:100%;max-width:18em;background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px}
+
+/* the playtest: map list, verdict card, export. A verdict is a word and a shape, and a choice is a filled button with a thick edge: hue never carries either alone */
+.pt-map{grid-template-columns:24px 1fr;row-gap:2px;min-height:56px}
+.pt-map span small{font:500 12.5px var(--mono);color:var(--muted);margin-left:10px}
+.pt-map span:last-child{grid-column:2}
+.pt-v,.pt-a{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pt-a{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pt-v button,.pt-a button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;padding:6px 2px;font:600 15px var(--body);background:var(--surface);border:2px solid var(--line);border-radius:6px}
+.pt-v button{min-height:64px;border-top-width:5px}
+.pt-v button i{font-style:normal;font-size:20px;line-height:1}
+.pt-v .pt-fun{border-top-color:var(--run)}
+.pt-v .pt-frustrating{border-top-color:var(--b)}
+.pt-v button[aria-pressed="true"],.pt-a button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);outline:2px solid var(--ink);outline-offset:2px}
+.pt-q{display:flex;flex-direction:column;gap:4px;font-weight:600}
+.pt-note,.pt-out{display:block;width:100%;box-sizing:border-box;margin:0;padding:10px;font:400 16px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--muted);border-radius:6px}
+.pt-note{min-height:170px;resize:vertical}
+.pt-out{min-height:150px}
+.pt-out[hidden]{display:none}
+.pt-warn{padding:8px 12px;border-left:6px solid var(--b);background:var(--surface);border-radius:4px;font-weight:600}
+.pt-link{min-height:44px}
+#pt-msg:empty{display:none}
+#pt-clr{display:flex;flex-direction:column;align-items:flex-start;gap:10px}

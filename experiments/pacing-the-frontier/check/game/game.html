@@ -392,6 +392,28 @@ html.epi-open{overflow:hidden}
 .gm-lbname{display:block;margin:8px 0}
 .gm-lbname input{display:block;margin-top:4px;font:inherit;padding:6px 8px;width:100%;max-width:18em;background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px}
 
+/* the playtest: map list, verdict card, export. A verdict is a word and a shape, and a choice is a filled button with a thick edge: hue never carries either alone */
+.pt-map{grid-template-columns:24px 1fr;row-gap:2px;min-height:56px}
+.pt-map span small{font:500 12.5px var(--mono);color:var(--muted);margin-left:10px}
+.pt-map span:last-child{grid-column:2}
+.pt-v,.pt-a{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pt-a{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pt-v button,.pt-a button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;padding:6px 2px;font:600 15px var(--body);background:var(--surface);border:2px solid var(--line);border-radius:6px}
+.pt-v button{min-height:64px;border-top-width:5px}
+.pt-v button i{font-style:normal;font-size:20px;line-height:1}
+.pt-v .pt-fun{border-top-color:var(--run)}
+.pt-v .pt-frustrating{border-top-color:var(--b)}
+.pt-v button[aria-pressed="true"],.pt-a button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink);outline:2px solid var(--ink);outline-offset:2px}
+.pt-q{display:flex;flex-direction:column;gap:4px;font-weight:600}
+.pt-note,.pt-out{display:block;width:100%;box-sizing:border-box;margin:0;padding:10px;font:400 16px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--muted);border-radius:6px}
+.pt-note{min-height:170px;resize:vertical}
+.pt-out{min-height:150px}
+.pt-out[hidden]{display:none}
+.pt-warn{padding:8px 12px;border-left:6px solid var(--b);background:var(--surface);border-radius:4px;font-weight:600}
+.pt-link{min-height:44px}
+#pt-msg:empty{display:none}
+#pt-clr{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+
 </style>
 
 <main class="wrap">
@@ -4472,7 +4494,7 @@ var GM_FOOT='<p class="gm-foot">A cartoon of an AI race, for intuition. It is no
 function gmStart(){
   var any=GS.prog[0]+GS.prog[1]+GS.prog[2]>0,d=GS.days[gmToday()];
   gmShow('<p class="eyebrow">A game about an AI race</p><h1 class="gm-logo">Pacing the Frontier</h1><p>You run an AI lab. Get to the end first. Stay in the race. And make sure nobody ends the game for everyone.</p>'+
-    '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">'+(any?'Continue':'Play')+'</button><button type="button" data-gm="daily">Daily'+(d&&d.won?' (won)':'')+'</button><button type="button" data-gm="help">How to play</button></div>'+GM_FOOT);
+    '<div class="gm-btns"><button class="primary" type="button" data-gm="camp">'+(any?'Continue':'Play')+'</button><button type="button" data-gm="daily">Daily'+(d&&d.won?' (won)':'')+'</button><button type="button" data-gm="help">How to play</button>'+(ptOn()?'<button type="button" data-gm="ptl">Playtest</button>':'')+'</div>'+GM_FOOT);
 }
 function gmHelp(then){
   var touch=!!(window.matchMedia&&window.matchMedia('(hover:none) and (pointer:coarse)').matches);
@@ -4508,20 +4530,22 @@ function gmDailyCard(){
   if(LB_ORIGIN){ lbProbe(function(){ if(LB_OK){ lbBoard(D.date,D.map.key,'gm-lbb'); } }); }
 }
 function gmRace(R){
-  RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
+  ptQuit(); RACE=R; gmTok++; var m=R.map,c=K.chill,k,seed=R.seed;
   GHOST=null; REC=null;
   if(GH_ON&&R.mode!=='gen'){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
-  var where=R.mode==='daily'?'Daily · '+R.date:R.mode==='gen'?'Drawn map '+R.gen+' · research':'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
+  var where=R.mode==='daily'?'Daily · '+R.date:R.mode==='gen'?(R.pt?'Playtest · drawn map '+R.gen:'Drawn map '+R.gen+' · research'):'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
   E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='camp'?'Back to maps':'Back';
   E('gm').hidden=true; E('gm-toast').hidden=true;
   start(seed);
-  if(R.mode!=='gen'&&(GH_ON||(LB_OK&&R.mode==='daily'))){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
+  if(R.mode==='gen'){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); REC.at=new Date().toISOString(); }  /* the playtest log: every race on a drawn map, with the dice it really got. No ghost is drawn or stored */
+  else if(GH_ON||(LB_OK&&R.mode==='daily')){ REC=ghNew(SIM_ID,m.key,G.seed,K.chill); }
   try{ window.scrollTo(0,0); }catch(e){}
 }
-/* drawn maps (issue 36 step 2, research only): ?gen=1&seed=N goes straight into the pattern generator's map N. Nothing is saved or counted.
+/* drawn maps (issue 36 step 2, research only): ?gen=1&seed=N goes straight into the pattern generator's map N. Nothing counts toward the campaign;
+   each race is recorded in the playtest log on this device (below).
    On a map with a hidden finish the flag and the minimap tick stay hidden until the finish is within your sight, and the minimap is scaled to what
    you know instead of to the finish */
 function gmFinSeen(){ var h=G.labs[0]; return !(SEG&&SEG.hideFinish)||G.over||G.finish-h.x<=sightRange(h); }
@@ -4531,24 +4555,143 @@ function gmMapLen(t){ if(gmFinSeen()){ return G.finish; } var f=t.x+sightRange(t
   for(i=0;i<G.gaps.length;i++){ if(knowsGap(t,i)){ f=Math.max(f,G.gaps[i].x+G.gaps[i].W); } }
   return f+600; }
 function gmGenSeed(){ var q=/[?&]gen=1(?:&|$)/.test(location.search)&&/[?&]seed=(\d{1,9})(?:&|$)/.exec(location.search); return q&&typeof gnDraw==='function'?+q[1]:0; }
-function gmGenRace(seed){ var m=null,i; for(i=0;i<SEGS.length;i++){ if(SEGS[i].key==='gn-'+seed){ m=SEGS[i]; } }
-  if(!m){ m=gnDraw(seed); m.soft=m.soft||{n:3}; Object.defineProperty(m,'labs',{get:function(){ return shLabs(this.P); },enumerable:true,configurable:true}); SEGS.push(m); }
-  m.title='Drawn map '+seed; gmRace({mode:'gen',map:m,gen:seed,counts:false}); }
+/* one line, and nothing of the page in it: check/lessons/gen/replay-log.mjs runs this same text under Node to register a drawn map before replaying it */
+function gmGenMap(seed){ var m=null,i; for(i=0;i<SEGS.length;i++){ if(SEGS[i].key==='gn-'+seed){ m=SEGS[i]; } } if(!m){ m=gnDraw(seed); m.soft=m.soft||{n:3}; Object.defineProperty(m,'labs',{get:function(){ return shLabs(this.P); },enumerable:true,configurable:true}); SEGS.push(m); } return m; }
+function gmGenRace(seed,pt){ var m=gmGenMap(seed); m.title=pt?'Map '+pt+' of '+PT_MAPS.length:'Drawn map '+seed; gmRace({mode:'gen',map:m,gen:seed,counts:false,pt:pt||0}); }
+/* ---------- the playtest (issue 36 step 3): every race on a drawn map is recorded on this device, each map gets a verdict, and the log is copied out by hand ----------
+   ?playtest=1 lists the data book's six maps in its play order (check/lessons/gen/DATABOOK.md, section 7). A record is the ghost's run (the dice, the map and
+   every change to the controls) plus how the race went, so check/lessons/gen/replay-log.mjs can race it again under Node. A race left after Go is recorded as quit.
+   Nothing is sent anywhere. One localStorage key, in try/catch, in memory if that throws; when a write fails for size the oldest races lose their controls and
+   keep their results, and the cards say so. A verdict is a word and a shape, and a choice is a filled button: colour never carries either alone. */
+var PT_KEY='pf-playtest-v1',PT_MAPS=[6,37,180,85,164,72],PT=ptLoad(),PT_MEM=false,PT_T=0,PT_LAST=null,PT_CUR=0;
+/* question 3 of each map, word for word from the test sheet. Only the verdict card shows it: before the race it would give the map away */
+var PT_Q=['Did the wall staircase after the tall box catch you short of height? Was anything unfair?','When did it get interesting? Was anything unfair?','Did you win just by following the Warden? Was there a moment you had to think?',
+  'At the wide box, did you wait for the Pioneer or jump? Was anything unfair?','Did the first wall feel fair? What build won it for you?','Did the early strike in the pack\'s shadow feel fair? Was there a real decision, or just floor it?'];
+var PT_V=[['fun','Fun','&#9733;'],['bland','Bland','&#9644;'],['frustrating','Frustrating','&#10005;']];
+function ptOn(){ return /[?&]playtest=1(?:&|$)/.test(location.search)&&typeof gnDraw==='function'; }
+function ptNew(){ return {v:1,runs:[],verdicts:{},again:null}; }
+function ptLoad(){ var o=null; try{ o=JSON.parse(window.localStorage.getItem(PT_KEY)||'null'); }catch(e){ o=null; } if(!o||o.v!==1||!Array.isArray(o.runs)){ o=ptNew(); } o.verdicts=o.verdicts||{}; return o; }
+/* write the log. If it does not fit, cut the controls of the oldest race that still has them and try again. If nothing fits, put the controls back and keep the log in
+   memory; from then on a failed write is not retried with cuts, so a browser with no storage at all does not pay for them on every save */
+function ptStore(){
+  var rs=PT.runs,cut=[],i=0; if(PT_T){ clearTimeout(PT_T); PT_T=0; }
+  for(;;){
+    try{ window.localStorage.setItem(PT_KEY,JSON.stringify(PT)); PT_MEM=false; return; }catch(e){ if(PT_MEM){ return; } }
+    while(i<rs.length&&!rs[i].inp){ i++; } if(i>=rs.length){ break; }
+    cut.push([rs[i],rs[i].inp]); delete rs[i].inp; rs[i].cut=1;
+  }
+  cut.forEach(function(c){ c[0].inp=c[1]; delete c[0].cut; }); PT_MEM=true;
+}
+function ptSoon(){ if(!PT_T){ PT_T=setTimeout(ptStore,300); } }
+function ptFlush(){ if(PT_T){ ptStore(); } }
+function ptRuns(d){ return PT.runs.filter(function(r){ return r.draw===d; }); }
+function ptWon(d){ return ptRuns(d).some(function(r){ return !!(r.end&&r.end.won); }); }
+function ptVerdictOf(d,make){ return PT.verdicts[d]||(make?(PT.verdicts[d]={v:null,note:''}):{}); }  /* make: about to write to it */
+function ptV(k){ for(var i=0;i<PT_V.length;i++){ if(PT_V[i][0]===k){ return PT_V[i]; } } return null; }
+function ptTries(n){ return n+(n===1?' try':' tries'); }
+function ptRaces(){ var n=PT.runs.length; return n+(n===1?' race':' races'); }
+function ptWarn(){ var n=PT.runs.filter(function(r){ return r.cut; }).length;
+  return PT_MEM?'Not saved: this browser will not store the log. It lasts until this page closes, so copy it before you leave.':n?'Storage is full. The oldest '+(n===1?'race':n+' races')+' kept the result and lost the controls. Copy the full log, then clear it.':''; }
+function ptWarnP(){ var w=ptWarn(); return w?'<p class="pt-warn">'+gmEsc(w)+'</p>':''; }
+/* the player's own events and every fall, with only the numbers that say what happened */
+function ptEvs(){
+  var o=[],ks=['gap','bar','h','n','of','what','v','w','cov','roll','odds'];
+  G.ev.forEach(function(e){ if(!e.human&&e.type!=='fall'){ return; } var q={t:e.t,e:e.type,x:e.x},i; if(!e.human){ q.who=e.who; }
+    for(i=0;i<ks.length;i++){ if(e[ks[i]]!==undefined){ q[ks[i]]=e[ks[i]]; } } if(e.ext){ q.ext=1; } if(e.again){ q.again=1; } o.push(q); });
+  return o;
+}
+function ptLive(){ return !!(REC&&RACE&&RACE.mode==='gen'&&REC.n>0&&G&&!G.over); }
+function ptQuit(){ if(ptLive()){ ptAdd(true); } }
+/* one record per race. quit: Go was pressed and the race was left before its end, so there is no end, only where it stood. keep: the page is being hidden,
+   so store what there is and go on recording; the same record is filled in again if the race goes on */
+function ptAdd(quit,keep){
+  var r=REC,h=G.labs[0],d=RACE.gen,e=r.pt||{}; ghEnd(r,G);
+  e.v=1; e.draw=d; e.key=r.map; e.sim=r.sim; e.seed=r.seed; e.chill=r.chill; e.at=r.at; e['try']=e['try']||ptRuns(d).length+1; e.n=r.n; e.inp=r.inp; delete e.cut;
+  e.end=quit?null:r.end; if(quit){ e.quit={t:r.end.t,print:r.end.print}; } else { delete e.quit; }
+  e.strikes=h.strikes||0; e.out=h.out?1:0; e.dissolved=h.dissolved?1:0; e.ev=ptEvs();
+  if(!r.pt){ PT.runs.push(e); } r.pt=e; r.end=null; PT_LAST=e; if(!keep){ REC=null; } ptStore();
+}
+function ptRace(i){ PT_CUR=i; gmGenRace(PT_MAPS[i-1],i); }
+function ptList(){
+  var h='<p class="eyebrow">Playtest</p><h1>Six maps</h1><p>Play them in this order, about two tries each. Every race is recorded on this device, win or lose.</p>'+ptWarnP(),next=0,i,d,n,v;
+  for(i=0;i<PT_MAPS.length;i++){ if(!next&&!ptVerdictOf(PT_MAPS[i]).v){ next=i+1; } }
+  for(i=0;i<PT_MAPS.length;i++){ d=PT_MAPS[i]; n=ptRuns(d).length; v=ptV(ptVerdictOf(d).v);
+    h+='<button type="button" class="gm-map pt-map'+(next===i+1?' next':'')+'" data-gm="ptgo:'+(i+1)+'"><i aria-hidden="true">'+(v?v[2]:next===i+1?'&#9654;':'&middot;')+'</i><span>Map '+(i+1)+'<small>drawn map '+d+'</small></span>'+
+      '<span>'+(n?ptTries(n)+', '+(ptWon(d)?'won':'not won yet')+', '+(v?v[1]:'no verdict yet'):'Not played')+'</span></button>'; }
+  gmShow(h+'<div class="gm-btns"><button type="button" data-gm="ptx">Copy my log</button><button type="button" data-gm="ptfin">Finish</button><button type="button" data-gm="home">Start page</button></div><p class="gm-sub">'+ptRaces()+' recorded on this device. Nothing leaves this device unless you copy it.</p>');
+}
+function ptVerdict(i){
+  var d=PT_MAPS[i-1],n=ptRuns(d).length,v=ptVerdictOf(d),last=i===PT_MAPS.length; PT_CUR=i;
+  gmShow('<p class="eyebrow">Playtest &middot; Map '+i+' of '+PT_MAPS.length+'</p><h1>How was Map '+i+'?</h1><p class="gm-sub">'+ptTries(n)+', '+(ptWon(d)?'won':'not won')+'.</p>'+
+    '<div class="pt-v" role="group" aria-label="Your verdict">'+PT_V.map(function(q){ return '<button type="button" class="pt-'+q[0]+'" data-gm="ptv:'+q[0]+'" aria-pressed="'+(v.v===q[0])+'"><i aria-hidden="true">'+q[2]+'</i>'+q[1]+'</button>'; }).join('')+'</div>'+
+    '<label class="pt-q" for="pt-note"><span>One word for it.</span><span>'+gmEsc(PT_Q[i-1])+'</span></label><textarea class="pt-note" id="pt-note" rows="6" aria-describedby="pt-saved">'+gmEsc(v.note||'')+'</textarea>'+
+    '<p class="gm-sub" id="pt-saved">Saved as you type. Skip anything you like.</p>'+ptWarnP()+
+    '<div class="gm-btns"><button class="primary" type="button" data-gm="'+(last?'ptfin':'ptnext')+'">'+(last?'Finish':'Next map')+'</button><button type="button" data-gm="ptgo:'+i+'">Race it again</button><button type="button" data-gm="ptl">Map list</button></div>');
+}
+function ptPress(sel,on){ var bs=E('gm-in').querySelectorAll(sel),i; for(i=0;i<bs.length;i++){ bs[i].setAttribute('aria-pressed',String(bs[i].getAttribute('data-gm')===on)); } }
+function ptExportHtml(){
+  return '<p><b>'+ptRaces()+' recorded on this device.</b> Nothing leaves this device unless you copy it.</p>'+ptWarnP()+
+    '<div class="gm-btns"><button class="primary" type="button" data-gm="ptcs">Copy summary</button><button type="button" data-gm="ptcf">Copy full log</button></div>'+
+    '<p class="gm-sub">The summary is short text to paste into a chat. The full log adds every change to your controls, so each race can be raced again exactly, and the name of this browser.</p>'+
+    '<p id="pt-msg" role="status" aria-live="polite"></p><textarea class="pt-out" id="pt-out" rows="8" readonly hidden aria-label="Text to copy by hand"></textarea>'+
+    '<div id="pt-clr"><button type="button" class="gm-link pt-link" data-gm="ptclr">Clear my playtest log</button></div>';
+}
+function ptFinish(){
+  gmShow('<p class="eyebrow">Playtest &middot; the end</p><h1>Which map would you play again?</h1><div class="pt-a" role="group" aria-label="The map you would play again">'+
+    PT_MAPS.map(function(d,i){ return '<button type="button" data-gm="pta:'+d+'" aria-pressed="'+(PT.again===d)+'">Map '+(i+1)+'</button>'; }).join('')+'<button type="button" data-gm="pta:none" aria-pressed="'+(PT.again==='none')+'">None</button></div>'+
+    '<h2>Copy your log</h2>'+ptExportHtml()+'<div class="gm-btns"><button type="button" data-gm="ptl">Map list</button></div>');
+}
+function ptExport(){ gmShow('<p class="eyebrow">Playtest</p><h1>Your log</h1>'+ptExportHtml()+'<div class="gm-btns"><button type="button" data-gm="'+(ptOn()?'ptl':'home')+'">Back</button></div>'); }
+/* how one race went, in a few plain words */
+function ptWord(r){
+  var e=r.end,s=r.strikes?', '+r.strikes+(r.strikes===1?' strike':' strikes'):'';
+  if(!e){ return 'quit at '+(r.quit?r.quit.t.toFixed(1):'?')+' s'+s; }
+  return (e.won?'won':e.type==='all'?'lost, the world ended':r.dissolved?'lost, dissolved':r.out?'lost, fell':e.type==='win'?'lost, a rival crossed first':e.type==='allout'?'lost, nobody left':'no winner')+', '+e.t.toFixed(1)+' s'+s;
+}
+function ptSummary(){
+  var L=['Pacing the Frontier playtest. '+ptRaces()+'. Build '+SIM_ID+'. Copied '+new Date().toISOString().slice(0,16).replace('T',' ')+' UTC.'],other={},a=PT.again;
+  function block(name,d){ var rs=ptRuns(d),v=ptVerdictOf(d),w=0,q=ptV(v.v),note=(v.note||'').trim(); rs.forEach(function(r){ if(!w&&r.end&&r.end.won){ w=r['try']; } });
+    L.push(''); L.push(name+': '+(rs.length?ptTries(rs.length)+', '+(w?'first won on try '+w:'not won'):'not played')+'. Verdict: '+(q?q[1]:'none')+'.');
+    rs.forEach(function(r){ L.push('  Try '+r['try']+': '+ptWord(r)+'.'); }); if(note){ L.push('  Note: '+note); } }
+  PT_MAPS.forEach(function(d,i){ block('Map '+(i+1)+' (drawn map '+d+')',d); });
+  PT.runs.forEach(function(r){ if(PT_MAPS.indexOf(r.draw)<0&&!other[r.draw]){ other[r.draw]=1; block('Drawn map '+r.draw+' (not one of the six)',r.draw); } });
+  L.push(''); L.push('Would play again: '+(a==='none'?'none':a?'Map '+(PT_MAPS.indexOf(a)+1)+' (drawn map '+a+')':'not answered')+'.');
+  return L.join('\n');
+}
+function ptFull(){ return JSON.stringify({v:1,what:'pf-playtest',sim:SIM_ID,copied:new Date().toISOString(),browser:String(navigator.userAgent||''),maps:PT_MAPS,again:PT.again,verdicts:PT.verdicts,runs:PT.runs}); }
+/* copy inside the click. If the browser refuses or cannot, show the text selected, to copy by hand */
+function ptCopy(text,what){
+  var msg=E('pt-msg'),box=E('pt-out');
+  function byHand(){ if(!E('pt-out')){ return; } box.value=text; box.hidden=false; msg.textContent='This browser would not copy it. '+what+' is in the box below, selected: copy it by hand.'; try{ box.focus(); box.select(); box.setSelectionRange(0,text.length); }catch(e){} }
+  box.hidden=true; msg.textContent='';
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(function(){ if(E('pt-msg')){ msg.textContent=what+' copied, '+text.length+' characters. Paste it where you want it.'; } },byHand); } else { byHand(); } }catch(e){ byHand(); }
+}
+function ptClick(a){
+  var p=a.split(':'),v;
+  if(a==='ptl'){ ptList(); } else if(p[0]==='ptgo'){ ptRace(+p[1]); } else if(a==='ptdone'){ ptVerdict(RACE.pt); }
+  else if(p[0]==='ptv'){ v=ptVerdictOf(PT_MAPS[PT_CUR-1],true); v.v=v.v===p[1]?null:p[1]; v.at=new Date().toISOString(); ptPress('.pt-v button','ptv:'+v.v); ptStore(); }
+  else if(a==='ptnext'){ ptRace(PT_CUR+1); } else if(a==='ptfin'){ ptFinish(); } else if(a==='ptx'){ ptExport(); }
+  else if(p[0]==='pta'){ PT.again=p[1]==='none'?'none':+p[1]; ptPress('.pt-a button',a); ptStore(); }
+  else if(a==='ptcs'){ ptCopy(ptSummary(),'The summary'); } else if(a==='ptcf'){ ptCopy(ptFull(),'The full log'); }
+  else if(a==='ptclr'){ E('pt-clr').innerHTML='<p>Clear '+ptRaces()+', every verdict and every note from this device? This cannot be undone.</p><div class="gm-btns"><button type="button" class="primary" data-gm="ptkeep">Keep my log</button><button type="button" data-gm="ptclr2">Clear it</button></div>'; }
+  else if(a==='ptkeep'){ E('pt-clr').innerHTML='<button type="button" class="gm-link pt-link" data-gm="ptclr">Clear my playtest log</button>'; }
+  else if(a==='ptclr2'){ PT=ptNew(); PT_LAST=null; PT_MEM=false; try{ window.localStorage.removeItem(PT_KEY); }catch(e){} if(ptOn()){ ptList(); } else { ptExport(); } }
+}
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
 function gmRestart(){ if(RACE){ running=false; gmRace(RACE); } }
-function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else if(RACE&&RACE.mode==='gen'){ gmStart(); } else { gmCamp(); } }
+function gmLeave(){ ptQuit(); gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else if(RACE&&RACE.mode==='gen'){ if(!RACE.pt){ gmStart(); } else if(ptRuns(RACE.gen).length){ ptVerdict(RACE.pt); } else { ptList(); } } else { gmCamp(); } }  /* leaving a playtest map you have tried asks for its verdict: giving up is data */
 /* the exact roll shows when a fall rolls: a short line over the track */
 var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
 function gmTick(){
   if(gmEvG!==G){ gmEvG=G; gmEvN=0; }
   for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
   if(gmToastT&&G.t>gmToastT){ E('gm-toast').hidden=true; gmToastT=0; }
-  /* You are out and the race goes on at 4x. Rivals can sit at a wall until the time limit, so after 60 game seconds, about 15 real ones, run the rest unseen and show the real result. A run you are out of is never saved or published, so nothing relies on these steps being logged. */
+  /* You are out and the race goes on at 4x. Rivals can sit at a wall until the time limit, so after 60 game seconds, about 15 real ones, run the rest unseen and show the real result. These steps are logged like any other (the controls no longer change), so a recorded loss replays to the same end. */
   var h=G.labs[0];
-  if(h.out||h.dissolved){ if(gmOutG!==G){ gmOutG=G; gmOutT=G.t; } if(G.t-gmOutT>=GM_OUT_WATCH){ var g=0; while(!G.over&&g++<20000){ stepGame(1/60); } } }
+  if(h.out||h.dissolved){ if(gmOutG!==G){ gmOutG=G; gmOutT=G.t; } if(G.t-gmOutT>=GM_OUT_WATCH){ var g=0; while(!G.over&&g++<20000){ if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } } } }
 }
 function gmFall(e){ return (e.who==='You'?'You':e.who)+' fell into box '+e.gap+'. The dice rolled '+e.roll+' against '+e.odds+': '+(e.ext?'the world ended.':'only that lab is out.'); }
-function gmEnd(){ var tok=++gmTok; setRev(false); setFwd(false); setTimeout(function(){ if(tok===gmTok){ gmDebrief(); } },600); }
+function gmEnd(){ if(REC&&RACE&&RACE.mode==='gen'){ ptAdd(false); } var tok=++gmTok; setRev(false); setFwd(false); setTimeout(function(){ if(tok===gmTok){ gmDebrief(); } },600); }
 function gmDebrief(){
   var R=RACE,m=R.map,r=G.result,h=G.labs[0],won=r.type==='win'&&r.winner===h,ended=r.type==='all',diss=!!h.dissolved,head,sub='',h2='',btn='',lines=[],t=G.t.toFixed(1),a=m.act,after='';
   if(won){ head='You won'; sub='You crossed first in '+t+' s.'; }
@@ -4565,7 +4708,9 @@ function gmDebrief(){
     var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();
     sub='Daily for '+R.date+'. '+sub; btn='<button class="primary" type="button" data-gm="dgo">Race again</button><button type="button" data-gm="home">Back</button>';
   } else if(R.mode==='gen'){
-    after='A drawn map from the pattern generator, for research. Nothing is saved.'; btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="home">Start page</button>';
+    /* in the playtest the generator's own label for the map stays off the result card: it names the patterns, and the verdict should come first */
+    after=(R.pt?'':'A drawn map from the pattern generator, for research. ')+(PT_LAST?'Try '+PT_LAST['try']+' at this map, recorded on this device.':''); if(ptWarn()){ lines.push(ptWarn()); }
+    btn='<button class="primary" type="button" data-gm="again">Race again</button>'+(R.pt?'<button type="button" data-gm="ptdone">Done with this map</button>':'<button type="button" data-gm="home">Start page</button><button type="button" data-gm="ptx">Playtest log</button>');
   } else {
     var nextS=0;
     if(R.counts){
@@ -4581,7 +4726,7 @@ function gmDebrief(){
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
     (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
-    (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
+    (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(!R.pt&&(note||m.meta)?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
   if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.date].tries); }
 }
 function gmEndCard(){
@@ -4595,8 +4740,9 @@ function gmBoot(){
   E('ready').hidden=true;
   E('gm').addEventListener('click',function(e){
     var b=e.target.closest?e.target.closest('[data-gm]'):null; if(!b||b.disabled){return;} var a=b.getAttribute('data-gm'),p;
-    snd.unlock();
-    if(a==='home'){ gmStart(); } else if(a==='help'){ gmHelp(); }
+    snd.unlock(); ptFlush();
+    if(a.indexOf('pt')===0){ ptClick(a); }
+    else if(a==='home'){ gmStart(); } else if(a==='help'){ gmHelp(); }
     else if(a==='camp'){ if(!GS.help){ gmHelp('camp'); } else { gmCamp(); } }
     else if(a==='daily'){ if(!GS.help){ gmHelp('daily'); } else { gmDailyCard(); } }
     else if(a==='dgo'){ var D=gmDailyOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed}); }
@@ -4605,7 +4751,9 @@ function gmBoot(){
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
     else if(a.indexOf('map:')===0){ p=a.split(':'); gmCampRace(+p[1],+p[2]); }
   });
-  var gs=gmGenSeed(); if(gs){ gmGenRace(gs); } else { gmStart(); }
+  E('gm').addEventListener('input',function(e){ if(e.target&&e.target.id==='pt-note'&&PT_CUR){ var v=ptVerdictOf(PT_MAPS[PT_CUR-1],true); v.note=e.target.value; v.at=new Date().toISOString(); ptSoon(); } });
+  window.addEventListener('pagehide',function(){ if(ptLive()){ ptAdd(true,true); } else { ptFlush(); } });
+  var gs=gmGenSeed(); if(gs){ gmGenRace(gs); } else if(ptOn()){ ptList(); } else { gmStart(); }
   if(LB_ORIGIN){ lbProbe(); }
 }
 /* a touch screen has no number keys */
