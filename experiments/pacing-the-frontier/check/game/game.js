@@ -82,6 +82,9 @@ function gmSave(){ try{ window.localStorage.setItem(GKEY,JSON.stringify(GS)); }c
 function gmEsc(s){ return String(s===undefined||s===null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function gmMap(a,s){ for(var i=0;i<SEGS.length;i++){ if(SEGS[i].act===a&&SEGS[i].slot===s){ return SEGS[i]; } } return null; }
 function gmDailyMaps(){ return SEGS.filter(function(m){ return m.daily; }); }
+/* ?maps=reader lists the research maps (act 9, check/lessons/reader/) under the campaign. They never count toward progress */
+var GM_READER=/[?&]maps=reader(?:&|$)/.test(location.search);
+function gmExtraMaps(){ return SEGS.filter(function(m){ return m.act===9; }); }
 function gmToday(){ return new Date().toISOString().slice(0,10); }
 function gmDailyOf(date){ var day=Math.floor(Date.parse(date+'T00:00:00Z')/864e5),ms=gmDailyMaps(),h=2166136261,i; for(i=0;i<date.length;i++){ h=Math.imul(h^date.charCodeAt(i),16777619); } return {date:date,map:ms[((day%ms.length)+ms.length)%ms.length],seed:h>>>0}; }
 function gmShow(html){ E('gm-in').innerHTML=html; E('gm').hidden=false; E('gm').scrollTop=0; var b=E('gm-in').querySelector('button.primary'); if(b){ try{ b.focus({preventScroll:true}); }catch(e){} } }
@@ -114,6 +117,8 @@ function gmCamp(){
       else { h+='<button type="button" class="gm-map" disabled><i aria-hidden="true">&middot;</i><span>Map '+s+'</span><span>Locked</span></button>'; } }
     if(p>=3&&SHIP_ACTS[a-1]&&SHIP_ACTS[a-1].line){ h+='<p class="gm-sub">'+gmEsc(SHIP_ACTS[a-1].line)+'</p>'; }
     h+='</section>'; }
+  if(GM_READER){ var xs=gmExtraMaps(); if(xs.length){ h+='<section class="gm-act"><h2>Extra maps<small>research, not the campaign</small></h2>';
+    xs.forEach(function(m){ h+='<button type="button" class="gm-map" data-gm="xmap:'+gmEsc(m.key)+'"><i aria-hidden="true">&#9654;</i><span>'+gmEsc(m.title)+'</span><span>Try it</span></button>'; }); h+='</section>'; } }
   h+='<div class="gm-btns"><button type="button" data-gm="home">Back</button>'+(GS.end?'<button type="button" data-gm="end">End card</button>':'')+'</div><button type="button" class="gm-link" data-gm="wipe">Start over</button>';
   gmShow(h);
 }
@@ -130,7 +135,7 @@ function gmRace(R){
   if(GH_ON){ GHOST=ghLoad(R); if(GHOST&&GHOST.run&&R.mode!=='daily'){ seed=GHOST.run.seed; } }  /* a won map, raced on the same dice as your best */
   for(k in KSNAP){ K[k]=KSNAP[k]; } K.chill=c;
   segUse(SEGS.indexOf(m)+1); SEGN=SEGS.indexOf(m)+1;
-  var where=R.mode==='daily'?'Daily · '+R.date:'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
+  var where=R.mode==='daily'?'Daily · '+R.date:R.mode==='extra'?'Extra map · research':'Act '+m.act+' · Map '+m.slot+' of 3'+(R.counts?'':' · replay');
   E('gm-where').textContent=where; E('gm-title').textContent=m.title; E('gm-q').textContent=m.q||'';
   E('ready-h').textContent=m.title; E('ready-msg').textContent=(m.q||'')+(GHOST&&GHOST.run?' Your best, '+GHOST.t.toFixed(1)+' s, races with you.':GHOST?' Your saved best was dropped: '+GHOST.why+'.':''); E('ready-back').textContent=R.mode==='daily'?'Back':'Back to maps';
   E('gm').hidden=true; E('gm-toast').hidden=true; rcStop();
@@ -208,6 +213,7 @@ function gmBoot(){
     else if(a==='lbpub'){ lbPublishCard(); } else if(a==='lbsend'||a==='lbsend2'){ if(a==='lbsend2'){ lbPublishCard(); } else { lbSend(); } } else if(a==='lbkeep'){ E('gm-lb').innerHTML='<p class="gm-sub">Kept private. It stays on this device.</p>'; LB_PENDING=null; }
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
     else if(a.indexOf('map:')===0){ p=a.split(':'); gmCampRace(+p[1],+p[2]); }
+    else if(a.indexOf('xmap:')===0){ var xm=gmExtraMaps().filter(function(m){ return m.key===a.slice(5); })[0]; if(xm){ gmRace({mode:'extra',map:xm,counts:false}); } }
   });
   gmStart();
   if(LB_ORIGIN){ lbProbe(); }

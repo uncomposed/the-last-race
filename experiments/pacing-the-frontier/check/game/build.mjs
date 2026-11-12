@@ -12,7 +12,8 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const HERE = dirname(fileURLToPath(import.meta.url)), LES = join(HERE, '..', 'lessons');
 const REAL = existsSync(join(LES, 'ship', 'maps.js'));
-const FOLDERS = REAL ? 'campaign+showcase+ship' : 'campaign+showcase', LAST = REAL ? 'ship' : 'showcase';
+const READER = REAL && existsSync(join(LES, 'reader', 'maps.js'));  // research maps (act 9): in the page, but listed only with ?maps=reader (game.js gmCamp)
+const FOLDERS = READER ? 'campaign+showcase+ship+reader' : REAL ? 'campaign+showcase+ship' : 'campaign+showcase', LAST = READER ? 'reader' : REAL ? 'ship' : 'showcase';
 execFileSync(process.execPath, [join(LES, 'build.mjs'), '--only', FOLDERS], {stdio: 'inherit'});
 const TMP = join(LES, LAST, 'page.html');
 let S = readFileSync(TMP, 'utf8');
