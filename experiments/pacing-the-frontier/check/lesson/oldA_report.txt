@@ -1,0 +1,9 @@
+114 Long Approach  runup    L 8/90 9% foil scout 33/90 diff -28pp rank 6 runner scout 33 tiers L/foil 0v8 7v15 1v10 tierMean% 16/17/22 fail
+1784 The Long Climb climber  L 37/90 41% foil balanced 9/90 diff 31pp rank 1 runner scout 37 tiers L/foil 21v4 11v2 5v3 tierMean% 25/15/6 PASS
+1167 Coin Toss      gamble   L 16/90 18% foil balanced 46/90 diff -33pp rank 5 runner balanced 46 tiers L/foil 0v12 9v18 7v16 tierMean% 23/23/18 fail
+717 Fog Line       scout    L 58/90 64% foil climber 12/90 diff 51pp rank 2 runner runup 63 tiers L/foil 23v9 16v1 19v2 tierMean% 27/14/18 PASS
+2972 Even Keel      balanced L 53/90 59% foil scout 29/90 diff 27pp rank 2 runner gamble 65 tiers L/foil 27v12 19v13 7v4 tierMean% 28/36/28 PASS
+1548 Nerve          bold     L 37/90 41% foil climber 50/90 diff -14pp rank 3 runner climber 50 tiers L/foil 9v26 15v14 13v10 tierMean% 38/25/21 fail
+1115 Open Throttle  rush     L 3/90 3% foil scout 25/90 diff -24pp rank 7 runner runup 35 tiers L/foil 0v18 3v1 0v6 tierMean% 22/14/15 fail
+322 Slipstream     drafter  L 0/90 0% foil rush 0/90 diff 0pp rank 6 runner runup 74 tiers L/foil 0v0 0v0 0v0 tierMean% 17/14/24 fail
+199 Sheer Face     climber  L 23/90 26% foil balanced 13/90 diff 11pp rank 2 runner runup 29 tiers L/foil 6v6 10v3 7v4 tierMean% 12/15/13 fail

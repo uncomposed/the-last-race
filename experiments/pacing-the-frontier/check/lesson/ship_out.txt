@@ -1,0 +1,14 @@
+114 114 runup 31/300 foil balanced 165/300 rank 6 top: balanced 165, scout 150, bold 135
+114 1823 runup 188/300 foil scout 76/300 rank 1 top: runup 188, scout 76, climber 72
+199 199 climber 109/300 foil balanced 35/300 rank 1 top: runup 109, climber 109, scout 49
+199 959 climber 52/300 foil balanced 56/300 rank 3 top: scout 191, balanced 56, climber 52
+322 322 drafter 3/300 foil bold 46/300 rank 7 top: runup 198, scout 66, bold 46
+717 717 scout 231/300 foil climber 30/300 rank 1 top: scout 231, runup 146, climber 30
+1115 1115 rush 0/300 foil balanced 96/300 rank 6 top: runup 129, balanced 96, gamble 61
+1115 1531 rush 252/300 foil balanced 38/300 rank 1 top: rush 252, gamble 122, bold 43
+1167 1167 gamble 128/300 foil balanced 200/300 rank 2 top: balanced 200, gamble 128, scout 122
+1167 676 gamble 278/300 foil balanced 82/300 rank 1 top: gamble 278, balanced 82, climber 75
+1548 1548 bold 251/300 foil scout 98/300 rank 1 top: bold 251, runup 132, scout 98
+1548 661 bold 0/300 foil balanced 131/300 rank 6 top: gamble 256, balanced 131, runup 53
+1784 1784 climber 288/300 foil balanced 18/300 rank 1 top: climber 288, scout 110, runup 40
+2972 2972 balanced 206/300 foil climber 137/300 rank 1 top: balanced 206, gamble 199, climber 137

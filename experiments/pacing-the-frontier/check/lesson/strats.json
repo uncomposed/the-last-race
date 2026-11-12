@@ -1,0 +1,102 @@
+{
+ "jp": 0.05,
+ "jw": 5,
+ "strats": {
+  "runup": {
+   "pace": 0.4,
+   "w": [
+    25,
+    53,
+    22
+   ],
+   "safe": true,
+   "pit": 0.5,
+   "pitPub": 0.5,
+   "bar": 0.4
+  },
+  "climber": {
+   "pace": 0.72,
+   "w": [
+    8,
+    83,
+    9
+   ],
+   "safe": true,
+   "pit": 0.7,
+   "pitPub": 0.7,
+   "bar": 0.6
+  },
+  "gamble": {
+   "pace": 0.53,
+   "w": [
+    32,
+    32,
+    36
+   ],
+   "safe": false,
+   "pit": 0.8,
+   "pitPub": 0.8,
+   "bar": 0.9
+  },
+  "scout": {
+   "pace": 0.71,
+   "w": [
+    50,
+    37,
+    13
+   ],
+   "safe": true,
+   "pit": 1,
+   "pitPub": 1,
+   "bar": 0.8
+  },
+  "balanced": {
+   "pace": 0.52,
+   "w": [
+    15,
+    44,
+    41
+   ],
+   "safe": true,
+   "pit": 1,
+   "pitPub": 1,
+   "bar": 0.9
+  },
+  "bold": {
+   "pace": 0.86,
+   "w": [
+    17,
+    42,
+    42
+   ],
+   "safe": false,
+   "pit": 0.2,
+   "pitPub": 0.2,
+   "bar": 0.7
+  },
+  "rush": {
+   "pace": 0.93,
+   "w": [
+    3,
+    35,
+    62
+   ],
+   "safe": false,
+   "pit": 0.9,
+   "pitPub": 0.9,
+   "bar": 0
+  },
+  "drafter": {
+   "pace": 0.87,
+   "w": [
+    54,
+    42,
+    5
+   ],
+   "safe": false,
+   "pit": 0.3,
+   "pitPub": 0.3,
+   "bar": 1
+  }
+ }
+}
