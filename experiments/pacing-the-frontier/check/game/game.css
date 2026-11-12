@@ -1,6 +1,9 @@
 /* ---- the shipped game: its own screens over the page ---- */
 .gm{position:fixed;inset:0;z-index:20;overflow:auto;background:var(--bg);padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));-webkit-overflow-scrolling:touch}
 .gm[hidden]{display:none}
+/* a result: a sheet under the track (game.js sets its top edge), so the race stays in view above it */
+.gm.gm-sheet{border-top:2px solid var(--line);box-shadow:0 -12px 28px color-mix(in srgb,var(--bg) 75%,transparent);padding-top:14px}
+.gm.gm-sheet .gm-in{gap:10px}
 .gm-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .gm-in h1{font:700 clamp(30px,7vw,42px)/1.1 var(--display)}
 .gm-in h2{font:700 19px/1.25 var(--display)}
