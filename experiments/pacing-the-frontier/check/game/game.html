@@ -396,6 +396,9 @@ html.epi-open{overflow:hidden}
 /* ---- the shipped game: its own screens over the page ---- */
 .gm{position:fixed;inset:0;z-index:20;overflow:auto;background:var(--bg);padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px));-webkit-overflow-scrolling:touch}
 .gm[hidden]{display:none}
+/* a result: a sheet under the track (game.js sets its top edge), so the race stays in view above it */
+.gm.gm-sheet{border-top:2px solid var(--line);box-shadow:0 -12px 28px color-mix(in srgb,var(--bg) 75%,transparent);padding-top:14px}
+.gm.gm-sheet .gm-in{gap:10px}
 .gm-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .gm-in h1{font:700 clamp(30px,7vw,42px)/1.1 var(--display)}
 .gm-in h2{font:700 19px/1.25 var(--display)}
@@ -4803,7 +4806,17 @@ function gmMap(a,s){ for(var i=0;i<SEGS.length;i++){ if(SEGS[i].act===a&&SEGS[i]
 function gmDailyMaps(){ return SEGS.filter(function(m){ return m.daily; }); }
 function gmToday(){ return new Date().toISOString().slice(0,10); }
 function gmDailyOf(date){ var day=Math.floor(Date.parse(date+'T00:00:00Z')/864e5),ms=gmDailyMaps(),h=2166136261,i; for(i=0;i<date.length;i++){ h=Math.imul(h^date.charCodeAt(i),16777619); } return {date:date,map:ms[((day%ms.length)+ms.length)%ms.length],seed:h>>>0}; }
-function gmShow(html){ E('gm-in').innerHTML=html; E('gm').hidden=false; E('gm').scrollTop=0; var b=E('gm-in').querySelector('button.primary'); if(b){ try{ b.focus({preventScroll:true}); }catch(e){} } }
+function gmShow(html,sheet){ var g=E('gm'); E('gm-in').innerHTML=html; g.classList.toggle('gm-sheet',!!sheet); g.hidden=false; gmSheetFit(); g.scrollTop=0; var b=E('gm-in').querySelector('button.primary'); if(b){ try{ b.focus({preventScroll:true}); }catch(e){} } }
+/* the result opens as a sheet under the track, so the place the race ended stays in view (Cole, 2026-11-10). With less than GM_SHEET_MIN of room below the track,
+   a short or sideways phone, it rises over the track as far as it needs, and at worst covers the screen as every other game screen does */
+var GM_SHEET_MIN=320,GM_BEAT=900;
+function gmSheetFit(){
+  var g=E('gm'); if(!g||!g.classList.contains('gm-sheet')){ if(g){ g.style.top=''; } return; }
+  try{ window.scrollTo(0,0); }catch(e){}
+  var st=document.querySelector('.stage'),b=st?st.getBoundingClientRect().bottom:0,h=window.innerHeight||0;
+  g.style.top=Math.max(0,Math.min(Math.round(b)+8,h-GM_SHEET_MIN))+'px';
+}
+window.addEventListener('resize',gmSheetFit);
 var GM_FOOT='<p class="gm-foot">A cartoon of an AI race, for intuition. It is not evidence or a prediction. Source: <a href="https://github.com/uncomposed/the-last-race">github.com/uncomposed/the-last-race</a> (Apache-2.0). Background reading: <a href="https://ai-2027.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2027</a>, its hopeful companion <a href="https://ai-2040.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2040: Plan A</a>, and <a href="https://80000hours.org/problem-profiles/artificial-intelligence/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">80,000 Hours on risks from AI</a>.</p>';
 function gmStart(){
   var any=GS.prog[0]+GS.prog[1]+GS.prog[2]>0,d=GS.days[gmToday()];
@@ -4859,6 +4872,12 @@ function gmRace(R){
 }
 function gmCampRace(a,s){ var m=gmMap(a,s); gmRace({mode:'camp',map:m,counts:s===GS.prog[a-1]+1}); }
 function gmRestart(){ if(RACE){ running=false; gmRace(RACE); } }
+/* Again, from a result: the same map with no map card to press through. A short beat with the track in view, then it runs. The bar and the split stay where they were left */
+function gmAgain(){
+  if(!RACE){return;} running=false; gmRace(RACE);
+  var tok=gmTok,t=E('gm-toast'); E('ready').hidden=true; t.textContent='Get ready'; t.hidden=false; gmToastT=0;
+  setTimeout(function(){ if(tok!==gmTok||running||G.over){return;} t.hidden=true; E('ready').hidden=false; go(); },GM_BEAT);
+}
 function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(false); E('ready').hidden=true; E('sing').hidden=true; if(RACE&&RACE.mode==='daily'){ gmDailyCard(); } else { gmCamp(); } }
 /* the exact roll shows when a fall rolls: a short line over the track */
 var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
@@ -4887,7 +4906,7 @@ function gmDebrief(){
   var note=m.debrief||(G.world&&G.world.note)||'';
   if(R.mode==='daily'){
     var d=GS.days[R.date]||{won:false,best:0,tries:0}; d.tries++; if(won&&(!d.won||G.t<d.best)){ d.best=G.t; } d.won=d.won||won; GS.days[R.date]=d; gmSave();
-    sub='Daily for '+R.date+'. '+sub; btn='<button class="primary" type="button" data-gm="dgo">Race again</button><button type="button" data-gm="home">Back</button>';
+    sub='Daily for '+R.date+'. '+sub; btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="home">Back</button>';
   } else {
     var nextS=0;
     if(R.counts){
@@ -4901,9 +4920,9 @@ function gmDebrief(){
     else { btn='<button class="primary" type="button" data-gm="again">Race again</button><button type="button" data-gm="camp">Maps</button>'; }
   }
   gmShow('<div class="gm-res'+(won?'':' bad')+'"><p class="eyebrow">'+gmEsc(E('gm-where').textContent)+' &middot; '+gmEsc(m.title)+'</p><h1>'+(won?'&#9650; ':'&#9632; ')+gmEsc(head)+'</h1><p>'+gmEsc(sub)+'</p></div>'+
-    (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+rcMarkup()+
     (lines.length?'<ul class="gm-lines">'+lines.map(function(l){ return '<li>'+gmEsc(l)+'</li>'; }).join('')+'</ul>':'')+
-    (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):'')+'<div class="gm-btns">'+btn+'</div>');
+    (after?'<p><b>'+gmEsc(after)+'</b></p>':'')+'<div class="gm-btns">'+btn+'</div>'+rcMarkup()+
+    (R.mode==='daily'&&won&&LB_OK&&REC?'<div id="gm-lb"></div>':'')+(note||m.meta?'<h2>What this map was</h2>'+(note?'<p>'+gmEsc(note)+'</p>':'')+(m.meta?'<p>'+gmEsc(m.meta)+'</p>':''):''),true);
   if(R.mode==='daily'&&won&&LB_OK&&REC){ lbOffer(R,REC,GS.days[R.date].tries); }
   tellStory();  /* Professor Postmortem walks the track just raced (recap.js) */
 }
@@ -4923,7 +4942,7 @@ function gmBoot(){
     else if(a==='camp'){ if(!GS.help){ gmHelp('camp'); } else { gmCamp(); } }
     else if(a==='daily'){ if(!GS.help){ gmHelp('daily'); } else { gmDailyCard(); } }
     else if(a==='dgo'){ var D=gmDailyOf(gmToday()); gmRace({mode:'daily',map:D.map,date:D.date,seed:D.seed}); }
-    else if(a==='end'){ gmEndCard(); } else if(a==='again'){ gmRace(RACE); }
+    else if(a==='end'){ gmEndCard(); } else if(a==='again'){ gmAgain(); }
     else if(a==='lbpub'){ lbPublishCard(); } else if(a==='lbsend'||a==='lbsend2'){ if(a==='lbsend2'){ lbPublishCard(); } else { lbSend(); } } else if(a==='lbkeep'){ E('gm-lb').innerHTML='<p class="gm-sub">Kept private. It stays on this device.</p>'; LB_PENDING=null; }
     else if(a==='wipe'){ gmWipe(); } else if(a==='wipe2'){ GS.prog=[0,0,0]; GS.won={}; GS.end=false; gmSave(); gmCamp(); }
     else if(a.indexOf('map:')===0){ p=a.split(':'); gmCampRace(+p[1],+p[2]); }
