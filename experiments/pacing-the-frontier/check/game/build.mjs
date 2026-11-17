@@ -41,6 +41,10 @@ rep('</style>\n\n<main', read('game.css') + '\n</style>\n\n<main');
 rep('function drawLab(l,cam,VW,FW,isHuman,idx){', read('track-labels.js') + 'function drawLab(l,cam,VW,FW,isHuman,idx){');
 // ---- a hidden-width box: the seen part of its top stops where a rival's shadow begins, never at the true width (width-shown.js)
 rep('var sw=stepOn(g)&&!wk?seenW(tgt,g,shadows(tgt)):0;', 'var sw=stepOn(g)&&!wk?seenShown(tgt,g):0;');
+// ---- phones: only the watched lab's next known gap gets a jump readout, in fewer words (rdOn in track-labels.js), so close gaps' readouts stop fighting for room
+rep("ctx.fillText('your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \\u00b7 box at least '+Math.round(sw):''),", "rdOn(tgt,k)&&ctx.fillText(CM?'jump: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc):'your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \\u00b7 box at least '+Math.round(sw):''),");
+rep("ctx.fillText('your jump now: '+bl+' \\u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),", "rdOn(tgt,k)&&ctx.fillText((CM?'jump: ':'your jump now: ')+bl+' \\u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),");
+rep("ctx.fillText('your jump now '+Math.round(cover),", "rdOn(tgt,k)&&ctx.fillText((CM?'jump ':'your jump now ')+Math.round(cover),");
 rep('function drawLab(l,cam,VW,FW,isHuman,idx){', read('width-shown.js') + 'function drawLab(l,cam,VW,FW,isHuman,idx){');
 rep('ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */', 'ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */ lblBegin();');
 rep('ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */', 'lblEnd(VW,U); ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */');
