@@ -190,6 +190,23 @@ Six maps, about 2 tries each, under a minute a try. Play them in this order. For
 
 At the end, one more question: which map would you play again?
 
+## 8. After Cole played: the map 180 tweak (2026-11-17)
+
+Cole's verdict on 180 was bland: "the box and then a barrier ended up not being an issue for me because I had built up enough height". He asked for a taller box and wall, or a way to punish carrying speed into a feature. H2 held: his habit won it on try 1.
+
+1. **The change.** Only map 180 changes, through `GN_TWEAK` in `gen/maps.js`. The shaded box goes from rise 79 to 92, and the wall behind it from 135-153 to 168-182. Every other draw, and the rest of 180's road, are unchanged.
+2. **Why this punishes speed.** With auto-jump on, a wall is only a height check: height plus 34 has to reach the top. A shaded box hides the wall behind it until you are about strip × eye ÷ rise away, roughly 160-180 units for Cole. Stopping from speed v takes about 0.4v + v²/31. So a lab going faster than about 60 when the wall appears can't stop. If it is also too short, it hits.
+3. **Cole's own controls on the tweaked map.**
+   - He arrives at height 126, going 122, and hits the 174 wall at 35.8 s: one strike, and a bounce back.
+   - Continuing the race with the obvious reply (build height until he clears it, then floor it) gives a win at 43.0 s instead of 38.1 s.
+   - The Warden is 775 behind. **The trap now bites, but it does not decide the race**, because the Warden is far back by then.
+4. **Bots, seeds 9701-9720.**
+   - `coleFollow`: 11/20 before, 11/20 after.
+   - `sp-hs-tail`: 12/20 before, 12/20 after.
+   - Neither bot hits the new wall: both arrive slow and taller (about 142), which is the line the tweak rewards.
+5. **What would show this is wrong.** Cole replays 180 and still calls it bland, or calls the crash unfair, meaning he had no cue to slow down. If the crash lands but the race still feels decided, the next lever is the Warden's lead, not the wall.
+6. Logs of 180 recorded before this change no longer replay: the road is different.
+
 ## Reproduce
 
 Run these from `experiments/pacing-the-frontier/check/lessons`, after building the page with `node build.mjs --only campaign+ship+reader+gen`.

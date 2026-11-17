@@ -4136,6 +4136,12 @@ function gnOne(id,o,abl){
 var GN_ROAD=['fence','tower','rhythm','gate','hidden','ceiling','signs','scrape','double','stakes','calm','break'],GN_RIV=['steward','pioneer','bait','clump','chicken'];
 var GN_INTR=['tower','break','gate','fence','hidden','scrape'],GN_INFO=['tower','rhythm','hidden','signs','calm'];
 function gnShape(k,u){ return clamp(k===0?0.2+0.7*u:k===1?(u<0.35?0.8:0.35+0.3*u):k===2?0.2+0.25*Math.floor(u*4):(u<0.7?0.25+0.15*u:0.95),0,1); }
+/* hand tweaks to single drawn maps, by seed and block, after Cole played them. Each keeps the dice shape it replaces (a range stays a range), so the
+   rest of the road and every other draw stay exactly as they were.
+   180 (Cole, 2026-11-17: bland; the box and wall at the end never bit, he was tall enough; make them taller, punish carried speed). The wall behind the
+   shaded box shows only when you are about strip*eye/rise from it. Taller box: that gets shorter. Taller wall: a lab built the usual way cannot clear it,
+   so it has to come in slow enough to stop when the wall appears, then build. */
+var GN_TWEAK={180:{hidden:{rise:92,wall:[168,182]}}};
 function gnDraw(seed){
   var r=rngMaker(seed*7919+13),shape=Math.floor(r()*4),A=0.05+0.35*r(),riv=shPick(r,GN_RIV),n=3+Math.floor(r()*3),road=[],tries=0;
   do { road=shShuffle(r,GN_ROAD).slice(0,n); tries++; }
@@ -4146,6 +4152,7 @@ function gnDraw(seed){
     if(prev&&GN[prev].vout==='slow'&&GN[id].vin==='fast'){ set.runup=true; }
     blocks.push([id,set]); prev=id; c.cap=gnCapAfter(id,set,c.cap); });
   if(r()<0.35){ blocks.push(['finish',GN.finish.gen(c,r)]); }
+  if(GN_TWEAK[seed]){ blocks.forEach(function(b){ var t=GN_TWEAK[seed][b[0]]; if(t){ Object.assign(b[1],t); } }); }  /* hand tweaks after Cole played a draw; same dice shapes, so the rest of the road is unchanged */
   var s={key:'gn-'+seed,title:'Draw '+seed,q:'',blocks:blocks,space:true,maxGap:600,after:250,
     note:'['+SHAPES[shape]+', A '+A.toFixed(2)+': '+blocks.map(function(b){ return b[0]; }).join(' + ')+']'};
   return gnFirst(gnMap(s),c.minFirst||0);
