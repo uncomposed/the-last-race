@@ -423,6 +423,8 @@ html.epi-open{overflow:hidden}
 .gm-link{align-self:flex-start;min-height:36px;padding:4px 0;background:none;border:0;color:var(--muted);text-decoration:underline;font:500 13px var(--mono)}
 .gm-toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);margin:0;padding:6px 12px;font:500 14px/1.35 var(--body);background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--b);border-radius:6px;pointer-events:none;z-index:2}
 .gm-toast[hidden]{display:none}
+/* phones: the bottom of the track is the ground, so the note sits up in the sky where the coaching hint goes, small and on top of it */
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){.gm-toast{top:52px;bottom:auto;left:calc(50% - 26px);max-width:calc(100% - 68px);padding:4px 8px;font-size:12px;line-height:1.3;z-index:3}}
 @media (min-width:601px) and (min-height:541px){ #gm-head{display:flex;flex-direction:column;gap:2px} }
 #gm-head h1{font-size:clamp(20px,4.5vw,28px)}
 #gm-head .seg-q{margin:0;font-size:15px;color:var(--muted)}
@@ -1774,6 +1776,56 @@ html.epi-open{overflow:hidden}
 (function(){
 'use strict';
 function $(id){return document.getElementById(id);}
+/* Deterministic maths (2026-11-17). iPhone Safari (JavaScriptCore) and Node (V8) round Math.sin, Math.pow and Math.exp differently in the
+   last bit, and a race makes thousands of those calls, so a run replayed on the leaderboard server could end in a different state from the
+   phone that ran it. These versions use only + - * /, Math.round, Math.floor and Math.sqrt, which IEEE 754 makes identical on every engine.
+   build.mjs points the simulation's sin, cos, pow, exp, log and asin here, and fails if any other inexact Math function is left in it.
+   Accuracy is a few units in the last place for the arguments the game uses; what matters is that every engine gets the same bits. */
+var DM=(function(){
+  function pow2(k){ var r=1,b=k<0?0.5:2,n=k<0?-k:k; while(n>0){ if(n&1){ r*=b; } b*=b; n=Math.floor(n/2); } return r; }
+  var LN2HI=6.93147180369123816490e-01,LN2LO=1.90821492927058770002e-10,INVLN2=1.44269504088896338700e+00;
+  var PIO2_1=1.57079632673412561417e+00,PIO2_2=6.07710050630396597660e-11,PIO2_3=2.02226624879595063154e-21,TWOOPI=6.36619772367581382433e-01;
+  var PIO2=1.57079632679489661923,SQRT2=1.4142135623730951,T64=pow2(64),I64=pow2(-64);
+  function exp(x){
+    if(x!==x){ return x; } if(x>709.8){ return Infinity; } if(x<-745.2){ return 0; } if(x===0){ return 1; }
+    var k=Math.round(x*INVLN2),r=(x-k*LN2HI)-k*LN2LO;  /* |r| <= ln2/2 */
+    var p=1+r/13; p=1+r/12*p; p=1+r/11*p; p=1+r/10*p; p=1+r/9*p; p=1+r/8*p; p=1+r/7*p; p=1+r/6*p; p=1+r/5*p; p=1+r/4*p; p=1+r/3*p; p=1+r/2*p; p=1+r*p;
+    var h=k<0?-Math.floor(-k/2):Math.floor(k/2);
+    return p*pow2(h)*pow2(k-h);
+  }
+  function log(x){
+    if(x!==x||x<0){ return NaN; } if(x===0){ return -Infinity; } if(x===Infinity){ return x; }
+    var e=0,m=x;
+    while(m>=T64){ m*=I64; e+=64; } while(m<I64){ m*=T64; e-=64; }
+    while(m>=2){ m*=0.5; e++; } while(m<1){ m*=2; e--; }
+    if(m>SQRT2){ m*=0.5; e++; }
+    var s=(m-1)/(m+1),z=s*s,q=1/25;  /* ln m = 2 atanh s, |s| <= 0.172 */
+    for(var n=11;n>=0;n--){ q=1/(2*n+1)+z*q; }
+    return e*LN2HI+(e*LN2LO+2*s*q);
+  }
+  function pow(a,b){
+    if(b===0||a===1){ return 1; } if(b===1){ return a; } if(a!==a||b!==b){ return NaN; }
+    if(a===0){ return b>0?0:Infinity; } if(a===Infinity){ return b>0?Infinity:0; }
+    if(a<0){ if(Math.floor(b)!==b){ return NaN; } var r=exp(b*log(-a)); return b%2!==0?-r:r; }
+    return exp(b*log(a));
+  }
+  function ksin(r){ var z=r*r; return r*(1-z/6*(1-z/20*(1-z/42*(1-z/72*(1-z/110*(1-z/156*(1-z/210*(1-z/272)))))))); }
+  function kcos(r){ var z=r*r; return 1-z/2*(1-z/12*(1-z/30*(1-z/56*(1-z/90*(1-z/132*(1-z/182*(1-z/240*(1-z/306)))))))); }
+  function trig(x,c){  /* x reduced by pi/2 to |r| <= pi/4; c=1 for cos */
+    if(x!==x||x===Infinity||x===-Infinity){ return NaN; }
+    var k=Math.round(x*TWOOPI),r=((x-k*PIO2_1)-k*PIO2_2)-k*PIO2_3,n=((k+c)%4+4)%4;
+    return n===0?ksin(r):n===1?kcos(r):n===2?-ksin(r):-kcos(r);
+  }
+  function sin(x){ return x===0?x:trig(x,0); }
+  function cos(x){ return trig(x,1); }
+  function asinS(x){ var z=x*x,c=1,t=x,s=x; for(var n=0;n<30;n++){ c=c*(2*n+1)*(2*n+1)/((2*n+2)*(2*n+3)); t*=z; s+=c*t; } return s; }  /* |x| <= 1/2 */
+  function asin(x){
+    if(!(x>=-1&&x<=1)){ return NaN; }
+    var a=x<0?-x:x,r=a<=0.5?asinS(a):PIO2-2*asinS(Math.sqrt((1-a)/2));
+    return x<0?-r:r;
+  }
+  return {exp:exp,log:log,pow:pow,sin:sin,cos:cos,asin:asin};
+})();
 function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
@@ -1836,7 +1888,7 @@ function profD(P,u,hi){
   else if(P.shape===1){d=0.2+0.5*(1-sstep(0.12,0.5,u))+0.2*u;}
   else if(P.shape===2){d=0.1+0.75*Math.min(P.n,Math.floor(u*(P.n+1)))/P.n;}
   else {d=0.14+0.12*u+0.68*sstep(0.55,0.85,u);}
-  d+=P.off+P.w1*Math.sin(6.2832*(P.f1*u+P.p1))+P.w2*Math.sin(6.2832*(P.f2*u+P.p2));
+  d+=P.off+P.w1*DM.sin(6.2832*(P.f1*u+P.p1))+P.w2*DM.sin(6.2832*(P.f2*u+P.p2));
   return clamp(d,0.03,hi||1);
 }
 /* the track stream r draws everything about the world; heights and widths both come from D plus per-feature coupling noise A.
@@ -1904,7 +1956,7 @@ function genTrack(r){
 function riseOf(T,k,g,t){
   var lv=g.inner?T.n:k,cap=C.CAPS[lv],sc=K.riseScale/100;
   /* a lab's height piles up to its ceiling by the time it reaches a gap, so the rise has to sit near the ceiling to ask anything of it; it never asks more than RISEMAX of the ceiling's height plus a full jump, so a lab that stops to build can always clear it */
-  var hcap=Math.min(C.RISEMAX*cap,cap+0.5*C.JUMP),r=Math.min(cap*(C.RISEMIN+(C.RISEMAX-C.RISEMIN)*Math.pow(t,C.RISEPOW))*sc,hcap);
+  var hcap=Math.min(C.RISEMAX*cap,cap+0.5*C.JUMP),r=Math.min(cap*(C.RISEMIN+(C.RISEMAX-C.RISEMIN)*DM.pow(t,C.RISEPOW))*sc,hcap);
   return Math.round(r);
 }
 /* the widest box a lab with height cp, at the run-up speed K.stepV percent of the way to full, clears cleanly */
@@ -1917,7 +1969,7 @@ function cleanW(cp,rise){
 function boxFit(cp,rise,v){ var lo=0,hi=1500,m,q; for(q=0;q<22;q++){ m=(lo+hi)/2; if(flightAlt(v,cp,m,0.5)>=rise){lo=m;} else {hi=m;} } return lo; }
 /* tallness and wideness of one gap: the map's lean tilts them (lean 1: wide and low, -1: tall and narrow), and a box that would be tall and wide is squashed unless the keep roll spares it */
 function shapeTW(a,b,keep,lean){
-  var e=Math.exp(1.2*C.LEAN*lean),t=Math.pow(a,e),w=Math.pow(b,1/e),s=t+w;
+  var e=DM.exp(1.2*C.LEAN*lean),t=DM.pow(a,e),w=DM.pow(b,1/e),s=t+w;
   if(s>C.TWMAX&&keep>=C.TWKEEP){ t*=C.TWMAX/s; w*=C.TWMAX/s; }
   return {t:t,w:w};
 }
@@ -2017,7 +2069,7 @@ function gapWidth(l,g){
 /* step gaps: the lab flies the barrier jump arc, then keeps dropping at the rate the arc was falling when it ended (no glide). Over the box, altitude is
    measured from the ground: at the far edge at or above the rise is a clean cross, between 0 and the rise a scrape, and 0 before the far edge a fall.
    u0 is how far into the arc the lab is when it reaches the box (-1: no jump). One function for the sim and the bots. */
-function arcY(u){ return C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1); }
+function arcY(u){ return C.JUMP*clamp(2.2*DM.sin(Math.PI*u),0,1); }
 function sinkRate(jd){ return 2.2*C.JUMP*Math.PI/jd; }
 function flightAlt(v,h,w,u0){
   var jd=jumpDur(v),t=w/Math.max(v,1e-6),Ta=u0>=0?(1-u0)*jd:0;
@@ -2160,11 +2212,11 @@ function makeLab(id,kind,human,x){
 function handsN(l,tag,idx){
   var r=rngMaker((G.seed^Math.imul(l.id+1,0x9E3779B1)^Math.imul(tag,0x85EBCA77)^Math.imul(idx+1,0xC2B2AE3D))>>>0);
   r(); var u=Math.max(r(),1e-9),v=r();
-  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  return Math.sqrt(-2*DM.log(u))*DM.cos(2*Math.PI*v);
 }
 function sloppy(l){ if(l.human){return 0;} var s=SKILL[l.kind]!==undefined?SKILL[l.kind]:K.skill; return clamp(1-s/100,0,1); }
 /* a misjudgment fixed per obstacle, which fades while the lab stands still and takes a closer look */
-function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*Math.exp(-l.still/2):1; }
+function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*DM.exp(-l.still/2):1; }
 function newGame(seed,humanKind,roster){
   seed=seed>>>0;
   var rt=rngMaker(seed),rb=rngMaker((seed^0x9E3779B9)>>>0),rr=rngMaker((seed^0x85EBCA6B)>>>0);
@@ -2209,7 +2261,7 @@ function updateJump(l,dt){
   if(l.jt<0){l.jy=0;return;}
   l.jt+=dt;
   var u=l.jt/l.jd;
-  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1);}
+  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*DM.sin(Math.PI*u),0,1);}
 }
 
 function applyLevel(k,by){
@@ -2465,7 +2517,7 @@ function stepLab(l,dt,inp){
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ var gr=r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt;
-      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*Math.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*Math.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }
+      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*DM.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*DM.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   var sg0=G.gaps[l.gi];
@@ -3021,7 +3073,7 @@ ADV.push('x-fill');
    pass it, and the lift is nearly full for most of the arc. So press jump early, pass the barrier near the end of the arc, land just past
    it, and you have a fresh jump for a box right behind it, at full speed. xHop adds that press to any input. It uses only what is on screen:
    the barrier's distance and height, your height and your speed */
-function xHopU(l,b){ var need=b.h-heightOf(l)+2; if(need<=0){ return -1; } if(need>=C.JUMP){ return 0; } return 1-Math.asin(need/(2.2*C.JUMP))/Math.PI; }
+function xHopU(l,b){ var need=b.h-heightOf(l)+2; if(need<=0){ return -1; } if(need>=C.JUMP){ return 0; } return 1-DM.asin(need/(2.2*C.JUMP))/Math.PI; }
 function xHop(l,inp,late){
   var b=xBarAhead(l); if(!b||l.jt>=0||l.gx||l.v<5||inp.rev){ return inp; }
   var um=xHopU(l,b); if(um<0||um<0.55){ return inp; }  /* no jump needed, or the lift is too short to jump early */
@@ -3955,12 +4007,14 @@ function drawCritter(l,sx,y,h){
 }
 /* phones: labels on the track are held to the end of the frame, then placed so none sits on another or runs off the screen. Your lab's name goes first and does not move.
    Page code only: it runs in draw, outside the simulation. Desktop never comes here. */
-var lblQ=null,lblLab=0;
+var lblQ=null,lblLab=0,lblPrev={};
+/* phones: only the next gap the watched lab knows gets a jump readout (Cole, 2026-11-17: readouts for close gaps fought for room and flickered) */
+function rdOn(l,k){ if(!CM){ return true; } for(var j=l.gi;j<G.gaps.length;j++){ if(knowsGap(l,j)){ return j===k; } } return false; }
 function lblBegin(){ if(!CM){ return; } lblQ=[]; ctx.fillText=function(s,x,y){ lblQ.push({s:s,x:x,y:y,lab:lblLab,fill:ctx.fillStyle,font:ctx.font,al:ctx.globalAlpha,ta:ctx.textAlign}); }; }
 function lblEnd(VW,U){
   if(!lblQ){ return; }
   delete ctx.fillText;
-  var q=lblQ,done=[],LH=12*U,top=(HUDH-GY*(1-Z))/Z+LH,bot=(H-GY*(1-Z))/Z-U*2,i,j,k,a,w,x,y,t;
+  var q=lblQ,done=[],seen={},LH=12*U,top=(HUDH-GY*(1-Z))/Z+LH,bot=(H-GY*(1-Z))/Z-U*2,i,j,k,a,w,x,y,t;
   lblQ=null;
   function free(x,y,w){ for(var n=0;n<done.length;n++){ var d=done[n]; if(x<d.x+d.w&&x+w>d.x&&y-LH<d.y&&y>d.y-LH){ return false; } } return true; }
   q.sort(function(p,r){ return r.lab-p.lab; });  /* stable: your name 2, rivals' names 1, the rest in drawn order */
@@ -3972,11 +4026,27 @@ function lblEnd(VW,U){
     if(x>VW||x+w<0){ continue; }  /* off screen: nothing to draw */
     if(a.s.length>1){ x=Math.max(2*U,Math.min(x,VW-w-2*U)); }
     y=a.y;
-    if(a.s.length>1&&a.lab!==2){ for(j=0;j<14;j++){ k=(j%2?1:-1)*Math.ceil(j/2); t=a.y+k*LH; if(t>=top&&t<=bot&&free(x,t,w)){ y=t; break; } } }
+    if(a.s.length>1&&a.lab!==2){  /* the slot it had last frame first, so a label whose numbers change does not hop between slots */
+      var key=a.s.replace(/[0-9.]+/g,'#'),kk=0,pk; seen[key]=(seen[key]||0)+1; key+='|'+seen[key]; pk=lblPrev[key];  /* two boxes with the same words keep their own slots */
+      if(pk!==undefined&&a.y+pk*LH>=top&&a.y+pk*LH<=bot&&free(x,a.y+pk*LH,w)){ kk=pk; }
+      else { for(j=0;j<14;j++){ k=(j%2?1:-1)*Math.ceil(j/2); t=a.y+k*LH; if(t>=top&&t<=bot&&free(x,t,w)){ kk=k; break; } } }
+      y=a.y+kk*LH; lblPrev[key]=kk; }
     done.push({x:x,y:y,w:w});
     ctx.globalAlpha=a.al; ctx.strokeText(a.s,x,y); ctx.fillStyle=a.fill; ctx.fillText(a.s,x,y);
   }
   ctx.restore();
+}
+/* How much of a hidden-width box's top the page draws as seen (Cole, 2026-11-17: the tick leaked the true width). seenW() stops at the
+   box's real width, so when a rival's shadow hid the far edge the tick and the 'at least' label landed exactly on the true width. This is
+   what the eye reaches with the same standing eye knowsWidth() uses, cut where the first shadow over the top begins. Page code: it only
+   reads the simulation, so the stamp does not move. While the width is unknown it stays short of the far edge (check.mjs, part e). */
+function seenShown(l,g){
+  var d=g.x-l.x,eye=heightOf(l)+C.RW,sr=sightRange(l),sh,r,i;
+  if(d<=0){ return 0; }
+  if(d>sr||eye<=g.rise){ return 0; }
+  r=Math.min((eye-g.rise)/C.SEEANG-d,sr-d); sh=shadows(l,1);
+  for(i=0;i<sh.length;i++){ if(sh[i].b>d&&sh[i].a-d<r){ r=sh[i].a-d; } }
+  return clamp(r,0,g.W);
 }
 function barMax(){ var m=G.maxcap; return m>0?m:C.CAPS[C.CAPS.length-1]+C.SINGUP; }
 function drawLab(l,cam,VW,FW,isHuman,idx){
@@ -4083,7 +4153,7 @@ function draw(){
       var pw=gapWidth(tgt,g),cover=stepOn(g)?reachX(Math.max(tgt.v,1),heightOf(tgt)):tgt.v*airT(tgt);
       var gd=CM?26*U:60,gtop=0;  /* pit depth; on phones the readouts below it move above the ground */
       var wk=!stepOn(g)||knowsWidth(tgt,k),fade=60;  /* HIDDEN_WIDTH_UI: the far edge is drawn only once the watched lab can see it */
-      var sw=stepOn(g)&&!wk?seenW(tgt,g,shadows(tgt)):0;  /* how much of the top is in view */
+      var sw=stepOn(g)&&!wk?seenShown(tgt,g):0;  /* how much of the top is in view */
       if(stepOn(g)&&!wk){
         gtop=g.rise; ctx.fillStyle=hatch; ctx.fillRect(gx,GY-gtop,sw+fade,gtop);
         var fg=ctx.createLinearGradient(gx+sw,0,gx+sw+fade,0); fg.addColorStop(0,'rgba(0,0,0,0)'); fg.addColorStop(1,COL.surface); ctx.fillStyle=fg; ctx.fillRect(gx+sw,GY-gtop-1,fade+1,gtop+1);
@@ -4106,7 +4176,7 @@ function draw(){
         var wcl=lim(g.rise),wsc=lim(1e-9),ry=GY+(CM?20*U:70);
         ctx.lineWidth=(1/Z)*4; ctx.strokeStyle=COL.a; ctx.beginPath(); ctx.moveTo(gx,ry); ctx.lineTo(gx+Math.max(2,wcl),ry); ctx.stroke();
         ctx.strokeStyle=COL.b; ctx.beginPath(); ctx.moveTo(gx+wcl,ry); ctx.lineTo(gx+Math.max(wcl+2,wsc),ry); ctx.stroke();
-        ctx.fillStyle=sw>wcl?COL.b:COL.a; ctx.font=FW; ctx.fillText('your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \u00b7 box at least '+Math.round(sw):''),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
+        ctx.fillStyle=sw>wcl?COL.b:COL.a; ctx.font=FW; rdOn(tgt,k)&&ctx.fillText(CM?'jump: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc):'your jump now: clean to '+Math.round(wcl)+', scrape to '+Math.round(wsc)+(sw>0?' \u00b7 box at least '+Math.round(sw):''),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
       } else if(stepOn(g)){
         /* step gaps: the bar predicts the sim's own rule (boxOutcome). Blue is clean, orange a scrape, orange hatched and outlined a fall; the word is always written, so colour never carries it alone */
         var bo=boxOutcome(tgt,g),by=GY+(CM?20*U:70),bw=Math.max(2,pw),bl=['clean','scrape','fall'][bo];
@@ -4118,12 +4188,12 @@ function draw(){
         var aw=function(w){ return a1>=g.rise?flightAltJ(v1,h1,w,u1,jd1):a1-sinkRate(jd1)*w/v1; },wc=0,lo1=0,hi1=600,q1,m1;
         if(aw(0)>=g.rise){ for(q1=0;q1<18;q1++){ m1=(lo1+hi1)/2; if(aw(m1)>=g.rise){lo1=m1;} else {hi1=m1;} } wc=lo1; }
         ctx.strokeStyle=COL.ink; ctx.lineWidth=(1/Z)*2; ctx.beginPath(); ctx.moveTo(gx+wc,by-8*U); ctx.lineTo(gx+wc,by+8*U); ctx.stroke();
-        ctx.fillText('your jump now: '+bl+' \u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
+        rdOn(tgt,k)&&ctx.fillText((CM?'jump: ':'your jump now: ')+bl+' \u00b7 clears '+Math.round(wc)+' of '+Math.round(pw),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86);
       } else {
       ctx.strokeStyle=cover>=pw?COL.good:COL.b; ctx.lineWidth=(1/Z)*4;
       ctx.beginPath(); ctx.moveTo(gx,GY+(CM?20*U:70)); ctx.lineTo(gx+cover,GY+(CM?20*U:70)); ctx.stroke();
       ctx.fillStyle=cover>=pw?COL.good:COL.b;
-      ctx.fillText('your jump now '+Math.round(cover),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86); }
+      rdOn(tgt,k)&&ctx.fillText((CM?'jump ':'your jump now ')+Math.round(cover),gx+(CM?4*U:0),CM?Math.min(GY-21*U,GY-gtop-20*U):GY+86); }
     }
   }
   // sight bracket
@@ -4722,7 +4792,7 @@ function ghSame(a,r){ return a.over&&a.n===r.n&&a.type===r.end.type&&a.t===r.end
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
-var SIM_ID='e76ea276436eed44';  /* the hash of the simulation section, maps included: build.mjs fills it in */
+var SIM_ID='f53fee430262faef';  /* the hash of the simulation section, maps included: build.mjs fills it in */
 /* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
 var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
 function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
@@ -4864,13 +4934,15 @@ function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(
 var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
 function gmTick(){
   if(gmEvG!==G){ gmEvG=G; gmEvN=0; }
-  for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
+  for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=CM?gmFallShort(e):gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
   if(gmToastT&&G.t>gmToastT){ E('gm-toast').hidden=true; gmToastT=0; }
   /* You are out and the race goes on at 4x. Rivals can sit at a wall until the time limit, so after 60 game seconds, about 15 real ones, run the rest unseen and show the real result. A run you are out of is never saved or published, so nothing relies on these steps being logged. */
   var h=G.labs[0];
   if(h.out||h.dissolved){ if(gmOutG!==G){ gmOutG=G; gmOutT=G.t; } if(G.t-gmOutT>=GM_OUT_WATCH){ var g=0; while(!G.over&&g++<20000){ stepGame(1/60); } } }
 }
 function gmFall(e){ return (e.who==='You'?'You':e.who)+' fell into box '+e.gap+'. The dice rolled '+e.roll+' against '+e.odds+': '+(e.ext?'the world ended.':'only that lab is out.'); }
+/* phones: one short line, so the note about a fall does not cover the track (Cole, 2026-11-17: it blinded you) */
+function gmFallShort(e){ return (e.who==='You'?'You':e.who)+' fell: rolled '+e.roll+' vs '+e.odds+', '+(e.ext?'everyone is out':(e.who==='You'?'you are out':'only '+e.who+' is out')); }
 function gmEnd(){ var tok=++gmTok; setRev(false); setFwd(false); setTimeout(function(){ if(tok===gmTok){ gmDebrief(); } },600); }
 function gmDebrief(){
   var R=RACE,m=R.map,r=G.result,h=G.labs[0],won=r.type==='win'&&r.winner===h,ended=r.type==='all',diss=!!h.dissolved,head,sub='',h2='',btn='',lines=[],t=G.t.toFixed(1),a=m.act,after='';

@@ -111,5 +111,23 @@ if (!same) fail('the same race tells a different story');
 for (const k of ['first', 'scrape', 'fall', 'wall', 'strike']) if (!kinds[k]) fail('no recap stop of kind ' + k + ' in ' + stories + ' races');
 console.log('recap: ' + stories + ' races told, stops by kind ' + JSON.stringify(kinds) + '; awards earned by the probe ' + JSON.stringify(earned));
 
+// e. a hidden-width box never gives away its width (Cole, 2026-11-17): while a lab does not know the width, the seen part drawn for it
+// (width-shown.js) stays short of the far edge. The control counts the moments the old drawing, seenW, sat exactly on the true width
+{ if (!SRC.includes('seenShown(tgt,g)')) fail('the page does not draw hidden boxes with seenShown');
+  const E = new Function('window', 'document', LINES.slice(A, B + 1).join('\n') + '\n' + readFileSync(join(HERE, 'width-shown.js'), 'utf8') + '\nreturn {PF: window.PF, seenShown: seenShown, stepOn: stepOn};')({}, null), P = E.PF, K1 = JSON.parse(JSON.stringify(P.K));
+  let looks = 0, leaks = 0, oldLeaks = 0;
+  P.SEGS.forEach((m, i) => { for (const you of POSTURES) for (let seed = 1; seed <= 3; seed++) {
+    for (const k in P.K) delete P.K[k]; Object.assign(P.K, K1); P.K.stepGaps = 1; P.K.chill = 1;
+    P.segUse(i + 1, you); P.newGame(seed);
+    const G = P.G(); let n = 0;
+    while (!G.over && n++ < 60000) { P.step(1 / 60); if (n % 6) continue;
+      for (const l of G.labs) { if (l.out || l.done) continue;
+        for (let j = l.gi; j < G.gaps.length; j++) { const g = G.gaps[j]; if (!E.stepOn(g) || P.knowsWidth(l, j) || g.x - l.x > 2000) continue;
+          looks++; if (E.seenShown(l, g) >= g.W - 1e-6) leaks++; if (P.seenW(l, g, P.shadows(l)) >= g.W - 1e-9) oldLeaks++; } } }
+  } });
+  if (leaks) fail('a hidden box showed its true width in ' + leaks + ' of ' + looks + ' looks');
+  if (!oldLeaks) fail('control: the old drawing never sat on the true width, so this check shows nothing');
+  console.log('hidden widths: ' + looks + ' looks at unknown boxes, the drawing reached the true width in ' + leaks + ' (the old drawing in ' + oldLeaks + ')'); }
+
 if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); }
 console.log('game page checks pass');
