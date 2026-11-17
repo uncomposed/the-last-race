@@ -1774,6 +1774,56 @@ html.epi-open{overflow:hidden}
 (function(){
 'use strict';
 function $(id){return document.getElementById(id);}
+/* Deterministic maths (2026-11-17). iPhone Safari (JavaScriptCore) and Node (V8) round Math.sin, Math.pow and Math.exp differently in the
+   last bit, and a race makes thousands of those calls, so a run replayed on the leaderboard server could end in a different state from the
+   phone that ran it. These versions use only + - * /, Math.round, Math.floor and Math.sqrt, which IEEE 754 makes identical on every engine.
+   build.mjs points the simulation's sin, cos, pow, exp, log and asin here, and fails if any other inexact Math function is left in it.
+   Accuracy is a few units in the last place for the arguments the game uses; what matters is that every engine gets the same bits. */
+var DM=(function(){
+  function pow2(k){ var r=1,b=k<0?0.5:2,n=k<0?-k:k; while(n>0){ if(n&1){ r*=b; } b*=b; n=Math.floor(n/2); } return r; }
+  var LN2HI=6.93147180369123816490e-01,LN2LO=1.90821492927058770002e-10,INVLN2=1.44269504088896338700e+00;
+  var PIO2_1=1.57079632673412561417e+00,PIO2_2=6.07710050630396597660e-11,PIO2_3=2.02226624879595063154e-21,TWOOPI=6.36619772367581382433e-01;
+  var PIO2=1.57079632679489661923,SQRT2=1.4142135623730951,T64=pow2(64),I64=pow2(-64);
+  function exp(x){
+    if(x!==x){ return x; } if(x>709.8){ return Infinity; } if(x<-745.2){ return 0; } if(x===0){ return 1; }
+    var k=Math.round(x*INVLN2),r=(x-k*LN2HI)-k*LN2LO;  /* |r| <= ln2/2 */
+    var p=1+r/13; p=1+r/12*p; p=1+r/11*p; p=1+r/10*p; p=1+r/9*p; p=1+r/8*p; p=1+r/7*p; p=1+r/6*p; p=1+r/5*p; p=1+r/4*p; p=1+r/3*p; p=1+r/2*p; p=1+r*p;
+    var h=k<0?-Math.floor(-k/2):Math.floor(k/2);
+    return p*pow2(h)*pow2(k-h);
+  }
+  function log(x){
+    if(x!==x||x<0){ return NaN; } if(x===0){ return -Infinity; } if(x===Infinity){ return x; }
+    var e=0,m=x;
+    while(m>=T64){ m*=I64; e+=64; } while(m<I64){ m*=T64; e-=64; }
+    while(m>=2){ m*=0.5; e++; } while(m<1){ m*=2; e--; }
+    if(m>SQRT2){ m*=0.5; e++; }
+    var s=(m-1)/(m+1),z=s*s,q=1/25;  /* ln m = 2 atanh s, |s| <= 0.172 */
+    for(var n=11;n>=0;n--){ q=1/(2*n+1)+z*q; }
+    return e*LN2HI+(e*LN2LO+2*s*q);
+  }
+  function pow(a,b){
+    if(b===0||a===1){ return 1; } if(b===1){ return a; } if(a!==a||b!==b){ return NaN; }
+    if(a===0){ return b>0?0:Infinity; } if(a===Infinity){ return b>0?Infinity:0; }
+    if(a<0){ if(Math.floor(b)!==b){ return NaN; } var r=exp(b*log(-a)); return b%2!==0?-r:r; }
+    return exp(b*log(a));
+  }
+  function ksin(r){ var z=r*r; return r*(1-z/6*(1-z/20*(1-z/42*(1-z/72*(1-z/110*(1-z/156*(1-z/210*(1-z/272)))))))); }
+  function kcos(r){ var z=r*r; return 1-z/2*(1-z/12*(1-z/30*(1-z/56*(1-z/90*(1-z/132*(1-z/182*(1-z/240*(1-z/306)))))))); }
+  function trig(x,c){  /* x reduced by pi/2 to |r| <= pi/4; c=1 for cos */
+    if(x!==x||x===Infinity||x===-Infinity){ return NaN; }
+    var k=Math.round(x*TWOOPI),r=((x-k*PIO2_1)-k*PIO2_2)-k*PIO2_3,n=((k+c)%4+4)%4;
+    return n===0?ksin(r):n===1?kcos(r):n===2?-ksin(r):-kcos(r);
+  }
+  function sin(x){ return x===0?x:trig(x,0); }
+  function cos(x){ return trig(x,1); }
+  function asinS(x){ var z=x*x,c=1,t=x,s=x; for(var n=0;n<30;n++){ c=c*(2*n+1)*(2*n+1)/((2*n+2)*(2*n+3)); t*=z; s+=c*t; } return s; }  /* |x| <= 1/2 */
+  function asin(x){
+    if(!(x>=-1&&x<=1)){ return NaN; }
+    var a=x<0?-x:x,r=a<=0.5?asinS(a):PIO2-2*asinS(Math.sqrt((1-a)/2));
+    return x<0?-r:r;
+  }
+  return {exp:exp,log:log,pow:pow,sin:sin,cos:cos,asin:asin};
+})();
 function clamp(x,a,b){return Math.min(b,Math.max(a,x));}
 
 /* ---------- constants and knobs ---------- */
@@ -1836,7 +1886,7 @@ function profD(P,u,hi){
   else if(P.shape===1){d=0.2+0.5*(1-sstep(0.12,0.5,u))+0.2*u;}
   else if(P.shape===2){d=0.1+0.75*Math.min(P.n,Math.floor(u*(P.n+1)))/P.n;}
   else {d=0.14+0.12*u+0.68*sstep(0.55,0.85,u);}
-  d+=P.off+P.w1*Math.sin(6.2832*(P.f1*u+P.p1))+P.w2*Math.sin(6.2832*(P.f2*u+P.p2));
+  d+=P.off+P.w1*DM.sin(6.2832*(P.f1*u+P.p1))+P.w2*DM.sin(6.2832*(P.f2*u+P.p2));
   return clamp(d,0.03,hi||1);
 }
 /* the track stream r draws everything about the world; heights and widths both come from D plus per-feature coupling noise A.
@@ -1904,7 +1954,7 @@ function genTrack(r){
 function riseOf(T,k,g,t){
   var lv=g.inner?T.n:k,cap=C.CAPS[lv],sc=K.riseScale/100;
   /* a lab's height piles up to its ceiling by the time it reaches a gap, so the rise has to sit near the ceiling to ask anything of it; it never asks more than RISEMAX of the ceiling's height plus a full jump, so a lab that stops to build can always clear it */
-  var hcap=Math.min(C.RISEMAX*cap,cap+0.5*C.JUMP),r=Math.min(cap*(C.RISEMIN+(C.RISEMAX-C.RISEMIN)*Math.pow(t,C.RISEPOW))*sc,hcap);
+  var hcap=Math.min(C.RISEMAX*cap,cap+0.5*C.JUMP),r=Math.min(cap*(C.RISEMIN+(C.RISEMAX-C.RISEMIN)*DM.pow(t,C.RISEPOW))*sc,hcap);
   return Math.round(r);
 }
 /* the widest box a lab with height cp, at the run-up speed K.stepV percent of the way to full, clears cleanly */
@@ -1917,7 +1967,7 @@ function cleanW(cp,rise){
 function boxFit(cp,rise,v){ var lo=0,hi=1500,m,q; for(q=0;q<22;q++){ m=(lo+hi)/2; if(flightAlt(v,cp,m,0.5)>=rise){lo=m;} else {hi=m;} } return lo; }
 /* tallness and wideness of one gap: the map's lean tilts them (lean 1: wide and low, -1: tall and narrow), and a box that would be tall and wide is squashed unless the keep roll spares it */
 function shapeTW(a,b,keep,lean){
-  var e=Math.exp(1.2*C.LEAN*lean),t=Math.pow(a,e),w=Math.pow(b,1/e),s=t+w;
+  var e=DM.exp(1.2*C.LEAN*lean),t=DM.pow(a,e),w=DM.pow(b,1/e),s=t+w;
   if(s>C.TWMAX&&keep>=C.TWKEEP){ t*=C.TWMAX/s; w*=C.TWMAX/s; }
   return {t:t,w:w};
 }
@@ -2017,7 +2067,7 @@ function gapWidth(l,g){
 /* step gaps: the lab flies the barrier jump arc, then keeps dropping at the rate the arc was falling when it ended (no glide). Over the box, altitude is
    measured from the ground: at the far edge at or above the rise is a clean cross, between 0 and the rise a scrape, and 0 before the far edge a fall.
    u0 is how far into the arc the lab is when it reaches the box (-1: no jump). One function for the sim and the bots. */
-function arcY(u){ return C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1); }
+function arcY(u){ return C.JUMP*clamp(2.2*DM.sin(Math.PI*u),0,1); }
 function sinkRate(jd){ return 2.2*C.JUMP*Math.PI/jd; }
 function flightAlt(v,h,w,u0){
   var jd=jumpDur(v),t=w/Math.max(v,1e-6),Ta=u0>=0?(1-u0)*jd:0;
@@ -2160,11 +2210,11 @@ function makeLab(id,kind,human,x){
 function handsN(l,tag,idx){
   var r=rngMaker((G.seed^Math.imul(l.id+1,0x9E3779B1)^Math.imul(tag,0x85EBCA77)^Math.imul(idx+1,0xC2B2AE3D))>>>0);
   r(); var u=Math.max(r(),1e-9),v=r();
-  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  return Math.sqrt(-2*DM.log(u))*DM.cos(2*Math.PI*v);
 }
 function sloppy(l){ if(l.human){return 0;} var s=SKILL[l.kind]!==undefined?SKILL[l.kind]:K.skill; return clamp(1-s/100,0,1); }
 /* a misjudgment fixed per obstacle, which fades while the lab stands still and takes a closer look */
-function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*Math.exp(-l.still/2):1; }
+function judged(l,tag,idx){ var f=sloppy(l); return f?1+f*HANDS.judge*handsN(l,tag,idx)*DM.exp(-l.still/2):1; }
 function newGame(seed,humanKind,roster){
   seed=seed>>>0;
   var rt=rngMaker(seed),rb=rngMaker((seed^0x9E3779B9)>>>0),rr=rngMaker((seed^0x85EBCA6B)>>>0);
@@ -2209,7 +2259,7 @@ function updateJump(l,dt){
   if(l.jt<0){l.jy=0;return;}
   l.jt+=dt;
   var u=l.jt/l.jd;
-  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*Math.sin(Math.PI*u),0,1);}
+  if(u>=1){l.jt=-1;l.jy=0;} else {l.jy=C.JUMP*clamp(2.2*DM.sin(Math.PI*u),0,1);}
 }
 
 function applyLevel(k,by){
@@ -2465,7 +2515,7 @@ function stepLab(l,dt,inp){
   if(tot>0&&r>0){
     var M=Math.min(3,1+leadOf(l)/K.refill);
     for(var i=0;i<3;i++){ var gr=r*(w[i]/tot)*((l.id===0&&K.investYou>0)?K.investYou:K.invest)*M*dt;
-      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*Math.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*Math.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }
+      if(K.soft){ l.pts[i]+=l.pts[i]<=l.cap?Math.min(gr,l.cap-l.pts[i])+Math.max(0,gr-(l.cap-l.pts[i]))*DM.pow(l.cap/Math.max(l.pts[i]+gr,1),softN(i)):gr*DM.pow(l.cap/l.pts[i],softN(i)); } else { l.pts[i]=Math.min(l.cap,l.pts[i]+gr); } }
   }
   if(Math.abs(l.v)<0.5){l.still+=dt; if(l.still>l.maxStill){l.maxStill=l.still;}} else {l.still=0;}
   var sg0=G.gaps[l.gi];
@@ -3021,7 +3071,7 @@ ADV.push('x-fill');
    pass it, and the lift is nearly full for most of the arc. So press jump early, pass the barrier near the end of the arc, land just past
    it, and you have a fresh jump for a box right behind it, at full speed. xHop adds that press to any input. It uses only what is on screen:
    the barrier's distance and height, your height and your speed */
-function xHopU(l,b){ var need=b.h-heightOf(l)+2; if(need<=0){ return -1; } if(need>=C.JUMP){ return 0; } return 1-Math.asin(need/(2.2*C.JUMP))/Math.PI; }
+function xHopU(l,b){ var need=b.h-heightOf(l)+2; if(need<=0){ return -1; } if(need>=C.JUMP){ return 0; } return 1-DM.asin(need/(2.2*C.JUMP))/Math.PI; }
 function xHop(l,inp,late){
   var b=xBarAhead(l); if(!b||l.jt>=0||l.gx||l.v<5||inp.rev){ return inp; }
   var um=xHopU(l,b); if(um<0||um<0.55){ return inp; }  /* no jump needed, or the lift is too short to jump early */
@@ -4722,7 +4772,7 @@ function ghSame(a,r){ return a.over&&a.n===r.n&&a.type===r.end.type&&a.t===r.end
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
    (segPost). Acts never announce their character until they are over. Fall odds show only when a fall rolls and in the debrief. */
 var GKEY='pf-game-v1',GS=gmLoad(),RACE=null,KSNAP=null,gmTok=0,gmEvN=0,gmEvG=null,gmToastT=0;
-var SIM_ID='e76ea276436eed44';  /* the hash of the simulation section, maps included: build.mjs fills it in */
+var SIM_ID='f53fee430262faef';  /* the hash of the simulation section, maps included: build.mjs fills it in */
 /* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
 var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
 function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }

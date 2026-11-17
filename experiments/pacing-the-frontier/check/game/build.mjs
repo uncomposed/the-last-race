@@ -126,6 +126,18 @@ const ids = new Set([...S.matchAll(/\bid="([\w-]+)"/g)].map(m => m[1]));
 const missing = [...new Set([...code.matchAll(/\$\('([\w-]+)'\)/g)].map(m => m[1]))].filter(i => !ids.has(i));
 if (missing.length) throw new Error('kept code uses removed elements: ' + missing.join(', '));
 
+// deterministic maths (detmath.js): the simulation's sin, cos, pow, exp, log and asin go through DM, so iPhone Safari and the leaderboard
+// server (Node) compute the same bits. DM sits inside the simulation section, so it is part of the stamp. Any other inexact Math function
+// left in the section fails the build
+{ const L = S.split('\n'), a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l => l.startsWith('window.PF={')); if (a < 0 || b < a) throw new Error('simulation section');
+  let sec = L.slice(a + 1, b).join('\n');
+  const want = {sin: 4, cos: 1, pow: 5, exp: 2, log: 1, asin: 1};
+  for (const [f, n] of Object.entries(want)) { const got = sec.split('Math.' + f + '(').length - 1; if (got !== n) throw new Error('expected ' + n + ' Math.' + f + '( in the simulation, got ' + got); sec = sec.split('Math.' + f + '(').join('DM.' + f + '('); }
+  const left = [...new Set([...sec.matchAll(/Math\.(\w+)/g)].map(m => m[1]))].filter(f => !['abs', 'floor', 'ceil', 'round', 'min', 'max', 'sqrt', 'imul', 'PI', 'trunc', 'sign'].includes(f));
+  if (left.length) throw new Error('inexact Math functions left in the simulation: ' + left.join(', '));
+  if (/\*\*/.test(sec.replace(/\/\*[\s\S]*?\*\//g, ''))) throw new Error('the ** operator in the simulation: use DM.pow');
+  S = [...L.slice(0, a + 1), read('detmath.js').trimEnd(), sec, ...L.slice(b)].join('\n'); }
+
 // stamp the page with the hash of its simulation section, maps included, so a recorded run from any other build refuses to load
 { const L = S.split('\n'), a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l => l.startsWith('window.PF={')); if (a < 0 || b < a) throw new Error('simulation section');
   const id = createHash('sha256').update(L.slice(a, b + 1).join('\n')).digest('hex').slice(0, 16); rep("var SIM_ID='';", "var SIM_ID='" + id + "';"); }
