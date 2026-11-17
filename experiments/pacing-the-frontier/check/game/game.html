@@ -4028,6 +4028,18 @@ function lblEnd(VW,U){
   }
   ctx.restore();
 }
+/* How much of a hidden-width box's top the page draws as seen (Cole, 2026-11-17: the tick leaked the true width). seenW() stops at the
+   box's real width, so when a rival's shadow hid the far edge the tick and the 'at least' label landed exactly on the true width. This is
+   what the eye reaches with the same standing eye knowsWidth() uses, cut where the first shadow over the top begins. Page code: it only
+   reads the simulation, so the stamp does not move. While the width is unknown it stays short of the far edge (check.mjs, part e). */
+function seenShown(l,g){
+  var d=g.x-l.x,eye=heightOf(l)+C.RW,sr=sightRange(l),sh,r,i;
+  if(d<=0){ return 0; }
+  if(d>sr||eye<=g.rise){ return 0; }
+  r=Math.min((eye-g.rise)/C.SEEANG-d,sr-d); sh=shadows(l,1);
+  for(i=0;i<sh.length;i++){ if(sh[i].b>d&&sh[i].a-d<r){ r=sh[i].a-d; } }
+  return clamp(r,0,g.W);
+}
 function barMax(){ var m=G.maxcap; return m>0?m:C.CAPS[C.CAPS.length-1]+C.SINGUP; }
 function drawLab(l,cam,VW,FW,isHuman,idx){
   var sx=l.x-cam-C.RW;
@@ -4133,7 +4145,7 @@ function draw(){
       var pw=gapWidth(tgt,g),cover=stepOn(g)?reachX(Math.max(tgt.v,1),heightOf(tgt)):tgt.v*airT(tgt);
       var gd=CM?26*U:60,gtop=0;  /* pit depth; on phones the readouts below it move above the ground */
       var wk=!stepOn(g)||knowsWidth(tgt,k),fade=60;  /* HIDDEN_WIDTH_UI: the far edge is drawn only once the watched lab can see it */
-      var sw=stepOn(g)&&!wk?seenW(tgt,g,shadows(tgt)):0;  /* how much of the top is in view */
+      var sw=stepOn(g)&&!wk?seenShown(tgt,g):0;  /* how much of the top is in view */
       if(stepOn(g)&&!wk){
         gtop=g.rise; ctx.fillStyle=hatch; ctx.fillRect(gx,GY-gtop,sw+fade,gtop);
         var fg=ctx.createLinearGradient(gx+sw,0,gx+sw+fade,0); fg.addColorStop(0,'rgba(0,0,0,0)'); fg.addColorStop(1,COL.surface); ctx.fillStyle=fg; ctx.fillRect(gx+sw,GY-gtop-1,fade+1,gtop+1);

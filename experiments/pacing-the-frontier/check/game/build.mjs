@@ -39,6 +39,9 @@ rep('</style>\n\n<main', read('game.css') + '\n</style>\n\n<main');
 
 // ---- phones: track labels are placed so they cannot sit on each other (track-labels.js); all of it after the simulation, so the stamp does not move
 rep('function drawLab(l,cam,VW,FW,isHuman,idx){', read('track-labels.js') + 'function drawLab(l,cam,VW,FW,isHuman,idx){');
+// ---- a hidden-width box: the seen part of its top stops where a rival's shadow begins, never at the true width (width-shown.js)
+rep('var sw=stepOn(g)&&!wk?seenW(tgt,g,shadows(tgt)):0;', 'var sw=stepOn(g)&&!wk?seenShown(tgt,g):0;');
+rep('function drawLab(l,cam,VW,FW,isHuman,idx){', read('width-shown.js') + 'function drawLab(l,cam,VW,FW,isHuman,idx){');
 rep('ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */', 'ctx.setTransform(dpr*Z,0,0,dpr*Z,0,dpr*GY*(1-Z));  /* world: x scaled from the left edge, y about the ground line */ lblBegin();');
 rep('ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */', 'lblEnd(VW,U); ctx.setTransform(dpr,0,0,dpr,0,0);  /* HUD: screen pixels */');
 rep('ctx.fillText(lt,lx,ly);', 'lblLab=isHuman?2:1; ctx.fillText(lt,lx,ly); lblLab=0;');
