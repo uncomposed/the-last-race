@@ -145,13 +145,15 @@ function gmLeave(){ gmTok++; running=false; paused=false; setRev(false); setFwd(
 var GM_OUT_WATCH=60,gmOutG=null,gmOutT=0;
 function gmTick(){
   if(gmEvG!==G){ gmEvG=G; gmEvN=0; }
-  for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
+  for(;gmEvN<G.ev.length;gmEvN++){ var e=G.ev[gmEvN]; if(e.type==='fall'){ E('gm-toast').textContent=CM?gmFallShort(e):gmFall(e); E('gm-toast').hidden=false; gmToastT=G.t+4; } }
   if(gmToastT&&G.t>gmToastT){ E('gm-toast').hidden=true; gmToastT=0; }
   /* You are out and the race goes on at 4x. Rivals can sit at a wall until the time limit, so after 60 game seconds, about 15 real ones, run the rest unseen and show the real result. A run you are out of is never saved or published, so nothing relies on these steps being logged. */
   var h=G.labs[0];
   if(h.out||h.dissolved){ if(gmOutG!==G){ gmOutG=G; gmOutT=G.t; } if(G.t-gmOutT>=GM_OUT_WATCH){ var g=0; while(!G.over&&g++<20000){ stepGame(1/60); } } }
 }
 function gmFall(e){ return (e.who==='You'?'You':e.who)+' fell into box '+e.gap+'. The dice rolled '+e.roll+' against '+e.odds+': '+(e.ext?'the world ended.':'only that lab is out.'); }
+/* phones: one short line, so the note about a fall does not cover the track (Cole, 2026-11-17: it blinded you) */
+function gmFallShort(e){ return (e.who==='You'?'You':e.who)+' fell: rolled '+e.roll+' vs '+e.odds+', '+(e.ext?'everyone is out':(e.who==='You'?'you are out':'only '+e.who+' is out')); }
 function gmEnd(){ var tok=++gmTok; setRev(false); setFwd(false); setTimeout(function(){ if(tok===gmTok){ gmDebrief(); } },600); }
 function gmDebrief(){
   var R=RACE,m=R.map,r=G.result,h=G.labs[0],won=r.type==='win'&&r.winner===h,ended=r.type==='all',diss=!!h.dissolved,head,sub='',h2='',btn='',lines=[],t=G.t.toFixed(1),a=m.act,after='';
