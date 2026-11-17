@@ -28,6 +28,8 @@
 .gm-link{align-self:flex-start;min-height:36px;padding:4px 0;background:none;border:0;color:var(--muted);text-decoration:underline;font:500 13px var(--mono)}
 .gm-toast{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);margin:0;padding:6px 12px;font:500 14px/1.35 var(--body);background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--b);border-radius:6px;pointer-events:none;z-index:2}
 .gm-toast[hidden]{display:none}
+/* phones: the bottom of the track is the ground, so the note sits up in the sky where the coaching hint goes, small and on top of it */
+@media (max-width:600px),(orientation:landscape) and (max-height:540px){.gm-toast{top:52px;bottom:auto;left:calc(50% - 26px);max-width:calc(100% - 68px);padding:4px 8px;font-size:12px;line-height:1.3;z-index:3}}
 @media (min-width:601px) and (min-height:541px){ #gm-head{display:flex;flex-direction:column;gap:2px} }
 #gm-head h1{font-size:clamp(20px,4.5vw,28px)}
 #gm-head .seg-q{margin:0;font-size:15px;color:var(--muted)}
@@ -76,3 +78,10 @@
 .pt-link{min-height:44px}
 #pt-msg:empty{display:none}
 #pt-clr{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+/* the recap and the award card in the debrief (recap.js): a panel of its own so the strip and the speech bubble read against it */
+.gm .story{border:1px solid var(--line);border-radius:6px;padding:8px 10px 6px;background:var(--surface)}
+.gm .story .rc-line{background:var(--bg)}
+.gm .story .ach-open{background:var(--bg)}
+.gm .achg-it{background:var(--surface)}
+/* the page keeps the pixel font for the name on the start card; the old cards used it for award names and plaques */
+.gm .ach-nm,.gm .rc-plaque,.gm .rc-list b,.gm .achg-it b{font-family:var(--body);font-weight:700}
