@@ -7,10 +7,11 @@ var SIM_ID='';  /* the hash of the simulation section, maps included: build.mjs 
 /* ghosts: off unless this browser has asked for them, with ?ghosts=1 (and ?ghosts=0 to stop). Off means nothing is recorded, stored or drawn */
 var GH_ON=gmSwitch('ghosts','pf-ghosts'),GH_KEY='pf-ghost-v1',REC=null,GHOST=null,GH_MAX=60;
 function gmSwitch(q,key){ var m=new RegExp('[?&]'+q+'=(0|1)(?:&|$)').exec(location.search),v=null; try{ if(m){ if(m[1]==='1'){ window.localStorage.setItem(key,'1'); } else { window.localStorage.removeItem(key); } } v=window.localStorage.getItem(key); }catch(e){ v=m&&m[1]==='1'?'1':null; } return v==='1'; }
-/* the daily board: off unless this browser asks with ?lb=prod or ?lb=local (?lb=off stops), and only when the server answers that it runs this exact simulation.
-   LB_PROD stays empty until Cole's server is live. Until then, and whenever the check fails, nothing about a board shows anywhere. Nothing leaves the device unless the player presses Publish. */
-var LB_PROD='',LB_LOCAL='http://127.0.0.1:8787',LB_ORIGIN=lbOrigin(),LB_OK=false,LB_WAIT=4000,LB_NAME='pf-lb-name',LB_TOKEN='pf-lb-token',LB_PENDING=null;
-function lbOrigin(){ var m=/[?&]lb=(prod|local|off)(?:&|$)/.exec(location.search),v=null; try{ if(m){ if(m[1]==='off'){ window.localStorage.removeItem('pf-lb'); } else { window.localStorage.setItem('pf-lb',m[1]); } } v=window.localStorage.getItem('pf-lb'); }catch(e){ v=m&&m[1]!=='off'?m[1]:null; } return v==='prod'?LB_PROD:v==='local'?LB_LOCAL:''; }
+/* the daily board: on by default against LB_PROD, shown only when the server answers that it runs this exact simulation. ?lb=off turns it off for this browser,
+   ?lb=local points it at a server on this machine, ?lb=prod goes back. Whenever the check fails, nothing about a board shows anywhere. Reading a board sends
+   nothing about the player; nothing else leaves the device unless the player presses Publish. */
+var LB_PROD='https://api.the-last-race.com',LB_LOCAL='http://127.0.0.1:8787',LB_ORIGIN=lbOrigin(),LB_OK=false,LB_WAIT=4000,LB_NAME='pf-lb-name',LB_TOKEN='pf-lb-token',LB_PENDING=null;
+function lbOrigin(){ var m=/[?&]lb=(prod|local|off)(?:&|$)/.exec(location.search),v=null; try{ if(m){ if(m[1]==='prod'){ window.localStorage.removeItem('pf-lb'); } else { window.localStorage.setItem('pf-lb',m[1]); } } v=window.localStorage.getItem('pf-lb'); }catch(e){ v=m?m[1]:null; } return v==='off'?'':v==='local'?LB_LOCAL:LB_PROD; }
 function lbCall(path,body,cb){
   if(!LB_ORIGIN||typeof fetch!=='function'){ cb(null); return; }
   var done=false,ctl=typeof AbortController!=='undefined'?new AbortController():null,o={method:body?'POST':'GET',credentials:'omit',mode:'cors'},t;
@@ -51,6 +52,7 @@ function lbSend(){
   lbCall('/v1/daily/'+P.date+'/'+P.run.map,{run:P.run,name:name,tries:P.tries,token:tok},function(a){
     var j=a&&a.json,b=E('gm-lb'); if(!b){ return; }
     if(a&&a.status===200&&j&&j.ok===true&&typeof j.place==='number'){ b.innerHTML='<p><b>Published: '+lbOrd(j.place)+(j.entries>=100?' of '+Number(j.entries):'')+'.</b></p>'; LB_PENDING=null; }
+    else if(a&&j&&j.ok===false&&j.why==='name'){ b.innerHTML='<p>The board did not take that name. Please choose another; your run is still here.</p><div class="gm-btns"><button type="button" data-gm="lbsend2">Choose another name</button></div>'; }
     else if(a&&j&&j.ok===false){ b.innerHTML='<p>This run could not be verified, so nothing was stored.</p>'; LB_PENDING=null; }
     else { b.innerHTML='<p class="gm-sub">The server did not answer. Your result here is safe.</p><div class="gm-btns"><button type="button" data-gm="lbsend2">Try again</button></div>'; }
   });

@@ -101,7 +101,12 @@ else {
   says('another date', G2(), '2026-11-08', dkey, false);
   says('an older build', {...G2(), sim: 'ffffffffffffffff'}, date, dkey, false);
   says('a loss posing as a win', {...G2(), end: {...good.end, won: false}}, date, dkey, false);
-  console.log('verifier: accepts the real run on ' + dkey + ', refuses six fakes');
+  // a race a rival won ends 'win' too: the replay matches it, so only a check of who won refuses it (the hole the real server's tests found, 2026-11-17)
+  let lost = null;
+  for (const st of [{...STYLES[0], chill: 0}, ...STYLES.slice(1)]) { const {R: r} = record(fresh(), dkey, dseed, st); if (r.end.type === 'win' && !r.end.won) { lost = r; break; } }
+  if (!lost) fail('no rival-won race found on ' + dkey + ', so the claimed-win fake was not tested');
+  else says('a rival\'s win claimed as ours', {...lost, end: {...lost.end, won: true}}, date, dkey, false);
+  console.log('verifier: accepts the real run on ' + dkey + ', refuses seven fakes');
 }
 if (fails.length) { console.log(fails.length + ' failed'); process.exit(1); }
 console.log('ghost replay checks pass');

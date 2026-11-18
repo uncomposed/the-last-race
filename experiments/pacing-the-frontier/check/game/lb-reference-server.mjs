@@ -22,7 +22,9 @@ export function verify(run, date, map) {
   if (run.map !== map) return 'wrong map';
   if (run.seed !== dailySeed(date)) return 'wrong dice for this date';
   if (!run.end.won) return 'not a win';
-  return GH.ghSame(GH.ghReplay(api, run), run) ? '' : 'replay did not match';
+  if (!GH.ghSame(GH.ghReplay(api, run), run)) return 'replay did not match';
+  // ghSame compares the end type, not who won: a race a rival won also ends 'win', so a run claiming won:true would pass. The player is lab 0.
+  const G = api.G(); return G.result && G.result.winner === G.labs[0] ? '' : 'not a win';
 }
 const boards = new Map(), order = (x, y) => x.t - y.t;
 const rows = l => l.map(({name, t, attempts, chill}) => ({name, t, attempts, chill}));
