@@ -104,7 +104,7 @@ rep("e.target.id!=='ready-camp'", "e.target.id!=='ready-back'");
 rep("gap:function(){ return '<b>Gap ahead.</b> '", "gap:function(){ return '<b>Box ahead.</b> '");
 rep("'This gap needs speed. Move the dot", "'This box needs speed. Move the dot");
 cut('  /* "How to play" on the Ready card', '})();\n\n/* investment flow');  /* ends before the flow layer: the old end marker, knobs, also cut the triangle's flowing dots */
-cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('game.js') + read('recap.js') + '\n');
+cut('/* knobs */', '/* ---- HIDDEN_WIDTH_UI', read('ghost.js') + read('daily-dice.js') + read('game.js') + read('recap.js') + '\n');
 rep('syncInput(); stepGame(1/60); achTick(1/60); gmTick(); acc-=1/60;', 'syncInput(); if(REC){ ghTick(REC,G.input); } stepGame(1/60); if(REC){ ghAfter(REC,G.input); } achTick(1/60); gmTick(); acc-=1/60;');
 // the recap's CSS was written for the old end card (.card); the debrief is .gm
 S = S.split('.card .rc-').join(':is(.card,.gm) .rc-').split('.card .ach-').join(':is(.card,.gm) .ach-').split('.card .achg-').join(':is(.card,.gm) .achg-');

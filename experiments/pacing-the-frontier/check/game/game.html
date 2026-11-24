@@ -4787,6 +4787,9 @@ function ghReplay(api,r,onTick){
   K.chill=c; return out;
 }
 function ghSame(a,r){ return a.over&&a.n===r.n&&a.type===r.end.type&&a.t===r.end.t&&a.print===r.end.print; }
+/* ---------- daily dice: dates whose date-made dice the map's lesson strategy loses on, and the dice used instead (daily-dice.mjs writes this; do not edit by hand).
+   Any date not listed uses FNV-1a of the date. The board's server reads the same line. Searched up to DAILY_DICE_TO. ---------- */
+var DAILY_DICE_TO="2027-12-31",DAILY_DICE={"2026-11-24":3921104901,"2026-11-25":4230823138,"2026-12-08":739843244,"2026-12-20":4141803922,"2026-12-22":2424099424,"2026-12-26":1310146034,"2026-12-29":2358573693,"2027-01-04":1269416935,"2027-01-06":501406184,"2027-01-10":1925593014,"2027-01-21":4280803604,"2027-01-25":2619623814,"2027-02-03":4249379029,"2027-02-17":3157731164,"2027-02-26":3432483910,"2027-02-28":4116606566,"2027-03-02":681543826,"2027-03-05":4102984375,"2027-03-11":1358797007,"2027-03-16":508482906,"2027-03-20":1276654647,"2027-03-31":2421304533,"2027-04-03":3539839623,"2027-04-04":5106482,"2027-04-13":2728989044,"2027-04-18":351472929,"2027-04-19":2518351776,"2027-04-28":2561708238,"2027-05-19":4154693397,"2027-05-27":505355846,"2027-06-08":4257722716,"2027-06-11":921630822,"2027-06-20":1194071388,"2027-06-21":897120037,"2027-06-22":3804889424,"2027-06-25":4044578705,"2027-06-29":3739363693,"2027-06-30":4057883207,"2027-07-06":1590197602,"2027-07-10":2079932920,"2027-07-12":3776849066,"2027-07-19":1332222475,"2027-07-20":1195727579,"2027-07-21":3396161664,"2027-07-23":798110514,"2027-07-24":37876359,"2027-07-27":1781359499,"2027-07-29":1922649672,"2027-07-31":172053881,"2027-08-01":1375008629,"2027-08-05":2375035233,"2027-08-28":2598521836,"2027-09-08":835484990,"2027-09-09":3059131721,"2027-09-10":3653457998,"2027-09-12":1986086357,"2027-09-13":1882751479,"2027-09-14":495553570,"2027-09-16":3093604720,"2027-09-17":3030260107,"2027-09-26":429350215,"2027-09-27":543027685,"2027-09-28":3650988580,"2027-10-09":201010050,"2027-10-12":3716496154,"2027-10-13":3406777917,"2027-10-19":1271869563,"2027-10-20":1337209227,"2027-10-28":3642569075,"2027-11-18":1297142545,"2027-11-21":3908498197,"2027-11-27":1310447047,"2027-12-03":2720343910,"2027-12-06":1937140285,"2027-12-11":2833005645,"2027-12-18":321268578,"2027-12-22":1581095191,"2027-12-31":2275125991};
 /* ---------- the shipped game: start card, first-run help, three acts of three maps, map card, debrief, daily, end card ----------
    Progress lives in localStorage in try/catch, in memory if that throws. Only the next map of an act counts: a win moves the act on; any loss, a dissolve
    or a world end included, retries just that map (Cole, 2026-11-06). A finished map replays with nothing at stake. Strikes reset each race
@@ -4874,7 +4877,7 @@ function gmEsc(s){ return String(s===undefined||s===null?'':s).replace(/[&<>"]/g
 function gmMap(a,s){ for(var i=0;i<SEGS.length;i++){ if(SEGS[i].act===a&&SEGS[i].slot===s){ return SEGS[i]; } } return null; }
 function gmDailyMaps(){ return SEGS.filter(function(m){ return m.daily; }); }
 function gmToday(){ return new Date().toISOString().slice(0,10); }
-function gmDailyOf(date){ var day=Math.floor(Date.parse(date+'T00:00:00Z')/864e5),ms=gmDailyMaps(),h=2166136261,i; for(i=0;i<date.length;i++){ h=Math.imul(h^date.charCodeAt(i),16777619); } return {date:date,map:ms[((day%ms.length)+ms.length)%ms.length],seed:h>>>0}; }
+function gmDailyOf(date){ var day=Math.floor(Date.parse(date+'T00:00:00Z')/864e5),ms=gmDailyMaps(),h=2166136261,i; for(i=0;i<date.length;i++){ h=Math.imul(h^date.charCodeAt(i),16777619); } return {date:date,map:ms[((day%ms.length)+ms.length)%ms.length],seed:Object.prototype.hasOwnProperty.call(DAILY_DICE,date)?DAILY_DICE[date]:h>>>0}; }  /* daily-dice.js: days whose date-made dice the lesson loses on */
 function gmShow(html){ E('gm-in').innerHTML=html; E('gm').hidden=false; E('gm').scrollTop=0; var b=E('gm-in').querySelector('button.primary'); if(b){ try{ b.focus({preventScroll:true}); }catch(e){} } }
 var GM_FOOT='<p class="gm-foot">A cartoon of an AI race, for intuition. It is not evidence or a prediction. Source: <a href="https://github.com/uncomposed/the-last-race">github.com/uncomposed/the-last-race</a> (Apache-2.0). Background reading: <a href="https://ai-2027.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2027</a>, its hopeful companion <a href="https://ai-2040.com/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">AI 2040: Plan A</a>, and <a href="https://80000hours.org/problem-profiles/artificial-intelligence/?utm_source=the-last-race.com&amp;utm_medium=game&amp;utm_campaign=footer">80,000 Hours on risks from AI</a>.</p>';
 function gmStart(){
@@ -5263,8 +5266,8 @@ var ACH_LIST=[
   {id:'dissolved',name:'Three Strikes',rank:11,hint:'Take strikes until your lab is dissolved.',
    tidbit:'Too many strikes and your lab was dissolved. No real AI lab has been, yet. The closest call: in November 2023 OpenAI\'s nonprofit board, there to keep the company on its mission, fired its CEO. Within five days he was back, and most of that board was gone.',
    real:{label:'NPR: OpenAI reinstates Sam Altman',url:'https://www.npr.org/2023/11/22/1214621010/openai-reinstates-sam-altman-as-its-chief-executive'}},
-  {id:'extinct',name:'Everyone\'s Problem Now',rank:12,hint:'Fall into a box and lose the roll.',
-   tidbit:'Your fall ended the race for every lab. AI 2027, a forecast scenario and not a report, has a race ending where AI-run factories build a million robots a month by 2028. By 2030 the AI tiles the prairies and ice caps with factories and solar panels.',
+  {id:'extinct',name:'Everyone\'s Problem Now',rank:12,hint:'Be in a race where a fall ends the world.',
+   tidbit:'A fall ended the race for every lab, whoever jumped. AI 2027, a forecast scenario and not a report, has a race ending where AI-run factories build a million robots a month by 2028. By 2030 the AI tiles the prairies and ice caps with factories and solar panels.',
    real:{label:'AI 2027: the race ending',url:'https://ai-2027.com/race'}},
   {id:'veg',name:'Ate Your Vegetables',rank:1,hint:'Open a real-world link from the game.',
    tidbit:'You opened a real-world link from inside a game. Reading about other people\'s failures is the cheap way to learn.',
@@ -5290,7 +5293,7 @@ function achToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMon
 /* which awards a finished race meets. Lab 0 is the player. run is the tally {chill, shadowT}. Exact conditions:
    barrier: your crash into a wall (the gate, a wall on the map, or a wall a stopped lab put up). scrape: your scrape or drop across a box.
    dissolved: your lab dissolved. supply: you crossed a box another lab crossed first. bio: you were first across a box.
-   extinct: your fall lost the roll. roll: any lab fell and the roll spared the race. chill: you won with auto-jump on at Go or any moment
+   extinct: any lab's fall lost the roll and ended the world. roll: any lab fell and the roll spared the race. chill: you won with auto-jump on at Go or any moment
    after. star: you won with auto-jump off the whole race. shadow: a rival's sight shadow hid a wall or box you did not know yet, 3 s or more in all */
 function achEval(g,run){
   var me=g.labs[0],nm=me.name,o={},i,e,mine,r=g.result,win;
@@ -5302,7 +5305,7 @@ function achEval(g,run){
     if(mine&&e.type==='dissolved'){o.dissolved=1;}
     if(mine&&e.type==='cross'&&!e.inner){o.supply=1;}
     if(mine&&e.type==='first'){o.bio=1;}
-    if(mine&&e.type==='fall'&&e.ext){o.extinct=1;}
+    if(e.type==='fall'&&e.ext){o.extinct=1;}  /* any lab's fall: it ended the world for you too */
     if(e.type==='fall'&&!e.ext){o.roll=1;}
   }
   win=!!(r&&r.type==='win'&&r.winner===me);
@@ -5349,10 +5352,12 @@ function achOpenHide(){ if(!$('ach-open')){return;} $('ach-open').hidden=true; $
 function achOpen(){
   achOpenHide();
   if(!ACHLAST){return false;}
-  var a=null,earned=false,more='',k;
+  var a=null,earned=false,held=false,more='',k;
   if(ACHLAST.fresh.length){
     a=achById(ACHLAST.fresh[0]); earned=true;
     if(ACHLAST.fresh.length>1){ more='Also earned: '+ACHLAST.fresh.slice(1).map(function(id){return achById(id).name;}).join('; ')+'.'; }
+  } else if(ACHLAST.met.indexOf('extinct')>=0){
+    a=achById('extinct'); earned=true; held=true;  /* the world ended: the card is about that, never an unrelated award to try for */
   } else {
     /* none new: introduce one not earned yet, the one introduced longest ago (never introduced first, in list order) */
     var best=null;
@@ -5361,7 +5366,7 @@ function achOpen(){
     a=best; ACH.seq++; ACH.intro[a.id]=ACH.seq; achSave();
   }
   $('ach-badge').innerHTML=achBadge(earned);
-  $('ach-k').textContent=earned?(ACHLAST.fresh.length>1?ACHLAST.fresh.length+' awards earned':'Award earned'):'An award you haven\'t earned yet';
+  $('ach-k').textContent=held?'Earned before, and again this race':earned?(ACHLAST.fresh.length>1?ACHLAST.fresh.length+' awards earned':'Award earned'):'An award you haven\'t earned yet';
   $('ach-nm').textContent=a.name;
   $('ach-tid').textContent=earned?a.tidbit:'How to earn it: '+a.hint+' '+a.tidbit;
   k=$('ach-more'); k.textContent=more; k.hidden=!more;

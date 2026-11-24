@@ -14,7 +14,9 @@ const a = L.findIndex(l => l.startsWith('function $(id)')), b = L.findIndex(l =>
 const SIM = L.slice(a, b + 1).join('\n'), SIM_ID = createHash('sha256').update(SIM).digest('hex').slice(0, 16);
 const GH = new Function(readFileSync(join(HERE, 'ghost.js'), 'utf8') + '\nreturn {ghRefuse,ghReplay,ghSame};')();
 const fresh = () => { const PF = new Function('window', 'document', SIM + '\nreturn window.PF;')({}, null); return {K: PF.K, KSNAP: {...PF.K, stepGaps: 1, chill: 1}, SEGS: PF.SEGS, segUse: PF.segUse, newGame: PF.newGame, step: PF.step, G: PF.G}; };
-const dailySeed = date => { let h = 2166136261; for (let i = 0; i < date.length; i++) h = Math.imul(h ^ date.charCodeAt(i), 16777619); return h >>> 0; };
+// the page's rule: dice from FNV-1a of the date, except the dates daily-dice.js gives new dice (the map's lesson strategy lost on the date-made ones)
+const DICE = new Function(readFileSync(join(HERE, 'daily-dice.js'), 'utf8').split('\n').find(l => l.startsWith('var DAILY_DICE_TO=')) + '\nreturn DAILY_DICE;')();
+const dailySeed = date => { if (Object.hasOwn(DICE, date)) return DICE[date]; let h = 2166136261; for (let i = 0; i < date.length; i++) h = Math.imul(h ^ date.charCodeAt(i), 16777619); return h >>> 0; };
 // a run is good only if it is for this build and this map and this date's dice, won, and replays to exactly what it says
 export function verify(run, date, map) {
   const api = fresh(), why = GH.ghRefuse(run, SIM_ID, api.SEGS);

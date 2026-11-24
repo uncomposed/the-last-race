@@ -1,7 +1,7 @@
 // Checks the shipped game page (game.html, built by build.mjs) under plain Node, no install:
 //   a. it is one static file, and no part of the page outside the simulation refers to a removed feature
 //   b. three acts of three maps and three dailies, and each of the 12 loads and runs bot races to a finish
-//   c. the daily rotates through its three maps by UTC date, with dice set by the date
+//   c. the daily rotates through its three maps by UTC date, with dice set by the date, except days daily-dice.js gives new dice because the map's lesson strategy loses
 //   d. the recap and award cards: outside the simulation, told from every map's events in box words, and each award earned exactly when its events happen
 // Bot play only: this shows the maps run. It says nothing about whether a person can win them or enjoys them.   node check.mjs
 import {readFileSync} from 'node:fs';
@@ -58,11 +58,19 @@ if (!/if\(h\.out\|\|h\.dissolved\)\{[^\n]*GM_OUT_WATCH[^\n]*stepGame\(1\/60\)/.t
 
 // c. the daily, using the page's own function
 const fn = readFileSync(join(HERE, 'game.js'), 'utf8').match(/^function gmDailyOf\(date\)\{.*$/m)[0];
-const of = new Function('gmDailyMaps', fn + '\nreturn gmDailyOf;')(() => daily);
+const DT = await import('./daily-dice.mjs'), TABLE = DT.readTable();
+const of = new Function('gmDailyMaps', 'DAILY_DICE', fn + '\nreturn gmDailyOf;')(() => daily, TABLE.dice);
 const week = ['2026-11-07', '2026-11-08', '2026-11-09', '2026-11-10'].map(of);
 if (new Set(week.slice(0, 3).map(d => d.map.key)).size !== 3) fail('the daily does not rotate through 3 maps');
 if (week[0].map !== week[3].map) fail('the daily does not repeat after 3 days');
 if (new Set(week.map(d => d.seed)).size !== 4 || of('2026-11-07').seed !== week[0].seed) fail('daily dice are not set by the date');
+// c2. the daily gate (daily-dice.mjs): the map's own lesson strategy wins on each of the next 14 days' dice, and the table reaches 60 days ahead.
+//     A day the lesson loses on gets new dice in daily-dice.js; the page and the board's server read that same line.
+if (!SRC.includes(readFileSync(join(HERE, 'daily-dice.js'), 'utf8').split('\n').find(l => l.startsWith('var DAILY_DICE_TO=')))) fail('game.html does not carry the current daily-dice.js: rebuild');
+for (const d in TABLE.dice) if (TABLE.dice[d] === DT.fnv(d)) fail('daily-dice.js lists ' + d + ' with its own date dice');
+{ const G2 = DT.loadGame(TABLE), t0 = DT.today();
+  if (TABLE.to < DT.dayAdd(t0, 60)) fail('daily-dice.js only reaches ' + TABLE.to + ': node daily-dice.mjs --to <later>');
+  for (let i = 0; i < 14; i++) { const date = DT.dayAdd(t0, i), D = G2.dailyOf(date); if (!G2.lessonWins(D.map, D.seed)) fail('daily ' + date + ' ' + D.map.key + ': the lesson strategy loses on its dice'); } }
 // d. the recap and the award cards (recap.js, story.js): page code only, fed by each race's events
 const SIMTXT = LINES.slice(A, B + 1).join('\n');
 for (const w of ['PFStory', 'tellStory', 'achEval', 'rcDraw']) if (SIMTXT.includes(w)) fail('recap code is inside the simulation section: ' + w);
@@ -102,7 +110,7 @@ PF.SEGS.forEach((m, i) => {
     /* an award is earned exactly when lab 0's events say so */
     const got = new Set(AW.achEval(G, {chill: true, shadowT: 0})), mine = G.ev.filter(e => e.who === G.labs[0].name), has = t => mine.some(e => e.type === t);
     const want = {barrier: has('crash'), scrape: has('scrape') || has('drop'), dissolved: has('dissolved'), bio: has('first'), supply: mine.some(e => e.type === 'cross' && !e.inner),
-      extinct: mine.some(e => e.type === 'fall' && e.ext), roll: G.ev.some(e => e.type === 'fall' && !e.ext), chill: r.type === 'win' && r.winner === G.labs[0]};
+      extinct: G.ev.some(e => e.type === 'fall' && e.ext), roll: G.ev.some(e => e.type === 'fall' && !e.ext), chill: r.type === 'win' && r.winner === G.labs[0]};
     for (const k in want) if (want[k] !== got.has(k)) fail(m.key + ' seed ' + seed + ': award ' + k + ' is ' + got.has(k) + ', events say ' + want[k]);
     got.forEach(k => { earned[k] = (earned[k] || 0) + 1; });
   }
