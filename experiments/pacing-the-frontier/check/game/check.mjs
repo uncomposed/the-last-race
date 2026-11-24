@@ -110,7 +110,7 @@ PF.SEGS.forEach((m, i) => {
     /* an award is earned exactly when lab 0's events say so */
     const got = new Set(AW.achEval(G, {chill: true, shadowT: 0})), mine = G.ev.filter(e => e.who === G.labs[0].name), has = t => mine.some(e => e.type === t);
     const want = {barrier: has('crash'), scrape: has('scrape') || has('drop'), dissolved: has('dissolved'), bio: has('first'), supply: mine.some(e => e.type === 'cross' && !e.inner),
-      extinct: mine.some(e => e.type === 'fall' && e.ext), roll: G.ev.some(e => e.type === 'fall' && !e.ext), chill: r.type === 'win' && r.winner === G.labs[0]};
+      extinct: G.ev.some(e => e.type === 'fall' && e.ext), roll: G.ev.some(e => e.type === 'fall' && !e.ext), chill: r.type === 'win' && r.winner === G.labs[0]};
     for (const k in want) if (want[k] !== got.has(k)) fail(m.key + ' seed ' + seed + ': award ' + k + ' is ' + got.has(k) + ', events say ' + want[k]);
     got.forEach(k => { earned[k] = (earned[k] || 0) + 1; });
   }
